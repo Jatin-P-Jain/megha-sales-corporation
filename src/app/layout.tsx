@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Link from "next/link";
+import { AuthProvider } from "@/context/auth";
+import AuthButtons from "@/components/custom/auth-buttons";
+import { HomeIcon } from "lucide-react";
+import { Poppins } from "next/font/google";
+import { Toaster } from "@/components/ui/sonner";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const poppins = Poppins({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {
@@ -24,10 +24,33 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+      <body className={`${poppins.className} antialiased`}>
+        <AuthProvider>
+          <nav className="bg-sky-950 text-white p-3 flex justify-between items-center">
+            <Link
+              href={"/"}
+              className="flex items-center text-2xl tracking-wider gap-2 uppercase"
+            >
+              <HomeIcon />
+              <span>Hot Homes</span>
+            </Link>
+            <ul className="flex gap-6 items-center">
+              <li>
+                <Link
+                  href="/property-search"
+                  className="uppercase tracking-wider hover:underline"
+                >
+                  Property Search
+                </Link>
+              </li>
+              <li>
+                <AuthButtons />
+              </li>
+            </ul>
+          </nav>
+          {children}
+          <Toaster richColors closeButton></Toaster>
+        </AuthProvider>
       </body>
     </html>
   );
