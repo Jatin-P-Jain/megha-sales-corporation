@@ -120,3 +120,31 @@
     @apply bg-background text-foreground;
   }
 }
+
+.property-description h1{
+  @apply text-xl font-bold my-4
+}
+.property-description h2{
+  @apply text-lg font-bold my-4
+}
+.property-description h3{
+  @apply text-base font-bold my-4
+}
+.property-description h4{
+  @apply text-base font-bold my-4
+}
+.property-description h5{
+  @apply text-base font-bold my-4
+}
+.property-description h6{
+  @apply text-base font-bold my-4
+}
+.property-description p{
+  @apply  font-normal text-sm my-4
+}
+.property-description ul li{
+  @apply  list-disc my-3 ml-8 text-sm
+}
+.property-description ol{
+  @apply  list-decimal my-4 ml-4 text-sm
+}

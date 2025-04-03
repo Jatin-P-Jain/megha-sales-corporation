@@ -193,7 +193,7 @@ export default function PropertyForm({
                   <FormControl>
                     <Textarea
                       {...field}
-                      className="min-h-[6rem] h-auto resize-none"
+                      className="min-h-[6rem] max-h-[8rem] h-auto resize-none"
                     />
                   </FormControl>
                   <FormMessage />
