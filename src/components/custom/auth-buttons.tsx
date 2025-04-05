@@ -22,7 +22,7 @@ export default function AuthButtons() {
       {!!auth?.currentUser && (
         <DropdownMenu>
           <DropdownMenuTrigger>
-            <Avatar>
+            <Avatar className="mr-4">
               {!!auth?.currentUser?.photoURL && (
                 <Image
                   src={auth?.currentUser?.photoURL}
@@ -31,12 +31,12 @@ export default function AuthButtons() {
                   height={70}
                 />
               )}
-              <AvatarFallback>
+              <AvatarFallback className="bg-sky-800 border-2">
                 {(auth.currentUser.displayName || auth.currentUser.email)?.[0]}
               </AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
-          <DropdownMenuContent>
+          <DropdownMenuContent className="mr-4">
             <DropdownMenuLabel>
               <div>{auth.currentUser.displayName}</div>
               <div className="font-normal text-xs">

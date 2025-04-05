@@ -2,7 +2,8 @@ import { Breadcrumbs } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { PlusCircleIcon } from "lucide-react";
 import Link from "next/link";
-import PropertiesTable from "./properties-table";
+import PropertiesTable from "../../components/custom/properties-table";
+import { getProperties } from "@/data/properties";
 
 const AdminDashboard = async ({
   searchParams,
@@ -10,7 +11,10 @@ const AdminDashboard = async ({
   searchParams?: Promise<any>;
 }) => {
   const searchParamsValue = await searchParams;
-
+  const page = searchParamsValue.page ? parseInt(searchParamsValue.page) : 1;
+  const { data, totalPages } = await getProperties({
+    pagination: { page, pageSize: 5 },
+  });
   return (
     <div>
       <Breadcrumbs items={[{ label: "Dashboard" }]}></Breadcrumbs>
@@ -21,9 +25,7 @@ const AdminDashboard = async ({
           New Property
         </Link>
       </Button>
-      <PropertiesTable
-        page={searchParamsValue.page ? parseInt(searchParamsValue.page) : 1}
-      />
+      <PropertiesTable data={data} totalPages={totalPages} page={page} />
     </div>
   );
 };

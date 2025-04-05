@@ -10,20 +10,28 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getProperties } from "@/data/properties";
+import { Property } from "@/types/property";
 import { EyeIcon, PencilIcon } from "lucide-react";
+import { cookies } from "next/headers";
 import Link from "next/link";
+import RemoveFavouriteButton from "./remove-favourite-button";
 
-export default async function PropertiesTable({ page = 1 }: { page?: number }) {
-  const { data, totalPages } = await getProperties({
-    pagination: { page, pageSize: 5 },
-  });
-
+export default async function PropertiesTable({
+  data,
+  page,
+  totalPages,
+  isFavouritesTable,
+}: {
+  data: Property[];
+  page: number;
+  totalPages: number;
+  isFavouritesTable?: boolean;
+}) {
   return (
     <>
       {(!data || data.length == 0) && (
         <h1 className="text-3xl font-bold text-zinc-400 text-center py-20">
-          You have no properties.
+          {`You have no ${isFavouritesTable ? "favourited" : ""} properties.`}
         </h1>
       )}
       {data.length > 0 && (
@@ -66,13 +74,17 @@ export default async function PropertiesTable({ page = 1 }: { page?: number }) {
                         <EyeIcon />
                       </Link>
                     </Button>
-                    <Button asChild variant={"outline"} size={"sm"}>
-                      <Link
-                        href={`/admin-dashboard/edit-property/${property.id}`}
-                      >
-                        <PencilIcon />
-                      </Link>
-                    </Button>
+                    {isFavouritesTable ? (
+                      <RemoveFavouriteButton propertyId={property.id} />
+                    ) : (
+                      <Button asChild variant={"outline"} size={"sm"}>
+                        <Link
+                          href={`/admin-dashboard/edit-property/${property.id}`}
+                        >
+                          <PencilIcon />
+                        </Link>
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               );
@@ -91,7 +103,13 @@ export default async function PropertiesTable({ page = 1 }: { page?: number }) {
                         variant={"outline"}
                         key={i}
                       >
-                        <Link href={`/admin-dashboard?page=${i + 1}`}>
+                        <Link
+                          href={`${
+                            isFavouritesTable
+                              ? "/account/my-favourites"
+                              : "/admin-dashboard"
+                          }?page=${i + 1}`}
+                        >
                           {i + 1}
                         </Link>
                       </Button>

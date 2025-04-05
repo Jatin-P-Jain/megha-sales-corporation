@@ -66,3 +66,16 @@ export const getPropertyById = async (propertyId: string) => {
   } as Property;
   return propertyData;
 };
+export const getPropertiesById = async (propertyIds: string[]) => {
+  if (!propertyIds.length) {
+    return [];
+  }
+  const propertySnapshot = await fireStore
+    .collection("properties")
+    .where("__name__", "in", propertyIds)
+    .get();
+  const propertiesData = propertySnapshot.docs.map((property) => {
+    return { id: property.id, ...property.data() } as Property;
+  });
+  return propertiesData;
+};

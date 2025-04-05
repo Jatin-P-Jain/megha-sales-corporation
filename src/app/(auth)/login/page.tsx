@@ -1,5 +1,5 @@
-import GoogleLoginButton from "@/components/custom/google-login-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import LoginForm from "./login-form";
 
 export default function Login() {
   return (
@@ -8,7 +8,7 @@ export default function Login() {
         <CardTitle className="flex justify-center text-2xl">Login</CardTitle>
       </CardHeader>
       <CardContent>
-        <GoogleLoginButton />
+        <LoginForm />
       </CardContent>
     </Card>
   );

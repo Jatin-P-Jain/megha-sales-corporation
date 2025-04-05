@@ -14,6 +14,11 @@ import { BathIcon, BedIcon, HeartIcon, HomeIcon } from "lucide-react";
 import currencyFormatter from "@/lib/currency-formatter";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import FavouriteButton from "@/components/custom/toggle-favourites";
+import getUserFavourites from "@/data/favourites";
+import { cookies } from "next/headers";
+import { auth } from "@/firebase/server";
+import { DecodedIdToken } from "firebase-admin/auth";
 
 export default async function PropertySearch({
   searchParams,
@@ -42,7 +47,15 @@ export default async function PropertySearch({
 
   const { data, totalPages } = properties;
 
-  // console.log({ data });
+  const favourites = await getUserFavourites();
+
+  const cookieStore = await cookies();
+  const token = cookieStore.get("firebaseAuthToken")?.value;
+  let verifiedToken: DecodedIdToken | null;
+
+  if (token) {
+    verifiedToken = await auth.verifyIdToken(token);
+  }
 
   return (
     <div className="max-w-6xl mx-auto p-3 py-6">
@@ -74,6 +87,12 @@ export default async function PropertySearch({
               <Card key={property.id} className="p-0 overflow-hidden relative">
                 <CardContent className="p-0 ">
                   <div className="h-55 relative bg-sky-100 flex flex-col items-center justify-center text-black/40">
+                    {(!verifiedToken || !verifiedToken.admin) && (
+                      <FavouriteButton
+                        propertyId={property.id}
+                        isFavourite={favourites[property.id]}
+                      />
+                    )}
                     {!!property?.images?.[0] ? (
                       <Image
                         src={imageUrlFormatter(property.images[0])}
@@ -114,9 +133,6 @@ export default async function PropertySearch({
                     </div>
                   </div>
                 </CardContent>
-                <div className="bg-white w-8 h-8 absolute top-0 right-0 rounded-bl-2xl cursor-pointer flex items-center justify-center">
-                  <HeartIcon className="" size="16" />
-                </div>
               </Card>
             );
           })}
