@@ -71,7 +71,7 @@ export default async function Account() {
               <span className="text-zinc-700 text-sm italic w-full flex">
                 You will be deleting your account permanently. Are you sure?
               </span>
-              <DeleteAccountButton isGoogleProvider />
+              <DeleteAccountButton isPasswordProvider />
             </CardFooter>
           </>
         )}

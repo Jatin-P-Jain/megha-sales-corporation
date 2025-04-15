@@ -28,15 +28,15 @@ import { toast } from "sonner";
 import deleteUserFavourites from "./actions";
 
 export default function DeleteAccountButton({
-  isGoogleProvider,
+  isPasswordProvider,
 }: {
-  isGoogleProvider?: boolean;
+  isPasswordProvider?: boolean;
 }) {
   const auth = useAuth();
   const [isDeleting, setIsDeleting] = useState(false);
   const [password, setPassword] = useState("");
   const deleteHandler = async () => {
-    console.log({ isGoogleProvider });
+    console.log({ isPasswordProvider });
 
     try {
       setIsDeleting(true);
@@ -44,7 +44,7 @@ export default function DeleteAccountButton({
       if (!user) {
         return;
       }
-      if (!isGoogleProvider) {
+      if (isPasswordProvider) {
         const credential = EmailAuthProvider.credential(user.email!, password);
         await reauthenticateWithCredential(user, credential);
       } else {
@@ -84,7 +84,7 @@ export default function DeleteAccountButton({
             <div className="text-sm text-slate-800">
               This action cannot be undone. This will permanently delete your
               account and all associated data.
-              {isGoogleProvider ? (
+              {!isPasswordProvider ? (
                 <div className="text-red-800">
                   <Label className="mt-4 mb-1">Important :</Label>
                   <Label>
@@ -117,7 +117,7 @@ export default function DeleteAccountButton({
             <Button variant={"destructive"} onClick={deleteHandler}>{`${
               isDeleting
                 ? "Deleting..."
-                : isGoogleProvider
+                : !isPasswordProvider
                 ? "Sign In and Delete Account"
                 : "Delete my account"
             }`}</Button>
