@@ -28,7 +28,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${poppins.className} antialiased`}>
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, height=device-height"
+      />
+      <body className={`${poppins.className} antialiased min-h-[100dvh]`}>
         <AuthProvider>
           <nav className="bg-sky-950 text-white p-3 flex flex-wrap justify-between items-center relative z-10">
             <Link
