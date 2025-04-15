@@ -34,7 +34,11 @@ export default function GoogleLoginButton({
       onClick={async () => {
         try {
           await auth?.loginWithGoogle();
-          onSuccess ? onSuccess() : router.refresh();
+          if (onSuccess) {
+            onSuccess();
+          } else {
+            router.refresh();
+          }
         } catch (e) {
           console.log({ e });
         }
