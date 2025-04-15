@@ -56,7 +56,7 @@ export default async function PropertiesTable({
                 .join(",");
               return (
                 <TableRow key={property.id}>
-                  <TableCell className="max-w-[400px] truncate whitespace-nowrap overflow-hidden text-ellipsis">
+                  <TableCell className="max-w-[100px] sm:max-w-[400px] truncate whitespace-nowrap overflow-hidden text-ellipsis">
                     {address}
                   </TableCell>
                   <TableCell>

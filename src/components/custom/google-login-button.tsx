@@ -27,7 +27,7 @@ export default function GoogleLoginButton({
 }: ButtonProps) {
   const auth = useAuth();
   const router = useRouter();
-  const combinedClassName = `flex mx-auto rounded-4xl w-sm max-w-sm cursor-pointer ${
+  const combinedClassName = `flex mx-auto rounded-4xl w-[80%] max-w-sm cursor-pointer ${
     className ? className : ""
   }`;
   return (

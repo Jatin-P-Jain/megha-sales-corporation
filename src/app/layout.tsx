@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Link from "next/link";
-import { AuthProvider } from "@/context/auth";
+
 import AuthButtons from "@/components/custom/auth-buttons";
-import { HomeIcon } from "lucide-react";
 import { Poppins } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import Image from "next/image";
 import HomeLogo from "../../public/home-logo.svg";
+import { AuthProvider } from "@/context/auth";
+import PropertySearchLink from "@/components/custom/property-search-link";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -29,24 +30,19 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${poppins.className} antialiased`}>
         <AuthProvider>
-          <nav className="bg-sky-950 text-white p-3 flex justify-between items-center">
+          <nav className="bg-sky-950 text-white p-3 flex flex-wrap justify-between items-center relative z-10">
             <Link
               href={"/"}
-              className="flex items-center text-2xl tracking-wider gap-2 uppercase justify-end "
+              className="flex items-center text-lg md:text-2xl tracking-wider gap-2 uppercase justify-end"
             >
-              <div className="size-12 relative">
+              <div className="w-8 h-8 md:w-12 md:h-12 relative">
                 <Image src={HomeLogo} alt="" fill className="object-center" />
               </div>
-              <span className="mt-2">Hot Homes</span>
+              <span className="mt-1 md:mt-2">Hot Homes</span>
             </Link>
-            <ul className="flex gap-6 items-center">
+            <ul className="flex flex-wrap gap-4 md:gap-6 items-center mt-2 md:mt-0">
               <li>
-                <Link
-                  href="/property-search"
-                  className="uppercase tracking-wider hover:underline"
-                >
-                  Property Search
-                </Link>
+                <PropertySearchLink />
               </li>
               <li>
                 <AuthButtons />

@@ -2,8 +2,9 @@
 
 import { addFavourite, removeFavourite } from "@/app/property-search/actions";
 import { useAuth } from "@/context/auth";
-import { HeartIcon } from "lucide-react";
+import { HeartIcon, LoaderCircleIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
 
 const FavouriteButton = ({
@@ -15,10 +16,12 @@ const FavouriteButton = ({
 }) => {
   const auth = useAuth();
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
   return (
     <div
       className="bg-white w-8 h-8 absolute top-0 right-0 rounded-bl-2xl cursor-pointer flex items-center justify-center z-10 "
       onClick={async () => {
+        setLoading(true);
         try {
           const tokenResult = await auth?.currentUser?.getIdTokenResult();
           if (!tokenResult) {
@@ -38,17 +41,23 @@ const FavouriteButton = ({
           });
           router.refresh();
         } catch (e) {
+          setLoading(false);
           console.log("e -- ", e);
           toast.error("Error!", { description: "An error occurred" });
         }
+        setLoading(false);
       }}
     >
-      <HeartIcon
-        className={`${
-          isFavourite ? "fill-red-500" : "transparent"
-        } stroke-sky-900`}
-        size="20"
-      />
+      {!loading ? (
+        <HeartIcon
+          className={`${
+            isFavourite ? "fill-red-500" : "transparent"
+          } stroke-sky-900`}
+          size="20"
+        />
+      ) : (
+        <LoaderCircleIcon className="animate-spin" size="20" />
+      )}
     </div>
   );
 };

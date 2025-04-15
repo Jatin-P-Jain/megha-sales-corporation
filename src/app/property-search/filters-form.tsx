@@ -11,8 +11,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
+import { startTransition, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { set, z } from "zod";
 
 const formSchema = z.object({
   minPrice: z.string().optional(),
@@ -21,6 +22,7 @@ const formSchema = z.object({
 });
 
 export default function FiltersForm() {
+  const [isPending, startTransition] = useTransition();
   const searchParams = useSearchParams();
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
@@ -32,8 +34,7 @@ export default function FiltersForm() {
     },
   });
 
-  const handleSubmit = (data: z.infer<typeof formSchema>) => {
-    console.log("data -- ", data);
+  const handleSubmit = async (data: z.infer<typeof formSchema>) => {
     const newSearchParams = new URLSearchParams();
     if (data.minPrice) {
       newSearchParams.set("minPrice", data.minPrice);
@@ -45,13 +46,15 @@ export default function FiltersForm() {
       newSearchParams.set("minBedrooms", data.minBedrooms);
     }
     newSearchParams.set("page", "1");
-    router.push(`/property-search?${newSearchParams.toString()}`);
+    startTransition(() => {
+      router.push(`/property-search?${newSearchParams.toString()}`);
+    });
   };
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
-        className="grid grid-cols-4 gap-3"
+        className="grid sm:grid-cols-4 grid-cols-1 gap-3"
       >
         <FormField
           control={form.control}
@@ -67,6 +70,7 @@ export default function FiltersForm() {
                   placeholder="Min Price"
                   type="number"
                   min={0}
+                  disabled={isPending}
                 />
               </FormControl>
             </FormItem>
@@ -86,6 +90,7 @@ export default function FiltersForm() {
                   placeholder="Max Price"
                   type="number"
                   min={0}
+                  disabled={isPending}
                 />
               </FormControl>
             </FormItem>
@@ -105,6 +110,7 @@ export default function FiltersForm() {
                   placeholder="Min Bedrooms"
                   type="number"
                   min={0}
+                  disabled={isPending}
                 />
               </FormControl>
             </FormItem>
@@ -112,7 +118,7 @@ export default function FiltersForm() {
         />
 
         <Button type="submit" className="w-full cursor-pointer mt-auto">
-          Search
+          {isPending ? "Applying Filters" : "Apply Filters"}
         </Button>
       </form>
     </Form>
