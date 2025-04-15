@@ -67,7 +67,7 @@ export default async function EditProperty({
           <ReactMarkdown>{property.description}</ReactMarkdown>
         </div>
       </div>
-      <div className="order-1 md:order-2 bg-blue-300 md:bg-blue-300/65 md:h-screen md:sticky fixed bottom-0 md:top-0 grid p-5 md:p-40 md:px-10">
+      <div className="order-1 md:order-2 bg-blue-300 md:bg-blue-300/65 md:h-screen md:sticky fixed bottom-0 w-full md:top-0 grid p-5 md:p-40 md:px-10 rounded-t-3xl md:rounded-none">
         <div className="flex flex-col gap-3 md:gap-10 w-full">
           <PropertyStatusBadge
             status={property.status}
