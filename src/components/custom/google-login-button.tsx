@@ -5,7 +5,6 @@ import { Button } from "../ui/button";
 import { useAuth } from "@/context/auth";
 import GoogleIcon from "@/components/custom/google-icon.svg";
 import Image from "next/image";
-import { on } from "events";
 type ButtonProps = {
   variant?:
     | "link"
@@ -36,7 +35,9 @@ export default function GoogleLoginButton({
         try {
           await auth?.loginWithGoogle();
           onSuccess ? onSuccess() : router.refresh();
-        } catch (e) {}
+        } catch (e) {
+          console.log({ e });
+        }
       }}
       className={`${combinedClassName}`}
       variant={variant}

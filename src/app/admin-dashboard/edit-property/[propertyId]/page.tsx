@@ -6,7 +6,7 @@ import { getPropertyById } from "@/data/properties";
 export default async function EditProperty({
   params,
 }: {
-  params: Promise<any>;
+  params: Promise<{ propertyId: string }>;
 }) {
   const paramsValue = await params;
   const { propertyId } = paramsValue;

@@ -3,7 +3,6 @@
 import { ChangeEvent, useRef, useState } from "react";
 import { Button } from "../ui/button";
 import {
-  CrossIcon,
   MoveIcon,
   UploadIcon,
   XIcon,

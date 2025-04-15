@@ -1,5 +1,4 @@
 import PropertyStatusBadge from "@/components/custom/property-status-badge";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -12,7 +11,6 @@ import {
 } from "@/components/ui/table";
 import { Property } from "@/types/property";
 import { EyeIcon, PencilIcon } from "lucide-react";
-import { cookies } from "next/headers";
 import Link from "next/link";
 import RemoveFavouriteButton from "./remove-favourite-button";
 

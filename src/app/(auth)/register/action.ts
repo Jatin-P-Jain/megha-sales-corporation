@@ -22,13 +22,13 @@ export const registerUser = async (data: {
       email: data.email,
       password: data.password,
     });
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.log({ e });
 
     return {
       error: true,
       message:
-        e.code == "auth/email-already-exists"
+        (e as { code?: string }).code === "auth/email-already-exists"
           ? "The email address is already in use by another account."
           : "Could not register user",
     };

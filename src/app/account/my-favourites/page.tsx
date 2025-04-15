@@ -6,10 +6,10 @@ import { redirect } from "next/navigation";
 const MyFavourites = async ({
   searchParams,
 }: {
-  searchParams: Promise<any>;
+  searchParams: Promise<{ page?: string }>;
 }) => {
   const searchParamsValues = await searchParams;
-  const page = searchParamsValues?.page
+  const page = searchParamsValues.page
     ? parseInt(searchParamsValues?.page)
     : 1;
   const pageSize = 2;

@@ -16,7 +16,12 @@ import ResponsiveFilter from "@/components/custom/responsive-filters-form";
 export default async function PropertySearch({
   searchParams,
 }: {
-  searchParams: Promise<any>;
+  searchParams: Promise<{
+    page: string;
+    minPrice: string;
+    maxPrice: string;
+    minBedrooms: string;
+  }>;
 }) {
   const searchParamsValues = await searchParams;
   const parsedPage = parseInt(searchParamsValues.page);
@@ -61,7 +66,7 @@ export default async function PropertySearch({
         </Card>
         {data.length > 0 && (
           <div className="grid grid-cols-1 mt-5 gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {data.map((property, index) => {
+            {data.map((property) => {
               const addressLine = [
                 property.address1,
                 property.address2,

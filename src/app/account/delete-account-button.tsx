@@ -54,8 +54,8 @@ export default function DeleteAccountButton({
       await deleteUserFavourites();
       await deleteUser(user);
       toast.success("Account deleted successfully");
-    } catch (e: any) {
-      if (e.code === "auth/invalid-credential") {
+    } catch (e: unknown) {
+      if ((e as { code?: string }).code === "auth/invalid-credential") {
         toast.error("Invalid credentials", {
           description: "Please check your password and try again.",
         });

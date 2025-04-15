@@ -14,7 +14,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { loginUserSchema } from "@/validation/loginUser";
 
 import Link from "next/link";
@@ -41,12 +40,12 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
     try {
       await auth?.loginWithEmailAndPassword(data);
       onSuccess?.();
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.log({ e });
 
       toast.error("Error!", {
         description:
-          e.code == "auth/invalid-credential"
+          (e as { code?: string })?.code === "auth/invalid-credential"
             ? "Invalid Credential"
             : "An error occurred",
       });

@@ -2,7 +2,6 @@
 
 import { auth, fireStore } from "@/firebase/server";
 import { propertyDataSchema } from "@/validation/propertySchema";
-import { z } from "zod";
 
 export const createProperty = async (
   data: {
@@ -40,5 +39,3 @@ export const createProperty = async (
 
   return { propertyId: property.id };
 };
-
-

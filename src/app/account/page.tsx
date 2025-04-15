@@ -13,10 +13,7 @@ import { DecodedIdToken } from "firebase-admin/auth";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import UpdatePasswordForm from "./update-password";
-import { Button } from "@/components/ui/button";
-import { Trash2Icon } from "lucide-react";
-import { removeToken } from "@/context/actions";
-import { toast } from "sonner";
+
 import DeleteAccountButton from "./delete-account-button";
 
 export default async function Account() {
@@ -29,6 +26,7 @@ export default async function Account() {
   try {
     decodedToken = await auth.verifyIdToken(token);
   } catch (e) {
+    console.log({ e });
     redirect("/");
   }
   const user = await auth.getUser(decodedToken.uid);
@@ -38,9 +36,7 @@ export default async function Account() {
   const isPasswordProvider = user.providerData.find(
     (provider) => provider.providerId === "password"
   );
-  const isGoogleProvider = user.providerData.find(
-    (provider) => provider.providerId === "google.com"
-  );
+
   const isAdmin = !!user.customClaims?.admin;
 
   return (

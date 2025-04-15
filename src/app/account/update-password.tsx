@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/auth";
-import { auth } from "@/firebase/client";
 import { passwordValidation } from "@/validation/registerUser";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -62,9 +61,9 @@ export default function UpdatePasswordForm() {
         description: "Your password was updated.",
       });
       form.reset();
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.log({ e });
-      if (e.code === "auth/invalid-credential") {
+      if ((e as { code: string }).code === "auth/invalid-credential") {
         toast.error("Invalid credentials", {
           description: "Please check your current password and try again.",
         });

@@ -11,9 +11,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
-import { startTransition, useState, useTransition } from "react";
+import { useTransition } from "react";
 import { useForm } from "react-hook-form";
-import { set, z } from "zod";
+import { z } from "zod";
 
 const formSchema = z.object({
   minPrice: z.string().optional(),

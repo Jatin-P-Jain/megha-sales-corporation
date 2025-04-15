@@ -8,10 +8,10 @@ import { getProperties } from "@/data/properties";
 const AdminDashboard = async ({
   searchParams,
 }: {
-  searchParams?: Promise<any>;
+  searchParams?: Promise<{ page: string }>;
 }) => {
   const searchParamsValue = await searchParams;
-  const page = searchParamsValue.page ? parseInt(searchParamsValue.page) : 1;
+  const page = searchParamsValue?.page ? parseInt(searchParamsValue.page) : 1;
   const { data, totalPages } = await getProperties({
     pagination: { page, pageSize: 5 },
   });

@@ -1,4 +1,4 @@
-import { string, z } from "zod";
+import { z } from "zod";
 
 export const propertyDataSchema = z.object({
   address1: z.string().min(1, "Address Line 1 must contain a value"),

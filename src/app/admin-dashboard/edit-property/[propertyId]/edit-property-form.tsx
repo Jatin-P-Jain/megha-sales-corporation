@@ -4,7 +4,7 @@ import PropertyForm from "@/components/custom/property-form";
 import { auth, storage } from "@/firebase/client";
 import { Property } from "@/types/property";
 import { propertySchema } from "@/validation/propertySchema";
-import { SaveIcon, Upload } from "lucide-react";
+import { SaveIcon } from "lucide-react";
 import { z } from "zod";
 import { updateProperty } from "./actions";
 import { toast } from "sonner";
@@ -40,7 +40,7 @@ export default function EditPropertyForm({
     const { images: newImages, ...rest } = data;
     const updateResponse = await updateProperty({ ...rest, id }, token);
     if (!!updateResponse?.error) {
-      toast.error("Error"), { description: updateResponse.message };
+      toast.error("Error", { description: updateResponse.message });
       return;
     }
     const storageTasks: (UploadTask | Promise<void>)[] = [];
