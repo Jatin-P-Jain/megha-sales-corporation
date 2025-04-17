@@ -62,7 +62,7 @@ export default async function EditProperty({
           <MapComponent address={addressLines.join(",")} />
         </div>
       </div>
-      <div className="order-1 md:order-2 bg-blue-300 md:bg-blue-300/65 md:h-screen md:sticky fixed bottom-0 w-full md:top-0 grid p-5 md:p-40 md:px-10 rounded-t-3xl md:rounded-none z-10">
+      <div className="order-1 md:order-2 bg-blue-300 md:bg-blue-300/65 md:h-screen md:sticky fixed bottom-0 w-full md:top-0 grid p-4 px-5 md:p-40 md:px-10 rounded-t-3xl md:rounded-none z-10">
         <div className="flex flex-col gap-3 md:gap-10 w-full">
           <PropertyStatusBadge
             status={property.status}
@@ -82,7 +82,7 @@ export default async function EditProperty({
               maximumSignificantDigits: 3,
             }).format(property.price)}
           </h2>
-          <div className="flex md:flex-col xl:flex-row gap-8 text-black/80 font-medium justify-start justify-self-start">
+          <div className="flex text-sm sm:text-md md:flex-col xl:flex-row gap-8 text-black/80 font-medium justify-start justify-self-start">
             <p className="flex items-center gap-2">
               <BedIcon /> {property.bedrooms} Bedroom(s)
             </p>

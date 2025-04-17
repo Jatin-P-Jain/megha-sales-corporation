@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Link from "next/link";
 import { Analytics } from "@vercel/analytics/next";
-
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import AuthButtons from "@/components/custom/auth-buttons";
 import { Poppins } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
@@ -58,6 +58,7 @@ export default function RootLayout({
           <Toaster richColors closeButton></Toaster>
         </AuthProvider>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

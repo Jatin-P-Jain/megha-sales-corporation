@@ -5,7 +5,7 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
 
 export default function ResponsiveFilter() {
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(true);
   const [openFilters, setOpenFilters] = useState(false);
 
   useEffect(() => {

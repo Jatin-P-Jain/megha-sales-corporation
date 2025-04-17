@@ -17,6 +17,7 @@ const FavouriteButton = ({
   const auth = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+
   return (
     <div
       className="bg-white w-8 h-8 absolute top-0 right-0 rounded-bl-2xl cursor-pointer flex items-center justify-center z-10 "
@@ -26,6 +27,7 @@ const FavouriteButton = ({
           const tokenResult = await auth?.currentUser?.getIdTokenResult();
           if (!tokenResult) {
             router.push("/login");
+            setLoading(false);
             return;
           }
           const token = tokenResult?.token;
@@ -45,7 +47,6 @@ const FavouriteButton = ({
           console.log("e -- ", e);
           toast.error("Error!", { description: "An error occurred" });
         }
-        setLoading(false);
       }}
     >
       {!loading ? (
