@@ -16,8 +16,8 @@ export default function ResponsiveFilter() {
 
   return (
     <>
-      <div className="flex flex-row items-center justify-between">
-        <div className="text-lg mb-0">Filters</div>
+      <div className={`flex flex-row items-center justify-between `}>
+        <div className="text-lg m-0">Filters</div>
         {isMobile && (
           <div
             className="cursor-pointer"
@@ -27,20 +27,18 @@ export default function ResponsiveFilter() {
           </div>
         )}
       </div>
-      {!isMobile ? (
+      {isMobile ? (
         <div>
           <Suspense>
-          <FiltersForm />
-          </Suspense>
-        </div>
-      ) : openFilters ? (
-        <div>
-          <Suspense>
-          <FiltersForm />
+            <FiltersForm openFilters={openFilters} />
           </Suspense>
         </div>
       ) : (
-        <></>
+        <div>
+          <Suspense>
+            <FiltersForm openFilters={true} />
+          </Suspense>
+        </div>
       )}
     </>
   );

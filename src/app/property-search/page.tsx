@@ -49,7 +49,7 @@ export default async function PropertySearch({
         Property Search
       </h1>
       <div className="flex flex-col gap-4">
-        <Card className="p-5">
+        <Card className="p-3 gap-0 sm:p-5 ">
           <ResponsiveFilter />
         </Card>
         <Suspense
