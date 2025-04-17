@@ -2,7 +2,7 @@
 
 import FiltersForm from "@/app/property-search/filters-form";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState } from "react";
 
 export default function ResponsiveFilter() {
   const [isMobile, setIsMobile] = useState(false);
@@ -29,15 +29,11 @@ export default function ResponsiveFilter() {
       </div>
       {!isMobile ? (
         <div>
-          <Suspense>
-            <FiltersForm />
-          </Suspense>
+          <FiltersForm />
         </div>
       ) : openFilters ? (
         <div>
-          <Suspense>
-            <FiltersForm />
-          </Suspense>
+          <FiltersForm />
         </div>
       ) : (
         <></>
