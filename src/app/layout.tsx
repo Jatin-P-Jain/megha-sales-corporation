@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Link from "next/link";
+import { Analytics } from "@vercel/analytics/next";
 
 import AuthButtons from "@/components/custom/auth-buttons";
 import { Poppins } from "next/font/google";
@@ -56,6 +57,7 @@ export default function RootLayout({
           {children}
           <Toaster richColors closeButton></Toaster>
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );
