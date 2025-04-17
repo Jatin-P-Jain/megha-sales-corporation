@@ -30,4 +30,4 @@ if (!currentApps.length) {
   storage = getStorage(app);
 }
 
-export { auth, storage, analytics };
+export { auth, storage };
