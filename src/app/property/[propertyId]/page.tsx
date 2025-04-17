@@ -11,13 +11,14 @@ import { BathIcon, BedIcon } from "lucide-react";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import BackButton from "./back-button";
+import PropertyImage from "./property-image";
 
 export const dynamic = "force-static";
 
 export default async function EditProperty({
   params,
 }: {
-  params: Promise<{propertyId: string}>;
+  params: Promise<{ propertyId: string }>;
 }) {
   const paramsValue = await params;
   const { propertyId } = paramsValue;
@@ -38,14 +39,7 @@ export default async function EditProperty({
               {property?.images?.map((image, index) => (
                 <CarouselItem key={image}>
                   <div className="relative h-[15vh] lg:h-[70vh] min-h-70">
-                    <Image
-                      src={`https://firebasestorage.googleapis.com/v0/b/hot-homes-8a814.firebasestorage.app/o/${encodeURIComponent(
-                        image
-                      )}?alt=media`}
-                      alt={`Image${index}`}
-                      fill
-                      className="object-center"
-                    />
+                    <PropertyImage image={image} index={index} />
                   </div>
                 </CarouselItem>
               ))}
