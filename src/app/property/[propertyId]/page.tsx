@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/carousel";
 import { getPropertyById } from "@/data/properties";
 import { BathIcon, BedIcon } from "lucide-react";
-import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import BackButton from "./back-button";
 import PropertyImage from "./property-image";

@@ -34,4 +34,4 @@ if (!currentApps.length) {
   analytics = getAnalytics(app);
 }
 
-export { auth, storage };
+export { auth, storage, analytics };
