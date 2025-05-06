@@ -94,7 +94,7 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
       }
     } catch (e: unknown) {
       console.log({ e });
-      (e as { code?: string })?.code === "auth/user-not-found"
+      (e as { code: string })?.code === "auth/user-not-found"
         ? mobileForm.setError("mobile", {
             type: "manual",
             message: "No account exists with this mobile number.",
