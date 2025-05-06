@@ -78,7 +78,7 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
         body: JSON.stringify({ phone: data?.mobile }),
       });
       const { exists } = await phoneRes.json();
-      if (phoneRes.ok && !exists) {
+      if (exists) {
         const confirmation = await auth?.handleSendOTP(data, appVerifier);
         setOtpSent(true);
         setConfirmationResult(confirmation);

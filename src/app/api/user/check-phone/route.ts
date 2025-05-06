@@ -11,6 +11,9 @@ export const POST = async (req: NextRequest) => {
 
   try {
     const user = await auth.getUserByPhoneNumber("+91" + phone);
+    console.log({ user });
+    console.log({ exists: !!user });
+
     return NextResponse.json({ exists: !!user });
   } catch (error) {
     console.log({ error });
