@@ -94,15 +94,17 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
       }
     } catch (e: unknown) {
       console.log({ e });
-      (e as { code: string })?.code === "auth/user-not-found"
-        ? mobileForm.setError("mobile", {
-            type: "manual",
-            message: "No account exists with this mobile number.",
-          })
-        : toast.error("Error!", {
-            description:
-              "There is no user record corresponding to the provided identifier.",
-          });
+      if ((e as { code?: string }).code === "auth/user-not-found") {
+        mobileForm.setError("mobile", {
+          type: "manual",
+          message: "No account exists with this mobile number.",
+        });
+      } else {
+        toast.error("Error!", {
+          description:
+            "There is no user record corresponding to the provided identifier.",
+        });
+      }
     }
   };
   const handleVerifyOTP = async (data: { otp: string }) => {
