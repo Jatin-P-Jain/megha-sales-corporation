@@ -11,7 +11,6 @@ export default function PropertyImage({
   index: number;
 }) {
   const [loaded, setIsLoaded] = useState(false);
-  console.log("Image loading", image);
   console.log(
     `https://firebasestorage.googleapis.com/v0/b/hot-homes-8a814.firebasestorage.app/o/${encodeURIComponent(
       image

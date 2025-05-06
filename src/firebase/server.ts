@@ -5,7 +5,7 @@ import { Auth, getAuth } from "firebase-admin/auth";
 
 const serviceAccount = {
   type: "service_account",
-  project_id: "hot-homes-8a814",
+  project_id: "megha-sales-corporation",
   private_key_id: process.env.FIRBASE_PRIVATE_KEY_ID,
   private_key: process.env.FIRBASE_PRIVATE_KEY,
   client_email: process.env.FIREBASE_CLIENT_EMAIL,
@@ -14,7 +14,7 @@ const serviceAccount = {
   token_uri: "https://oauth2.googleapis.com/token",
   auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
   client_x509_cert_url:
-    "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40hot-homes-8a814.iam.gserviceaccount.com",
+    "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40megha-sales-corporation.iam.gserviceaccount.com",
   universe_domain: "googleapis.com",
 };
 

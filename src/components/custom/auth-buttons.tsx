@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 export default function AuthButtons() {
   const auth = useAuth();
   const router = useRouter();
+
   return (
     <div>
       {!!auth?.currentUser && (

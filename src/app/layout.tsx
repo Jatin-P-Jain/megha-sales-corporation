@@ -7,7 +7,7 @@ import AuthButtons from "@/components/custom/auth-buttons";
 import { Poppins } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import Image from "next/image";
-import HomeLogo from "../../public/home-logo.svg";
+import BrandLogo from "../../public/brand-logo.svg";
 import { AuthProvider } from "@/context/auth";
 import PropertySearchLink from "@/components/custom/property-search-link";
 
@@ -17,9 +17,9 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Hot Homes",
-  description: "Created with Next.js, Firebase and Tailwind CSS",
-  icons: "/home-logo.svg",
+  title: "Megha Sales Corporation",
+  description: "Auto accessories store in Raipur, Chhattisgarh",
+  icons: "/brand-logo.svg",
 };
 
 export default function RootLayout({
@@ -35,15 +35,20 @@ export default function RootLayout({
       />
       <body className={`${poppins.className} antialiased min-h-[100dvh]`}>
         <AuthProvider>
-          <nav className="bg-sky-950 text-white p-3 flex flex-wrap justify-between items-center relative z-10">
+          <nav className="bg-cyan-950 text-white p-3 px-10 flex flex-wrap justify-between items-center relative z-10">
             <Link
               href={"/"}
-              className="flex items-center text-lg md:text-2xl tracking-wider gap-2 uppercase justify-end"
+              className="flex items-center text-lg md:text-2xl tracking-wider gap-4 uppercase justify-end"
             >
-              <div className="w-8 h-8 md:w-12 md:h-12 relative">
-                <Image src={HomeLogo} alt="" fill className="object-center" />
+              <div className="w-8 h-8 md:w-14 md:h-14 relative">
+                <Image src={BrandLogo} alt="" fill className="object-center" />
               </div>
-              <span className="mt-1 md:mt-2">Hot Homes</span>
+              <div className="flex flex-col">
+                <span className="mt-1 md:mt-2">Megha Sales</span>
+                <span className="text-sm flex items-center justify-center tracking-[6px]">
+                  Corporation
+                </span>
+              </div>
             </Link>
             <ul className="flex flex-wrap gap-4 md:gap-6 items-center mt-2 md:mt-0">
               <li>
@@ -57,6 +62,10 @@ export default function RootLayout({
           {children}
           <Toaster richColors closeButton></Toaster>
         </AuthProvider>
+        <div
+          id="recaptcha-container"
+          style={{ display: "none", position: "absolute", top: 0, left: 0 }}
+        />
         <Analytics />
         <SpeedInsights />
       </body>

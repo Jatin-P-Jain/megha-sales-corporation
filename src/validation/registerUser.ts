@@ -19,3 +19,13 @@ export const registerUserSchema = z
       });
     }
   });
+export const registerUserPhoneSchema = z.object({
+  email: z.string().email().optional(),
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  mobile: z
+    .string()
+    .regex(/^[6-9]\d{9}$/, { message: "Invalid mobile number" }),
+});
+export const mobileOtpSchema = z.object({
+  otp: z.string().regex(/^\d{6}$/, { message: "Invalid OTP" }),
+});

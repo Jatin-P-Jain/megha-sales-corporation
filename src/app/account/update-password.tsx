@@ -73,8 +73,6 @@ export default function UpdatePasswordForm() {
         });
       }
     }
-
-    console.log(data);
   };
   return (
     <div>

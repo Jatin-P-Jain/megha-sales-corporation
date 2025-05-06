@@ -24,7 +24,7 @@ export default function PropertySearchLink() {
       href="/property-search"
       className="text-sm md:text-base uppercase tracking-wider hover:underline"
     >
-      Property Search
+      About Us
     </Link>
   );
 }

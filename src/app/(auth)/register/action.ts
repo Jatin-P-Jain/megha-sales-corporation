@@ -1,7 +1,10 @@
 "use server";
 
 import { auth } from "@/firebase/server";
-import { registerUserSchema } from "@/validation/registerUser";
+import {
+  registerUserPhoneSchema,
+  registerUserSchema,
+} from "@/validation/registerUser";
 
 export const registerUser = async (data: {
   email: string;
@@ -32,5 +35,27 @@ export const registerUser = async (data: {
           ? "The email address is already in use by another account."
           : "Could not register user",
     };
+  }
+};
+export const registerUserWithPhone = async (data: {
+  email?: string;
+  name: string;
+  mobile: string;
+}) => {
+  const validation = registerUserPhoneSchema.safeParse(data);
+  if (!validation.success) {
+    return {
+      error: true,
+      message: validation.error.issues[0]?.message ?? "An Error Occurred",
+    };
+  }
+  try {
+    await auth.createUser({
+      displayName: data.name,
+      email: data.email,
+      phoneNumber: "+91" + data.mobile,
+    });
+  } catch (e: unknown) {
+    console.log({ e });
   }
 };

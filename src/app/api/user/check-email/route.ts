@@ -5,8 +5,6 @@ export const POST = async (req: NextRequest) => {
   const body = await req.json();
   const { email } = body;
 
-  console.log({ email });
-
   if (!email) return NextResponse.json({ error: "Email is required" });
 
   try {

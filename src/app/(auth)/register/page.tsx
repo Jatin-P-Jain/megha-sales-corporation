@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import RegisterForm from "./register-form";
 import GoogleLoginButton from "@/components/custom/google-login-button";
 import Link from "next/link";
+import RegisterPhoneForm from "./register-phone-form";
 
 export default function Register() {
   return (
@@ -13,6 +14,10 @@ export default function Register() {
           </CardTitle>
         </CardHeader>
         <CardContent>
+          <RegisterPhoneForm />
+          <span className="w-full flex justify-center text-zinc-500 text-[14px] my-4">
+            or
+          </span>
           <RegisterForm />
           <span className="w-full flex justify-center text-zinc-500 text-[14px] my-4">
             or
