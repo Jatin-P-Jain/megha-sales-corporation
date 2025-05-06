@@ -56,7 +56,7 @@ export default function RegisterPhoneForm() {
       toast.success("OTP sent successfully", {
         description: "Otp has been sent to your mobile number. Please check.",
       });
-    } catch (e) {
+    } catch (e: unknown) {
       console.log({ e });
       toast.error("Error!", {
         description:

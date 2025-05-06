@@ -15,7 +15,6 @@ import {
 } from "firebase/auth";
 import { createContext, useContext, useEffect, useState } from "react";
 import { removeToken, setToken } from "./actions";
-import { useRecaptcha } from "@/hooks/useRecaptcha";
 
 type AuthContextType = {
   currentUser: User | null;
@@ -33,7 +32,7 @@ type AuthContextType = {
   ) => Promise<ConfirmationResult | undefined>;
   verifyOTP: (
     data: { otp: string },
-    confirmationResult: ConfirmationResult
+    confirmationResult: ConfirmationResult | undefined
   ) => Promise<void>;
   customClaims: ParsedToken | null;
 };
@@ -101,10 +100,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const verifyOTP = async (
     data: { otp: string; name?: string },
-    confirmationResult: ConfirmationResult
+    confirmationResult: ConfirmationResult | undefined
   ) => {
+    if (!confirmationResult) {
+      console.error("Confirmation result is not available");
+      return;
+    }
     const result = await confirmationResult.confirm(data.otp);
-    const user = result.user;
+    const user = result?.user;
     await updateProfile(user, {
       displayName: data?.name, // ← whatever name you want
     });

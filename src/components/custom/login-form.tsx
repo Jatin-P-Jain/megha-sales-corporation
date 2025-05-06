@@ -25,12 +25,15 @@ import { useAuth } from "@/context/auth";
 import GoogleLoginButton from "@/components/custom/google-login-button";
 import { useState } from "react";
 import { useRecaptcha } from "@/hooks/useRecaptcha";
+import { ConfirmationResult } from "firebase/auth";
 
 export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
   const auth = useAuth();
   useRecaptcha();
   const [otpSent, setOtpSent] = useState(false);
-  const [confirmationResult, setConfirmationResult] = useState<any>(null);
+  const [confirmationResult, setConfirmationResult] = useState<
+    ConfirmationResult | undefined
+  >(undefined);
 
   const mobileForm = useForm<z.infer<typeof loginUserMobileSchema>>({
     resolver: zodResolver(loginUserMobileSchema),
