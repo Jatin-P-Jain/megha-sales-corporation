@@ -22,13 +22,15 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth";
 import { useState } from "react";
-import { RecaptchaVerifier } from "firebase/auth";
+import { ConfirmationResult, RecaptchaVerifier } from "firebase/auth";
 
 export default function RegisterPhoneForm() {
   const auth = useAuth();
   const router = useRouter();
   const [otpSent, setOtpSent] = useState(false);
-  const [confirmationResult, setConfirmationResult] = useState<any>(null);
+  const [confirmationResult, setConfirmationResult] = useState<
+    ConfirmationResult | undefined
+  >(undefined);
   const [otpVerified, setOtpVerified] = useState(false);
 
   const form = useForm<z.infer<typeof registerUserPhoneSchema>>({

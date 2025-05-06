@@ -92,7 +92,7 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
             "No account found for this mobile number. Please REGISTER to continue.",
         });
       }
-    } catch (e) {
+    } catch (e: unknown) {
       console.log({ e });
       (e as { code?: string })?.code === "auth/user-not-found"
         ? mobileForm.setError("mobile", {
