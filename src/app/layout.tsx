@@ -9,7 +9,7 @@ import { Toaster } from "@/components/ui/sonner";
 import Image from "next/image";
 import BrandLogo from "../../public/brand-logo.svg";
 import { AuthProvider } from "@/context/auth";
-import PropertySearchLink from "@/components/custom/property-search-link";
+import AboutUsLink from "@/components/custom/about-us-link";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -54,7 +54,7 @@ export default function RootLayout({
             </Link>
             <ul className="flex flex-wrap gap-4 md:gap-6 items-center mt-2 md:mt-0">
               <li>
-                <PropertySearchLink />
+                <AboutUsLink />
               </li>
               <li>
                 <AuthButtons />

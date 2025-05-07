@@ -61,12 +61,12 @@ export default function AuthButtons() {
             )}
             {!auth.customClaims?.admin && (
               <DropdownMenuItem asChild>
-                <Link href="order-history">Order History</Link>
+                <Link href="/account/order-history">Order History</Link>
               </DropdownMenuItem>
             )}
             {!auth.customClaims?.admin && (
               <DropdownMenuItem asChild>
-                <Link href="/saved-items">Saved for Later</Link>
+                <Link href="/account/saved-items">Saved for Later</Link>
               </DropdownMenuItem>
             )}
             <DropdownMenuItem

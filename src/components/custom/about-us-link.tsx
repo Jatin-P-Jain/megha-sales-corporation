@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-export default function PropertySearchLink() {
+export default function AboutUsLink() {
   const [isLargeScreen, setIsLargeScreen] = useState(false);
 
   useEffect(() => {
@@ -21,7 +21,8 @@ export default function PropertySearchLink() {
 
   return (
     <Link
-      href="/property-search"
+      href="https://g.co/kgs/mHDnQXG"
+      target="_blank"
       className="text-sm md:text-base uppercase tracking-wider hover:underline"
     >
       About Us

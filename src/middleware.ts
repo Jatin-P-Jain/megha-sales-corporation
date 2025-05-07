@@ -13,6 +13,10 @@ export async function middleware(request: NextRequest) {
   // 2) Grab the token
   const cookieStore = await cookies();
   const token = cookieStore.get("firebaseAuthToken")?.value;
+  if (!token && pathname.startsWith("/account")) {
+    return NextResponse.redirect(new URL("/login", origin));
+    
+  }
 
   // 3) Public‐routes that never require login
   const publicPaths = ["/", "/login", "/register", "/property-search"];
@@ -22,10 +26,8 @@ export async function middleware(request: NextRequest) {
 
   // 4) If no token at all, send them to /login
   if (token === undefined) {
-    console.log("Token not found, redirecting to /login");
     return NextResponse.redirect(new URL("/login", origin));
   }
-
   // 5) Decode & check displayName
   const decoded = decodeJwt(token);
   const hasName =
@@ -78,7 +80,6 @@ export const config = {
     "/register",
     "/account",
     "/account/:path*",
-    "/property-search",
     "/get-user-details",
   ],
 };
