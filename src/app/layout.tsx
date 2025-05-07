@@ -45,9 +45,9 @@ export default function RootLayout({
               <div className="w-10 h-10 md:w-14 md:h-14 relative">
                 <Image src={BrandLogo} alt="" fill className="object-center" />
               </div>
-              <div className="flex flex-col text-sm md:text-bas">
-                <span className="mt-1 md:mt-2">Megha Sales</span>
-                <span className="text-xs md:text-sm flex items-center justify-center tracking-[2px] md:tracking-[6px]">
+              <div className="flex flex-col  text-sm md:text-lg md:tracking-[2px]">
+                <span className=" font-semibold mt-1 md:mt-2">Megha Sales</span>
+                <span className="text-xs md:text-sm flex items-center justify-center tracking-[2px] md:tracking-[4px]">
                   Corporation
                 </span>
               </div>
@@ -64,10 +64,7 @@ export default function RootLayout({
           {children}
           <Toaster richColors closeButton></Toaster>
         </AuthProvider>
-        <div
-          id="recaptcha-container"
-          style={{ display: "none", position: "absolute", top: 0, left: 0 }}
-        />
+        <div id="recaptcha-container" />
         <Analytics />
         <SpeedInsights />
       </body>

@@ -13,6 +13,7 @@ import {
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { set } from "zod";
 
 export default function AuthButtons() {
   const auth = useAuth();
@@ -62,7 +63,7 @@ export default function AuthButtons() {
             <DropdownMenuItem
               onClick={async () => {
                 await auth.logout();
-                router.push("/");
+                window.location.assign("/");
               }}
             >
               Logout
