@@ -45,7 +45,7 @@ export default async function PropertySearch({
 
   return (
     <div className="max-w-6xl mx-auto p-3 py-6">
-      <h1 className="text-2xl font-[600] text-sky-950 py-4 tracking-wide">
+      <h1 className="text-2xl font-[600] text-cyan-950 py-4 tracking-wide">
         Property Search
       </h1>
       <div className="flex flex-col gap-4">

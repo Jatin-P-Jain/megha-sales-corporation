@@ -37,25 +37,3 @@ export const registerUser = async (data: {
     };
   }
 };
-export const registerUserWithPhone = async (data: {
-  email?: string;
-  name: string;
-  mobile: string;
-}) => {
-  const validation = registerUserPhoneSchema.safeParse(data);
-  if (!validation.success) {
-    return {
-      error: true,
-      message: validation.error.issues[0]?.message ?? "An Error Occurred",
-    };
-  }
-  try {
-    await auth.createUser({
-      displayName: data.name,
-      email: data.email,
-      phoneNumber: "+91" + data.mobile,
-    });
-  } catch (e: unknown) {
-    console.log({ e });
-  }
-};

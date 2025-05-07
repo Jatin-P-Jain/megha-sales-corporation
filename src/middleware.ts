@@ -3,54 +3,70 @@ import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function middleware(request: NextRequest) {
+  const { pathname, origin, searchParams } = request.nextUrl;
+
+  // 1) Let POSTs through immediately
   if (request.method === "POST") {
     return NextResponse.next();
   }
+
+  // 2) Grab the token
   const cookieStore = await cookies();
   const token = cookieStore.get("firebaseAuthToken")?.value;
 
-  if (
-    !token &&
-    (request.nextUrl.pathname.startsWith("/login") ||
-      request.nextUrl.pathname.startsWith("/register") ||
-      request.nextUrl.pathname.startsWith("/property-search"))
-  ) {
+  // 3) Public‐routes that never require login
+  const publicPaths = ["/", "/login", "/register", "/property-search"];
+  if (!token && publicPaths.some((p) => pathname.startsWith(p))) {
     return NextResponse.next();
   }
-  if (
-    token &&
-    (request.nextUrl.pathname.startsWith("/login") ||
-      request.nextUrl.pathname.startsWith("/register"))
-  ) {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
-  if (!token) {
-    return NextResponse.redirect(new URL("/", request.url));
+
+  // 4) If no token at all, send them to /login
+  if (token === undefined) {
+    console.log("Token not found, redirecting to /login");
+    return NextResponse.redirect(new URL("/login", origin));
   }
 
-  const decodedToken = decodeJwt(token);
-  if (decodedToken?.exp && (decodedToken?.exp - 5 * 60) * 1000 < Date.now()) {
+  // 5) Decode & check displayName
+  const decoded = decodeJwt(token);
+  const hasName =
+    typeof decoded.name === "string" && decoded.name.trim().length > 0;
+
+  // 6) Always allow the “get-user-details” page when logged in
+  const isDetailsPage = pathname.startsWith("/get-user-details");
+
+  // 7) If they’re missing a name, force them to details
+  if (!hasName && !isDetailsPage) {
+    // Preserve where they originally wanted to go
+    const redirectTo = encodeURIComponent(pathname + request.nextUrl.search);
     return NextResponse.redirect(
-      new URL(
-        `/api/refresh-token?redirect=${encodeURIComponent(
-          request.nextUrl.pathname
-        )}`,
-        request.url
-      )
+      new URL(`/get-user-details?redirect=${redirectTo}`, origin)
     );
   }
-  if (
-    !decodedToken.admin &&
-    request.nextUrl.pathname.startsWith("/admin-dashboard")
-  ) {
-    return NextResponse.redirect(new URL("/", request.url));
+
+  // 8) If they now have a name but somehow hit details, send them home
+  if (hasName && isDetailsPage) {
+    // If you passed a redirect param, use it; otherwise just go “/”
+    const back = searchParams.get("redirect");
+    return NextResponse.redirect(new URL(back ?? "/", origin));
   }
-  if (
-    decodedToken.admin &&
-    request.nextUrl.pathname.startsWith("/account/my-favourites")
-  ) {
-    return NextResponse.redirect(new URL("/", request.url));
+
+  // 9) Now continue with your expiry check, admin guards, etc.
+  if (decoded.exp && (decoded.exp - 5 * 60) * 1000 < Date.now()) {
+    const redirectTo = encodeURIComponent(pathname + request.nextUrl.search);
+    return NextResponse.redirect(
+      new URL(`/api/refresh-token?redirect=${redirectTo}`, origin)
+    );
   }
+
+  // 10) Admin vs user guards
+  if (!decoded.admin && pathname.startsWith("/admin-dashboard")) {
+    return NextResponse.redirect(new URL("/", origin));
+  }
+  if (decoded.admin && pathname.startsWith("/account/my-favourites")) {
+    return NextResponse.redirect(new URL("/", origin));
+  }
+
+  // 11) All clear
   return NextResponse.next();
 }
 
@@ -63,5 +79,6 @@ export const config = {
     "/account",
     "/account/:path*",
     "/property-search",
+    "/get-user-details",
   ],
 };

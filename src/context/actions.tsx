@@ -17,9 +17,19 @@ export const setToken = async (token: string, refreshToken: string) => {
     }
     const userRecord = await auth.getUser(verifiedToken.uid);
     const adminEmails = process.env.ADMIN_EMAILS?.split(",") || [];
+    const adminPhoneNumbers = process.env.ADMIN_PHONES?.split(",") || [];
     if (
       userRecord.email &&
       adminEmails.includes(userRecord.email) &&
+      !userRecord.customClaims?.admin
+    ) {
+      auth.setCustomUserClaims(userRecord.uid, {
+        admin: true,
+      });
+    }
+    if (
+      userRecord.phoneNumber &&
+      adminPhoneNumbers.includes(userRecord.phoneNumber) &&
       !userRecord.customClaims?.admin
     ) {
       auth.setCustomUserClaims(userRecord.uid, {

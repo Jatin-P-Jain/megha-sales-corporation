@@ -32,7 +32,7 @@ export default function AuthButtons() {
                   height={70}
                 />
               )}
-              <AvatarFallback className="bg-sky-800 border-2">
+              <AvatarFallback className="bg-cyan-800 border-2">
                 {(auth.currentUser.displayName || auth.currentUser.email)?.[0]}
               </AvatarFallback>
             </Avatar>
@@ -46,22 +46,23 @@ export default function AuthButtons() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href="/account">My Account</Link>
+              <Link href="#">My Account</Link>
             </DropdownMenuItem>
             {!!auth.customClaims?.admin && (
               <DropdownMenuItem asChild>
-                <Link href="/admin-dashboard">Admin Dashboard</Link>
+                <Link href="#">Order History</Link>
               </DropdownMenuItem>
             )}
             {!auth.customClaims?.admin && (
               <DropdownMenuItem asChild>
-                <Link href="/account/my-favourites">My Favourites</Link>
+                {/* <Link href="/account/my-favourites">My Favourites</Link> */}
+                <Link href="#">My Favourites</Link>
               </DropdownMenuItem>
             )}
             <DropdownMenuItem
               onClick={async () => {
                 await auth.logout();
-                router.refresh();
+                router.push("/");
               }}
             >
               Logout

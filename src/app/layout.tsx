@@ -33,7 +33,9 @@ export default function RootLayout({
         name="viewport"
         content="width=device-width, initial-scale=1, height=device-height"
       />
-      <body className={`${poppins.className} antialiased min-h-[100dvh]`}>
+      <body
+        className={`${poppins.className} antialiased min-h-[100dvh] max-h-screen`}
+      >
         <AuthProvider>
           <nav className="bg-cyan-950 text-white p-3 px-10 flex flex-wrap justify-between items-center relative z-10">
             <Link

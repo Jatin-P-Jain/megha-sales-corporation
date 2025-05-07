@@ -43,18 +43,18 @@ export default async function Account() {
     <div>
       <Card className="w-full max-w-screen-sm mx-auto">
         <CardHeader>
-          <CardTitle className="text-2xl text-sky-950 font-semibold mb-4">
+          <CardTitle className="text-2xl text-cyan-950 font-semibold mb-4">
             My Account
           </CardTitle>
           <Label className="text-md text-normal">Email</Label>
-          <div className="text-sky-950 font-medium">{decodedToken?.email}</div>
+          <div className="text-cyan-950 font-medium">{decodedToken?.email}</div>
         </CardHeader>
 
         {isPasswordProvider && (
           <>
             <Separator />
             <CardContent>
-              <div className="text-md mb-5 font-semibold text-sky-950">
+              <div className="text-md mb-5 font-semibold text-cyan-950">
                 Update Your Password
               </div>
               <UpdatePasswordForm />

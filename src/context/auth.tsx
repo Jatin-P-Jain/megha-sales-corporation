@@ -33,7 +33,7 @@ type AuthContextType = {
   verifyOTP: (
     data: { otp: string },
     confirmationResult: ConfirmationResult | undefined
-  ) => Promise<void>;
+  ) => Promise<User | undefined>;
   customClaims: ParsedToken | null;
 };
 
@@ -64,13 +64,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = async () => {
     await auth.signOut();
-
-    if (window.recaptchaVerifier) {
-      try {
-        window.recaptchaVerifier.clear();
-      } catch {}
-    }
-    window.location.reload();
+   
   };
 
   const loginWithGoogle = async () => {
@@ -108,9 +102,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
     const result = await confirmationResult.confirm(data.otp);
     const user = result?.user;
-    await updateProfile(user, {
-      displayName: data?.name, // ← whatever name you want
-    });
+    return user;
   };
 
   return (

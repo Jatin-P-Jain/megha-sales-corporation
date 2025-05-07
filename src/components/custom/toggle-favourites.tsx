@@ -53,7 +53,7 @@ const FavouriteButton = ({
         <HeartIcon
           className={`${
             isFavourite ? "fill-red-500" : "transparent"
-          } stroke-sky-900`}
+          } stroke-cyan-900`}
           size="20"
         />
       ) : (

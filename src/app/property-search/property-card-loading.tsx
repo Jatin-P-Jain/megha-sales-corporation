@@ -5,7 +5,7 @@ export default function PropertyCardLoading() {
   return (
     <Card className="p-0 overflow-hidden relative">
       <CardContent className="p-0 ">
-        <div className="h-55 relative bg-sky-100 flex flex-col items-center justify-center">
+        <div className="h-55 relative bg-cyan-100 flex flex-col items-center justify-center">
           <Skeleton className="h-full w-full" />
         </div>
         <div className="flex flex-col p-5.5 gap-5">

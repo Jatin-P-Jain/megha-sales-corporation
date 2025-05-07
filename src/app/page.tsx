@@ -1,3 +1,4 @@
+import Greetings from "@/components/custom/greetings";
 import { Button } from "@/components/ui/button";
 import { SearchIcon } from "lucide-react";
 import Image from "next/image";
@@ -5,8 +6,8 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen -mt-16 h-screen w-full items-center justify-center flex-col gap-4 relative">
-      <Image
+    <main className="flex h-full flex-col p-5 items-center justify-center">
+      {/* <Image
         src="/hero.jpg"
         alt="Logo"
         fill
@@ -27,7 +28,8 @@ export default function Home() {
             <span>Explore Now</span>
           </Link>
         </Button>
-      </div>
+      </div> */}
+      <Greetings />
     </main>
   );
 }

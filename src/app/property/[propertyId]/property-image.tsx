@@ -23,7 +23,7 @@ export default function PropertyImage({
     <>
       {!loaded && (
         <div className="absolute inset-0 flex items-center justify-center z-10 bg-gray-100/50">
-          <Loader2 className="h-12 w-12 animate-spin text-sky-900" />
+          <Loader2 className="h-12 w-12 animate-spin text-cyan-900" />
         </div>
       )}
       <Image

@@ -17,16 +17,18 @@ type ButtonProps = {
     | undefined;
   className?: string;
   onSuccess?: () => void;
+  buttonText?: string;
 };
 
 export default function GoogleLoginButton({
   variant,
   className,
   onSuccess,
+  buttonText = "Continue with Google",
 }: ButtonProps) {
   const auth = useAuth();
   const router = useRouter();
-  const combinedClassName = `flex mx-auto rounded-4xl w-[80%] max-w-sm cursor-pointer ${
+  const combinedClassName = `flex mx-auto rounded-4xl w-[80%] cursor-pointer ${
     className ? className : ""
   }`;
   return (
@@ -49,9 +51,9 @@ export default function GoogleLoginButton({
       <Image
         src={GoogleIcon}
         alt=""
-        className="relative w-7 h-7 max-w-7 max-h-7"
+        className="relative w-8 h-8 max-w-8 max-h-8 "
       />
-      Continue with Google
+      {buttonText}
     </Button>
   );
 }

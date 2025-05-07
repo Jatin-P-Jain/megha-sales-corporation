@@ -49,7 +49,7 @@ export default async function PropertyGrid({
             return (
               <Card key={property.id} className="p-0 overflow-hidden relative">
                 <CardContent className="p-0 ">
-                  <div className="h-55 relative bg-sky-100 flex flex-col items-center justify-center text-black/40">
+                  <div className="h-55 relative bg-cyan-100 flex flex-col items-center justify-center text-black/40">
                     {(!verifiedToken || !verifiedToken.admin) && (
                       <FavouriteButton
                         propertyId={property.id}
@@ -71,15 +71,15 @@ export default async function PropertyGrid({
                     )}
                   </div>
                   <div className="flex flex-col p-5.5 gap-5">
-                    <div className="text-sky-900 font-medium tracking-wide line-clamp-2">
+                    <div className="text-cyan-900 font-medium tracking-wide line-clamp-2">
                       {addressLine}
                     </div>
                     <div className="flex gap-6 ">
-                      <div className="flex text-sky-900 font-medium gap-2">
+                      <div className="flex text-cyan-900 font-medium gap-2">
                         <BedIcon />
                         {property.bedrooms}
                       </div>
-                      <div className="flex text-sky-900 font-medium gap-2">
+                      <div className="flex text-cyan-900 font-medium gap-2">
                         <BathIcon />
                         {property.bathrooms}
                       </div>
@@ -102,7 +102,7 @@ export default async function PropertyGrid({
         </div>
       )}
       {data.length === 0 && (
-        <div className="text-center text-sky-900 font-medium">
+        <div className="text-center text-cyan-900 font-medium">
           No properties found
         </div>
       )}

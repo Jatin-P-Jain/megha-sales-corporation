@@ -15,7 +15,7 @@ export default function Description({ description }: { description: string }) {
       </div>
       <Button
         variant={"link"}
-        className=" text-sky-900 text-sm font-medium cursor-pointer mb-8 p-0 no-underline"
+        className=" text-cyan-900 text-sm font-medium cursor-pointer mb-8 p-0 no-underline"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         {isExpanded ? "See less" : "See more"}

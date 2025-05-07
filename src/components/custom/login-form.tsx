@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
 import {
@@ -26,9 +26,13 @@ import GoogleLoginButton from "@/components/custom/google-login-button";
 import { useState } from "react";
 import { useRecaptcha } from "@/hooks/useRecaptcha";
 import { ConfirmationResult } from "firebase/auth";
+import OTPInput from "./otp-input";
+import CollapsibleLoginForm from "./collapsible-login-form";
+import { useRouter } from "next/navigation";
 
 export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
   const auth = useAuth();
+  const router = useRouter();
   useRecaptcha();
   const [otpSent, setOtpSent] = useState(false);
   const [confirmationResult, setConfirmationResult] = useState<
@@ -47,13 +51,7 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
       otp: "",
     },
   });
-  const form = useForm<z.infer<typeof loginUserSchema>>({
-    resolver: zodResolver(loginUserSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  });
+
   const handleMobileSubmit = async (
     data: z.infer<typeof loginUserMobileSchema>
   ) => {
@@ -69,50 +67,33 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
     const appVerifier = window.recaptchaVerifier;
     if (!appVerifier) {
       console.error("AppVerifier not ready");
+
       return;
     }
     try {
-      const phoneRes = await fetch("/api/user/check-phone", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: data?.mobile }),
+      const confirmation = await auth?.handleSendOTP(data, appVerifier);
+      setOtpSent(true);
+      setConfirmationResult(confirmation);
+      toast.success("OTP sent successfully", {
+        description: "Otp has been sent to your mobile number. Please check.",
       });
-      const { exists } = await phoneRes.json();
-      if (exists) {
-        const confirmation = await auth?.handleSendOTP(data, appVerifier);
-        setOtpSent(true);
-        setConfirmationResult(confirmation);
-        toast.success("OTP sent successfully", {
-          description: "Otp has been sent to your mobile number. Please check.",
-        });
-      } else {
-        mobileForm.setError("mobile", {
-          type: "manual",
-          message:
-            "No account found for this mobile number. Please REGISTER to continue.",
-        });
-      }
     } catch (e: unknown) {
       console.log({ e });
-      if ((e as { code?: string }).code === "auth/user-not-found") {
-        mobileForm.setError("mobile", {
-          type: "manual",
-          message: "No account exists with this mobile number.",
-        });
-      } else {
-        toast.error("Error!", {
-          description:
-            "There is no user record corresponding to the provided identifier.",
-        });
-      }
     }
   };
   const handleVerifyOTP = async (data: { otp: string }) => {
     console.log(data.otp);
     console.log({ confirmationResult });
     try {
-      await auth?.verifyOTP(data, confirmationResult);
-      onSuccess?.();
+      const user = await auth?.verifyOTP(data, confirmationResult);
+      if (user?.displayName) {
+        console.log("User already exists");
+        onSuccess?.();
+      } else {
+        console.log("User does not exist");
+
+        router.push("/get-user-details");
+      }
     } catch (e: unknown) {
       console.log({ e });
       mobileOtpForm.setError("otp", {
@@ -134,29 +115,6 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
     }
   };
 
-  const handleSubmit = async (data: z.infer<typeof loginUserSchema>) => {
-    const validation = loginUserSchema.safeParse(data);
-    if (!validation.success) {
-      return {
-        error: true,
-        message: validation.error.issues[0]?.message ?? "An Error Occurred",
-      };
-    }
-
-    try {
-      await auth?.loginWithEmailAndPassword(data);
-      onSuccess?.();
-    } catch (e: unknown) {
-      console.log({ e });
-
-      toast.error("Error!", {
-        description:
-          (e as { code?: string })?.code === "auth/invalid-credential"
-            ? "Invalid Credential"
-            : "An error occurred",
-      });
-    }
-  };
   return (
     <div>
       {otpSent ? (
@@ -173,7 +131,17 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
                   <FormItem>
                     <FormLabel>Enter the One Time Password</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Otp here" />
+                      <Controller
+                        name={field.name}
+                        control={mobileOtpForm.control}
+                        render={({ field: { value, onChange } }) => (
+                          <OTPInput
+                            value={value}
+                            onChange={onChange}
+                            length={6}
+                          />
+                        )}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -225,71 +193,18 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
       <span className="w-full flex justify-center text-zinc-500 text-[14px] my-4">
         or
       </span>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)}>
-          <fieldset
-            className="flex flex-col gap-5"
-            disabled={form.formState.isSubmitting}
-          >
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => {
-                return (
-                  <FormItem>
-                    <FormLabel>Your Email</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Your Email" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                );
-              }}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => {
-                return (
-                  <FormItem>
-                    <FormLabel>Your Password</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="Your Password"
-                        type="password"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                    <div className="flex gap-2 items-center text-sm">
-                      Forgot your password?
-                      <Link
-                        href={"/forgot-password"}
-                        className="text-sky-900 underline"
-                      >
-                        Reset it here.
-                      </Link>
-                    </div>
-                  </FormItem>
-                );
-              }}
-            />
-            <Button
-              type="submit"
-              className="w-full uppercase tracking-wide cursor-pointer"
-            >
-              Login
-            </Button>
-          </fieldset>
-        </form>
-      </Form>
+      <GoogleLoginButton
+        variant={"outline"}
+        onSuccess={onSuccess}
+        className="w-full rounded-2xl py-6 shadow-sm text-md font-bold"
+      />
       <span className="w-full flex justify-center text-zinc-500 text-[14px] my-4">
         or
       </span>
-      <GoogleLoginButton variant={"outline"} onSuccess={onSuccess} />
-      <div className="flex gap-2 justify-center items-center mt-4 text-sm">
+      <CollapsibleLoginForm />
+      <div className="flex gap-2 justify-center items-center mt-4 text-xs md:text-sm">
         Don&apos;t have an account?
-        <Link href={"/register"} className="text-sky-900 underline">
+        <Link href={"/register"} className="text-cyan-900 underline">
           Register here.
         </Link>
       </div>

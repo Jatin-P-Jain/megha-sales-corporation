@@ -9,9 +9,7 @@ const MyFavourites = async ({
   searchParams: Promise<{ page?: string }>;
 }) => {
   const searchParamsValues = await searchParams;
-  const page = searchParamsValues.page
-    ? parseInt(searchParamsValues?.page)
-    : 1;
+  const page = searchParamsValues.page ? parseInt(searchParamsValues?.page) : 1;
   const pageSize = 2;
   const favourites = await getUserFavourites();
   const allFavourites = Object.keys(favourites);
@@ -27,7 +25,7 @@ const MyFavourites = async ({
 
   return (
     <div className="flex flex-col">
-      <h1 className="text-3xl text-sky-950 font-semibold">My Favourites</h1>
+      <h1 className="text-3xl text-cyan-950 font-semibold">My Favourites</h1>
       <PropertiesTable
         data={favouritesData}
         totalPages={totalPages}

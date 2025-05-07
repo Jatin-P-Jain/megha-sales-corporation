@@ -9,7 +9,7 @@ export default function LoginForm() {
   return (
     <CommonLoginForm
       onSuccess={() => {
-        router.refresh();
+        router.push("/");
       }}
     />
   );

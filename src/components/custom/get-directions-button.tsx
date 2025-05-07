@@ -40,7 +40,7 @@ export default function GetDirectionsButton({
     <a href={mapsUrl} target="_blank" rel="noopener noreferrer">
       <Button
         variant={"outline"}
-        className=" !p-0 text-md shadow-none focus:outline-none focus:ring-0 border-0 text-sky-900 "
+        className=" !p-0 text-md shadow-none focus:outline-none focus:ring-0 border-0 text-cyan-900 "
       >
         <Send />
         Get Directions
