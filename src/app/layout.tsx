@@ -37,17 +37,17 @@ export default function RootLayout({
         className={`${poppins.className} antialiased min-h-[100dvh] max-h-screen`}
       >
         <AuthProvider>
-          <nav className="bg-cyan-950 text-white p-3 px-10 flex flex-wrap justify-between items-center relative z-10">
+          <nav className="bg-cyan-950 text-white p-3 px-3 md:px-6 lg:px-10 flex flex-wrap justify-between items-center relative z-10">
             <Link
               href={"/"}
-              className="flex items-center text-lg md:text-2xl tracking-wider gap-4 uppercase justify-end"
+              className="flex items-center text-lg md:text-2xl tracking-wider gap-2 md:gap-4 uppercase justify-end"
             >
-              <div className="w-8 h-8 md:w-14 md:h-14 relative">
+              <div className="w-10 h-10 md:w-14 md:h-14 relative">
                 <Image src={BrandLogo} alt="" fill className="object-center" />
               </div>
-              <div className="flex flex-col">
+              <div className="flex flex-col text-sm md:text-bas">
                 <span className="mt-1 md:mt-2">Megha Sales</span>
-                <span className="text-sm flex items-center justify-center tracking-[6px]">
+                <span className="text-xs md:text-sm flex items-center justify-center tracking-[2px] md:tracking-[6px]">
                   Corporation
                 </span>
               </div>

@@ -192,7 +192,7 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
       <GoogleLoginButton
         variant={"outline"}
         onSuccess={onSuccess}
-        className="w-full rounded-2xl py-6 shadow-sm text-md font-bold"
+        className=""
       />
       <span className="w-full flex justify-center text-zinc-500 text-[14px] my-4">
         or

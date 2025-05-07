@@ -46,14 +46,14 @@ const OTPInput: FC<OTPInputProps> = ({ length = 6, value, onChange }) => {
   };
 
   return (
-    <div className="flex gap-4 justify-center items-center mt-4">
+    <div className="flex gap-3 md:gap-4 justify-center items-center mt-4 max-w-screen w-full md:w-3/4 mx-auto">
       {Array.from({ length }).map((_, i) => (
         <Input
           key={i}
           type="tel"
           inputMode="numeric"
           maxLength={1}
-          className="w-12 h-12 text-center !text-xl"
+          className="flex-1 min-w-0 text-center text-lg md:text-xl"
           ref={(el) => {
             inputsRef.current[i] = el ?? null;
           }}

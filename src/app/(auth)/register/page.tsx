@@ -18,7 +18,7 @@ export default function Register() {
             or
           </span>
           <GoogleLoginButton variant={"outline"} />
-          <div className="flex gap-2 justify-center items-center mt-4 text-sm">
+          <div className="flex gap-2 justify-center items-center mt-4 text-xs md:text-sm">
             Already have an account?{" "}
             <Link href={"/login"} className="text-cyan-900 underline">
               Login to your account

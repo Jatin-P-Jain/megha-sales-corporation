@@ -23,7 +23,7 @@ export default function AuthButtons() {
       {!!auth?.currentUser && (
         <DropdownMenu>
           <DropdownMenuTrigger>
-            <Avatar className="mr-4">
+            <Avatar className="">
               {!!auth?.currentUser?.photoURL && (
                 <Image
                   src={auth?.currentUser?.photoURL}
@@ -71,7 +71,7 @@ export default function AuthButtons() {
         </DropdownMenu>
       )}
       {!auth?.currentUser && (
-        <div className="flex gap-4 items-center">
+        <div className="flex gap-2 md:gap-4 items-center text-sm md:text-base">
           <Link href={"/login"} className="uppercase hover:underline">
             Login
           </Link>

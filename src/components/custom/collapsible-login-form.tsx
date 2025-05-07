@@ -56,8 +56,10 @@ const CollapsibleLoginForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   return (
     <div className="flex flex-col items-center justify-center">
       <Card className="w-full mx-auto p-2 gap-0">
-        <CardHeader className="flex items-center justify-between ">
-          <CardTitle className="">Continue with Email and Password</CardTitle>
+        <CardHeader className="flex items-center justify-between px-2 md:p-2">
+          <CardTitle className="text-xs sm:text-sm md:text-base font-semibold">
+            Continue with Email and Password
+          </CardTitle>
 
           <Button variant="link" size="icon" onClick={() => setOpen(!open)}>
             {open ? (
@@ -70,7 +72,7 @@ const CollapsibleLoginForm = ({ onSuccess }: { onSuccess?: () => void }) => {
         <CardContent
           className={`${
             open
-              ? "max-h-[1000px] opacity-100 py-4"
+              ? "max-h-[1000px] opacity-100 p-2 md:py-4"
               : "max-h-0 opacity-0 display-none"
           } transition-all duration-300 ease-in-out `}
         >
