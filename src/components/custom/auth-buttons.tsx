@@ -13,11 +13,9 @@ import {
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { set } from "zod";
 
 export default function AuthButtons() {
   const auth = useAuth();
-  const router = useRouter();
 
   return (
     <div>
