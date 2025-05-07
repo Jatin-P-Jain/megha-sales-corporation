@@ -36,10 +36,16 @@ export default function AuthButtons() {
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="mr-4">
-            <DropdownMenuLabel>
+            <DropdownMenuLabel className="flex flex-col items-start gap-1">
               <div>{auth.currentUser.displayName}</div>
               <div className="font-normal text-xs">
                 {auth.currentUser.email}
+              </div>
+              <div className="font-normal text-xs">
+                +91- 
+                <span className="font-semibold">
+                  {auth.currentUser.phoneNumber?.split("+91")[1]}
+                </span>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
