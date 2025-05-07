@@ -9,7 +9,6 @@ import {
   signInWithEmailAndPassword,
   signInWithPhoneNumber,
   signInWithPopup,
-  updateProfile,
   User,
   UserCredential,
 } from "firebase/auth";
@@ -64,7 +63,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = async () => {
     await auth.signOut();
-   
   };
 
   const loginWithGoogle = async () => {

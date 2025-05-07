@@ -14,11 +14,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
-import {
-  loginUserMobileSchema,
-  loginUserSchema,
-  mobileOtpSchema,
-} from "@/validation/loginUser";
+import { loginUserMobileSchema, mobileOtpSchema } from "@/validation/loginUser";
 
 import Link from "next/link";
 import { useAuth } from "@/context/auth";

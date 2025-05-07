@@ -29,7 +29,7 @@ interface NameFormProps {
   onSuccess?: () => void;
 }
 
-export function NameForm({ user, onSuccess }: NameFormProps) {
+export function NameForm({ user }: NameFormProps) {
   const router = useRouter();
   // Initialize react-hook-form with Zod resolver
   const form = useForm<NameFormValues>({
