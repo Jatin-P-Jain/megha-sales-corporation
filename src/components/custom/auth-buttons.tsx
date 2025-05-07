@@ -41,26 +41,32 @@ export default function AuthButtons() {
               <div className="font-normal text-xs">
                 {auth.currentUser.email}
               </div>
-              <div className="font-normal text-xs">
-                +91- 
-                <span className="font-semibold">
-                  {auth.currentUser.phoneNumber?.split("+91")[1]}
-                </span>
-              </div>
+              {auth.currentUser.phoneNumber && (
+                <div className="font-normal text-xs">
+                  +91-
+                  <span className="font-semibold">
+                    {auth.currentUser.phoneNumber?.split("+91")[1]}
+                  </span>
+                </div>
+              )}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href="#">My Account</Link>
+              <Link href="/account">My Account</Link>
             </DropdownMenuItem>
             {!!auth.customClaims?.admin && (
               <DropdownMenuItem asChild>
-                <Link href="#">Order History</Link>
+                <Link href="/admin-dashboard">Admin Dashboard</Link>
               </DropdownMenuItem>
             )}
             {!auth.customClaims?.admin && (
               <DropdownMenuItem asChild>
-                {/* <Link href="/account/my-favourites">My Favourites</Link> */}
-                <Link href="#">My Favourites</Link>
+                <Link href="order-history">Order History</Link>
+              </DropdownMenuItem>
+            )}
+            {!auth.customClaims?.admin && (
+              <DropdownMenuItem asChild>
+                <Link href="/saved-items">Saved for Later</Link>
               </DropdownMenuItem>
             )}
             <DropdownMenuItem
