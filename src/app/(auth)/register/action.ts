@@ -1,10 +1,7 @@
 "use server";
 
 import { auth } from "@/firebase/server";
-import {
-  registerUserPhoneSchema,
-  registerUserSchema,
-} from "@/validation/registerUser";
+import { registerUserSchema } from "@/validation/registerUser";
 
 export const registerUser = async (data: {
   email: string;

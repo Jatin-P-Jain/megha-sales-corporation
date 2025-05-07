@@ -1,11 +1,9 @@
 "use client";
 import { useRouter } from "next/navigation";
 
-import CommonLoginForm from "@/components/custom/login-form";
 import { NameForm } from "@/components/custom/name-form";
 import { useAuth } from "@/context/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import GoogleLoginButton from "@/components/custom/google-login-button";
 
 export default function GetUserDetails() {
   const auth = useAuth();
