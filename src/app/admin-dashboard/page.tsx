@@ -12,20 +12,20 @@ const AdminDashboard = async ({
 }) => {
   const searchParamsValue = await searchParams;
   const page = searchParamsValue?.page ? parseInt(searchParamsValue.page) : 1;
-  const { data, totalPages } = await getProperties({
-    pagination: { page, pageSize: 5 },
-  });
+  // const { data, totalPages } = await getProperties({
+  //   pagination: { page, pageSize: 5 },
+  // });
   return (
     <div>
-      <Breadcrumbs items={[{ label: "Dashboard" }]}></Breadcrumbs>
+      <Breadcrumbs items={[{ label: "Admin Dashboard" }]}></Breadcrumbs>
       <h1 className="text-4xl font-bold mt-6">Admin Dashboard</h1>
       <Button className="inline-flex gap-2 mt-6" asChild>
-        <Link href="/admin-dashboard/new-property">
+        <Link href="/admin-dashboard/new-product">
           <PlusCircleIcon />
-          New Property
+          Add New Product
         </Link>
       </Button>
-      <PropertiesTable data={data} totalPages={totalPages} page={page} />
+      {/* <PropertiesTable data={data} totalPages={totalPages} page={page} /> */}
     </div>
   );
 };
