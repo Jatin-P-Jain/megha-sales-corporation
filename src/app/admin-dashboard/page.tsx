@@ -2,8 +2,8 @@ import { Breadcrumbs } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { PlusCircleIcon } from "lucide-react";
 import Link from "next/link";
-import PropertiesTable from "../../components/custom/properties-table";
-import { getProperties } from "@/data/properties";
+// import PropertiesTable from "../../components/custom/properties-table";
+// import { getProperties } from "@/data/properties";
 
 const AdminDashboard = async ({
   searchParams,
