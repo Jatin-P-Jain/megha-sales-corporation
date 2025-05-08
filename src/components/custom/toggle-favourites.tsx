@@ -26,7 +26,7 @@ const FavouriteButton = ({
         try {
           const tokenResult = await auth?.currentUser?.getIdTokenResult();
           if (!tokenResult) {
-            router.push("/login");
+            window.location.assign("/login");
             setLoading(false);
             return;
           }

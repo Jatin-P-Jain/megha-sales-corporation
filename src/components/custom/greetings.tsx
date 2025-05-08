@@ -31,6 +31,11 @@ const Greetings: React.FC = () => {
             <Link href={"/login"}>Login</Link>
           </Button>
         )}
+        {isAdmin && (
+          <Button className="w-full" asChild>
+            <Link href={"/admin-dashboard"}>Admin Dashboard</Link>
+          </Button>
+        )}
         <Button className="w-full" asChild>
           <Link href={"/product-search"}>Explore Products</Link>
         </Button>

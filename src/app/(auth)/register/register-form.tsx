@@ -37,7 +37,7 @@ export default function RegisterForm() {
       toast.success("Success!", {
         description: "Your account has been created successfully!",
       });
-      router.push("/login");
+      window.location.assign("/login");
     }
   };
   return (

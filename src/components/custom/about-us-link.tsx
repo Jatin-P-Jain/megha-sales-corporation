@@ -17,7 +17,6 @@ export default function AboutUsLink() {
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
-  if (!isLargeScreen) return null;
 
   return (
     <Link

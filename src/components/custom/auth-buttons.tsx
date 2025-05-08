@@ -80,7 +80,7 @@ export default function AuthButtons() {
           </DropdownMenuContent>
         </DropdownMenu>
       )}
-      {!auth?.currentUser && (
+      {/* {!auth?.currentUser && (
         <div className="flex gap-2 md:gap-4 items-center text-sm md:text-base">
           <Link href={"/login"} className="uppercase hover:underline">
             Login
@@ -90,7 +90,7 @@ export default function AuthButtons() {
             Signup
           </Link>
         </div>
-      )}
+      )} */}
     </div>
   );
 }

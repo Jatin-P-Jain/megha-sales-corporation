@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import RegisterForm from "./register-form";
 import GoogleLoginButton from "@/components/custom/google-login-button";
 import Link from "next/link";
+import LoginLink from "@/components/custom/login-link";
 
 export default function Register() {
   return (
@@ -19,10 +20,7 @@ export default function Register() {
           </span>
           <GoogleLoginButton variant={"outline"} />
           <div className="flex gap-2 justify-center items-center mt-4 text-xs md:text-sm">
-            Already have an account?{" "}
-            <Link href={"/login"} className="text-cyan-900 underline">
-              Login to your account
-            </Link>
+            Already have an account? <LoginLink />
           </div>
         </CardContent>
       </Card>
