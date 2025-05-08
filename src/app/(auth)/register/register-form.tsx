@@ -16,10 +16,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { registerUser } from "./action";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 
 export default function RegisterForm() {
-  const router = useRouter();
   const form = useForm<z.infer<typeof registerUserSchema>>({
     resolver: zodResolver(registerUserSchema),
     defaultValues: {

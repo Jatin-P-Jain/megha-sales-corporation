@@ -1,7 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import RegisterForm from "./register-form";
 import GoogleLoginButton from "@/components/custom/google-login-button";
-import Link from "next/link";
 import LoginLink from "@/components/custom/login-link";
 
 export default function Register() {
