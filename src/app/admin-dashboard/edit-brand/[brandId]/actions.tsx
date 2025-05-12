@@ -1,12 +1,12 @@
 "use server";
 
 import { auth, fireStore } from "@/firebase/server";
-import { Property } from "@/types/property";
-import { propertyDataSchema } from "@/validation/propertySchema";
+import { Brand } from "@/types/brand";
+import { brandDataSchema } from "@/validation/brandSchema";
 import { revalidatePath } from "next/cache";
 
-export const updateProperty = async (data: Property, authToken: string) => {
-  const { id, ...propertyData } = data;
+export const updateBrand = async (data: Brand, authToken: string) => {
+  const { id, totalProducts, brandLogo, brandMedia, ...brandData } = data;
   const verifiedToken = await auth.verifyIdToken(authToken);
   if (!verifiedToken.admin) {
     return {
@@ -15,7 +15,7 @@ export const updateProperty = async (data: Property, authToken: string) => {
     };
   }
 
-  const validation = propertyDataSchema.safeParse(propertyData);
+  const validation = brandDataSchema.safeParse(brandData);
   if (!validation.success) {
     return {
       error: true,
@@ -24,9 +24,9 @@ export const updateProperty = async (data: Property, authToken: string) => {
   }
 
   await fireStore
-    .collection("properties")
+    .collection("brands")
     .doc(id)
-    .update({ ...propertyData, updated: new Date() });
+    .update({ ...brandData, updated: new Date() });
 
-  revalidatePath(`/property/${id}`);
+  revalidatePath(`/brands/${id}`);
 };

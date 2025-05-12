@@ -15,7 +15,6 @@ export async function middleware(request: NextRequest) {
   const token = cookieStore.get("firebaseAuthToken")?.value;
   if (!token && pathname.startsWith("/account")) {
     return NextResponse.redirect(new URL("/login", origin));
-    
   }
 
   // 3) Public‐routes that never require login
@@ -63,6 +62,9 @@ export async function middleware(request: NextRequest) {
   // 10) Admin vs user guards
   if (!decoded.admin && pathname.startsWith("/admin-dashboard")) {
     return NextResponse.redirect(new URL("/", origin));
+  }
+  if (decoded.admin && pathname === "/admin-dashboard") {
+    return NextResponse.redirect(new URL("/admin-dashboard/brands", origin));
   }
   if (decoded.admin && pathname.startsWith("/account/my-favourites")) {
     return NextResponse.redirect(new URL("/", origin));

@@ -1,37 +1,44 @@
 "use client";
 
-import PropertyForm from "@/components/custom/property-form";
-import { propertySchema } from "../../../validation/propertySchema";
+import ProductForm from "@/components/custom/product-form";
+import { productSchema } from "@/validation/productSchema";
+
 import { z } from "zod";
 import { PlusCircleIcon } from "lucide-react";
 import { useAuth } from "@/context/auth";
-import { createProperty } from "./actions";
+
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { ref, uploadBytesResumable, UploadTask } from "firebase/storage";
 import { storage } from "@/firebase/client";
-import { savePropertyImages } from "../actions";
+import { createProduct } from "./actions";
+import { saveProductMedia, updateBrandProcuctCount } from "../actions";
+import { Brand } from "@/types/brand";
 
-export default function NewPropertyForm() {
+export default function NewProductForm({ brand }: { brand: Brand }) {
   const auth = useAuth();
   const router = useRouter();
-  const handleSubmit = async (data: z.infer<typeof propertySchema>) => {
+  const handleSubmit = async (data: z.infer<typeof productSchema>) => {
     const token = await auth?.currentUser?.getIdToken();
     if (!token) {
       return;
     }
     const { images, ...rest } = data;
-    const saveResponse = await createProperty(rest, token);
-    if (!!saveResponse.error || !saveResponse.propertyId) {
+    const saveResponse = await createProduct(rest, token);
+    if (!!saveResponse.error || !saveResponse.productId) {
       toast.error("Error!", { description: saveResponse.error });
       return;
     }
+    await updateBrandProcuctCount(
+      { brandId: brand.id, totalProducts: brand.totalProducts + 1 },
+      token
+    );
     const uploadTasks: UploadTask[] = [];
     const paths: string[] = [];
     images.forEach((image, index) => {
       if (image.file) {
-        const path = `properties/${
-          saveResponse.propertyId
+        const path = `products/${
+          saveResponse.productId
         }/${Date.now()}-${index}-${image.file.name}`;
         paths.push(path);
         const storageRef = ref(storage, path);
@@ -39,8 +46,8 @@ export default function NewPropertyForm() {
       }
     });
     await Promise.all(uploadTasks);
-    await savePropertyImages(
-      { propertyId: saveResponse.propertyId, images: paths },
+    await saveProductMedia(
+      { productId: saveResponse.productId, media: paths },
       token
     );
     toast.success("Success", { description: "Property Created" });
@@ -48,12 +55,13 @@ export default function NewPropertyForm() {
   };
   return (
     <div>
-      <PropertyForm
+      <ProductForm
+        brand={brand}
         handleSubmit={handleSubmit}
         submitButtonLabel={
           <>
             <PlusCircleIcon />
-            Create Property
+            Add Product
           </>
         }
       />

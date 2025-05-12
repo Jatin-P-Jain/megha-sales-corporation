@@ -62,7 +62,12 @@ export default function RootLayout({
             </ul>
           </nav>
           {children}
-          <Toaster richColors closeButton></Toaster>
+          <Toaster
+            richColors
+            closeButton
+            position="top-right"
+            offset={{ top: 100 }}
+          ></Toaster>
         </AuthProvider>
         <div id="recaptcha-container" />
         <Analytics />

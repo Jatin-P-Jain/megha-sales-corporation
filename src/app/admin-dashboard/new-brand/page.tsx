@@ -1,26 +1,27 @@
 import { Breadcrumbs } from "@/components/ui/breadcrumb";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import NewPropertyForm from "./new-property-form";
+import NewBrandForm from "./new-brand-form";
 
-const NewProperty = () => {
+
+const NewProduct = () => {
   return (
     <div>
       <Breadcrumbs
         items={[
-          { href: "/admin-dashboard", label: "Dashboard" },
-          { label: "New Property" },
+          { href: "/admin-dashboard", label: "Admin Dashboard" },
+          { label: "New Brand" },
         ]}
       />
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle className="text-3xl font-bold">New Property</CardTitle>
+          <CardTitle className="text-3xl font-bold">New Brand</CardTitle>
         </CardHeader>
         <CardContent>
-          <NewPropertyForm />
+          <NewBrandForm />
         </CardContent>
       </Card>
     </div>
   );
 };
 
-export default NewProperty;
+export default NewProduct;
