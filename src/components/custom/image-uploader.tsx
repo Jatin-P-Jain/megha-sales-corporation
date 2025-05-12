@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, useRef, useState } from "react";
+import { ChangeEvent, useRef } from "react";
 import { Button } from "../ui/button";
 import { PencilIcon, UploadIcon } from "lucide-react";
 import Image from "next/image";

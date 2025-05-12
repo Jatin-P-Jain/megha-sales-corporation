@@ -6,13 +6,9 @@ import { brandDataSchema } from "@/validation/brandSchema";
 import { revalidatePath } from "next/cache";
 
 export const updateBrand = async (data: Brand, authToken: string) => {
-  const {
-    id: id,
-    totalProducts: _totalProducts,
-    brandLogo: _brandLogo,
-    brandMedia: _brandMedia,
-    ...brandData
-  } = data;
+  const { id, totalProducts, brandLogo, brandMedia, ...brandData } = data;
+  // then remove unused keys from brandData:
+  const cleanedBrandData = { ...brandData };
   const verifiedToken = await auth.verifyIdToken(authToken);
   if (!verifiedToken.admin) {
     return {
@@ -32,7 +28,7 @@ export const updateBrand = async (data: Brand, authToken: string) => {
   await fireStore
     .collection("brands")
     .doc(id)
-    .update({ ...brandData, updated: new Date() });
+    .update({ ...cleanedBrandData, updated: new Date() });
 
   revalidatePath(`/brands/${id}`);
 };
