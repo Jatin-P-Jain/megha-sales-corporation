@@ -130,9 +130,8 @@ export default function BrandForm({
                       disabled={isSubmitting}
                       image={field.value}
                       onMediaChange={(image: ImageUpload) => {
-                        image
-                          ? form.setValue("brandLogo", image)
-                          : form.setValue("brandLogo", { id: "", url: "" });
+                        if (image) form.setValue("brandLogo", image);
+                        else form.setValue("brandLogo", { id: "", url: "" });
                       }}
                       urlFormatter={(image) =>
                         image?.url && !image?.file

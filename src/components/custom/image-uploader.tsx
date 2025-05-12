@@ -24,7 +24,6 @@ export default function ImageUploader({
   urlFormatter,
 }: Props) {
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (disabled) return; // Prevent adding images if disabled

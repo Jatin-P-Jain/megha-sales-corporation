@@ -56,7 +56,7 @@ export const createBrand = async (
       });
     });
     return { brandId: slug, brandName: data.brandName };
-  } catch (e: any) {
-    return { success: false, error: e.message };
+  } catch (e: unknown) {
+    return { success: false, error: e instanceof Error ? e.message : "An unknown error occurred" };
   }
 };

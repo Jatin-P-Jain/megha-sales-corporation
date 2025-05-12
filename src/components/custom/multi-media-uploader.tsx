@@ -2,12 +2,7 @@
 
 import { ChangeEvent, useRef, useState } from "react";
 import { Button } from "../ui/button";
-import {
-  FullscreenIcon,
-  UploadIcon,
-  XIcon,
-  ZoomInIcon,
-} from "lucide-react";
+import { FullscreenIcon, UploadIcon, XIcon } from "lucide-react";
 import Image from "next/image";
 import PDFIcon from "../../assets/icons/pdf-icon.svg";
 import ExcelIcon from "../../assets/icons/excel-icon.svg";

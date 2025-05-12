@@ -33,7 +33,7 @@ export const TagInput: React.FC<TagInputProps> = ({
   };
 
   const removeTag = (index: number) => {
-    values && onChange(values.filter((_, i) => i !== index));
+    if (values) onChange(values.filter((_, i) => i !== index));
   };
 
   return (

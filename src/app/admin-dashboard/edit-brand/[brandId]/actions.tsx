@@ -6,7 +6,13 @@ import { brandDataSchema } from "@/validation/brandSchema";
 import { revalidatePath } from "next/cache";
 
 export const updateBrand = async (data: Brand, authToken: string) => {
-  const { id, totalProducts, brandLogo, brandMedia, ...brandData } = data;
+  const {
+    id: id,
+    totalProducts: _totalProducts,
+    brandLogo: _brandLogo,
+    brandMedia: _brandMedia,
+    ...brandData
+  } = data;
   const verifiedToken = await auth.verifyIdToken(authToken);
   if (!verifiedToken.admin) {
     return {
