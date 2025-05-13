@@ -51,11 +51,9 @@ export const deleteBrand = async (brandId: string) => {
     };
   }
   const folderPath = `brands/${brandId}`;
-  console.log("folder-path -- ", folderPath);
   const bucket = storage.bucket();
 
   const [files] = await bucket.getFiles({ prefix: folderPath });
-  console.log("files -- ", files);
 
   await Promise.all(files.map((file) => file.delete()));
   await fireStore.collection("brands").doc(brandId).delete();

@@ -42,7 +42,6 @@ export default function MultiMediaUploader({
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (disabled) return; // Prevent adding images if disabled
     const files = Array.from(e.target?.files || []);
-    console.log(files);
 
     const newMedia = files.map((file, index) => {
       return {
@@ -107,13 +106,7 @@ export default function MultiMediaUploader({
       {media.length > 0 && (
         <div className="max-h-60 shadow-sm overflow-auto rounded">
           {media.map((item, index) => {
-            console.log("item -- ", item);
-            console.log("item id -- ", item.fileName);
-            console.log("progressMap -- ", progressMap);
-
             const progress = progressMap[item.fileName || ""];
-            console.log("progress", progress);
-
             const icon = IconForFile(item?.fileName);
             return (
               <div className="relative p-1 px-1" key={index}>

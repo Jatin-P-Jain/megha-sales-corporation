@@ -36,7 +36,6 @@ export default function NewBrandForm() {
     }
     const uploadTasks: (UploadTask | Promise<void>)[] = [];
     const media: BrandMedia[] = [];
-    let logoPath: string = "";
     brandMedia.forEach((item, index) => {
       if (item.file) {
         const path = `brands/${slugify(
@@ -65,12 +64,33 @@ export default function NewBrandForm() {
         uploadTasks.push(task.then(() => {}) as Promise<void>);
       }
     });
+    let logoPath: string = "";
     if (brandLogo.file) {
+      console.log("brandLogo -- ", brandLogo);
+
       logoPath = `brands/${slugify(
         saveResponse.brandName
       )}/brandLogo/${Date.now()}-${brandLogo.file.name}`;
       const logoStorageRef = ref(storage, logoPath);
-      uploadTasks.push(uploadBytesResumable(logoStorageRef, brandLogo.file));
+      const task = uploadBytesResumable(logoStorageRef, brandLogo.file);
+      task.on(
+        "state_changed",
+        (snapshot) => {
+          const percent = Math.round(
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+          );
+          setProgressMap((prev) => ({
+            ...prev,
+            [`${brandLogo.file.name}`]: percent,
+          }));
+        },
+        (error) => {
+          console.error("Upload failed", error);
+          toast.error("Upload failed for " + brandLogo.file!.name);
+        }
+      );
+
+      uploadTasks.push(task.then(() => {}) as Promise<void>);
     }
     await Promise.all(uploadTasks);
     await saveBrandMedia(

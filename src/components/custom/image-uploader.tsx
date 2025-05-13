@@ -4,6 +4,7 @@ import { ChangeEvent, useRef, useState } from "react";
 import { Button } from "../ui/button";
 import { Loader2, PencilIcon, UploadIcon } from "lucide-react";
 import Image from "next/image";
+import { Progress } from "../ui/progress";
 
 export type ImageUpload = {
   id: string;
@@ -11,6 +12,7 @@ export type ImageUpload = {
   file?: File;
 };
 type Props = {
+  progressMap?: Record<string, number>;
   image: ImageUpload;
   onMediaChange: (image: ImageUpload) => void;
   disabled?: boolean; // Added disabled prop
@@ -18,6 +20,7 @@ type Props = {
 };
 
 export default function ImageUploader({
+  progressMap,
   image,
   onMediaChange,
   disabled = false, // Default to false
@@ -45,7 +48,7 @@ export default function ImageUploader({
             ref={inputRef}
             type="file"
             multiple
-            accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,image/*,video/*"
+            accept="image/*"
             onChange={handleInputChange}
             disabled={disabled} // Disable input if disabled
           />
@@ -65,7 +68,7 @@ export default function ImageUploader({
         </>
       ) : (
         <div className=" h-full w-full flex items-center justify-center flex-col gap-1">
-          <div className="relative border-1 rounded-lg overflow-hidden h-full w-full flex justify-center">
+          <div className="relative border-1 rounded-lg overflow-hidden h-40 w-full flex justify-center flex-col items-center">
             {isImageLoading && (
               <div className="absolute inset-0 flex items-center justify-center z-10 bg-white/50">
                 <Loader2 className="animate-spin h-6 w-6 text-primary" />
@@ -74,18 +77,23 @@ export default function ImageUploader({
             <Image
               src={urlFormatter ? urlFormatter(image) : image?.url}
               alt="Logo"
-              width={80}
-              height={80}
+              fill
               className="object-contain"
               onLoad={() => setIsImageLoading(false)}
             />
+            {progressMap && progressMap[image?.file?.name || ""] && (
+              <Progress
+                value={progressMap[image?.file?.name || ""]}
+                className="absolute bottom-0"
+              />
+            )}
           </div>
           <input
             className="hidden"
             ref={inputRef}
             type="file"
             multiple
-            accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,image/*,video/*"
+            accept="image/*"
             onChange={handleInputChange}
             disabled={disabled} // Disable input if disabled
           />

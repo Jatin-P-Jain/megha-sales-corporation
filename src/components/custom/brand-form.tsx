@@ -111,7 +111,7 @@ export default function BrandForm({
                       <Input
                         disabled={isSubmitting}
                         {...field}
-                        value={capitalize(field.value.trim())}
+                        value={capitalize(field.value)}
                       />
                     </FormControl>
                     <FormMessage />
@@ -127,6 +127,7 @@ export default function BrandForm({
                 <FormItem className=" h-full">
                   <FormControl>
                     <ImageUploader
+                      progressMap={progressMap}
                       disabled={isSubmitting}
                       image={field.value}
                       onMediaChange={(image: ImageUpload) => {

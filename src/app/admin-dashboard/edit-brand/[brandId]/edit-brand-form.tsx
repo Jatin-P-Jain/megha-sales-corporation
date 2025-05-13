@@ -114,9 +114,25 @@ export default function EditBrandForm({
           const path = `brands/${slugify(brandName)}/brandLogo/${filename}`;
           logoPath = path; // store the raw storage path
           const storageRef = ref(storage, path);
-          storageTasks.push(
-            uploadBytesResumable(storageRef, newBrandLogo.file)
+          const task = uploadBytesResumable(storageRef, newBrandLogo.file);
+          task.on(
+            "state_changed",
+            (snapshot) => {
+              const percent = Math.round(
+                (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+              );
+              setProgressMap((prev) => ({
+                ...prev,
+                [`${newBrandLogo.file.name}`]: percent,
+              }));
+            },
+            (error) => {
+              console.error("Upload failed", error);
+              toast.error("Upload failed for " + newBrandLogo.file!.name);
+            }
           );
+
+          storageTasks.push(task.then(() => {}) as Promise<void>);
         } else {
           logoPath = newBrandLogo.url;
         }
