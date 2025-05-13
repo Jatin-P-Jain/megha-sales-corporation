@@ -59,7 +59,7 @@ const AdminBrands = async ({
                       : brand.status === "discontinued"
                       ? "text-red-600"
                       : ""
-                  }  text-xs font-semibold px-1 py-1 `}
+                  }  text-sm font-semibold px-1 py-1 `}
                 >
                   {brand.status === "draft"
                     ? "DRAFT"

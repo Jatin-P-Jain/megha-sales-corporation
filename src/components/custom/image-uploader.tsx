@@ -28,9 +28,20 @@ export default function ImageUploader({
 }: Props) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [isImageLoading, setIsImageLoading] = useState(true);
+  const [imageSizeError, setImageSizeError] = useState(false);
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (disabled) return; // Prevent adding images if disabled
     const files = e.target?.files || [];
+    const MAX_SIZE_MB = 5;
+    const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
+
+    if (files[0]?.size > MAX_SIZE_BYTES) {
+      setImageSizeError(true);
+      return;
+    } else {
+      setImageSizeError(false);
+    }
+
     const newImage = {
       id: `${Date.now()}--${files[0]?.name}`,
       url: URL.createObjectURL(files?.[0]),
@@ -42,12 +53,11 @@ export default function ImageUploader({
   return (
     <div className="max-w-3xl w-full mx-auto md:pt-4 pb-0">
       {!image?.url ? (
-        <>
+        <div>
           <input
             className="hidden"
             ref={inputRef}
             type="file"
-            multiple
             accept="image/*"
             onChange={handleInputChange}
             disabled={disabled} // Disable input if disabled
@@ -65,7 +75,21 @@ export default function ImageUploader({
             <UploadIcon />
             Upload Brand Logo
           </Button>
-        </>
+          {imageSizeError ? (
+            <p
+              className={`flex flex-col w-full text-xs text-center text-red-700`}
+            >
+              Selected file exceeded max size: 5MB.
+            </p>
+          ) : (
+            <p
+              className={`flex flex-col w-full text-xs text-center text-muted-foreground`}
+            >
+              All image formats (JPG, PNG, WebP, etc.)
+              <strong>Max size: 5MB.</strong>
+            </p>
+          )}
+        </div>
       ) : (
         <div className=" h-full w-full flex items-center justify-center flex-col gap-1">
           <div className="relative border-1 rounded-lg overflow-hidden h-40 w-full flex justify-center flex-col items-center">
@@ -92,11 +116,25 @@ export default function ImageUploader({
             className="hidden"
             ref={inputRef}
             type="file"
-            multiple
             accept="image/*"
             onChange={handleInputChange}
             disabled={disabled} // Disable input if disabled
           />
+          {imageSizeError ? (
+            <p
+              className={`flex flex-col w-full text-xs text-center text-red-700`}
+            >
+              Selected file exceeded max size: 5MB.
+            </p>
+          ) : (
+            <p
+              className={`flex flex-col w-full text-xs text-center text-muted-foreground`}
+            >
+              All image formats (JPG, PNG, WebP, etc.)
+              <strong>Max size: 5MB.</strong>
+            </p>
+          )}
+
           <Button
             className="w-1/2 mx-auto flex border-none shadow-none text-[10px] font-semibold text-primary bg-accent relative py-0"
             variant={"outline"}

@@ -38,12 +38,18 @@ export default function MultiMediaUploader({
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [previewFile, setPreviewFile] = useState<string | null>(null);
   const [previewFileName, setPreviewFileName] = useState<string>("");
+  const [mediaSizeError, setMediaSizeError] = useState(false);
+  const MAX_SIZE_MB = 5;
+  const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (disabled) return; // Prevent adding images if disabled
     const files = Array.from(e.target?.files || []);
 
     const newMedia = files.map((file, index) => {
+      if (file.size > MAX_SIZE_BYTES) {
+        return null;
+      }
       return {
         id: `${Date.now()}--${index}--${file.name}`,
         fileName: file.name,
@@ -51,7 +57,14 @@ export default function MultiMediaUploader({
         file,
       };
     });
-    onMediaChange([...media, ...newMedia]);
+    const nullMedia = newMedia.filter((media) => media == null);
+    if (nullMedia.length > 0) {
+      setMediaSizeError(true);
+    } else {
+      setMediaSizeError(false);
+    }
+    const newMediaSized = newMedia.filter((media) => media !== null);
+    onMediaChange([...media, ...newMediaSized]);
   };
 
   const handleDeleteImage = (mediaId: string) => {
@@ -90,8 +103,9 @@ export default function MultiMediaUploader({
         onChange={handleInputChange}
         disabled={disabled} // Disable input if disabled
       />
+
       <Button
-        className="w-full mx-auto mb-2"
+        className="w-full mx-auto"
         variant={"outline"}
         type="button"
         onClick={() => {
@@ -103,8 +117,20 @@ export default function MultiMediaUploader({
         <UploadIcon />
         Upload Media
       </Button>
+      {mediaSizeError ? (
+        <p className={`flex flex-col w-full text-xs text-center text-yellow-700`}>
+          One or more files selected were larger than {MAX_SIZE_MB}MB and have been
+          skipped.
+        </p>
+      ) : (
+        <p className={`w-full text-xs text-center text-muted-foreground`}>
+          Supported formats: PDF, Word, Excel, CSV, Images, and Videos.{" "}
+          <strong>Max size: {MAX_SIZE_MB}MB.</strong>
+        </p>
+      )}
+
       {media.length > 0 && (
-        <div className="max-h-60 shadow-sm overflow-auto rounded">
+        <div className="max-h-60 shadow-sm overflow-auto rounded mt-2">
           {media.map((item, index) => {
             const progress = progressMap[item.fileName || ""];
             const icon = IconForFile(item?.fileName);
