@@ -39,7 +39,7 @@ export default function MultiMediaUploader({
   const [previewFile, setPreviewFile] = useState<string | null>(null);
   const [previewFileName, setPreviewFileName] = useState<string>("");
   const [mediaSizeError, setMediaSizeError] = useState(false);
-  const MAX_SIZE_MB = 5;
+  const MAX_SIZE_MB = 20;
   const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
