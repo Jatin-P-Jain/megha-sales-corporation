@@ -71,14 +71,15 @@ const AdminBrands = async ({
                 </div>
                 <Link
                   href={`/admin-dashboard/edit-brand/${brand.id}`}
-                  className="p-1.5 rounded-lg border-1 border-primary/70 text-primary flex items-center justify-center"
+                  className="p-1.5 rounded-lg border-1 border-primary/70 text-primary flex items-center justify-center gap-1 py-1"
                 >
                   <PencilIcon className="w-3.5 h-3.5" />
+                  <span className="text-xs md:text-sm">Edit</span>
                 </Link>
               </div>
             </CardHeader>
-            <CardContent className="p-0 flex flex-col gap-2 flex-1">
-              <div className="flex flex-col relative w-full h-20 items-center justify-center">
+            <CardContent className="p-0 flex flex-col gap-1 flex-1">
+              <div className="flex flex-col relative w-full h-30 items-center justify-center">
                 <BrandLogo brandLogo={brand?.brandLogo} />
               </div>
               <CardDescription className="p-0 flex flex-col gap-2 justify-center w-full flex-1">

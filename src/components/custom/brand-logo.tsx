@@ -11,7 +11,7 @@ interface BrandLogoProps {
 const BrandLogo: React.FC<BrandLogoProps> = ({ brandLogo }: BrandLogoProps) => {
   const [loading, setLoading] = useState(true);
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full flex justify-center items-center">
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center z-10 bg-white/50">
           <Loader2 className="animate-spin h-6 w-6 text-primary" />

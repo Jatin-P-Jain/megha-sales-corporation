@@ -6,7 +6,7 @@ import { FullscreenIcon, UploadIcon, XIcon } from "lucide-react";
 import Image from "next/image";
 import PDFIcon from "../../assets/icons/pdf-icon.svg";
 import ExcelIcon from "../../assets/icons/excel-icon.svg";
-import WordIcon from "../../assets/icons/excel-icon.svg";
+import WordIcon from "../../assets/icons/word-icon.svg";
 import ImageFileIcon from "../../assets/icons/image-file-icon.svg";
 import VideoFileIcon from "../../assets/icons/video-file-icon.svg";
 import FileIcon from "../../assets/icons/video-file-icon.svg";
@@ -75,6 +75,7 @@ export default function MultiMediaUploader({
 
   function IconForFile(fileName?: string) {
     const type: FileType = getFileType(fileName || "");
+    console.log("type -- ", type);
 
     switch (type) {
       case "image":
@@ -118,9 +119,11 @@ export default function MultiMediaUploader({
         Upload Media
       </Button>
       {mediaSizeError ? (
-        <p className={`flex flex-col w-full text-xs text-center text-yellow-700`}>
-          One or more files selected were larger than {MAX_SIZE_MB}MB and have been
-          skipped.
+        <p
+          className={`flex flex-col w-full text-xs text-center text-yellow-700`}
+        >
+          One or more files selected were larger than {MAX_SIZE_MB}MB and have
+          been skipped.
         </p>
       ) : (
         <p className={`w-full text-xs text-center text-muted-foreground`}>
@@ -134,6 +137,8 @@ export default function MultiMediaUploader({
           {media.map((item, index) => {
             const progress = progressMap[item.fileName || ""];
             const icon = IconForFile(item?.fileName);
+            console.log("ICON -- ", icon);
+
             return (
               <div className="relative p-1 px-1" key={index}>
                 <div className="bg-gray-100 flex items-center rounded-lg overflow-hidden gap-3 p-1 px-4">
