@@ -29,7 +29,7 @@ export default function DeleteAccountButton({ brandId }: { brandId: string }) {
         toast.success("Brand deleted successfully");
         router.push("/admin-dashboard");
       }
-    } catch (e: unknown) {
+    } catch (_e: unknown) {
       toast.error("Error!", {
         description: "An error occurred.",
       });
