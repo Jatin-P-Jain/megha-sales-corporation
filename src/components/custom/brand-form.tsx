@@ -66,10 +66,10 @@ export default function BrandForm({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
-        className="flex flex-col gap-6"
+        className="flex flex-col gap-0 md:gap-6"
       >
         <div className="flex flex-col gap-4">
-          <div className=" grid grid-cols-[2fr_1fr] gap-4 justify-center items-center ">
+          <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-4 justify-center items-center ">
             <div className="flex flex-col gap-4">
               {/* Status */}
               <FormField
@@ -225,7 +225,7 @@ export default function BrandForm({
             )}
           />
 
-          <div className="grid grid-cols-[1fr_2fr] gap-4 justify-center items-start">
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-4 justify-center items-start">
             {/* Description */}
             <FormField
               control={form.control}
@@ -237,7 +237,7 @@ export default function BrandForm({
                     <Textarea
                       disabled={isSubmitting}
                       {...field}
-                      className="resize-none h-50 flex"
+                      className="resize-none md:h-50 flex"
                     />
                   </FormControl>
                   <FormMessage />

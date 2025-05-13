@@ -1,16 +1,8 @@
 "use server";
 
 import { auth, fireStore } from "@/firebase/server";
+import { slugify } from "@/lib/utils";
 import { brandDataSchema } from "@/validation/brandSchema";
-
-// simple slug function
-function slugify(name: string) {
-  return name
-    .trim()
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, "") // remove punctuation
-    .replace(/\s+/g, "-"); // spaces → hyphens
-}
 
 export const createBrand = async (
   data: {
@@ -57,6 +49,9 @@ export const createBrand = async (
     });
     return { brandId: slug, brandName: data.brandName };
   } catch (e: unknown) {
-    return { success: false, error: e instanceof Error ? e.message : "An unknown error occurred" };
+    return {
+      success: false,
+      error: e instanceof Error ? e.message : "An unknown error occurred",
+    };
   }
 };

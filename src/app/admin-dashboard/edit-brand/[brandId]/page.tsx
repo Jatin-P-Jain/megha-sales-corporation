@@ -2,6 +2,7 @@ import { Breadcrumbs } from "@/components/ui/breadcrumb";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import EditBrandForm from "./edit-brand-form";
 import { getBrandById } from "@/data/brands";
+import DeleteBrandButton from "./delete-brand-button";
 
 export default async function EditProperty({
   params,
@@ -22,7 +23,10 @@ export default async function EditProperty({
       />
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle className="text-3xl font-bold">Edit Brand</CardTitle>
+          <CardTitle className="flex justify-between items-center">
+            <div className="text-3xl font-bold">Edit Brand</div>
+            <DeleteBrandButton brandId={brandId} />
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <EditBrandForm

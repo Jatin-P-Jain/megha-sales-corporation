@@ -1,6 +1,6 @@
 "use client";
 import { auth, storage } from "@/firebase/client";
-import { SaveIcon } from "lucide-react";
+import { Loader2, SaveIcon } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -16,6 +16,7 @@ import { brandSchema } from "@/validation/brandSchema";
 import { updateBrand } from "./actions";
 import { saveBrandMedia } from "../../actions";
 import { useState } from "react";
+import { slugify } from "@/lib/utils";
 
 type Props = Brand;
 export default function EditBrandForm({
@@ -33,9 +34,12 @@ export default function EditBrandForm({
 }: Props) {
   const router = useRouter();
   const [progressMap, setProgressMap] = useState<Record<string, number>>({});
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const handleSubmit = async (data: z.infer<typeof brandSchema>) => {
+    setIsLoading(true);
     const token = await auth?.currentUser?.getIdToken();
     if (!token) {
+      setIsLoading(false);
       return;
     }
     const {
@@ -49,6 +53,7 @@ export default function EditBrandForm({
     );
     if (!!updateResponse?.error) {
       toast.error("Error", { description: updateResponse.message });
+      setIsLoading(false);
       return;
     }
     const storageTasks: (UploadTask | Promise<void>)[] = [];
@@ -63,9 +68,9 @@ export default function EditBrandForm({
 
     newBrandMedia.forEach((brandMedia, index) => {
       if (brandMedia.file) {
-        const path = `brands/${id}/${Date.now()}-${index}-${
-          brandMedia.file.name
-        }`;
+        const path = `brands/${slugify(
+          brandName
+        )}/brandsMedia/${Date.now()}-${index}-u-${brandMedia.file.name}`;
         media.push({ fileName: brandMedia.file.name, fileUrl: path });
         const storageRef = ref(storage, path);
         const task = uploadBytesResumable(storageRef, brandMedia.file);
@@ -105,8 +110,8 @@ export default function EditBrandForm({
         }
 
         if (newBrandLogo.file) {
-          const filename = `${Date.now()}-${newBrandLogo.file.name}`;
-          const path = `brandLogos/${brandName}/${filename}`;
+          const filename = `${Date.now()}-u-${newBrandLogo.file.name}`;
+          const path = `brands/${slugify(brandName)}/brandLogo/${filename}`;
           logoPath = path; // store the raw storage path
           const storageRef = ref(storage, path);
           storageTasks.push(
@@ -123,6 +128,7 @@ export default function EditBrandForm({
       { brandMedia: media, brandId: id, brandLogo: logoPath },
       token
     );
+    setIsLoading(false);
     toast.success("Success!", { description: "Brand Updated" });
     router.push("/admin-dashboard");
   };
@@ -132,12 +138,19 @@ export default function EditBrandForm({
         progressMap={progressMap}
         handleSubmit={handleSubmit}
         submitButtonLabel={
-          <>
-            <div className="flex items-center text-center gap-2">
-              <SaveIcon />
-              Save Brand
-            </div>
-          </>
+          isLoading ? (
+            <>
+              <Loader2 className="animate-spin" />
+              Saving Brand
+            </>
+          ) : (
+            <>
+              <div className="flex items-center text-center gap-2">
+                <SaveIcon />
+                Save Brand
+              </div>
+            </>
+          )
         }
         defaultValues={{
           brandName,
@@ -157,7 +170,6 @@ export default function EditBrandForm({
           }),
         }}
       />
-      {/* {loading && <LoadingSpinner className="absolute top-0" />} */}
     </div>
   );
 }

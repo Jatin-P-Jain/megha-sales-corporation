@@ -1,7 +1,7 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button"; // Adjust the import path as needed
-import { SendIcon } from "lucide-react";
+import { Loader2, SendIcon } from "lucide-react";
 import { useAuth } from "@/context/auth";
 import { BrandStatus } from "@/types/brandStatus";
 import { updateStatus } from "@/app/admin-dashboard/brands/action";
@@ -15,10 +15,12 @@ const PublishBrandButton = ({
   newStatus: BrandStatus;
 }) => {
   const auth = useAuth();
-
+  const [isPublishing, setIsPublishing] = useState(false);
   const handlePublish = async () => {
+    setIsPublishing(true);
     const token = await auth?.currentUser?.getIdToken();
     if (!token) {
+      setIsPublishing(false);
       return;
     }
     const updateResponse = await updateStatus(
@@ -27,9 +29,11 @@ const PublishBrandButton = ({
     );
     if (!!updateResponse?.error) {
       toast.error("Error", { description: updateResponse.message });
+      setIsPublishing(false);
       return;
     }
-    console.log("Brand published!");
+    setIsPublishing(false);
+    toast.success("Success", { description: "Brand published successfully" });
   };
 
   return (
@@ -38,8 +42,18 @@ const PublishBrandButton = ({
       variant={"outline"}
       onClick={handlePublish}
     >
-      <SendIcon />
-      Publish Brand <span className="text-xs font-normal">to Add Products</span>
+      {isPublishing ? (
+        <>
+          <Loader2 className="animate-spin" />
+          Publishing Brand
+        </>
+      ) : (
+        <>
+          <SendIcon />
+          Publish Brand{" "}
+          <span className="text-xs font-normal">to Add Products</span>
+        </>
+      )}
     </Button>
   );
 };

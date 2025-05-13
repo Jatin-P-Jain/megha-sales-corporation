@@ -1,6 +1,4 @@
-// components/FileViewer.tsx
 "use client";
-
 import { getFileType } from "@/lib/utils";
 import Image from "next/image";
 
@@ -12,7 +10,6 @@ type FileViewerProps = {
 
 export function FileViewer({ url, fileName, className }: FileViewerProps) {
   const type = getFileType(fileName);
-  console.log("type -- ", type);
 
   switch (type) {
     case "image":
@@ -34,13 +31,12 @@ export function FileViewer({ url, fileName, className }: FileViewerProps) {
     case "pdf":
       return (
         <object
-          className={"h-[100vh]"}
+          className={"h-full w-full aspect-[4/3]"}
           data={url}
           type="application/pdf"
-          width="200%"
         >
-          <p>
-            Unable to display PDF. <a href={url}>Download instead</a>.
+          <p className="text-muted-foreground bg-muted p-4 rounded flex w-full flex-col">
+            Unable to display PDF.
           </p>
         </object>
       );

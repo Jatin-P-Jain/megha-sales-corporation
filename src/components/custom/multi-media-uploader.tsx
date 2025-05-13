@@ -116,8 +116,8 @@ export default function MultiMediaUploader({
 
             const icon = IconForFile(item?.fileName);
             return (
-              <div className="relative p-1 px-2" key={index}>
-                <div className="bg-gray-100 flex items-center rounded-lg overflow-hidden gap-1 p-2">
+              <div className="relative p-1 px-1" key={index}>
+                <div className="bg-gray-100 flex items-center rounded-lg overflow-hidden gap-3 p-1 px-4">
                   <div className="size-8 relative">
                     <Image
                       src={icon}
@@ -125,16 +125,10 @@ export default function MultiMediaUploader({
                       fill
                       className="object-center w-full h-full"
                     />
-                    {/* <Image
-                            src={urlFormatter ? urlFormatter(item) : item.url}
-                            alt=""
-                            fill
-                            className="object-cover"
-                          /> */}
                   </div>
                   <div className="flex-col flex-grow">
                     <p className="text-sm font-medium text-ellipsis">
-                      {truncateMiddle(item?.fileName)}
+                      {truncateMiddle(item?.fileName, 20, 10, 10)}
                     </p>
                     {item?.file && (
                       <>
@@ -146,7 +140,7 @@ export default function MultiMediaUploader({
                       </>
                     )}
                   </div>
-                  <div className="flex gap-3 items-center pr-4">
+                  <div className="flex gap-2 md:gap-3 items-center">
                     <button
                       type="button"
                       className="cursor-pointer"
@@ -170,13 +164,6 @@ export default function MultiMediaUploader({
                       <XIcon className="size-5 text-red-600" />
                     </button>
                   </div>
-                  <div className="mb-2">
-                    {/* <span>{m.fileName}</span> */}
-
-                    {/* {!!item.file && (
-                      
-                    )} */}
-                  </div>
                 </div>
               </div>
             );
@@ -186,20 +173,23 @@ export default function MultiMediaUploader({
 
       {previewFile && (
         <div
-          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 flex-col"
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 flex-col"
           onClick={() => {
             setPreviewFile(null);
             setPreviewFileName("");
           }} // Close modal on background click
         >
-          <div className="flex w-full h-auto justify-end px-35">
-            <XIcon
+          <div className="flex w-[90vw] h-auto justify-end ">
+            <div
               onClick={() => {
                 setPreviewFile(null);
                 setPreviewFileName("");
               }}
-              className="cursor-pointer text-gray-200 "
-            />
+              className="bg-muted flex cursor-pointer text-muted-foreground px-1 rounded gap-1 text-sm font-bold justify-center items-center"
+            >
+              Close
+              <XIcon className="size-4" />
+            </div>
           </div>
           <div
             className="bg-white/0 p-4 rounded-lg "

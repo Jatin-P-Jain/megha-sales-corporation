@@ -1,8 +1,8 @@
 "use client";
 
-import { ChangeEvent, useRef } from "react";
+import { ChangeEvent, useRef, useState } from "react";
 import { Button } from "../ui/button";
-import { PencilIcon, UploadIcon } from "lucide-react";
+import { Loader2, PencilIcon, UploadIcon } from "lucide-react";
 import Image from "next/image";
 
 export type ImageUpload = {
@@ -24,7 +24,7 @@ export default function ImageUploader({
   urlFormatter,
 }: Props) {
   const inputRef = useRef<HTMLInputElement | null>(null);
-
+  const [isImageLoading, setIsImageLoading] = useState(true);
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (disabled) return; // Prevent adding images if disabled
     const files = e.target?.files || [];
@@ -37,7 +37,7 @@ export default function ImageUploader({
   };
 
   return (
-    <div className="max-w-3xl w-full mx-auto pt-4 pb-0">
+    <div className="max-w-3xl w-full mx-auto md:pt-4 pb-0">
       {!image?.url ? (
         <>
           <input
@@ -65,12 +65,19 @@ export default function ImageUploader({
         </>
       ) : (
         <div className=" h-full w-full flex items-center justify-center flex-col gap-1">
-          <div className="relative border-1 rounded-lg overflow-hidden h-full w-full">
+          <div className="relative border-1 rounded-lg overflow-hidden h-full w-full flex justify-center">
+            {isImageLoading && (
+              <div className="absolute inset-0 flex items-center justify-center z-10 bg-white/50">
+                <Loader2 className="animate-spin h-6 w-6 text-primary" />
+              </div>
+            )}
             <Image
               src={urlFormatter ? urlFormatter(image) : image?.url}
               alt="Logo"
-              fill
+              width={80}
+              height={80}
               className="object-contain"
+              onLoad={() => setIsImageLoading(false)}
             />
           </div>
           <input

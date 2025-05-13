@@ -2,6 +2,7 @@ import { getApps, ServiceAccount } from "firebase-admin/app";
 import admin from "firebase-admin";
 import { Firestore, getFirestore } from "firebase-admin/firestore";
 import { Auth, getAuth } from "firebase-admin/auth";
+import { getStorage, Storage } from "firebase-admin/storage";
 
 const serviceAccount = {
   type: "service_account",
@@ -20,20 +21,24 @@ const serviceAccount = {
 
 let fireStore: Firestore;
 let auth: Auth;
+let storage: Storage;
 const currentApps = getApps();
 if (!currentApps.length) {
   const app = admin.initializeApp({
     credential: admin.credential.cert(serviceAccount as ServiceAccount),
+    storageBucket: "megha-sales-corporation.firebasestorage.app",
   });
   fireStore = getFirestore(app);
   auth = getAuth(app);
+  storage = getStorage(app);
 } else {
   const app = currentApps[0];
   fireStore = getFirestore(app);
   auth = getAuth(app);
+  storage = getStorage(app);
 }
 
-export { fireStore, auth };
+export { fireStore, auth, storage };
 
 export const getTotalPages = async (
   firestoreQuery: FirebaseFirestore.Query<

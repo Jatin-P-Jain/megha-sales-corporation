@@ -27,11 +27,19 @@ export function getFileType(fileName: string): FileType {
 export function truncateMiddle(
   str?: string,
   maxLength = 30,
-  startChars = 15,
+  startChars = 10,
   endChars = 12
 ): string | undefined {
   if (!str || str?.length <= maxLength) return str;
   const start = str?.slice(0, startChars);
   const end = str?.slice(str.length - endChars);
   return `${start}…${end}`;
+}
+
+export function slugify(name: string) {
+  return name
+    .trim()
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, "") // remove punctuation
+    .replace(/\s+/g, "-"); // spaces → hyphens
 }

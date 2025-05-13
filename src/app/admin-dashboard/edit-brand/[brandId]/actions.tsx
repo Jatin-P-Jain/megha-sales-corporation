@@ -1,9 +1,10 @@
 "use server";
 
-import { auth, fireStore } from "@/firebase/server";
+import { auth, fireStore, storage } from "@/firebase/server";
 import { Brand } from "@/types/brand";
 import { brandDataSchema } from "@/validation/brandSchema";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 
 export const updateBrand = async (data: Brand, authToken: string) => {
   const {
@@ -35,4 +36,29 @@ export const updateBrand = async (data: Brand, authToken: string) => {
     .update({ ...brandData, updated: new Date() });
 
   revalidatePath(`/brands/${id}`);
+};
+export const deleteBrand = async (brandId: string) => {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("firebaseAuthToken")?.value;
+  if (!token) {
+    return;
+  }
+  const verifiedToken = await auth.verifyIdToken(token);
+  if (!verifiedToken.admin) {
+    return {
+      error: true,
+      message: "Unauthorized",
+    };
+  }
+  const folderPath = `brands/${brandId}`;
+  console.log("folder-path -- ", folderPath);
+  const bucket = storage.bucket();
+
+  const [files] = await bucket.getFiles({ prefix: folderPath });
+  console.log("files -- ", files);
+
+  await Promise.all(files.map((file) => file.delete()));
+  await fireStore.collection("brands").doc(brandId).delete();
+
+  revalidatePath(`/brands`);
 };

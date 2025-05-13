@@ -23,7 +23,7 @@ const BrandLogo: React.FC<BrandLogoProps> = ({ brandLogo }: BrandLogoProps) => {
           alt="img"
           fill
           className="object-contain"
-          onLoadingComplete={() => {
+          onLoad={() => {
             setLoading(false);
           }}
         />

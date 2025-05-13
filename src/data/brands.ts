@@ -48,16 +48,16 @@ export const getBrandById = async (brandId: string) => {
   // build a pure‐JS object matching your Brand type
   const brand: Brand = {
     id: brandSnapshot.id,
-    brandName: rawBrandData.brandName as string,
-    brandLogo: rawBrandData.brandLogo as string,
-    companies: (rawBrandData.companies as string[]) || [],
-    vehicleCompanies: (rawBrandData.vehicleCompanies as string[]) || [],
-    vehicleNames: (rawBrandData.vehicleNames as string[]) || [],
-    partCategories: (rawBrandData.partCategories as string[]) || [],
-    totalProducts: (rawBrandData.totalProducts as number) || 0,
-    description: rawBrandData.description as string,
-    status: rawBrandData.status as Brand["status"],
-    brandMedia: (rawBrandData.brandMedia as BrandMedia[]) || [],
+    brandName: rawBrandData?.brandName as string,
+    brandLogo: rawBrandData?.brandLogo as string,
+    companies: (rawBrandData?.companies as string[]) || [],
+    vehicleCompanies: (rawBrandData?.vehicleCompanies as string[]) || [],
+    vehicleNames: (rawBrandData?.vehicleNames as string[]) || [],
+    partCategories: (rawBrandData?.partCategories as string[]) || [],
+    totalProducts: (rawBrandData?.totalProducts as number) || 0,
+    description: rawBrandData?.description as string,
+    status: rawBrandData?.status as Brand["status"],
+    brandMedia: (rawBrandData?.brandMedia as BrandMedia[]) || [],
   };
 
   return brand;
@@ -67,7 +67,7 @@ export const getBrandsById = async (brandIds: string[]) => {
     return [];
   }
   const brandsSnapshot = await fireStore
-    .collection("properties")
+    .collection("brands")
     .where("__name__", "in", brandIds)
     .get();
   const brandsData = brandsSnapshot.docs.map((brand) => {
