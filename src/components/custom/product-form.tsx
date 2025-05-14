@@ -21,12 +21,10 @@ import {
 } from "../ui/select";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import MultiImageUploader from "./multi-media-uploader";
 import { Brand } from "@/types/brand";
 import { capitalize } from "@/lib/capitalize";
 import ImageUploader, { ImageUpload } from "./image-uploader";
 import imageUrlFormatter from "@/lib/image-urlFormatter";
-import { AsteriskIcon, StarIcon } from "lucide-react";
 
 type Props = {
   progressMap?: Record<string, number>;
