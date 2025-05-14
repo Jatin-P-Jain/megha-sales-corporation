@@ -62,7 +62,7 @@ export const saveProductMedia = async (
   }
   const schema = z.object({
     productId: z.string(),
-    media: z.array(z.string()),
+    image: z.string(),
   });
 
   const validation = schema.safeParse({ image, productId });

@@ -60,7 +60,6 @@ export default function BrandForm({
   });
 
   const { isSubmitting } = form.formState;
-  console.log({ combineDefaultValues });
 
   return (
     <Form {...form}>

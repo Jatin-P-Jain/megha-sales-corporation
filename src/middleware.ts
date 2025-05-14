@@ -83,5 +83,6 @@ export const config = {
     "/account",
     "/account/:path*",
     "/get-user-details",
+    "/products-list",
   ],
 };

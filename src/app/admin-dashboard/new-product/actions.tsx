@@ -19,7 +19,7 @@ export const createProduct = async (
     description?: string;
     status: "draft" | "for-sale" | "discontinued" | "out-of-stock";
   },
-  authtoken: string
+  authtoken: string,
 ) => {
   const verifiedToken = await auth.verifyIdToken(authtoken);
   if (!verifiedToken.admin) {
@@ -38,6 +38,7 @@ export const createProduct = async (
   }
   const slug = slugifyPartNumber(data.partNumber);
   const docRef = fireStore.collection("products").doc(slug);
+
   try {
     await fireStore.runTransaction(async (txn) => {
       const existing = await txn.get(docRef);

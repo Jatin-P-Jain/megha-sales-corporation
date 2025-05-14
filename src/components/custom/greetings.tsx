@@ -37,7 +37,7 @@ const Greetings: React.FC = () => {
           </Button>
         )}
         <Button className="w-full" asChild>
-          <Link href={"/product-search"}>Explore Products</Link>
+          <Link href={"/products-list"}>Explore Products</Link>
         </Button>
       </CardContent>
     </Card>

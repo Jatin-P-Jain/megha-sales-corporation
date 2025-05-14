@@ -140,7 +140,7 @@ const AdminBrands = async ({
                 </div>
                 {brand.totalProducts > 0 && (
                   <Link
-                    href={""}
+                    href={"/products-list"}
                     className="font-semibold text-primary hover:underline"
                   >
                     Show Products

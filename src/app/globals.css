@@ -148,3 +148,11 @@
 .property-description ol{
   @apply  list-decimal my-4 ml-4 text-sm
 }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+}

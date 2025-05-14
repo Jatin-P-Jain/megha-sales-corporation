@@ -34,25 +34,25 @@ export default function RootLayout({
         content="width=device-width, initial-scale=1, height=device-height"
       />
       <body
-        className={`${poppins.className} antialiased min-h-[100dvh] max-h-screen`}
+        className={`${poppins.className} max-h-screen min-h-[100dvh] antialiased`}
       >
         <AuthProvider>
-          <nav className="fixed top-0 left-0 right-0 bg-cyan-950 text-white p-3 px-3 md:px-6 lg:px-10 flex flex-wrap justify-between items-center z-50 shadow-md">
+          <nav className="fixed top-0 right-0 left-0 z-50 flex flex-wrap items-center justify-between bg-cyan-950 p-3 px-3 text-white shadow-md md:px-6 lg:px-10">
             <Link
               href={"/"}
-              className="flex items-center text-lg md:text-2xl tracking-wider gap-2 md:gap-4 uppercase justify-end"
+              className="flex items-center justify-end gap-2 text-lg tracking-wider uppercase md:gap-4 md:text-2xl"
             >
-              <div className="w-10 h-10 md:w-14 md:h-14 relative">
+              <div className="relative h-10 w-10 md:h-14 md:w-14">
                 <Image src={BrandLogo} alt="" fill className="object-center" />
               </div>
-              <div className="flex flex-col  text-sm md:text-lg md:tracking-[2px]">
-                <span className=" font-semibold mt-1 md:mt-2">Megha Sales</span>
-                <span className="text-xs md:text-sm flex items-center justify-center tracking-[2px] md:tracking-[4px]">
+              <div className="flex flex-col text-sm md:text-lg md:tracking-[2px]">
+                <span className="mt-1 font-semibold md:mt-2">Megha Sales</span>
+                <span className="flex items-center justify-center text-xs tracking-[2px] md:text-sm md:tracking-[4px]">
                   Corporation
                 </span>
               </div>
             </Link>
-            <ul className="flex flex-wrap gap-4 md:gap-6 items-center mt-2 md:mt-0">
+            <ul className="mt-2 flex flex-wrap items-center gap-4 md:mt-0 md:gap-6">
               <li>
                 <AboutUsLink />
               </li>

@@ -78,8 +78,6 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
     }
   };
   const handleVerifyOTP = async (data: { otp: string }) => {
-    console.log(data.otp);
-    console.log({ confirmationResult });
     try {
       const user = await auth?.verifyOTP(data, confirmationResult);
       if (user?.displayName) {

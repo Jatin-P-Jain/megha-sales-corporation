@@ -75,7 +75,6 @@ export default function MultiMediaUploader({
 
   function IconForFile(fileName?: string) {
     const type: FileType = getFileType(fileName || "");
-    console.log("type -- ", type);
 
     switch (type) {
       case "image":
@@ -137,7 +136,6 @@ export default function MultiMediaUploader({
           {media.map((item, index) => {
             const progress = progressMap[item.fileName || ""];
             const icon = IconForFile(item?.fileName);
-            console.log("ICON -- ", icon);
 
             return (
               <div className="relative p-1 px-1" key={index}>
