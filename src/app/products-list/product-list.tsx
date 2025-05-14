@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Product } from "@/types/product";
 import { PencilIcon, PlusSquareIcon } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 
 export default async function ProductList({
