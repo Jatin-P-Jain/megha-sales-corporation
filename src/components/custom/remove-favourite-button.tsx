@@ -1,6 +1,5 @@
 "use client";
 import { Button } from "../ui/button";
-import { removeFavourite } from "@/app/property-search/actions";
 import { HeartOffIcon } from "lucide-react";
 import { useAuth } from "@/context/auth";
 import { toast } from "sonner";
@@ -24,7 +23,7 @@ export default function RemoveFavouriteButton({
           return;
         }
         const token = tokenResult?.token;
-        await removeFavourite(propertyId, token);
+        // await removeFavourite(propertyId, token);
         toast.success("Success!", {
           description: `Property ${"REMOVED from"} your favourites.`,
         });
