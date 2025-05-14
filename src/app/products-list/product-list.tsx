@@ -1,15 +1,8 @@
 import ProductImage from "@/components/custom/product-image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import imageUrlFormatter from "@/lib/image-urlFormatter";
 import { Product } from "@/types/product";
-import { DecodedIdToken } from "firebase-admin/auth";
-import {
-  ArrowBigRightDashIcon,
-  ImageOffIcon,
-  PencilIcon,
-  PlusSquareIcon,
-} from "lucide-react";
+import { PencilIcon, PlusSquareIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -137,7 +130,7 @@ export default async function ProductList({
                   key={i}
                   variant={"outline"}
                 >
-                  <Link href={`/property-search?${newSearchParams}`}>
+                  <Link href={`/products-list?${newSearchParams}`}>
                     {i + 1}
                   </Link>
                 </Button>

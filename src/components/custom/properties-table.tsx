@@ -12,7 +12,6 @@ import {
 import { Property } from "@/types/property";
 import { EyeIcon, PencilIcon } from "lucide-react";
 import Link from "next/link";
-import RemoveFavouriteButton from "./remove-favourite-button";
 
 export default async function PropertiesTable({
   data,
@@ -28,7 +27,7 @@ export default async function PropertiesTable({
   return (
     <>
       {(!data || data.length == 0) && (
-        <h1 className="text-3xl font-bold text-zinc-400 text-center py-20">
+        <h1 className="py-20 text-center text-3xl font-bold text-zinc-400">
           {`You have no ${isFavouritesTable ? "favourited" : ""} properties.`}
         </h1>
       )}
@@ -54,7 +53,7 @@ export default async function PropertiesTable({
                 .join(",");
               return (
                 <TableRow key={property.id}>
-                  <TableCell className="max-w-[100px] sm:max-w-[400px] truncate whitespace-nowrap overflow-hidden text-ellipsis">
+                  <TableCell className="max-w-[100px] truncate overflow-hidden text-ellipsis whitespace-nowrap sm:max-w-[400px]">
                     {address}
                   </TableCell>
                   <TableCell>
@@ -73,7 +72,7 @@ export default async function PropertiesTable({
                       </Link>
                     </Button>
                     {isFavouritesTable ? (
-                      <RemoveFavouriteButton propertyId={property.id} />
+                      <></>
                     ) : (
                       <Button asChild variant={"outline"} size={"sm"}>
                         <Link

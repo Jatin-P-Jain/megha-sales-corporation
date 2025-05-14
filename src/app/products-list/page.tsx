@@ -1,4 +1,3 @@
-import { Card } from "@/components/ui/card";
 import { cookies } from "next/headers";
 import { auth } from "@/firebase/server";
 import { Suspense } from "react";
@@ -69,7 +68,7 @@ export default async function ProductsList({
                 </Button>
               ) : (
                 <Button>
-                  Proced to Cart <ArrowBigRightDashIcon className="size-5"/>
+                  Proced to Cart <ArrowBigRightDashIcon className="size-5" />
                 </Button>
               )}
             </div>

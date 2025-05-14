@@ -1,8 +1,7 @@
+import "server-only";
 import { fireStore, getTotalPages } from "@/firebase/server";
 import { Product, ProductStatus } from "@/types/product";
 import { Property } from "@/types/property";
-import { PropertyStatus } from "@/types/propertyStatus";
-import "server-only";
 
 type GetPropertiesOptions = {
   filters?: {
@@ -21,7 +20,7 @@ export const getProducts = async (options?: GetPropertiesOptions) => {
   const page = options?.pagination?.page || 1;
   const pageSize = options?.pagination?.pageSize || 10;
 
-  const { minPrice, maxPrice, minBedrooms, status } = options?.filters || {};
+  const { status } = options?.filters || {};
 
   let productsQuery = fireStore
     .collection("products")
