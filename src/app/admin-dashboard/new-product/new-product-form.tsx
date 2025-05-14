@@ -43,9 +43,9 @@ export default function NewProductForm({ brand }: { brand: Brand }) {
 
     let imagePath: string = "";
     if (image?.file) {
-      imagePath = `products/${
-        saveResponse.productId
-      }/productImage/${Date.now()}-${image?.file.name}`;
+      imagePath = `products/${saveResponse.productId}/${Date.now()}-${
+        image?.file.name
+      }`;
       const logoStorageRef = ref(storage, imagePath);
       const task = uploadBytesResumable(logoStorageRef, image.file);
       task.on(

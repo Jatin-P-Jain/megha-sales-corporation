@@ -1,6 +1,6 @@
 import BrandLogo from "@/components/custom/brand-logo";
+import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
 import PublishBrandButton from "@/components/custom/publish-brand-button";
-import { Breadcrumbs } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -26,7 +26,7 @@ const AdminBrands = async ({
   });
   return (
     <div>
-      <Breadcrumbs
+      <EllipsisBreadCrumbs
         items={[
           { href: "/admin-dashboard", label: "Admin Dashboard" },
           { label: "Brands" },

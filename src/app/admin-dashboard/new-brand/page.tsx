@@ -1,4 +1,3 @@
-import { Breadcrumbs } from "@/components/ui/breadcrumb";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import NewBrandForm from "./new-brand-form";
 import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";

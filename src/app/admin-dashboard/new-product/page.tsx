@@ -1,4 +1,3 @@
-import { Breadcrumbs } from "@/components/ui/breadcrumb";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import NewProductForm from "./new-product-form";
 import { cookies } from "next/headers";

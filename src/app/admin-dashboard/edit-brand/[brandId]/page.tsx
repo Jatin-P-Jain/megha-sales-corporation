@@ -1,4 +1,3 @@
-import { Breadcrumbs } from "@/components/ui/breadcrumb";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import EditBrandForm from "./edit-brand-form";
 import { getBrandById } from "@/data/brands";
