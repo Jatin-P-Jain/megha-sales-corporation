@@ -55,7 +55,7 @@ export default function ImageUploader({
   return (
     <div className="max-w-3xl w-full mx-auto md:pt-4 pb-0">
       {!image?.url ? (
-        <div className={`${parent === "brand" ? "h-40" : ""}`}>
+        <div className={`${parent === "brand" ? "h-35 mb-5" : ""}`}>
           <input
             className="hidden"
             ref={inputRef}
