@@ -37,7 +37,7 @@ export default function RootLayout({
         className={`${poppins.className} antialiased min-h-[100dvh] max-h-screen`}
       >
         <AuthProvider>
-          <nav className="bg-cyan-950 text-white p-3 px-3 md:px-6 lg:px-10 flex flex-wrap justify-between items-center relative z-10">
+          <nav className="fixed top-0 left-0 right-0 bg-cyan-950 text-white p-3 px-3 md:px-6 lg:px-10 flex flex-wrap justify-between items-center z-50 shadow-md">
             <Link
               href={"/"}
               className="flex items-center text-lg md:text-2xl tracking-wider gap-2 md:gap-4 uppercase justify-end"
@@ -61,7 +61,7 @@ export default function RootLayout({
               </li>
             </ul>
           </nav>
-          {children}
+          <div className="pt-18">{children}</div>
           <Toaster
             richColors
             closeButton

@@ -138,7 +138,7 @@ const AdminBrands = async ({
                     {brand.totalProducts}
                   </span>
                 </div>
-                {brand.status === "live" && (
+                {brand.totalProducts > 0 && (
                   <Link
                     href={""}
                     className="font-semibold text-primary hover:underline"

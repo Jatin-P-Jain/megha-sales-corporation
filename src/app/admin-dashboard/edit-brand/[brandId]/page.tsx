@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import EditBrandForm from "./edit-brand-form";
 import { getBrandById } from "@/data/brands";
 import DeleteBrandButton from "./delete-brand-button";
+import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
 
 export default async function EditProperty({
   params,
@@ -15,16 +16,22 @@ export default async function EditProperty({
 
   return (
     <div>
-      <Breadcrumbs
+      <EllipsisBreadCrumbs
         items={[
           { href: "/admin-dashboard", label: "Admin Dashboard" },
+          { href: "/admin-dashboard/brands", label: "Brands" },
           { label: "Edit Brand" },
         ]}
       />
       <Card className="mt-6">
         <CardHeader>
           <CardTitle className="flex justify-between items-center">
-            <div className="text-3xl font-bold">Edit Brand</div>
+            <div className="text-3xl font-bold flex flex-col">
+              Edit Brand
+              <span className="text-xs text-muted-foreground font-normal">
+                * marked fields are mandotory
+              </span>
+            </div>
             <DeleteBrandButton brandId={brandId} />
           </CardTitle>
         </CardHeader>

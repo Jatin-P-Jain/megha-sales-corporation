@@ -13,6 +13,7 @@ interface TagInputProps {
   onChange: (values: string[]) => void;
   disabled?: boolean;
   placeholder?: string;
+  required?: boolean;
 }
 
 export const TagInput: React.FC<TagInputProps> = ({
@@ -21,6 +22,7 @@ export const TagInput: React.FC<TagInputProps> = ({
   onChange,
   disabled = false,
   placeholder = "Type and press Enter",
+  required,
 }) => {
   const [inputValue, setInputValue] = useState("");
 
@@ -38,8 +40,11 @@ export const TagInput: React.FC<TagInputProps> = ({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
+      <label className=" text-sm font-medium text-gray-700 mb-2 flex items-start gap-1">
         {label}
+        {required && (
+          <span className="text-xs text-muted-foreground pt-0.5">*</span>
+        )}
       </label>
       <div className="flex gap-2">
         <Input

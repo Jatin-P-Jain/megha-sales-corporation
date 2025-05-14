@@ -1,6 +1,7 @@
 "use server";
 
 import { auth, fireStore } from "@/firebase/server";
+import { slugify, slugifyPartNumber } from "@/lib/utils";
 import { productDataSchema } from "@/validation/productSchema";
 
 export const createProduct = async (
@@ -14,6 +15,7 @@ export const createProduct = async (
     price: number;
     discount: number;
     gst: number;
+    stock: number;
     description?: string;
     status: "draft" | "for-sale" | "discontinued" | "out-of-stock";
   },
@@ -34,10 +36,27 @@ export const createProduct = async (
       message: validation.error.issues[0]?.message || "An error occurred",
     };
   }
-
-  const product = await fireStore
-    .collection("products")
-    .add({ ...data, created: new Date(), updated: new Date() });
-
-  return { productId: product.id };
+  const slug = slugifyPartNumber(data.partNumber);
+  const docRef = fireStore.collection("products").doc(slug);
+  try {
+    await fireStore.runTransaction(async (txn) => {
+      const existing = await txn.get(docRef);
+      if (existing.exists) {
+        throw new Error("Product already exists");
+      }
+      txn.set(docRef, {
+        ...data,
+        id: slug,
+        available: data?.stock > 0,
+        created: new Date(),
+        updated: new Date(),
+      });
+    });
+    return { productId: slug };
+  } catch (e: unknown) {
+    return {
+      success: false,
+      error: e instanceof Error ? e.message : "An unknown error occurred",
+    };
+  }
 };

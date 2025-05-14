@@ -4,7 +4,7 @@ import ProductForm from "@/components/custom/product-form";
 import { productSchema } from "@/validation/productSchema";
 
 import { z } from "zod";
-import { PlusCircleIcon } from "lucide-react";
+import { Loader2, PlusCircleIcon } from "lucide-react";
 import { useAuth } from "@/context/auth";
 
 import { toast } from "sonner";
@@ -14,55 +14,89 @@ import { storage } from "@/firebase/client";
 import { createProduct } from "./actions";
 import { saveProductMedia, updateBrandProcuctCount } from "../actions";
 import { Brand } from "@/types/brand";
+import { useState } from "react";
 
 export default function NewProductForm({ brand }: { brand: Brand }) {
   const auth = useAuth();
   const router = useRouter();
+  const [progressMap, setProgressMap] = useState<Record<string, number>>({});
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const handleSubmit = async (data: z.infer<typeof productSchema>) => {
+    setIsLoading(true);
     const token = await auth?.currentUser?.getIdToken();
     if (!token) {
+      setIsLoading(false);
       return;
     }
-    const { images, ...rest } = data;
+    const { image, ...rest } = data;
     const saveResponse = await createProduct(rest, token);
     if (!!saveResponse.error || !saveResponse.productId) {
       toast.error("Error!", { description: saveResponse.error });
+      setIsLoading(false);
       return;
     }
     await updateBrandProcuctCount(
       { brandId: brand.id, totalProducts: brand.totalProducts + 1 },
       token
     );
-    const uploadTasks: UploadTask[] = [];
-    const paths: string[] = [];
-    images.forEach((image, index) => {
-      if (image.file) {
-        const path = `products/${
-          saveResponse.productId
-        }/${Date.now()}-${index}-${image.file.name}`;
-        paths.push(path);
-        const storageRef = ref(storage, path);
-        uploadTasks.push(uploadBytesResumable(storageRef, image.file));
-      }
-    });
+    const uploadTasks: (UploadTask | Promise<void>)[] = [];
+
+    let imagePath: string = "";
+    if (image?.file) {
+      imagePath = `products/${
+        saveResponse.productId
+      }/productImage/${Date.now()}-${image?.file.name}`;
+      const logoStorageRef = ref(storage, imagePath);
+      const task = uploadBytesResumable(logoStorageRef, image.file);
+      task.on(
+        "state_changed",
+        (snapshot) => {
+          const percent = Math.round(
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+          );
+          setProgressMap((prev) => ({
+            ...prev,
+            [`${image.file.name}`]: percent,
+          }));
+        },
+        (error) => {
+          console.error("Upload failed", error);
+          toast.error("Upload failed for " + image.file!.name);
+        }
+      );
+
+      uploadTasks.push(task.then(() => {}) as Promise<void>);
+    }
+
     await Promise.all(uploadTasks);
     await saveProductMedia(
-      { productId: saveResponse.productId, media: paths },
+      { productId: saveResponse.productId, image: imagePath },
       token
     );
-    toast.success("Success", { description: "Property Created" });
+    setIsLoading(false);
+    toast.success("Success", { description: "Product Created" });
     router.push("/admin-dashboard");
   };
   return (
     <div>
       <ProductForm
+        progressMap={progressMap}
         brand={brand}
         handleSubmit={handleSubmit}
         submitButtonLabel={
-          <>
-            <PlusCircleIcon />
-            Add Product
-          </>
+          isLoading ? (
+            <>
+              <Loader2 className="animate-spin" />
+              Adding Product
+            </>
+          ) : (
+            <>
+              <div className="flex items-center text-center gap-2">
+                <PlusCircleIcon />
+                Add Product
+              </div>
+            </>
+          )
         }
       />
     </div>

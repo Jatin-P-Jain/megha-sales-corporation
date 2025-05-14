@@ -69,7 +69,7 @@ export default function BrandForm({
         className="flex flex-col gap-0 md:gap-6"
       >
         <div className="flex flex-col gap-4">
-          <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-4 justify-center items-center ">
+          <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-4 justify-center items-start ">
             <div className="flex flex-col gap-4">
               {/* Status */}
               <FormField
@@ -77,7 +77,10 @@ export default function BrandForm({
                 name="status"
                 render={({ field }) => (
                   <FormItem className="flex flex-col ">
-                    <FormLabel>Status</FormLabel>
+                    <FormLabel className="gap-1 flex items-start">
+                      Status
+                      <span className="text-xs text-muted-foreground">*</span>
+                    </FormLabel>
                     <FormControl>
                       <Select
                         disabled={isSubmitting}
@@ -106,12 +109,35 @@ export default function BrandForm({
                 name="brandName"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel className="">Brand Name</FormLabel>
+                    <FormLabel className="gap-1 flex items-start">
+                      Brand Name
+                      <span className="text-xs text-muted-foreground">*</span>
+                    </FormLabel>
                     <FormControl>
                       <Input
                         disabled={isSubmitting}
                         {...field}
                         value={capitalize(field.value)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {/* Company Name */}
+              <FormField
+                control={form.control}
+                name="companies"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <TagInput
+                        label="Company Names"
+                        values={field.value}
+                        onChange={field.onChange}
+                        disabled={isSubmitting}
+                        placeholder="Add a company and press Enter"
+                        required
                       />
                     </FormControl>
                     <FormMessage />
@@ -127,6 +153,7 @@ export default function BrandForm({
                 <FormItem className=" h-full">
                   <FormControl>
                     <ImageUploader
+                      parent="brand"
                       progressMap={progressMap}
                       disabled={isSubmitting}
                       image={field.value}
@@ -147,26 +174,6 @@ export default function BrandForm({
             />
           </div>
 
-          {/* Company Name */}
-          <FormField
-            control={form.control}
-            name="companies"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <TagInput
-                    label="Company Names"
-                    values={field.value}
-                    onChange={field.onChange}
-                    disabled={isSubmitting}
-                    placeholder="Add a company and press Enter"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
           {/* Vehicle Company */}
           <FormField
             control={form.control}
@@ -180,6 +187,7 @@ export default function BrandForm({
                     onChange={field.onChange}
                     disabled={isSubmitting}
                     placeholder="Add a vehicle company and press Enter"
+                    required
                   />
                 </FormControl>
                 <FormMessage />
@@ -219,6 +227,7 @@ export default function BrandForm({
                     onChange={field.onChange}
                     disabled={isSubmitting}
                     placeholder="Add a part category and press Enter"
+                    required
                   />
                 </FormControl>
                 <FormMessage />

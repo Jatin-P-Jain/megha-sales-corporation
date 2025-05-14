@@ -17,16 +17,13 @@ export const productDataSchema = z.object({
     .number()
     .min(0, "GST must be at least 0%")
     .max(100, "GST cannot exceed 100%"),
-  description: z
-    .string()
-    .max(500, "Description must be at most 500 characters")
-    .optional(),
+  stock: z.coerce.number().positive("Stock must be greater than zero"),
   status: z.enum(["draft", "for-sale", "discontinued", "out-of-stock"]),
 });
 
 export const productImagesSchema = z.object({
-  images: z.array(
-    z.object({
+  image: z
+    .object({
       id: z.string(),
       url: z.string(),
       file:
@@ -34,7 +31,7 @@ export const productImagesSchema = z.object({
           ? z.instanceof(File).optional()
           : z.any().optional(),
     })
-  ),
+    .optional(),
 });
 
 export const productSchema = productDataSchema.and(productImagesSchema);

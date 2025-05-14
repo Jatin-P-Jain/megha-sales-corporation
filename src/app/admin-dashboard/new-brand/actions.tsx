@@ -32,7 +32,7 @@ export const createBrand = async (
   }
 
   const slug = slugify(data.brandName);
-  const docRef = fireStore.collection("brands").doc(slug);
+  const docRef = fireStore.collection("products").doc(slug);
   try {
     await fireStore.runTransaction(async (txn) => {
       const existing = await txn.get(docRef);

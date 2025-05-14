@@ -2,7 +2,7 @@
 
 import { ChangeEvent, useRef, useState } from "react";
 import { Button } from "../ui/button";
-import { Loader2, PencilIcon, UploadIcon } from "lucide-react";
+import { Loader2, PencilIcon, Trash2Icon, UploadIcon } from "lucide-react";
 import Image from "next/image";
 import { Progress } from "../ui/progress";
 
@@ -12,14 +12,16 @@ export type ImageUpload = {
   file?: File;
 };
 type Props = {
+  parent?: string;
   progressMap?: Record<string, number>;
-  image: ImageUpload;
+  image?: ImageUpload;
   onMediaChange: (image: ImageUpload) => void;
   disabled?: boolean; // Added disabled prop
   urlFormatter?: (image: ImageUpload | undefined) => string;
 };
 
 export default function ImageUploader({
+  parent,
   progressMap,
   image,
   onMediaChange,
@@ -53,7 +55,7 @@ export default function ImageUploader({
   return (
     <div className="max-w-3xl w-full mx-auto md:pt-4 pb-0">
       {!image?.url ? (
-        <div>
+        <div className={`${parent === "brand" ? "h-40" : ""}`}>
           <input
             className="hidden"
             ref={inputRef}
@@ -63,7 +65,7 @@ export default function ImageUploader({
             disabled={disabled} // Disable input if disabled
           />
           <Button
-            className="w-full mx-auto flex h-full border-dashed"
+            className="w-full mx-auto flex !h-full border-dashed"
             variant={"outline"}
             type="button"
             onClick={() => {
@@ -73,7 +75,7 @@ export default function ImageUploader({
             disabled={disabled} // Disable button if disabled
           >
             <UploadIcon />
-            Upload Brand Logo
+            {parent === "brand" ? "Upload Brand Logo" : "Upload Product Image"}
           </Button>
           {imageSizeError ? (
             <p
@@ -92,12 +94,20 @@ export default function ImageUploader({
         </div>
       ) : (
         <div className=" h-full w-full flex items-center justify-center flex-col gap-1">
-          <div className="relative border-1 rounded-lg overflow-hidden h-40 w-full flex justify-center flex-col items-center">
+          <div className="relative border-1 rounded-lg overflow-hidden h-35 w-full flex justify-center flex-col items-center">
             {isImageLoading && (
               <div className="absolute inset-0 flex items-center justify-center z-10 bg-white/50">
                 <Loader2 className="animate-spin h-6 w-6 text-primary" />
               </div>
             )}
+            <div
+              className="absolute top-0 right-0 z-30 bg-muted/80 rounded-bl-lg p-2 flex justify-center items-center cursor-pointer"
+              onClick={() => {
+                onMediaChange({ id: "", url: "" });
+              }}
+            >
+              <Trash2Icon className="size-4" />
+            </div>
             <Image
               src={urlFormatter ? urlFormatter(image) : image?.url}
               alt="Logo"
@@ -147,7 +157,7 @@ export default function ImageUploader({
             disabled={disabled} // Disable button if disabled
           >
             <PencilIcon className="!w-4 !h-4" />
-            Change Brand Logo
+            {parent === "brand" ? "Change Brand Logo" : "Change Product Image"}
           </Button>
         </div>
       )}

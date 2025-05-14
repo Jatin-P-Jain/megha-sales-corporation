@@ -43,3 +43,10 @@ export function slugify(name: string) {
     .replace(/[^\w\s-]/g, "") // remove punctuation
     .replace(/\s+/g, "-"); // spaces → hyphens
 }
+export function slugifyPartNumber(partNumber: string) {
+  return partNumber
+    .trim()
+    .toUpperCase()
+    .replace(/[^\w\s-]/g, "") // remove punctuation
+    .replace(/\s+/g, "-"); // spaces → hyphens
+}

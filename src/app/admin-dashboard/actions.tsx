@@ -45,10 +45,10 @@ export const saveBrandMedia = async (
 };
 export const saveProductMedia = async (
   {
-    media,
+    image,
     productId,
   }: {
-    media: string[];
+    image: string;
     productId: string;
   },
   authtoken: string
@@ -65,7 +65,7 @@ export const saveProductMedia = async (
     media: z.array(z.string()),
   });
 
-  const validation = schema.safeParse({ media, productId });
+  const validation = schema.safeParse({ image, productId });
   if (!validation.success) {
     return {
       error: true,
@@ -73,7 +73,7 @@ export const saveProductMedia = async (
     };
   }
 
-  await fireStore.collection("products").doc(productId).update({ media });
+  await fireStore.collection("products").doc(productId).update({ image });
 };
 export const updateBrandProcuctCount = async (
   {

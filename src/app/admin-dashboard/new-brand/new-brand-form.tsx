@@ -66,8 +66,6 @@ export default function NewBrandForm() {
     });
     let logoPath: string = "";
     if (brandLogo.file) {
-      console.log("brandLogo -- ", brandLogo);
-
       logoPath = `brands/${slugify(
         saveResponse.brandName
       )}/brandLogo/${Date.now()}-${brandLogo.file.name}`;
