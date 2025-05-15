@@ -1,7 +1,7 @@
 "use client";
 
-import { productSchema } from "@/validation/productSchema";
-import { useForm } from "react-hook-form";
+import { productDataSchema, productSchema } from "@/validation/productSchema";
+import { ControllerRenderProps, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -25,6 +25,7 @@ import { Brand } from "@/types/brand";
 import ImageUploader, { ImageUpload } from "./image-uploader";
 import imageUrlFormatter from "@/lib/image-urlFormatter";
 import { TagInput } from "./tag-input";
+import { useEffect } from "react";
 
 type Props = {
   progressMap?: Record<string, number>;
@@ -71,6 +72,47 @@ export default function ProductForm({
   });
   const { isSubmitting } = form.formState;
 
+  useEffect(() => {
+    if (brand) {
+      form.setValue("brandName", brand.brandName);
+    }
+  }, [brand, form]);
+
+  const renderBrandNameField = (
+    field: ControllerRenderProps<
+      z.infer<typeof productDataSchema>,
+      "brandName"
+    >,
+  ) => {
+    if (allBrands && allBrands?.length > 0) {
+      return (
+        <Select
+          disabled={isSubmitting}
+          onValueChange={(value: string) => {
+            field.onChange(value); // update form field
+            const selected = allBrands?.find((b) => b.brandName === value);
+            if (selected && handleSelectBrand) handleSelectBrand(selected); // update parent
+          }}
+          value={field.value}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder={"Select Company"} />
+          </SelectTrigger>
+          <SelectContent>
+            {allBrands?.map((brand, i) => {
+              return (
+                <SelectItem value={brand?.brandName} key={i}>
+                  {brand?.brandName}
+                </SelectItem>
+              );
+            })}
+          </SelectContent>
+        </Select>
+      );
+    }
+    return <Input readOnly {...field} />;
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="">
@@ -86,37 +128,7 @@ export default function ProductForm({
                     Brand Name
                     <span className="text-muted-foreground text-xs">*</span>
                   </FormLabel>
-                  <FormControl>
-                    {allBrands?.length == 0 && brand ? (
-                      <Input readOnly {...field} />
-                    ) : (
-                      <Select
-                        disabled={isSubmitting}
-                        onValueChange={(value) => {
-                          field.onChange(value); // update form field
-                          const selected = allBrands?.find(
-                            (b) => b.brandName === value,
-                          );
-                          if (selected && handleSelectBrand)
-                            handleSelectBrand(selected); // update parent
-                        }}
-                        value={field.value}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder={"Select Company"} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {allBrands?.map((brand, i) => {
-                            return (
-                              <SelectItem value={brand?.brandName} key={i}>
-                                {brand?.brandName}
-                              </SelectItem>
-                            );
-                          })}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  </FormControl>
+                  <FormControl>{renderBrandNameField(field)}</FormControl>
                   <FormMessage />
                 </FormItem>
               )}

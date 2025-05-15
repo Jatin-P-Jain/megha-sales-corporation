@@ -12,32 +12,22 @@ import {
 } from "lucide-react";
 import CategoryChips from "@/components/custom/category-selection-chips";
 import Link from "next/link";
+import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
 
 export default async function ProductsList({
   searchParams,
 }: {
   searchParams: Promise<{
     page: string;
-    minPrice: string;
-    maxPrice: string;
-    minBedrooms: string;
+    brandId:string
   }>;
 }) {
   const searchParamsValues = await searchParams;
   const parsedPage = parseInt(searchParamsValues.page);
-  const parsedMinPrice = parseInt(searchParamsValues.minPrice);
-  const parsedMaxPrice = parseInt(searchParamsValues.maxPrice);
-  const parsedMinBedrooms = parseInt(searchParamsValues.minBedrooms);
   const page = isNaN(parsedPage) ? 1 : parsedPage;
-  const minPrice = isNaN(parsedMinPrice) ? null : parsedMinPrice;
-  const maxPrice = isNaN(parsedMaxPrice) ? null : parsedMaxPrice;
-  const minBedrooms = isNaN(parsedMinBedrooms) ? null : parsedMinBedrooms;
 
   const productsPromise = getProducts({
     filters: {
-      minPrice: minPrice,
-      maxPrice: maxPrice,
-      minBedrooms: minBedrooms,
       status: ["for-sale"],
     },
     pagination: { page: page, pageSize: 6 },
@@ -51,8 +41,17 @@ export default async function ProductsList({
   return (
     <div className="mx-auto flex max-w-screen-lg flex-col gap-4">
       <div className="fixed top-17 z-30 w-full max-w-screen-lg rounded-xl bg-white px-4 shadow-md md:py-2">
-        <div className="mx-auto w-full max-w-screen-lg">
-          <h1 className="py-4 text-2xl font-[600] tracking-wide text-cyan-950">
+        <div className="mx-auto w-full max-w-screen-lg pt-3 md:pt-6">
+          <EllipsisBreadCrumbs
+            items={[
+              {
+                href: `${isAdmin ? "/admin-dashboard" : "/"}`,
+                label: `${isAdmin ? "Admin Dashboard" : "Home"}`,
+              },
+              { label: "Product Listings" },
+            ]}
+          />
+          <h1 className="pt-2 text-2xl py-4 font-[600] tracking-wide text-cyan-950">
             Product Listings
           </h1>
           <div className="flex flex-col gap-2 pb-4">
@@ -74,9 +73,15 @@ export default async function ProductsList({
                   <div className="flex flex-col pr-4">
                     <div className="text-muted-foreground">Total Cart</div>
                     <div className="flex w-full justify-between">
-                      <div>Items: <span className="font-semibold text-primary">17</span></div>
                       <div>
-                        Amount: <span className="font-semibold text-primary">₹1,50,000</span>
+                        Items:{" "}
+                        <span className="text-primary font-semibold">17</span>
+                      </div>
+                      <div>
+                        Amount:{" "}
+                        <span className="text-primary font-semibold">
+                          ₹1,50,000
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -89,7 +94,7 @@ export default async function ProductsList({
           </div>
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto px-4 pt-45 md:pt-50">
+      <div className="flex-1 overflow-y-auto px-4 pt-53 md:pt-55">
         <Suspense
           fallback={
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">

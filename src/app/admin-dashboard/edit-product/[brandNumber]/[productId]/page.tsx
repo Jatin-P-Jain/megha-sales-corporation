@@ -28,7 +28,7 @@ const EditProductPage = async ({
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <div className="flex flex-col text-3xl font-bold">
-              Edit Brand
+              Edit Product
               <span className="text-muted-foreground text-xs font-normal">
                 * marked fields are mandotory
               </span>

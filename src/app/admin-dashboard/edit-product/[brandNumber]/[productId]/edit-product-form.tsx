@@ -21,7 +21,7 @@ import { updateProduct } from "./actions";
 
 export default function EditProductForm({
   product,
-  brandData,
+  brand,
 }: {
   product: Product;
   brand: Brand;
@@ -45,7 +45,6 @@ export default function EditProductForm({
   const router = useRouter();
   const [progressMap, setProgressMap] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  console.log("image here -- ", image);
   const handleSubmit = async (data: z.infer<typeof productSchema>) => {
     setIsLoading(true);
     const token = await auth?.currentUser?.getIdToken();

@@ -16,14 +16,12 @@ export default async function ProductList({
   isAdmin: boolean;
   searchParamsValues: {
     page: string;
-    minPrice: string;
-    maxPrice: string;
-    minBedrooms: string;
   };
   page: number;
 }) {
   const [products] = await Promise.all([productsPromise]);
   const { data, totalPages } = products;
+  console.log({ searchParamsValues });
 
   return (
     <>
@@ -127,18 +125,18 @@ export default async function ProductList({
           <div className="flex items-center justify-center gap-4 p-2">
             {Array.from({ length: totalPages }).map((_, i) => {
               const newSearchParams = new URLSearchParams();
-              if (searchParamsValues.minPrice) {
-                newSearchParams.set("minPrice", searchParamsValues.minPrice);
-              }
-              if (searchParamsValues.maxPrice) {
-                newSearchParams.set("maxPrice", searchParamsValues.maxPrice);
-              }
-              if (searchParamsValues.minBedrooms) {
-                newSearchParams.set(
-                  "minBedrooms",
-                  searchParamsValues.minBedrooms,
-                );
-              }
+              // if (searchParamsValues.minPrice) {
+              //   newSearchParams.set("minPrice", searchParamsValues.minPrice);
+              // }
+              // if (searchParamsValues.maxPrice) {
+              //   newSearchParams.set("maxPrice", searchParamsValues.maxPrice);
+              // }
+              // if (searchParamsValues.minBedrooms) {
+              //   newSearchParams.set(
+              //     "minBedrooms",
+              //     searchParamsValues.minBedrooms,
+              //   );
+              // }
               newSearchParams.set("page", `${i + 1}`);
               return (
                 <Button
