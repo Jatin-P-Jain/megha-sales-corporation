@@ -56,7 +56,7 @@ export default async function ProductsList({
           </h1>
           <div className="flex flex-col gap-2 pb-4">
             <CategoryChips />
-            <div className="grid w-full grid-cols-[1fr_6fr] items-center justify-between gap-2">
+            <div className="grid w-full grid-cols-[1fr_8fr] items-center justify-between gap-2">
               <Button variant={"outline"} className="h-full w-full">
                 <FunnelPlusIcon />
                 {/* Filters */}

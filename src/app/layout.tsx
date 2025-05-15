@@ -9,7 +9,7 @@ import { Toaster } from "@/components/ui/sonner";
 import Image from "next/image";
 import BrandLogo from "../../public/brand-logo.svg";
 import { AuthProvider } from "@/context/auth";
-import AboutUsLink from "@/components/custom/about-us-link";
+import ContactUsLink from "@/components/custom/contact-us-link";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -37,7 +37,7 @@ export default function RootLayout({
         className={`${poppins.className} max-h-screen min-h-[100dvh] antialiased`}
       >
         <AuthProvider>
-          <nav className="fixed top-0 right-0 left-0 z-50 flex flex-wrap items-center justify-between bg-cyan-950 p-3 px-3 text-white shadow-md md:px-6 lg:px-10">
+          <nav className="fixed top-0 right-0 left-0 z-50 flex flex-wrap items-center justify-between bg-cyan-950 p-3 px-4 text-white shadow-md md:px-6 lg:px-10">
             <Link
               href={"/"}
               className="flex items-center justify-end gap-2 text-lg tracking-wider uppercase md:gap-4 md:text-2xl"
@@ -52,11 +52,11 @@ export default function RootLayout({
                 </span>
               </div>
             </Link>
-            <ul className="mt-2 flex flex-wrap items-center gap-4 md:mt-0 md:gap-6">
-              <li>
-                <AboutUsLink />
+            <ul className="flex flex-wrap items-center justify-center gap-4 md:mt-0 md:gap-6">
+              <li className="">
+                <ContactUsLink />
               </li>
-              <li>
+              <li className="flex items-center justify-center">
                 <AuthButtons />
               </li>
             </ul>
