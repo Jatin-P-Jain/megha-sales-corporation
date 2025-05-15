@@ -1,26 +1,19 @@
 "use client";
 
-import { addFavourite, removeFavourite } from "@/app/property-search/actions";
 import { useAuth } from "@/context/auth";
 import { HeartIcon, LoaderCircleIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
-const FavouriteButton = ({
-  propertyId,
-  isFavourite,
-}: {
-  propertyId: string;
-  isFavourite: boolean;
-}) => {
+const FavouriteButton = ({ isFavourite }: { isFavourite: boolean }) => {
   const auth = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   return (
     <div
-      className="bg-white w-8 h-8 absolute top-0 right-0 rounded-bl-2xl cursor-pointer flex items-center justify-center z-10 "
+      className="absolute top-0 right-0 z-10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-bl-2xl bg-white"
       onClick={async () => {
         setLoading(true);
         try {
@@ -30,12 +23,7 @@ const FavouriteButton = ({
             setLoading(false);
             return;
           }
-          const token = tokenResult?.token;
-          if (!isFavourite) {
-            await addFavourite(propertyId, token);
-          } else {
-            await removeFavourite(propertyId, token);
-          }
+
           toast.success("Success!", {
             description: `Property ${
               isFavourite ? "REMOVED from" : "ADDED to"
