@@ -14,13 +14,22 @@ import { storage } from "@/firebase/client";
 import { createProduct } from "./actions";
 import { saveProductMedia, updateBrandProcuctCount } from "../actions";
 import { Brand } from "@/types/brand";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-export default function NewProductForm({ brand }: { brand: Brand }) {
+export default function NewProductForm({ brand }: { brand?: Brand | Brand[] }) {
   const auth = useAuth();
   const router = useRouter();
   const [progressMap, setProgressMap] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [brandSelected, setBrandSelected] = useState<Brand | undefined>(
+    undefined,
+  );
+  useEffect(() => {
+    if (!Array.isArray(brand)) {
+      setBrandSelected(brand);
+    }
+  }, [brand]);
+
   const handleSubmit = async (data: z.infer<typeof productSchema>) => {
     setIsLoading(true);
     const token = await auth?.currentUser?.getIdToken();
@@ -36,8 +45,11 @@ export default function NewProductForm({ brand }: { brand: Brand }) {
       return;
     }
     await updateBrandProcuctCount(
-      { brandId: brand.id, totalProducts: brand.totalProducts + 1 },
-      token
+      {
+        brandId: brandSelected?.id ?? "",
+        totalProducts: brandSelected?.totalProducts ?? 0 + 1,
+      },
+      token,
     );
     const uploadTasks: (UploadTask | Promise<void>)[] = [];
 
@@ -52,7 +64,7 @@ export default function NewProductForm({ brand }: { brand: Brand }) {
         "state_changed",
         (snapshot) => {
           const percent = Math.round(
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100,
           );
           setProgressMap((prev) => ({
             ...prev,
@@ -62,7 +74,7 @@ export default function NewProductForm({ brand }: { brand: Brand }) {
         (error) => {
           console.error("Upload failed", error);
           toast.error("Upload failed for " + image.file!.name);
-        }
+        },
       );
 
       uploadTasks.push(task.then(() => {}) as Promise<void>);
@@ -71,7 +83,7 @@ export default function NewProductForm({ brand }: { brand: Brand }) {
     await Promise.all(uploadTasks);
     await saveProductMedia(
       { productId: saveResponse.productId, image: imagePath },
-      token
+      token,
     );
     setIsLoading(false);
     toast.success("Success", { description: "Product Created" });
@@ -81,7 +93,11 @@ export default function NewProductForm({ brand }: { brand: Brand }) {
     <div>
       <ProductForm
         progressMap={progressMap}
-        brand={brand}
+        brand={brandSelected}
+        allBrands={Array.isArray(brand) ? brand : []}
+        handleSelectBrand={(brand) => {
+          setBrandSelected(brand);
+        }}
         handleSubmit={handleSubmit}
         submitButtonLabel={
           isLoading ? (
@@ -91,7 +107,7 @@ export default function NewProductForm({ brand }: { brand: Brand }) {
             </>
           ) : (
             <>
-              <div className="flex items-center text-center gap-2">
+              <div className="flex items-center gap-2 text-center">
                 <PlusCircleIcon />
                 Add Product
               </div>

@@ -1,8 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import NewProductForm from "./new-product-form";
 import { cookies } from "next/headers";
-import { getBrandById } from "@/data/brands";
+import { getBrandById, getBrandsForDropDown } from "@/data/brands";
 import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
+import { Brand } from "@/types/brand";
 
 interface SearchParamProps {
   searchParams: Promise<{ brandId: string }>;
@@ -16,33 +17,45 @@ const NewProduct = async ({ searchParams }: SearchParamProps) => {
   if (!token) {
     return;
   }
-  const brand = await getBrandById(brandId);
+  let brandData: Brand | Brand[];
+  if (brandId) {
+    brandData = await getBrandById(brandId);
+  } else {
+    const data = await getBrandsForDropDown({ filters: { status: ["live"] } });
+    brandData = data.data;
+  }
+  console.log({ brandData });
+
+  const breadCrumbItems = !Array.isArray(brandData)
+    ? [
+        { href: "/admin-dashboard", label: "Admin Dashboard" },
+        { href: "/admin-dashboard/brands", label: "Brands" },
+        {
+          href: "/admin-dashboard/brands",
+          label: `${brandData?.brandName ?? ""}`,
+        },
+        { label: "New Product" },
+      ]
+    : [
+        { href: "/products-list", label: "Product Listings" },
+        { label: "New Product" },
+      ];
 
   return (
     <div className="">
-      <EllipsisBreadCrumbs
-        items={[
-          { href: "/admin-dashboard", label: "Admin Dashboard" },
-          { href: "/admin-dashboard/brands", label: "Brands" },
-          {
-            href: "/admin-dashboard/brands",
-            label: `${brand?.brandName ?? ""}`,
-          },
-          { label: "New Product" },
-        ]}
-      />
+      <EllipsisBreadCrumbs items={breadCrumbItems} />
 
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle className="text-3xl font-bold flex flex-col">
+          <CardTitle className="flex flex-col text-3xl font-bold">
             New Product
-            <span className="text-xs text-muted-foreground font-normal">
+            <span className="text-muted-foreground text-xs font-normal">
               * marked fields are mandotory
             </span>
           </CardTitle>
         </CardHeader>
         <CardContent className="">
-          <NewProductForm brand={brand} />
+          <NewProductForm brand={brandData} />
         </CardContent>
       </Card>
     </div>

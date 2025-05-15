@@ -39,11 +39,11 @@ export const TagInput: React.FC<TagInputProps> = ({
   };
 
   return (
-    <div>
-      <label className=" text-sm font-medium text-gray-700 mb-2 flex items-start gap-1">
+    <div className="flex flex-col">
+      <label className="mb-2 flex items-start justify-start gap-1 text-sm font-medium text-gray-700">
         {label}
         {required && (
-          <span className="text-xs text-muted-foreground pt-0.5">*</span>
+          <span className="text-muted-foreground pt-0.5 text-xs">*</span>
         )}
       </label>
       <div className="flex gap-2">
@@ -70,15 +70,15 @@ export const TagInput: React.FC<TagInputProps> = ({
         </Button>
       </div>
       {values && values.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-2">
+        <div className="mt-2 flex flex-wrap gap-2">
           {values.map((tag, idx) => (
             <span
               key={idx}
-              className="flex items-center bg-gray-100 px-2 py-1 rounded-md gap-2 text-sm"
+              className="flex items-center gap-2 rounded-md bg-gray-100 px-2 py-1 text-sm"
             >
               {tag}
               <XCircleIcon
-                className="h-4 w-4  text-primary rounded-sm"
+                className="text-primary h-4 w-4 rounded-sm"
                 onClick={() => removeTag(idx)}
               />
             </span>

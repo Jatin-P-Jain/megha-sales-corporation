@@ -9,7 +9,7 @@ export type Product = {
   brandName: string;
   companyName: string;
   vehicleCompany: string;
-  vehicleName: string;
+  vehicleName?: string[];
   partCategory: string;
   partNumber: string;
   partName: string;
@@ -17,7 +17,6 @@ export type Product = {
   discount: number;
   gst: number;
   stock: number;
-  available: boolean;
   status: ProductStatus;
   image?: string;
 };

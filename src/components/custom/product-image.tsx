@@ -14,7 +14,7 @@ const ProductImage: React.FC<ProductImageProps> = ({
   const [loading, setLoading] = useState(true);
   return (
     <div className="relative flex h-full w-full items-end justify-end justify-self-end">
-      {loading && (
+      {!!productImage && loading && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/50">
           <Loader2 className="text-primary h-6 w-6 animate-spin" />
         </div>
@@ -30,10 +30,10 @@ const ProductImage: React.FC<ProductImageProps> = ({
           }}
         />
       ) : (
-        <>
+        <div className="text-muted-foreground flex h-full w-full flex-col items-center justify-center text-sm">
           <ImageOffIcon />
           <small>No Image</small>
-        </>
+        </div>
       )}
     </div>
   );

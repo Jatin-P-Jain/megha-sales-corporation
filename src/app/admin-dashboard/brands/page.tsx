@@ -32,107 +32,107 @@ const AdminBrands = async ({
           { label: "Brands" },
         ]}
       />
-      <h1 className="text-4xl font-bold mt-6">Brands</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-4">
-        <Card className="p-4 gap-4 shadow-md border-dashed bg-gray-100/50 border-2 flex items-center justify-center cursor-pointer min-h-50">
+      <h1 className="mt-6 text-4xl font-bold">Brands</h1>
+      <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <Card className="flex min-h-50 cursor-pointer items-center justify-center gap-4 border-2 border-dashed bg-gray-100/50 p-4 shadow-md">
           <Link
             href={"/admin-dashboard/new-brand"}
-            className="w-full h-full flex justify-center items-center text-lg font-semibold gap-2 text-primary"
+            className="text-primary flex h-full w-full items-center justify-center gap-2 text-lg font-semibold"
           >
-            <PlusCircleIcon className="w-4 h-4" />
+            <PlusCircleIcon className="h-4 w-4" />
             Add Brand
           </Link>
         </Card>
         {data.map((brand) => (
-          <Card key={brand.id} className="p-4 gap-4 shadow-md">
-            <CardHeader className="flex text-xl font-bold justify-between items-center w-full  p-0">
-              <CardTitle className="px- text-primary font-semibold text-xl">
+          <Card key={brand.id} className="gap-4 p-4 shadow-md">
+            <CardHeader className="flex w-full items-center justify-between p-0 text-xl font-bold">
+              <CardTitle className="px- text-primary text-xl font-semibold">
                 {brand.brandName}
               </CardTitle>
-              <div className="flex gap-1 items-center justify-center">
+              <div className="flex items-center justify-center gap-1">
                 <div
                   className={`${
                     brand.status === "draft"
                       ? "text-yellow-600"
                       : brand.status === "live"
-                      ? "text-green-700 "
-                      : brand.status === "discontinued"
-                      ? "text-red-600"
-                      : ""
-                  }  text-sm font-semibold px-1 py-1 `}
+                        ? "text-green-700"
+                        : brand.status === "discontinued"
+                          ? "text-red-600"
+                          : ""
+                  } px-1 py-1 text-sm font-semibold`}
                 >
                   {brand.status === "draft"
                     ? "DRAFT"
                     : brand.status === "live"
-                    ? "LIVE"
-                    : brand.status === "discontinued"
-                    ? "REMOVED"
-                    : ""}
+                      ? "LIVE"
+                      : brand.status === "discontinued"
+                        ? "REMOVED"
+                        : ""}
                 </div>
                 <Link
                   href={`/admin-dashboard/edit-brand/${brand.id}`}
-                  className="p-1.5 rounded-lg border-1 border-primary/70 text-primary flex items-center justify-center gap-1 py-1"
+                  className="border-primary/70 text-primary flex items-center justify-center gap-1 rounded-lg border-1 p-1.5 py-1"
                 >
-                  <PencilIcon className="w-3.5 h-3.5" />
+                  <PencilIcon className="h-3.5 w-3.5" />
                   <span className="text-xs md:text-sm">Edit</span>
                 </Link>
               </div>
             </CardHeader>
-            <CardContent className="p-0 flex flex-col gap-1 flex-1">
-              <div className="flex flex-col relative w-full h-30 items-center justify-center">
+            <CardContent className="flex flex-1 flex-col gap-1 p-0">
+              <div className="relative flex h-30 w-full flex-col items-center justify-center">
                 <BrandLogo brandLogo={brand?.brandLogo} />
               </div>
-              <CardDescription className="p-0 flex flex-col gap-2 justify-center w-full flex-1">
-                <div className="text-ellipsis line-clamp-2 text-justify text-muted-foreground text-xs mb-2">
+              <CardDescription className="flex w-full flex-1 flex-col justify-center gap-2 p-0">
+                <div className="text-muted-foreground mb-2 line-clamp-2 text-justify text-xs text-ellipsis">
                   {brand.description}
                 </div>
 
                 {brand?.vehicleNames && brand?.vehicleNames.length > 0 && (
-                  <div className="flex gap-2 flex-wrap">
+                  <div className="flex flex-wrap gap-2">
                     {brand?.vehicleNames.slice(0, 2).map((company, i) => (
-                      <span key={i} className="text-sm text-muted-foreground">
+                      <span key={i} className="text-muted-foreground text-sm">
                         {`• ${company} `}
                       </span>
                     ))}
                     {brand?.vehicleNames.length > 2 && (
-                      <span className="text-sm font-semibold text-primary/80">
+                      <span className="text-primary/80 text-sm font-semibold">
                         {`+ ${brand.vehicleNames.length - 2} more`}
                       </span>
                     )}
                   </div>
                 )}
-                <div className="flex gap-1 flex-wrap text-xs text-primary/80">
+                <div className="text-primary/80 flex flex-wrap gap-1 text-xs">
                   {brand.partCategories.slice(0, 2).map((partCategory, i) => (
-                    <span key={i} className="font-semibold ">
-                      <WrenchIcon className="w-4 h-4 inline-block" />
+                    <span key={i} className="font-semibold">
+                      <WrenchIcon className="inline-block h-4 w-4" />
                       {` ${partCategory} `}
                     </span>
                   ))}
                   {brand.partCategories.length > 2 && (
-                    <span className="font-semibold ">
+                    <span className="font-semibold">
                       {`+ ${brand.partCategories.length - 2} more`}
                     </span>
                   )}
                 </div>
               </CardDescription>
             </CardContent>
-            <CardFooter className="flex flex-col gap-1 px-0 justify-between items-center">
+            <CardFooter className="flex flex-col items-center justify-between gap-1 px-0">
               <div
-                className={`flex text-sm w-full items-center ${
+                className={`flex w-full items-center text-sm ${
                   brand.status === "live" ? "justify-between" : "justify-center"
                 }`}
               >
                 <div className="flex items-center justify-center">
                   Total Products:
                   <span
-                    className={`font-semibold text-base ml-2 ${
+                    className={`ml-2 text-base font-semibold ${
                       brand.status === "draft"
                         ? "text-yellow-600"
                         : brand.status === "live"
-                        ? "text-green-700"
-                        : brand.status === "discontinued"
-                        ? "text-red-600"
-                        : ""
+                          ? "text-green-700"
+                          : brand.status === "discontinued"
+                            ? "text-red-600"
+                            : ""
                     }`}
                   >
                     {brand.totalProducts}
@@ -140,8 +140,8 @@ const AdminBrands = async ({
                 </div>
                 {brand.totalProducts > 0 && (
                   <Link
-                    href={"/products-list"}
-                    className="font-semibold text-primary hover:underline"
+                    href={"/admin-dashboard/products-list"}
+                    className="text-primary font-semibold hover:underline"
                   >
                     Show Products
                   </Link>
@@ -153,7 +153,7 @@ const AdminBrands = async ({
               )}
 
               {brand?.status === "live" && (
-                <Button className="gap-2 w-full" asChild>
+                <Button className="w-full gap-2" asChild>
                   <Link
                     href={{
                       pathname: "/admin-dashboard/new-product",

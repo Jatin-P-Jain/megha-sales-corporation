@@ -11,6 +11,7 @@ import {
   PlusCircleIcon,
 } from "lucide-react";
 import CategoryChips from "@/components/custom/category-selection-chips";
+import Link from "next/link";
 
 export default async function ProductsList({
   searchParams,
@@ -48,34 +49,47 @@ export default async function ProductsList({
   const isAdmin = verifiedToken?.admin;
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-4 p-3 py-2 md:py-5">
-      <div className="fixed z-10 w-full max-w-6xl px-0">
-        <div className="max-w-sm bg-white pr-6 md:max-w-4xl md:pr-12 lg:max-w-5xl lg:pr-12 xl:max-w-6xl xl:pr-6">
+    <div className="mx-auto flex max-w-screen-lg flex-col gap-4">
+      <div className="fixed top-17 z-30 w-full max-w-screen-lg rounded-xl bg-white px-4 shadow-md md:py-2">
+        <div className="mx-auto w-full max-w-screen-lg">
           <h1 className="py-4 text-2xl font-[600] tracking-wide text-cyan-950">
             Product Listings
           </h1>
-          <div className="flex flex-col gap-4 pb-4">
+          <div className="flex flex-col gap-2 pb-4">
             <CategoryChips />
-            <div className="grid w-full grid-cols-2 items-center justify-between gap-4">
-              <Button variant={"outline"} className="w-full">
+            <div className="grid w-full grid-cols-[1fr_6fr] items-center justify-between gap-2">
+              <Button variant={"outline"} className="h-full w-full">
                 <FunnelPlusIcon />
-                Filters
+                {/* Filters */}
               </Button>
               {isAdmin ? (
-                <Button className="w-full">
-                  <PlusCircleIcon className="" />
-                  Add New Product
+                <Button className="w-full" asChild>
+                  <Link href={"/admin-dashboard/new-product"}>
+                    <PlusCircleIcon className="" />
+                    Add New Product
+                  </Link>
                 </Button>
               ) : (
-                <Button>
-                  Proced to Cart <ArrowBigRightDashIcon className="size-5" />
-                </Button>
+                <div className="grid grid-cols-[4fr_1fr] items-center justify-center rounded-lg border-1 p-1 pl-2 text-sm">
+                  <div className="flex flex-col pr-4">
+                    <div className="text-muted-foreground">Total Cart</div>
+                    <div className="flex w-full justify-between">
+                      <div>Items: <span className="font-semibold text-primary">17</span></div>
+                      <div>
+                        Amount: <span className="font-semibold text-primary">₹1,50,000</span>
+                      </div>
+                    </div>
+                  </div>
+                  <Button className="w-full">
+                    Cart <ArrowBigRightDashIcon className="size-5" />
+                  </Button>
+                </div>
               )}
             </div>
           </div>
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto pt-45">
+      <div className="flex-1 overflow-y-auto px-4 pt-45 md:pt-50">
         <Suspense
           fallback={
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">

@@ -18,8 +18,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // 3) Public‐routes that never require login
-  const publicPaths = ["/", "/login", "/register", "/property-search"];
-  if (!token && publicPaths.some((p) => pathname.startsWith(p))) {
+  const publicPaths = ["/", "/login", "/register", "/products-list"];
+  if (!token && publicPaths.includes(pathname)) {
     return NextResponse.next();
   }
 
@@ -40,7 +40,7 @@ export async function middleware(request: NextRequest) {
     // Preserve where they originally wanted to go
     const redirectTo = encodeURIComponent(pathname + request.nextUrl.search);
     return NextResponse.redirect(
-      new URL(`/get-user-details?redirect=${redirectTo}`, origin)
+      new URL(`/get-user-details?redirect=${redirectTo}`, origin),
     );
   }
 
@@ -55,7 +55,7 @@ export async function middleware(request: NextRequest) {
   if (decoded.exp && (decoded.exp - 5 * 60) * 1000 < Date.now()) {
     const redirectTo = encodeURIComponent(pathname + request.nextUrl.search);
     return NextResponse.redirect(
-      new URL(`/api/refresh-token?redirect=${redirectTo}`, origin)
+      new URL(`/api/refresh-token?redirect=${redirectTo}`, origin),
     );
   }
 

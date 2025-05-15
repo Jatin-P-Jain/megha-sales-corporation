@@ -1,6 +1,7 @@
 import ProductImage from "@/components/custom/product-image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { slugify } from "@/lib/utils";
 import { Product } from "@/types/product";
 import { PencilIcon, PlusSquareIcon } from "lucide-react";
 import Link from "next/link";
@@ -36,7 +37,7 @@ export default async function ProductList({
                   className="relative gap-0 overflow-hidden p-4 px-1 shadow-md"
                 >
                   <CardContent className="grid md:grid-cols-[3fr_1fr]">
-                    <div className="flex flex-col gap-2 md:w-1/2">
+                    <div className="flex flex-col gap-2 md:w-3/4">
                       <div className="text-primary flex w-full items-center justify-between font-bold">
                         <span className="text-sm font-normal">Brand :</span>
                         {product.brandName}
@@ -53,10 +54,23 @@ export default async function ProductList({
                       </div>
 
                       <div className="text-primary flex w-full items-center justify-between font-bold">
-                        <span className="text-sm font-normal">
+                        <span className="w-full text-sm font-normal">
                           Vehicle Name :
                         </span>
-                        {product.vehicleCompany + " " + product?.vehicleName}
+                        <span className="line-clamp-1">
+                          {" "}
+                          {product.vehicleCompany + " - "}
+                          {product?.vehicleName?.map((vehicleName, index) => {
+                            if (
+                              product?.vehicleName &&
+                              index == product?.vehicleName?.length - 1
+                            ) {
+                              return <span key={index}>{vehicleName} </span>;
+                            } else {
+                              return <span key={index}>{vehicleName}, </span>;
+                            }
+                          })}
+                        </span>
                       </div>
                       <div className="text-primary flex w-full items-center justify-between font-bold">
                         <span className="text-sm font-normal">Category :</span>{" "}
@@ -90,9 +104,13 @@ export default async function ProductList({
                     </div>
                     <div className="flex w-full items-center justify-end">
                       {isAdmin ? (
-                        <Button variant={"outline"}>
-                          <PencilIcon />
-                          Edit Product
+                        <Button variant={"outline"} asChild>
+                          <Link
+                            href={`/admin-dashboard/edit-product/${slugify(product?.brandName)}/${product?.id}`}
+                          >
+                            <PencilIcon />
+                            Edit Product
+                          </Link>
                         </Button>
                       ) : (
                         <Button className="w-full md:w-3/4">

@@ -22,51 +22,37 @@ import {
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Brand } from "@/types/brand";
-import { capitalize } from "@/lib/capitalize";
 import ImageUploader, { ImageUpload } from "./image-uploader";
 import imageUrlFormatter from "@/lib/image-urlFormatter";
+import { TagInput } from "./tag-input";
 
 type Props = {
   progressMap?: Record<string, number>;
   submitButtonLabel: React.ReactNode;
+  handleSelectBrand?: (brand: Brand) => void;
   handleSubmit: (data: z.infer<typeof productSchema>) => void;
   defaultValues?: z.infer<typeof productSchema>;
-  brand: Brand;
+  brand?: Brand;
+  allBrands?: Brand[];
 };
 
 export default function ProductForm({
   progressMap,
+  handleSelectBrand,
   handleSubmit,
   submitButtonLabel,
   defaultValues,
   brand,
+  allBrands,
 }: Props) {
   const combineDefaultValues: z.infer<typeof productSchema> = {
-    brandName: brand.brandName,
-    companyName:
-      brand?.companies.length === 0
-        ? "NA"
-        : brand?.companies.length === 1
-        ? brand?.companies[0]
-        : "",
+    brandName: brand?.brandName ?? "",
+    companyName: brand?.companies.length === 1 ? brand?.companies[0] : "",
     vehicleCompany:
-      brand?.vehicleCompanies.length === 0
-        ? "NA"
-        : brand?.vehicleCompanies.length === 1
-        ? brand?.vehicleCompanies?.[0]
-        : "",
-    vehicleName:
-      brand?.vehicleNames && brand?.vehicleNames.length === 0
-        ? "NA"
-        : brand?.vehicleNames?.length === 1
-        ? brand?.vehicleNames?.[0]
-        : "",
+      brand?.vehicleCompanies.length === 1 ? brand?.vehicleCompanies?.[0] : "",
+    vehicleName: [],
     partCategory:
-      brand?.partCategories.length === 0
-        ? "NA"
-        : brand?.partCategories.length === 1
-        ? brand?.partCategories[0]
-        : "",
+      brand?.partCategories.length === 1 ? brand?.partCategories[0] : "",
     partNumber: "",
     partName: "",
     price: 0,
@@ -77,31 +63,59 @@ export default function ProductForm({
     image: { id: "", url: "" },
     ...defaultValues,
   };
+  console.log({ combineDefaultValues });
 
   const form = useForm<z.infer<typeof productSchema>>({
     resolver: zodResolver(productSchema),
     defaultValues: combineDefaultValues,
   });
-
   const { isSubmitting } = form.formState;
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="">
         <div className="flex flex-col gap-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {/* Brand Name */}
             <FormField
               control={form.control}
               name="brandName"
               render={({ field }) => (
                 <FormItem className="">
-                  <FormLabel className="gap-1 flex items-start">
+                  <FormLabel className="flex items-start gap-1">
                     Brand Name
-                    <span className="text-xs text-muted-foreground">*</span>
+                    <span className="text-muted-foreground text-xs">*</span>
                   </FormLabel>
                   <FormControl>
-                    <Input readOnly {...field} />
+                    {allBrands?.length == 0 && brand ? (
+                      <Input readOnly {...field} />
+                    ) : (
+                      <Select
+                        disabled={isSubmitting}
+                        onValueChange={(value) => {
+                          field.onChange(value); // update form field
+                          const selected = allBrands?.find(
+                            (b) => b.brandName === value,
+                          );
+                          if (selected && handleSelectBrand)
+                            handleSelectBrand(selected); // update parent
+                        }}
+                        value={field.value}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder={"Select Company"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {allBrands?.map((brand, i) => {
+                            return (
+                              <SelectItem value={brand?.brandName} key={i}>
+                                {brand?.brandName}
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
+                    )}
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -112,43 +126,31 @@ export default function ProductForm({
               control={form.control}
               name="companyName"
               render={({ field }) => {
-                const value =
-                  brand?.companies.length > 1
-                    ? capitalize(field.value.trim())
-                    : brand?.companies?.[0];
                 return (
                   <FormItem>
-                    <FormLabel className="gap-1 flex items-start">
+                    <FormLabel className="flex items-start gap-1">
                       Company Name
-                      <span className="text-xs text-muted-foreground">*</span>
+                      <span className="text-muted-foreground text-xs">*</span>
                     </FormLabel>
                     <FormControl>
-                      {brand?.companies.length > 1 ? (
-                        <Select
-                          disabled={isSubmitting}
-                          onValueChange={field.onChange}
-                          value={value}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder={"Select Company"} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {brand?.companies?.map((company, i) => {
-                              return (
-                                <SelectItem value={company} key={i}>
-                                  {company}
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <Input
-                          readOnly
-                          {...field}
-                          disabled={brand?.vehicleCompanies?.length === 0}
-                        />
-                      )}
+                      <Select
+                        disabled={isSubmitting || !brand}
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder={"Select Company"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {brand?.companies?.map((company, i) => {
+                            return (
+                              <SelectItem value={company} key={i}>
+                                {company}
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -156,51 +158,37 @@ export default function ProductForm({
               }}
             />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 items-start justify-center gap-4 md:grid-cols-2">
             {/* Vehicle Company Name*/}
             <FormField
               control={form.control}
               name="vehicleCompany"
               render={({ field }) => {
-                const value =
-                  brand?.vehicleCompanies.length > 1
-                    ? capitalize(field.value.trim())
-                    : brand?.vehicleCompanies?.[0];
                 return (
                   <FormItem className="">
-                    <FormLabel className="gap-1 flex items-start">
+                    <FormLabel className="flex items-start gap-1">
                       Vehicle Company
-                      <span className="text-xs text-muted-foreground">*</span>
+                      <span className="text-muted-foreground text-xs">*</span>
                     </FormLabel>
                     <FormControl>
-                      {brand?.vehicleCompanies.length > 1 ? (
-                        <Select
-                          disabled={isSubmitting}
-                          onValueChange={field.onChange}
-                          value={value}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue
-                              placeholder={"Select Vehicle Company"}
-                            />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {brand?.vehicleCompanies?.map((company, i) => {
-                              return (
-                                <SelectItem value={company} key={i}>
-                                  {company}
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <Input
-                          readOnly
-                          {...field}
-                          disabled={brand?.vehicleCompanies?.length === 0}
-                        />
-                      )}
+                      <Select
+                        disabled={isSubmitting || !brand}
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder={"Select Vehicle Company"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {brand?.vehicleCompanies?.map((vehicleCompany, i) => {
+                            return (
+                              <SelectItem value={vehicleCompany} key={i}>
+                                {vehicleCompany}
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -212,46 +200,17 @@ export default function ProductForm({
               control={form.control}
               name="vehicleName"
               render={({ field }) => {
-                const value =
-                  brand?.vehicleNames && brand?.vehicleNames?.length > 1
-                    ? capitalize(field.value.trim())
-                    : brand?.vehicleCompanies?.[0];
                 return (
                   <FormItem>
-                    <FormLabel className="gap-1 flex items-start">
-                      Vehicle Name
-                      <span className="text-xs text-white">*</span>
-                    </FormLabel>
                     <FormControl>
-                      {brand?.vehicleNames &&
-                      brand?.vehicleNames?.length > 1 ? (
-                        <Select
-                          disabled={isSubmitting}
-                          onValueChange={field.onChange}
-                          value={value}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue
-                              placeholder={"Select Vehicle Company"}
-                            />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {brand?.vehicleCompanies?.map((company, i) => {
-                              return (
-                                <SelectItem value={company} key={i}>
-                                  {company}
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <Input
-                          readOnly
-                          {...field}
-                          disabled={brand?.vehicleNames?.length === 0}
-                        />
-                      )}
+                      <TagInput
+                        label="Vehicle Names"
+                        values={field.value}
+                        onChange={field.onChange}
+                        disabled={isSubmitting || !brand}
+                        placeholder="Add a vehicle name/model/make and press Enter"
+                        required
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -260,20 +219,20 @@ export default function ProductForm({
             />
           </div>
           {/* Part Category, Name, Number Row */}
-          <div className="grid grid-cols-1 gap-3 md:col-span-2 md:grid md:grid-cols-3 md:gap-6 justify-center items-start">
+          <div className="grid grid-cols-1 items-start justify-center gap-3 md:col-span-2 md:grid md:grid-cols-3 md:gap-6">
             {/* Part Category */}
             <FormField
               control={form.control}
               name="partCategory"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="gap-1 flex items-start">
+                  <FormLabel className="flex items-start gap-1">
                     Part Category
-                    <span className="text-xs text-muted-foreground">*</span>
+                    <span className="text-muted-foreground text-xs">*</span>
                   </FormLabel>
                   <FormControl>
                     <Select
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || !brand}
                       onValueChange={field.onChange}
                       value={field.value}
                     >
@@ -302,12 +261,12 @@ export default function ProductForm({
               name="partName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="gap-1 flex items-start">
+                  <FormLabel className="flex items-start gap-1">
                     Part Name
-                    <span className="text-xs text-muted-foreground">*</span>
+                    <span className="text-muted-foreground text-xs">*</span>
                   </FormLabel>
                   <FormControl>
-                    <Input disabled={isSubmitting} {...field} />
+                    <Input disabled={isSubmitting || !brand} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -319,12 +278,12 @@ export default function ProductForm({
               name="partNumber"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="gap-1 flex items-start">
+                  <FormLabel className="flex items-start gap-1">
                     Part Number
-                    <span className="text-xs text-muted-foreground">*</span>
+                    <span className="text-muted-foreground text-xs">*</span>
                   </FormLabel>
                   <FormControl>
-                    <Input disabled={isSubmitting} {...field} />
+                    <Input disabled={isSubmitting || !brand} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -332,20 +291,20 @@ export default function ProductForm({
             />
           </div>
           {/* Price, Discount, GST Row */}
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_2fr]">
             <FormField
               control={form.control}
               name="price"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="gap-1 flex items-start">
+                  <FormLabel className="flex items-start gap-1">
                     Price (₹)
-                    <span className="text-xs text-muted-foreground">*</span>
+                    <span className="text-muted-foreground text-xs">*</span>
                   </FormLabel>
                   <FormControl>
                     <Input
                       type="number"
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || !brand}
                       {...field}
                       onFocus={() => {
                         if (field.value === 0) {
@@ -370,14 +329,14 @@ export default function ProductForm({
                 name="discount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="gap-1 flex items-start">
+                    <FormLabel className="flex items-start gap-1">
                       Discount (%)
-                      <span className="text-xs text-muted-foreground">*</span>
+                      <span className="text-muted-foreground text-xs">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input
                         type="number"
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || !brand}
                         {...field}
                         onFocus={() => {
                           if (field.value === 0) {
@@ -401,14 +360,14 @@ export default function ProductForm({
                 name="gst"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="gap-1 flex items-start">
+                    <FormLabel className="flex items-start gap-1">
                       GST (%)
-                      <span className="text-xs text-muted-foreground">*</span>
+                      <span className="text-muted-foreground text-xs">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input
                         type="number"
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || !brand}
                         {...field}
                         onFocus={() => {
                           if (field.value === 0) {
@@ -436,13 +395,13 @@ export default function ProductForm({
             name="status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="gap-1 flex items-start">
+                <FormLabel className="flex items-start gap-1">
                   Status
-                  <span className="text-xs text-muted-foreground">*</span>
+                  <span className="text-muted-foreground text-xs">*</span>
                 </FormLabel>
                 <FormControl>
                   <Select
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || !brand}
                     onValueChange={field.onChange}
                     value={field.value}
                   >
@@ -468,14 +427,14 @@ export default function ProductForm({
             name="stock"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="gap-1 flex items-start">
+                <FormLabel className="flex items-start gap-1">
                   Items in the Stock
-                  <span className="text-xs text-muted-foreground">*</span>
+                  <span className="text-muted-foreground text-xs">*</span>
                 </FormLabel>
                 <FormControl>
                   <Input
                     type="number"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || !brand}
                     {...field}
                     className=""
                     onFocus={() => {
@@ -505,7 +464,7 @@ export default function ProductForm({
                 <FormControl>
                   <ImageUploader
                     progressMap={progressMap}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || !brand}
                     image={field.value}
                     onMediaChange={(image: ImageUpload) => {
                       if (image) form.setValue("image", image);
@@ -526,8 +485,8 @@ export default function ProductForm({
 
         <Button
           type="submit"
-          className="max-w-md mx-auto w-full flex gap-2 mt-4"
-          disabled={isSubmitting}
+          className="mx-auto mt-4 flex w-full max-w-md gap-2"
+          disabled={isSubmitting || !brand}
         >
           {submitButtonLabel}
         </Button>

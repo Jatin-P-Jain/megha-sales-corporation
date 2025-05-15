@@ -55,16 +55,32 @@ export const getProducts = async (options?: GetPropertiesOptions) => {
   return { data: products, totalPages: productsTotalPages };
 };
 
-export const getPropertyById = async (propertyId: string) => {
-  const propertySnapshot = await fireStore
-    .collection("properties")
-    .doc(propertyId)
+export const getProductById = async (productId: string) => {
+  const productSnapshot = await fireStore
+    .collection("products")
+    .doc(productId)
     .get();
-  const propertyData = {
-    id: propertySnapshot.id,
-    ...propertySnapshot.data(),
-  } as Property;
-  return propertyData;
+  const rawProductData = productSnapshot.data()!;
+
+  // build a pure‐JS object matching your Product type
+  const product: Product = {
+    id: productSnapshot.id,
+    brandName: rawProductData.brandName as string,
+    companyName: rawProductData.companyName as string,
+    vehicleCompany: rawProductData.vehicleCompany as string,
+    vehicleName: rawProductData.vehicleName as string[],
+    partCategory: rawProductData.partCategory as string,
+    partNumber: rawProductData.partNumber as string,
+    partName: rawProductData.partName as string,
+    price: rawProductData.price as number,
+    discount: rawProductData.discount as number,
+    gst: rawProductData.gst as number,
+    stock: rawProductData.stock as number,
+    status: rawProductData.status as ProductStatus,
+    image: rawProductData.image as string | undefined,
+  };
+
+  return product;
 };
 export const getPropertiesById = async (propertyIds: string[]) => {
   if (!propertyIds.length) {

@@ -52,10 +52,12 @@ export default function ImageUploader({
     onMediaChange(newImage);
   };
 
+  console.log("image -- ", image);
+
   return (
-    <div className="max-w-3xl w-full mx-auto md:pt-4 pb-0">
+    <div className="mx-auto w-full max-w-3xl pb-0 md:pt-4">
       {!image?.url ? (
-        <div className={`${parent === "brand" ? "h-35 mb-5" : ""}`}>
+        <div className={`${parent === "brand" ? "mb-5 h-35" : ""}`}>
           <input
             className="hidden"
             ref={inputRef}
@@ -65,7 +67,7 @@ export default function ImageUploader({
             disabled={disabled} // Disable input if disabled
           />
           <Button
-            className="w-full mx-auto flex !h-full border-dashed"
+            className="mx-auto flex !h-full w-full border-dashed"
             variant={"outline"}
             type="button"
             onClick={() => {
@@ -79,13 +81,13 @@ export default function ImageUploader({
           </Button>
           {imageSizeError ? (
             <p
-              className={`flex flex-col w-full text-xs text-center text-red-700`}
+              className={`flex w-full flex-col text-center text-xs text-red-700`}
             >
               Selected file exceeded max size: 5MB.
             </p>
           ) : (
             <p
-              className={`flex flex-col w-full text-xs text-center text-muted-foreground`}
+              className={`text-muted-foreground flex w-full flex-col text-center text-xs`}
             >
               All image formats (JPG, PNG, WebP, etc.)
               <strong>Max size: 5MB.</strong>
@@ -93,15 +95,15 @@ export default function ImageUploader({
           )}
         </div>
       ) : (
-        <div className=" h-full w-full flex items-center justify-center flex-col gap-1">
-          <div className="relative border-1 rounded-lg overflow-hidden h-35 w-full flex justify-center flex-col items-center">
+        <div className="flex h-full w-full flex-col items-center justify-center gap-1">
+          <div className="relative flex h-35 w-full flex-col items-center justify-center overflow-hidden rounded-lg border-1">
             {isImageLoading && (
-              <div className="absolute inset-0 flex items-center justify-center z-10 bg-white/50">
-                <Loader2 className="animate-spin h-6 w-6 text-primary" />
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/50">
+                <Loader2 className="text-primary h-6 w-6 animate-spin" />
               </div>
             )}
             <div
-              className="absolute top-0 right-0 z-30 bg-muted/80 rounded-bl-lg p-2 flex justify-center items-center cursor-pointer"
+              className="bg-muted/80 absolute top-0 right-0 z-30 flex cursor-pointer items-center justify-center rounded-bl-lg p-2"
               onClick={() => {
                 onMediaChange({ id: "", url: "" });
               }}
@@ -132,13 +134,13 @@ export default function ImageUploader({
           />
           {imageSizeError ? (
             <p
-              className={`flex flex-col w-full text-xs text-center text-red-700`}
+              className={`flex w-full flex-col text-center text-xs text-red-700`}
             >
               Selected file exceeded max size: 5MB.
             </p>
           ) : (
             <p
-              className={`flex flex-col w-full text-xs text-center text-muted-foreground`}
+              className={`text-muted-foreground flex w-full flex-col text-center text-xs`}
             >
               All image formats (JPG, PNG, WebP, etc.)
               <strong>Max size: 5MB.</strong>
@@ -146,7 +148,7 @@ export default function ImageUploader({
           )}
 
           <Button
-            className="w-1/2 mx-auto flex border-none shadow-none text-[10px] font-semibold text-primary bg-accent relative py-0"
+            className="text-primary bg-accent relative mx-auto flex w-1/2 border-none py-0 text-[10px] font-semibold shadow-none"
             variant={"outline"}
             type="button"
             size={"sm"}
@@ -156,7 +158,7 @@ export default function ImageUploader({
             }}
             disabled={disabled} // Disable button if disabled
           >
-            <PencilIcon className="!w-4 !h-4" />
+            <PencilIcon className="!h-4 !w-4" />
             {parent === "brand" ? "Change Brand Logo" : "Change Product Image"}
           </Button>
         </div>

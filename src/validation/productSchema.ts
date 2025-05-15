@@ -4,7 +4,9 @@ export const productDataSchema = z.object({
   brandName: z.string().min(1, "Select a Brand Name"),
   companyName: z.string().min(1, "Select a Company Name"),
   vehicleCompany: z.string().min(1, "Select a Vehicle Company"),
-  vehicleName: z.string().min(1, "Select a Vehicle Name"),
+  vehicleName: z
+    .array(z.string().min(2, "Vehicle Type must be at least 2 characters"))
+    .optional(),
   partCategory: z.string().min(1, "Select a Part Category"),
   partNumber: z.string().min(2, "Part Number must be at least 2 characters"),
   partName: z.string().min(2, "Part Name must be at least 2 characters"),

@@ -9,7 +9,7 @@ export const createProduct = async (
     brandName: string;
     companyName: string;
     vehicleCompany: string;
-    vehicleName: string;
+    vehicleName?: string[];
     partNumber: string;
     partName: string;
     price: number;
