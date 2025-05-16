@@ -13,13 +13,14 @@ import {
 import CategoryChips from "@/components/custom/category-selection-chips";
 import Link from "next/link";
 import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
+import ResponsiveProductFilters from "@/components/custom/responsive-product-filters";
 
 export default async function ProductsList({
   searchParams,
 }: {
   searchParams: Promise<{
     page: string;
-    brandId:string
+    brandId: string;
   }>;
 }) {
   const searchParamsValues = await searchParams;
@@ -51,50 +52,13 @@ export default async function ProductsList({
               { label: "Product Listings" },
             ]}
           />
-          <h1 className="pt-2 text-2xl py-4 font-[600] tracking-wide text-cyan-950">
+          <h1 className="py-4 pt-2 text-xl md:text-2xl font-[600] tracking-wide text-cyan-950">
             Product Listings
           </h1>
-          <div className="flex flex-col gap-2 pb-4">
-            <CategoryChips />
-            <div className="grid w-full grid-cols-[1fr_8fr] items-center justify-between gap-2">
-              <Button variant={"outline"} className="h-full w-full">
-                <FunnelPlusIcon />
-                {/* Filters */}
-              </Button>
-              {isAdmin ? (
-                <Button className="w-full" asChild>
-                  <Link href={"/admin-dashboard/new-product"}>
-                    <PlusCircleIcon className="" />
-                    Add New Product
-                  </Link>
-                </Button>
-              ) : (
-                <div className="grid grid-cols-[4fr_1fr] items-center justify-center rounded-lg border-1 p-1 pl-2 text-sm">
-                  <div className="flex flex-col pr-4">
-                    <div className="text-muted-foreground">Total Cart</div>
-                    <div className="flex w-full justify-between">
-                      <div>
-                        Items:{" "}
-                        <span className="text-primary font-semibold">17</span>
-                      </div>
-                      <div>
-                        Amount:{" "}
-                        <span className="text-primary font-semibold">
-                          ₹1,50,000
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <Button className="w-full">
-                    Cart <ArrowBigRightDashIcon className="size-5" />
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
+          <ResponsiveProductFilters isAdmin={isAdmin} />
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto px-4 pt-53 md:pt-55">
+      <div className="flex-1 overflow-y-auto px-4 pt-55 md:pt-60">
         <Suspense
           fallback={
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">

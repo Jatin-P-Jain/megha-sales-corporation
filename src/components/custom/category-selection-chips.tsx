@@ -5,24 +5,37 @@ import { Button } from "@/components/ui/button"; // can also use Toggle if you p
 import { useState } from "react";
 import clsx from "clsx";
 
-const categories = ["Nuts", "Suspensions", "Fastners", "Repair Kits"];
+const categories = [
+  "Nuts",
+  "Suspensions",
+  "Fastners",
+  "Repair Kits",
+  "Nuts",
+  "Suspensions",
+  "Fastners",
+  "Repair Kits",
+  "Nuts",
+  "Suspensions",
+  "Fastners",
+  "Repair Kits",
+];
 
 export default function CategoryChips() {
   const [selected, setSelected] = useState<string | null>(null);
 
   return (
-    <Card className="gap-0 p-0 shadow-none border-0 no-scrollbar">
-      <div className="flex overflow-x-auto no-scrollbar gap-2">
-        {categories.map((label) => (
+    <Card className="no-scrollbar gap-0 border-0 p-0 shadow-none">
+      <div className="no-scrollbar flex gap-2 overflow-x-auto">
+        {categories.map((label, index) => (
           <Button
-            key={label}
+            key={index}
             variant={selected === label ? "default" : "outline"}
             onClick={() =>
               setSelected((prev) => (prev === label ? null : label))
             }
             className={clsx(
-              "shrink-0 min-w-max text-sm px-4 py-2 rounded-full transition duration-300 ease-in-out",
-              selected === label && "bg-primary text-white"
+              "min-w-max shrink-0 rounded-full px-2 py-0 text-sm transition duration-300 ease-in-out sm:px-4 sm:py-2",
+              selected === label && "bg-primary text-white",
             )}
           >
             {label}
