@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button";
 import {
   PlusCircleIcon,
   FunnelPlusIcon,
-  ArrowBigRightDashIcon,
 } from "lucide-react";
 import CategoryChips from "./category-selection-chips";
 import Link from "next/link";
 import useIsMobile from "@/hooks/useIsMobile";
+import CartButton from "./cart-button";
 
 const ResponsiveProductFilters: React.FC<{ isAdmin: boolean }> = ({
   isAdmin,
@@ -50,9 +50,7 @@ const ResponsiveProductFilters: React.FC<{ isAdmin: boolean }> = ({
                     </div>
                   </div>
                 </div>
-                <Button className="w-full">
-                  Cart <ArrowBigRightDashIcon className="size-5" />
-                </Button>
+                <CartButton />
               </div>
             )}
           </div>
@@ -100,9 +98,7 @@ const ResponsiveProductFilters: React.FC<{ isAdmin: boolean }> = ({
                   </div>
                 </div>
               </div>
-              <Button className="w-full">
-                Cart <ArrowBigRightDashIcon className="size-5" />
-              </Button>
+              <CartButton />
             </div>
           </div>
         ))}

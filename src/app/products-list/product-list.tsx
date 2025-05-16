@@ -1,9 +1,10 @@
+import AddToCartButton from "@/components/custom/add-to-cart-button";
 import ProductImage from "@/components/custom/product-image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { slugify } from "@/lib/utils";
 import { Product } from "@/types/product";
-import { PencilIcon, PlusSquareIcon } from "lucide-react";
+import { PencilIcon } from "lucide-react";
 import Link from "next/link";
 
 export default async function ProductList({
@@ -111,10 +112,7 @@ export default async function ProductList({
                           </Link>
                         </Button>
                       ) : (
-                        <Button className="w-full md:w-3/4">
-                          <PlusSquareIcon className="size-4" />
-                          Add to Cart
-                        </Button>
+                        <AddToCartButton />
                       )}
                     </div>
                   </CardFooter>
