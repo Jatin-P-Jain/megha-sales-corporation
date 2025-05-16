@@ -82,7 +82,9 @@ export const TagInput: React.FC<TagInputProps> = ({
               <XCircleIcon
                 className="text-primary h-4 w-4 rounded-sm"
                 onClick={() => {
-                  !disabled && removeTag(idx);
+                  if (!disabled) {
+                    removeTag(idx);
+                  }
                 }}
               />
             </span>
