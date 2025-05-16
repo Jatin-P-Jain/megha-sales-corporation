@@ -49,7 +49,7 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
   });
 
   const handleMobileSubmit = async (
-    data: z.infer<typeof loginUserMobileSchema>
+    data: z.infer<typeof loginUserMobileSchema>,
   ) => {
     const validation = loginUserMobileSchema.safeParse(data);
     console.log({ validation });
@@ -102,9 +102,9 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
           (e as { code?: string })?.code === "auth/invalid-credential"
             ? "Invalid credential. Please try again."
             : (e as { code?: string })?.code ===
-              "auth/invalid-verification-code"
-            ? "Invalid OTP. Try again!"
-            : "An unexpected error occurred.",
+                "auth/invalid-verification-code"
+              ? "Invalid OTP. Try again!"
+              : "An unexpected error occurred.",
       });
     }
   };
@@ -145,7 +145,7 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
 
             <Button
               type="submit"
-              className="w-full tracking-wide cursor-pointer"
+              className="w-full cursor-pointer tracking-wide"
             >
               Verify OTP
             </Button>
@@ -176,7 +176,7 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
 
               <Button
                 type="submit"
-                className="w-full tracking-wide cursor-pointer"
+                className="w-full cursor-pointer tracking-wide"
               >
                 Login with OTP
               </Button>
@@ -184,7 +184,7 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
           </form>
         </Form>
       )}
-      <span className="w-full flex justify-center text-zinc-500 text-[14px] my-4">
+      <span className="my-4 flex w-full justify-center text-[14px] text-zinc-500">
         or
       </span>
       <GoogleLoginButton
@@ -192,16 +192,17 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
         onSuccess={onSuccess}
         className=""
       />
-      <span className="w-full flex justify-center text-zinc-500 text-[14px] my-4">
+      <span className="my-4 flex w-full justify-center text-[14px] text-zinc-500">
         or
       </span>
       <CollapsibleLoginForm />
-      <div className="flex gap-2 justify-center items-center mt-4 text-xs md:text-sm">
+      <div className="mt-4 flex items-center justify-center gap-2 text-xs md:text-sm">
         Don&apos;t have an account?
         <Link href={"/register"} className="text-cyan-900 underline">
           Register here.
         </Link>
       </div>
+      <div id="recaptcha-container" className="opacity-0"/>
     </div>
   );
 }

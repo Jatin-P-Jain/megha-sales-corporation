@@ -27,6 +27,12 @@ export async function middleware(request: NextRequest) {
   if (token === undefined) {
     return NextResponse.redirect(new URL("/login", origin));
   }
+  if (
+    token &&
+    (pathname.startsWith("/login") || pathname.startsWith("/register"))
+  ) {
+    return NextResponse.redirect(new URL("/", origin));
+  }
   // 5) Decode & check displayName
   const decoded = decodeJwt(token);
   const hasName =

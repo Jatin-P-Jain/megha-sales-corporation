@@ -69,7 +69,7 @@ export default function RootLayout({
             offset={{ top: 100 }}
           ></Toaster>
         </AuthProvider>
-        <div id="recaptcha-container" />
+        
         <Analytics />
         <SpeedInsights />
       </body>

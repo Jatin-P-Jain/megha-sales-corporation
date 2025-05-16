@@ -55,9 +55,9 @@ const CollapsibleLoginForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   };
   return (
     <div className="flex flex-col items-center justify-center">
-      <Card className="w-full mx-auto p-2 gap-0">
+      <Card className="mx-auto w-full gap-0 p-2">
         <CardHeader className="flex items-center justify-between px-2 md:p-2">
-          <CardTitle className="text-xs sm:text-sm md:text-base font-semibold">
+          <CardTitle className="text-xs font-semibold sm:text-sm md:text-base">
             Continue with Email and Password
           </CardTitle>
 
@@ -72,9 +72,9 @@ const CollapsibleLoginForm = ({ onSuccess }: { onSuccess?: () => void }) => {
         <CardContent
           className={`${
             open
-              ? "max-h-[1000px] opacity-100 p-2 md:py-4"
-              : "max-h-0 opacity-0 display-none"
-          } transition-all duration-300 ease-in-out `}
+              ? "max-h-[1000px] p-2 opacity-100 md:py-4"
+              : "pointer-events-none max-h-0 opacity-0"
+          } transition-all duration-500 ease-in-out`}
         >
           <Form {...form}>
             <form
@@ -109,7 +109,7 @@ const CollapsibleLoginForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                       />
                     </FormControl>
                     <FormMessage />
-                    <div className="flex gap-2 items-center text-sm mt-1">
+                    <div className="mt-1 flex items-center gap-2 text-sm">
                       Forgot your password?
                       <Link
                         href="/forgot-password"
@@ -122,7 +122,7 @@ const CollapsibleLoginForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                 )}
               />
 
-              <Button type="submit" className="w-full uppercase tracking-wide">
+              <Button type="submit" className="w-full tracking-wide uppercase">
                 Login
               </Button>
             </form>
