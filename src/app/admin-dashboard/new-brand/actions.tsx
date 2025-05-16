@@ -13,7 +13,7 @@ export const createBrand = async (
     description?: string;
     status: "draft" | "live" | "discontinued";
   },
-  authtoken: string
+  authtoken: string,
 ) => {
   const verifiedToken = await auth.verifyIdToken(authtoken);
   if (!verifiedToken.admin) {
@@ -32,7 +32,7 @@ export const createBrand = async (
   }
 
   const slug = slugify(data.brandName);
-  const docRef = fireStore.collection("products").doc(slug);
+  const docRef = fireStore.collection("brands").doc(slug);
   try {
     await fireStore.runTransaction(async (txn) => {
       const existing = await txn.get(docRef);

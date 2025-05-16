@@ -70,7 +70,9 @@ export const TagInput: React.FC<TagInputProps> = ({
         </Button>
       </div>
       {values && values.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-2">
+        <div
+          className={`${disabled ? "opacity-70" : ""} mt-2 flex flex-wrap gap-2`}
+        >
           {values.map((tag, idx) => (
             <span
               key={idx}
@@ -79,7 +81,9 @@ export const TagInput: React.FC<TagInputProps> = ({
               {tag}
               <XCircleIcon
                 className="text-primary h-4 w-4 rounded-sm"
-                onClick={() => removeTag(idx)}
+                onClick={() => {
+                  !disabled && removeTag(idx);
+                }}
               />
             </span>
           ))}
