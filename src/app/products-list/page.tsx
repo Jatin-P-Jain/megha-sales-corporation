@@ -4,14 +4,6 @@ import { Suspense } from "react";
 import { getProducts } from "@/data/products";
 import ProductList from "./product-list";
 import ProductCardLoading from "./property-card-loading";
-import { Button } from "@/components/ui/button";
-import {
-  ArrowBigRightDashIcon,
-  FunnelPlusIcon,
-  PlusCircleIcon,
-} from "lucide-react";
-import CategoryChips from "@/components/custom/category-selection-chips";
-import Link from "next/link";
 import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
 import ResponsiveProductFilters from "@/components/custom/responsive-product-filters";
 
@@ -52,7 +44,7 @@ export default async function ProductsList({
               { label: "Product Listings" },
             ]}
           />
-          <h1 className="py-4 pt-2 text-xl md:text-2xl font-[600] tracking-wide text-cyan-950">
+          <h1 className="py-4 pt-2 text-xl font-[600] tracking-wide text-cyan-950 md:text-2xl">
             Product Listings
           </h1>
           <ResponsiveProductFilters isAdmin={isAdmin} />
