@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { Loader2, PlusCircleIcon } from "lucide-react";
-import { useAuth } from "@/context/auth";
+import { useAuth } from "@/context/useAuth";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { ref, uploadBytesResumable, UploadTask } from "firebase/storage";
@@ -39,7 +39,7 @@ export default function NewBrandForm() {
     brandMedia.forEach((item, index) => {
       if (item.file) {
         const path = `brands/${slugify(
-          saveResponse.brandName
+          saveResponse.brandName,
         )}/brandsMedia/${Date.now()}-${index}-${item.file.name}`;
         media.push({ fileName: item.file.name, fileUrl: path });
         const storageRef = ref(storage, path);
@@ -48,7 +48,7 @@ export default function NewBrandForm() {
           "state_changed",
           (snapshot) => {
             const percent = Math.round(
-              (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100,
             );
             setProgressMap((prev) => ({
               ...prev,
@@ -58,7 +58,7 @@ export default function NewBrandForm() {
           (error) => {
             console.error("Upload failed", error);
             toast.error("Upload failed for " + item.file!.name);
-          }
+          },
         );
 
         uploadTasks.push(task.then(() => {}) as Promise<void>);
@@ -67,7 +67,7 @@ export default function NewBrandForm() {
     let logoPath: string = "";
     if (brandLogo.file) {
       logoPath = `brands/${slugify(
-        saveResponse.brandName
+        saveResponse.brandName,
       )}/brandLogo/${Date.now()}-${brandLogo.file.name}`;
       const logoStorageRef = ref(storage, logoPath);
       const task = uploadBytesResumable(logoStorageRef, brandLogo.file);
@@ -75,7 +75,7 @@ export default function NewBrandForm() {
         "state_changed",
         (snapshot) => {
           const percent = Math.round(
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100,
           );
           setProgressMap((prev) => ({
             ...prev,
@@ -85,7 +85,7 @@ export default function NewBrandForm() {
         (error) => {
           console.error("Upload failed", error);
           toast.error("Upload failed for " + brandLogo.file!.name);
-        }
+        },
       );
 
       uploadTasks.push(task.then(() => {}) as Promise<void>);
@@ -93,7 +93,7 @@ export default function NewBrandForm() {
     await Promise.all(uploadTasks);
     await saveBrandMedia(
       { brandId: saveResponse.brandId, brandMedia: media, brandLogo: logoPath },
-      token
+      token,
     );
     setIsLoading(false);
     toast.success("Success", { description: "Brand Created" });

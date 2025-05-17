@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button"; // Adjust the import path as needed
 import { Loader2, SendIcon } from "lucide-react";
-import { useAuth } from "@/context/auth";
+import { useAuth } from "@/context/useAuth";
 import { BrandStatus } from "@/types/brandStatus";
 import { updateStatus } from "@/app/admin-dashboard/brands/action";
 import { toast } from "sonner";
@@ -25,7 +25,7 @@ const PublishBrandButton = ({
     }
     const updateResponse = await updateStatus(
       { brandId, newBrandStatus: newStatus },
-      token
+      token,
     );
     if (!!updateResponse?.error) {
       toast.error("Error", { description: updateResponse.message });
@@ -38,7 +38,7 @@ const PublishBrandButton = ({
 
   return (
     <Button
-      className="gap-2 w-full text-primary font-semibold"
+      className="text-primary w-full gap-2 font-semibold"
       variant={"outline"}
       onClick={handlePublish}
     >

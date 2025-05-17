@@ -17,7 +17,7 @@ import { toast } from "sonner";
 import { loginUserMobileSchema, mobileOtpSchema } from "@/validation/loginUser";
 
 import Link from "next/link";
-import { useAuth } from "@/context/auth";
+import { useAuth } from "@/context/useAuth";
 import GoogleLoginButton from "@/components/custom/google-login-button";
 import { useState } from "react";
 import { useRecaptcha } from "@/hooks/useRecaptcha";
@@ -25,6 +25,83 @@ import { ConfirmationResult } from "firebase/auth";
 import OTPInput from "./otp-input";
 import CollapsibleLoginForm from "./collapsible-login-form";
 import { useRouter } from "next/navigation";
+
+function OtpVerificationForm({
+  form,
+  onSubmit,
+}: {
+  form: ReturnType<typeof useForm<z.infer<typeof mobileOtpSchema>>>;
+  onSubmit: (data: { otp: string }) => void;
+}) {
+  return (
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="flex flex-col gap-5"
+      >
+        <FormField
+          control={form.control}
+          name="otp"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Enter the One Time Password</FormLabel>
+              <FormControl>
+                <Controller
+                  name={field.name}
+                  control={form.control}
+                  render={({ field: { value, onChange } }) => (
+                    <OTPInput value={value} onChange={onChange} length={6} />
+                  )}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit" className="w-full cursor-pointer tracking-wide">
+          Verify OTP
+        </Button>
+      </form>
+    </Form>
+  );
+}
+
+function MobileLoginForm({
+  form,
+  onSubmit,
+}: {
+  form: ReturnType<typeof useForm<z.infer<typeof loginUserMobileSchema>>>;
+  onSubmit: (data: z.infer<typeof loginUserMobileSchema>) => void;
+}) {
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <fieldset
+          className="flex flex-col gap-5"
+          disabled={form.formState.isSubmitting}
+        >
+          <FormField
+            control={form.control}
+            name="mobile"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Your Mobile Number</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="Mobile Number" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <Button type="submit" className="w-full cursor-pointer tracking-wide">
+            Login with OTP
+          </Button>
+        </fieldset>
+      </form>
+    </Form>
+  );
+}
 
 export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
   const auth = useAuth();
@@ -41,6 +118,7 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
       mobile: "",
     },
   });
+
   const mobileOtpForm = useForm<z.infer<typeof mobileOtpSchema>>({
     resolver: zodResolver(mobileOtpSchema),
     defaultValues: {
@@ -52,44 +130,34 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
     data: z.infer<typeof loginUserMobileSchema>,
   ) => {
     const validation = loginUserMobileSchema.safeParse(data);
-    console.log({ validation });
-
     if (!validation.success) {
-      return {
-        error: true,
-        message: validation.error.issues[0]?.message ?? "An Error Occurred",
-      };
+      return;
     }
     const appVerifier = window.recaptchaVerifier;
     if (!appVerifier) {
       console.error("AppVerifier not ready");
-
       return;
     }
     try {
-      const confirmation = await auth?.handleSendOTP(data, appVerifier);
+      const confirmation = await auth?.handleSendOTP(data.mobile, appVerifier);
       setOtpSent(true);
       setConfirmationResult(confirmation);
       toast.success("OTP sent successfully", {
         description: "Otp has been sent to your mobile number. Please check.",
       });
     } catch (e: unknown) {
-      console.log({ e });
+      console.error(e);
     }
   };
+
   const handleVerifyOTP = async (data: { otp: string }) => {
     try {
-      const user = await auth?.verifyOTP(data, confirmationResult);
-      if (user?.displayName) {
-        console.log("User already exists");
-        onSuccess?.();
-      } else {
-        console.log("User does not exist");
-
-        router.push("/get-user-details");
-      }
+      if (!confirmationResult)
+        throw new Error("Confirmation result is undefined.");
+      await auth?.verifyOTP(data.otp, confirmationResult);
+      onSuccess?.();
     } catch (e: unknown) {
-      console.log({ e });
+      console.error(e);
       mobileOtpForm.setError("otp", {
         type: "manual",
         message:
@@ -112,97 +180,26 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
   return (
     <div>
       {otpSent ? (
-        <Form {...mobileOtpForm}>
-          <form
-            onSubmit={mobileOtpForm.handleSubmit(handleVerifyOTP)}
-            className="flex flex-col gap-5"
-          >
-            <FormField
-              control={mobileOtpForm.control}
-              name="otp"
-              render={({ field }) => {
-                return (
-                  <FormItem>
-                    <FormLabel>Enter the One Time Password</FormLabel>
-                    <FormControl>
-                      <Controller
-                        name={field.name}
-                        control={mobileOtpForm.control}
-                        render={({ field: { value, onChange } }) => (
-                          <OTPInput
-                            value={value}
-                            onChange={onChange}
-                            length={6}
-                          />
-                        )}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                );
-              }}
-            />
-
-            <Button
-              type="submit"
-              className="w-full cursor-pointer tracking-wide"
-            >
-              Verify OTP
-            </Button>
-          </form>
-        </Form>
+        <OtpVerificationForm form={mobileOtpForm} onSubmit={handleVerifyOTP} />
       ) : (
-        <Form {...mobileForm}>
-          <form onSubmit={mobileForm.handleSubmit(handleMobileSubmit)}>
-            <fieldset
-              className="flex flex-col gap-5"
-              disabled={mobileForm.formState.isSubmitting}
-            >
-              <FormField
-                control={mobileForm.control}
-                name="mobile"
-                render={({ field }) => {
-                  return (
-                    <FormItem>
-                      <FormLabel>Your Mobile Number</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="Mobile Number" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  );
-                }}
-              />
-
-              <Button
-                type="submit"
-                className="w-full cursor-pointer tracking-wide"
-              >
-                Login with OTP
-              </Button>
-            </fieldset>
-          </form>
-        </Form>
+        <MobileLoginForm form={mobileForm} onSubmit={handleMobileSubmit} />
       )}
+
       <span className="my-4 flex w-full justify-center text-[14px] text-zinc-500">
         or
       </span>
-      <GoogleLoginButton
-        variant={"outline"}
-        onSuccess={onSuccess}
-        className=""
-      />
+      <GoogleLoginButton variant="outline" onSuccess={onSuccess} />
       <span className="my-4 flex w-full justify-center text-[14px] text-zinc-500">
         or
       </span>
       <CollapsibleLoginForm />
       <div className="mt-4 flex items-center justify-center gap-2 text-xs md:text-sm">
         Don&apos;t have an account?
-        <Link href={"/register"} className="text-cyan-900 underline">
+        <Link href="/register" className="text-cyan-900 underline">
           Register here.
         </Link>
       </div>
-      <div id="recaptcha-container" className="opacity-0"/>
+      <div id="recaptcha-container" className="opacity-0" />
     </div>
   );
 }

@@ -9,7 +9,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@/context/auth";
+import { useAuth } from "@/context/useAuth";
 import { passwordValidation } from "@/validation/registerUser";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -54,7 +54,7 @@ export default function UpdatePasswordForm() {
     try {
       await reauthenticateWithCredential(
         user,
-        EmailAuthProvider.credential(user.email, data.currentPassword)
+        EmailAuthProvider.credential(user.email, data.currentPassword),
       );
       await updatePassword(user, data.newPassword);
       toast.success("Password updated successfully!", {
@@ -139,7 +139,7 @@ export default function UpdatePasswordForm() {
                 );
               }}
             />
-            <Button type="submit" className="w-full uppercase tracking-wide">
+            <Button type="submit" className="w-full tracking-wide uppercase">
               Update Password
             </Button>
           </fieldset>

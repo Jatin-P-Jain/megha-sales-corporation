@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/context/auth";
+import { useAuth } from "@/context/useAuth";
 import Link from "next/link";
 import {
   DropdownMenu,
@@ -24,7 +24,7 @@ export default function AuthButtons() {
       {!!auth?.currentUser && (
         <DropdownMenu>
           <DropdownMenuTrigger className="flex h-full">
-            <Avatar className="ring-1 size-9">
+            <Avatar className="size-9 ring-1">
               {!!auth?.currentUser?.photoURL && (
                 <Image
                   src={auth?.currentUser?.photoURL}

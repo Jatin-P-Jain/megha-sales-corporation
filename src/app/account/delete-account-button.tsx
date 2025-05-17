@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@/context/auth";
+import { useAuth } from "@/context/useAuth";
 import { Label } from "@radix-ui/react-dropdown-menu";
 import {
   deleteUser,
@@ -72,7 +72,7 @@ export default function DeleteAccountButton({
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant={"destructive"} className="cursor-pointer mt-4">
+        <Button variant={"destructive"} className="mt-4 cursor-pointer">
           <Trash2Icon />
           Delete my account
         </Button>
@@ -118,8 +118,8 @@ export default function DeleteAccountButton({
               isDeleting
                 ? "Deleting..."
                 : !isPasswordProvider
-                ? "Sign In and Delete Account"
-                : "Delete my account"
+                  ? "Sign In and Delete Account"
+                  : "Delete my account"
             }`}</Button>
           </AlertDialogAction>
         </AlertDialogFooter>

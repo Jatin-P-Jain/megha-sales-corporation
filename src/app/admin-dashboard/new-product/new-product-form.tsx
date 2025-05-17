@@ -5,7 +5,7 @@ import { productSchema } from "@/validation/productSchema";
 
 import { z } from "zod";
 import { Loader2, PlusCircleIcon } from "lucide-react";
-import { useAuth } from "@/context/auth";
+import { useAuth } from "@/context/useAuth";
 
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";

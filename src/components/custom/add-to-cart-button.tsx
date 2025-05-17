@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Button } from "../ui/button";
 import { Loader2, PlusSquareIcon } from "lucide-react";
-import { useAuth } from "@/context/auth";
+import { useAuth } from "@/context/useAuth";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { Button } from "../ui/button";
-import { useAuth } from "@/context/auth";
+import { useAuth } from "@/context/useAuth";
 import GoogleIcon from "@/components/custom/google-icon.svg";
 import Image from "next/image";
 type ButtonProps = {
@@ -51,7 +51,7 @@ export default function GoogleLoginButton({
       <Image
         src={GoogleIcon}
         alt=""
-        className="relative w-8 h-8 max-w-8 max-h-8 "
+        className="relative h-8 max-h-8 w-8 max-w-8"
       />
       {buttonText}
     </Button>

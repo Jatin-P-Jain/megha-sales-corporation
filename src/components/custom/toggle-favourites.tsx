@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/context/auth";
+import { useAuth } from "@/context/useAuth";
 import { HeartIcon, LoaderCircleIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";

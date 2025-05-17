@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/context/auth";
+import { useAuth } from "@/context/useAuth";
 import { ArrowBigRightDashIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";

@@ -8,8 +8,8 @@ import { Poppins } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import Image from "next/image";
 import BrandLogo from "../../public/brand-logo.svg";
-import { AuthProvider } from "@/context/auth";
 import ContactUsLink from "@/components/custom/contact-us-link";
+import { AuthProvider } from "@/context/auth-context";
 
 const poppins = Poppins({
   subsets: ["latin"],

@@ -18,7 +18,7 @@ import { loginUserSchema } from "@/validation/loginUser";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { useAuth } from "@/context/auth";
+import { useAuth } from "@/context/useAuth";
 
 const CollapsibleLoginForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   const auth = useAuth();

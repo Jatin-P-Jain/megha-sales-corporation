@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
-import { useAuth } from "@/context/auth";
+import { useAuth } from "@/context/useAuth";
 import { Button } from "../ui/button";
 import Link from "next/link";
 
@@ -12,13 +12,13 @@ const Greetings: React.FC = () => {
   const isAdmin = customClaims?.admin === true;
 
   return (
-    <Card className="max-w-lg mx-auto shadow-lg">
+    <Card className="mx-auto max-w-lg shadow-lg">
       <CardHeader>
-        <h1 className="text-xl font-bold text-center">Welcome, {userName}</h1>
+        <h1 className="text-center text-xl font-bold">Welcome, {userName}</h1>
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-4">
         {currentUser && isAdmin && (
-          <div className="text-green-800 flex w-full items-center justify-center">
+          <div className="flex w-full items-center justify-center text-green-800">
             Admin Access Granted
           </div>
         )}

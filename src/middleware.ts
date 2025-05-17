@@ -35,28 +35,30 @@ export async function middleware(request: NextRequest) {
   }
   // 5) Decode & check displayName
   const decoded = decodeJwt(token);
-  const hasName =
-    typeof decoded.name === "string" && decoded.name.trim().length > 0;
+  const userName = decoded?.name;
+  const userEmail = decoded?.email;
+  const userPhone = decoded?.phone;
 
-  // 6) Always allow the “get-user-details” page when logged in
-  const isDetailsPage = pathname.startsWith("/get-user-details");
+  const isProfileComplete = userName && userEmail && userPhone;
 
-  // 7) If they’re missing a name, force them to details
-  if (!hasName && !isDetailsPage) {
+  const isProfileCompletePage = pathname.startsWith(
+    "/account/complete-profile",
+  );
+
+  if (!isProfileComplete && !isProfileCompletePage) {
     // Preserve where they originally wanted to go
     const redirectTo = encodeURIComponent(pathname + request.nextUrl.search);
     return NextResponse.redirect(
-      new URL(`/get-user-details?redirect=${redirectTo}`, origin),
+      new URL(`/account/complete-profile?redirect=${redirectTo}`, origin),
     );
   }
 
   // 8) If they now have a name but somehow hit details, send them home
-  if (hasName && isDetailsPage) {
+  if (isProfileComplete && isProfileCompletePage) {
     // If you passed a redirect param, use it; otherwise just go “/”
     const back = searchParams.get("redirect");
     return NextResponse.redirect(new URL(back ?? "/", origin));
   }
-
   // 9) Now continue with your expiry check, admin guards, etc.
   if (decoded.exp && (decoded.exp - 5 * 60) * 1000 < Date.now()) {
     const redirectTo = encodeURIComponent(pathname + request.nextUrl.search);
@@ -88,7 +90,7 @@ export const config = {
     "/register",
     "/account",
     "/account/:path*",
-    "/get-user-details",
+    "/account/complete-profile",
     "/products-list",
   ],
 };

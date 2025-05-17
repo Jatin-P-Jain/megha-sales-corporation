@@ -17,7 +17,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { deleteProduct } from "./actions";
 import { updateBrandProcuctCount } from "@/app/admin-dashboard/actions";
-import { useAuth } from "@/context/auth";
+import { useAuth } from "@/context/useAuth";
 
 export default function DeleteProductButton({
   brandId,
