@@ -24,7 +24,6 @@ import { useRecaptcha } from "@/hooks/useRecaptcha";
 import { ConfirmationResult } from "firebase/auth";
 import OTPInput from "./otp-input";
 import CollapsibleLoginForm from "./collapsible-login-form";
-import { useRouter } from "next/navigation";
 
 function OtpVerificationForm({
   form,
@@ -105,7 +104,6 @@ function MobileLoginForm({
 
 export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
   const auth = useAuth();
-  const router = useRouter();
   useRecaptcha();
   const [otpSent, setOtpSent] = useState(false);
   const [confirmationResult, setConfirmationResult] = useState<

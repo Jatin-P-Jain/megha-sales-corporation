@@ -1,6 +1,4 @@
 "use server";
-
-import { auth } from "@/firebase/server";
 import { registerUserSchema } from "@/validation/registerUser";
 
 export const updateUserProfile = async (data: {
