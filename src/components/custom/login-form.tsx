@@ -24,13 +24,16 @@ import { useRecaptcha } from "@/hooks/useRecaptcha";
 import { ConfirmationResult } from "firebase/auth";
 import OTPInput from "./otp-input";
 import CollapsibleLoginForm from "./collapsible-login-form";
+import { Loader2 } from "lucide-react";
 
 function OtpVerificationForm({
   form,
   onSubmit,
+  isVerifying,
 }: {
   form: ReturnType<typeof useForm<z.infer<typeof mobileOtpSchema>>>;
   onSubmit: (data: { otp: string }) => void;
+  isVerifying: boolean;
 }) {
   return (
     <Form {...form}>
@@ -58,7 +61,14 @@ function OtpVerificationForm({
           )}
         />
         <Button type="submit" className="w-full cursor-pointer tracking-wide">
-          Verify OTP
+          {isVerifying ? (
+            <>
+              <Loader2 className="animate-spin" />
+              Verifying OTP
+            </>
+          ) : (
+            "Verify OTP"
+          )}
         </Button>
       </form>
     </Form>
@@ -68,9 +78,11 @@ function OtpVerificationForm({
 function MobileLoginForm({
   form,
   onSubmit,
+  sendingOtp,
 }: {
   form: ReturnType<typeof useForm<z.infer<typeof loginUserMobileSchema>>>;
   onSubmit: (data: z.infer<typeof loginUserMobileSchema>) => void;
+  sendingOtp: boolean;
 }) {
   return (
     <Form {...form}>
@@ -94,7 +106,14 @@ function MobileLoginForm({
           />
 
           <Button type="submit" className="w-full cursor-pointer tracking-wide">
-            Login with OTP
+            {sendingOtp ? (
+              <>
+                <Loader2 className="animate-spin" />
+                Sending OTP
+              </>
+            ) : (
+              "Login with OTP"
+            )}
           </Button>
         </fieldset>
       </form>
@@ -106,6 +125,8 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
   const auth = useAuth();
   useRecaptcha();
   const [otpSent, setOtpSent] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [sendingOtp, setSendingOtp] = useState(false);
   const [confirmationResult, setConfirmationResult] = useState<
     ConfirmationResult | undefined
   >(undefined);
@@ -134,26 +155,32 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
     const appVerifier = window.recaptchaVerifier;
     if (!appVerifier) {
       console.error("AppVerifier not ready");
+
       return;
     }
     try {
+      setSendingOtp(true);
       const confirmation = await auth?.handleSendOTP(data.mobile, appVerifier);
       setOtpSent(true);
       setConfirmationResult(confirmation);
       toast.success("OTP sent successfully", {
         description: "Otp has been sent to your mobile number. Please check.",
       });
+      setSendingOtp(false);
     } catch (e: unknown) {
       console.error(e);
+      setSendingOtp(false);
     }
   };
 
   const handleVerifyOTP = async (data: { otp: string }) => {
+    setIsVerifying(true);
     try {
       if (!confirmationResult)
         throw new Error("Confirmation result is undefined.");
       await auth?.verifyOTP(data.otp, confirmationResult);
       onSuccess?.();
+      setIsVerifying(false);
     } catch (e: unknown) {
       console.error(e);
       mobileOtpForm.setError("otp", {
@@ -172,15 +199,24 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
               ? "Invalid OTP. Try again!"
               : "An unexpected error occurred.",
       });
+      setIsVerifying(false);
     }
   };
 
   return (
     <div>
       {otpSent ? (
-        <OtpVerificationForm form={mobileOtpForm} onSubmit={handleVerifyOTP} />
+        <OtpVerificationForm
+          form={mobileOtpForm}
+          onSubmit={handleVerifyOTP}
+          isVerifying={isVerifying}
+        />
       ) : (
-        <MobileLoginForm form={mobileForm} onSubmit={handleMobileSubmit} />
+        <MobileLoginForm
+          form={mobileForm}
+          onSubmit={handleMobileSubmit}
+          sendingOtp={sendingOtp}
+        />
       )}
 
       <span className="my-4 flex w-full justify-center text-[14px] text-zinc-500">

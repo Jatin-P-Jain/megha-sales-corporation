@@ -1,4 +1,3 @@
-// lib/auth/auth-context.tsx
 "use client";
 
 import {
@@ -17,6 +16,8 @@ import {
   ParsedToken,
 } from "firebase/auth";
 import { createContext, useEffect, useState } from "react";
+import { createUserIfNotExists } from "@/lib/firebase/createUserIfNotExists";
+import { UserData } from "@/types/user";
 
 type AuthContextType = {
   currentUser: User | null;
@@ -48,6 +49,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setCurrentUser(user ?? null);
       if (user) {
         const result = await user.getIdTokenResult();
+        const safeUser: UserData = {
+          uid: user.uid,
+          email: user.email ?? null,
+          phone: user.phoneNumber ?? null,
+          displayName: user.displayName ?? null,
+          authProviders: user.providerData.map((p) => p.providerId),
+          role: result?.claims?.admin ? "admin" : null,
+          photo: user.photoURL,
+          firmName: "",
+        };
+
+        await createUserIfNotExists(safeUser);
         setCustomClaims(result.claims ?? null);
       } else {
         await removeToken();
