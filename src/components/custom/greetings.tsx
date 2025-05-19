@@ -4,10 +4,8 @@ import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { UserData } from "@/types/user";
-import { useAuth } from "@/context/useAuth";
 
 const Greetings = ({ user }: { user: UserData | undefined }) => {
-  const auth = useAuth();
   const { displayName, role } = user ?? {};
   const isAdmin = role === "admin";
   const userName = displayName ?? "Guest";
