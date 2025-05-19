@@ -82,7 +82,7 @@ export default function AuthButtons({ user }: { user: UserData | undefined }) {
               <DropdownMenuItem
                 onClick={async () => {
                   await auth.logout();
-                  router.refresh();
+                  window.location.assign("/");
                 }}
               >
                 Logout
