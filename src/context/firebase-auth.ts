@@ -16,9 +16,8 @@ export const loginWithGoogle = async (): Promise<User | undefined> => {
   provider.setCustomParameters({ prompt: "select_account" });
   const result = await signInWithPopup(auth, provider);
   const user = result.user;
-  await user.reload();
-  const idTokenResult = await user.getIdTokenResult(true);
-  await setToken(idTokenResult.token, user.refreshToken);
+  const token = await user.getIdToken(true);
+  await setToken(token, user.refreshToken);
   return user;
 };
 
