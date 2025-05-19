@@ -22,7 +22,6 @@ export default async function ProductList({
 }) {
   const [products] = await Promise.all([productsPromise]);
   const { data, totalPages } = products;
-  console.log({ searchParamsValues });
 
   return (
     <>

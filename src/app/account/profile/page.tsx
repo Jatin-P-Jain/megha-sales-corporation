@@ -14,8 +14,6 @@ export default async function Profile() {
 
   const user = await getUserFromDB();
 
-  console.log({ user });
-
   let role: UserRole;
   let otherUserRole: string | undefined = undefined;
 

@@ -45,8 +45,6 @@ export const updateUserProfile = async (
   const userRecord = await auth.getUser(uid);
   const existingClaims = userRecord.customClaims ?? {};
 
-  console.log({ existingClaims });
-
   await auth.updateUser(uid, {
     displayName: data.displayName,
     email: data.email,

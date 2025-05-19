@@ -15,9 +15,11 @@ import Image from "next/image";
 import useIsMobile from "@/hooks/useIsMobile";
 import { useEffect, useState } from "react";
 import { UserData } from "@/types/user";
-import { MenuIcon } from "lucide-react";
+import { Loader2Icon, MenuIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function AuthButtons({ user }: { user: UserData | undefined }) {
+  const router = useRouter();
   const auth = useAuth();
   const isMobile = useIsMobile();
   const [isAdmin, setIsAdmin] = useState(false);
@@ -41,7 +43,9 @@ export default function AuthButtons({ user }: { user: UserData | undefined }) {
                   />
                 )}
                 <AvatarFallback className="bg-cyan-800">
-                  {(user.displayName || user.email)?.[0] || "Not Available"}
+                  {(user.displayName || user.email)?.[0] || (
+                    <Loader2Icon className="size-4 animate-spin" />
+                  )}
                 </AvatarFallback>
               </Avatar>
             </DropdownMenuTrigger>
@@ -78,7 +82,7 @@ export default function AuthButtons({ user }: { user: UserData | undefined }) {
               <DropdownMenuItem
                 onClick={async () => {
                   await auth.logout();
-                  window.location.assign("/");
+                  router.refresh();
                 }}
               >
                 Logout

@@ -15,7 +15,6 @@ export async function middleware(request: NextRequest) {
   ) {
     return NextResponse.next();
   }
-
   // 1) Grab the raw ID‐token from the cookie
   const cookieStore = await cookies();
   const token = cookieStore.get("firebaseAuthToken")?.value;
@@ -28,7 +27,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.next();
     }
     // any other page requires login
-    return NextResponse.redirect(new URL("/login", origin));
+    return NextResponse.redirect(new URL("/", origin));
   }
 
   // From here on, TS knows token is a `string`

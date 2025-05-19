@@ -36,6 +36,10 @@ import { toast } from "sonner";
 import { useAuth } from "@/context/useAuth";
 import { updateUserProfile } from "./action";
 import { DecodedIdToken } from "firebase-admin/auth";
+import GoogleIcon from "@/components/custom/google-icon.svg";
+import Image from "next/image";
+import { GoogleAuthProvider, linkWithPopup } from "firebase/auth";
+import { setToken } from "@/context/actions";
 
 export default function ProfileForm({
   defaultValues,
@@ -44,14 +48,14 @@ export default function ProfileForm({
   defaultValues?: z.infer<typeof userProfileDataSchema>;
   verifiedToken: DecodedIdToken | null;
 }) {
-  // console.log({ defaultValues });
   const auth = useAuth();
+  const user = auth.currentUser;
   const router = useRouter();
   const recaptchaVerifier = useRecaptcha();
   const [isVerified, setIsVerified] = useState(
     !!defaultValues?.phone ? true : false,
   );
-
+  const [isAccountLinking, setIsAccountLinking] = useState(false);
   const { otpSent, sendingOtp, isVerifying, sendOtp, verifyOtp } = useMobileOtp(
     {
       onSuccess: () => {
@@ -72,6 +76,8 @@ export default function ProfileForm({
   const selectedRole = form.watch("role");
   const phoneNumber = form.watch("phone");
   const otp = form.watch("otp");
+  const isPhoneAuthProvider =
+    verifiedToken?.firebase["sign_in_provider"] === "phone";
 
   useEffect(() => {
     if (loginUserMobileSchema.safeParse({ mobile: phoneNumber }).success) {
@@ -83,8 +89,40 @@ export default function ProfileForm({
 
   const [isPhoneValid, setIsPhoneValid] = useState(false);
 
+  const handleLinkGoogle = async () => {
+    setIsAccountLinking(true);
+    if (!user) {
+      setIsAccountLinking(false);
+      return;
+    }
+
+    try {
+      await user.getIdToken(true);
+      const provider = new GoogleAuthProvider();
+      const result = await linkWithPopup(user, provider);
+      await user.reload();
+      const freshToken = await user.getIdToken(/* forceRefresh */ true);
+      await setToken(freshToken, user.refreshToken);
+      form.setValue("email", result.user.email ?? "");
+      toast.success("Success!", {
+        description:
+          "Your Google account linked! You can now sign in with Google moving forward.",
+      });
+      setIsAccountLinking(false);
+    } catch (err: unknown) {
+      console.log("err --", err);
+      setIsAccountLinking(false);
+      if ((err as { code: string }).code === "auth/credential-already-in-use") {
+        toast.error("Error!", {
+          description: "This Google account is already linked to another user.",
+        });
+      } else {
+        toast.error("An error occured while linking google account");
+      }
+    }
+  };
+
   const handleSubmit = async (data: z.infer<typeof userProfileSchema>) => {
-    console.log({ data });
     delete data.otp;
     const { otherUserRole, ...rest } = data;
 
@@ -163,31 +201,70 @@ export default function ProfileForm({
                   );
                 }}
               />
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => {
-                  return (
-                    <FormItem>
-                      <FormLabel className="flex items-start gap-1">
-                        Your email
-                        <span className="text-muted-foreground text-xs">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          placeholder="Email"
-                          readOnly={!!defaultValues?.email}
-                          className={clsx(
-                            defaultValues?.email && "font-semibold",
-                          )}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  );
-                }}
-              />
+              <div className="flex flex-col">
+                {isPhoneAuthProvider && !defaultValues?.email && (
+                  <>
+                    <Button
+                      type="button"
+                      className="mx-auto w-[80%] cursor-pointer rounded-full text-[14px] shadow-md"
+                      variant={"outline"}
+                      onClick={handleLinkGoogle}
+                    >
+                      {isAccountLinking ? (
+                        <>
+                          <Loader2Icon className="size-4 animate-spin" />
+                          Linking Google Account
+                        </>
+                      ) : (
+                        <>
+                          <Image
+                            src={GoogleIcon}
+                            alt=""
+                            className="relative h-8 max-h-6 w-8 max-w-6"
+                          />
+                          Link Google Account
+                        </>
+                      )}
+                    </Button>
+                    <span className="mt-2 flex w-full justify-center text-[14px] text-zinc-500">
+                      or
+                    </span>
+                  </>
+                )}
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => {
+                    return (
+                      <FormItem>
+                        <FormLabel className="flex items-start gap-1">
+                          Your email
+                          <span className="text-muted-foreground text-xs">
+                            *
+                          </span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="Email"
+                            readOnly={!!defaultValues?.email}
+                            className={clsx(
+                              defaultValues?.email && "font-semibold",
+                            )}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
+                />
+                {!isPhoneAuthProvider && !defaultValues?.email && (
+                  <span className="mt-1 text-xs text-yellow-700">
+                    This email (Google Account) will be linked to your account.
+                    You will be able to log in using it in the future.
+                  </span>
+                )}
+              </div>
               <div className="flex flex-col gap-2">
                 <div
                   className={clsx(
@@ -248,7 +325,7 @@ export default function ProfileForm({
                 {isVerified && (
                   <div className="flex w-fit gap-1 rounded-lg bg-green-200 p-1 px-3 text-xs font-semibold text-green-800">
                     <CheckCircle2 className="size-4 text-green-800" />
-                    Verified & Linked
+                    {!isPhoneAuthProvider ? "Verified & Linked" : "Verified"}
                   </div>
                 )}
               </div>
@@ -365,7 +442,7 @@ export default function ProfileForm({
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2Icon className="size-4" />
+                    <Loader2Icon className="size-4 animate-spin" />
                     Saving Profile
                   </>
                 ) : (
