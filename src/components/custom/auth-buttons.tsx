@@ -16,8 +16,10 @@ import useIsMobile from "@/hooks/useIsMobile";
 import { useEffect, useState } from "react";
 import { UserData } from "@/types/user";
 import { Loader2Icon, MenuIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function AuthButtons({ user }: { user: UserData | undefined }) {
+  const router = useRouter();
   const auth = useAuth();
   const isMobile = useIsMobile();
   const [isAdmin, setIsAdmin] = useState(false);
@@ -80,7 +82,7 @@ export default function AuthButtons({ user }: { user: UserData | undefined }) {
               <DropdownMenuItem
                 onClick={async () => {
                   await auth.logout();
-                  window.location.assign("/");
+                  router.refresh();
                 }}
               >
                 Logout

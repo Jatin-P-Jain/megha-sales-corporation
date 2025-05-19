@@ -22,10 +22,14 @@ export async function middleware(request: NextRequest) {
   // 2) If no token at all, treat as “not logged in”
   const publicPaths = ["/", "/login", "/register", "/products-list"];
   if (!token) {
+    console.log("here");
+
     // allow public pages
     if (publicPaths.includes(pathname)) {
       return NextResponse.next();
     }
+    console.log("returing from here");
+
     // any other page requires login
     return NextResponse.redirect(new URL("/", origin));
   }
