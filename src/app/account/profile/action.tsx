@@ -45,6 +45,13 @@ export const updateUserProfile = async (
   const userRecord = await auth.getUser(uid);
   const existingClaims = userRecord.customClaims ?? {};
 
+  console.log({ existingClaims });
+
+  await auth.updateUser(uid, {
+    displayName: data.displayName,
+    email: data.email,
+  });
+
   await auth.setCustomUserClaims(uid, {
     ...existingClaims,
     profileComplete: true,
@@ -52,9 +59,12 @@ export const updateUserProfile = async (
 
   // Invalidate cache
   revalidatePath(`/account/${uid}`);
-
   return {
-    success: true,
+    error: false,
     message: "Profile updated successfully",
+    user: {
+      uid,
+      ...userData,
+    },
   };
 };
