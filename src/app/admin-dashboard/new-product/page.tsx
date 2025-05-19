@@ -24,7 +24,6 @@ const NewProduct = async ({ searchParams }: SearchParamProps) => {
     const data = await getBrandsForDropDown({ filters: { status: ["live"] } });
     brandData = data.data;
   }
-  console.log({ brandData });
 
   const breadCrumbItems = !Array.isArray(brandData)
     ? [

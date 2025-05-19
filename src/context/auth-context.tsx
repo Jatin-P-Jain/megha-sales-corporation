@@ -20,6 +20,7 @@ import { createUserIfNotExists } from "@/lib/firebase/createUserIfNotExists";
 import { UserData } from "@/types/user";
 
 type AuthContextType = {
+  loading: boolean;
   currentUser: User | null;
   customClaims: ParsedToken | null;
   logout: () => Promise<void>;
@@ -43,21 +44,29 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [customClaims, setCustomClaims] = useState<ParsedToken | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       setCurrentUser(user ?? null);
+      setLoading(false);
       if (user) {
         const result = await user.getIdTokenResult();
+        const firebaseAuth = result.claims.firebase
+          ? {
+              identities: result.claims.firebase.identities ?? {},
+              sign_in_provider: result.claims.firebase.sign_in_provider ?? "",
+            }
+          : undefined;
         const safeUser: UserData = {
           uid: user.uid,
           email: user.email ?? null,
-          phone: user.phoneNumber ?? null,
+          phone: user.phoneNumber?.slice(3) ?? null,
           displayName: user.displayName ?? null,
-          authProviders: user.providerData.map((p) => p.providerId),
           role: result?.claims?.admin ? "admin" : null,
           photo: user.photoURL,
           firmName: "",
+          firebaseAuth,
         };
 
         await createUserIfNotExists(safeUser);
@@ -72,6 +81,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <AuthContext.Provider
       value={{
+        loading,
         currentUser,
         customClaims,
         logout: logoutUser,

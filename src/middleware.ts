@@ -13,6 +13,7 @@ export async function middleware(request: NextRequest) {
   // 2) Grab the token
   const cookieStore = await cookies();
   const token = cookieStore.get("firebaseAuthToken")?.value;
+
   if (!token && pathname.startsWith("/account")) {
     return NextResponse.redirect(new URL("/login", origin));
   }
@@ -35,21 +36,16 @@ export async function middleware(request: NextRequest) {
   }
   // 5) Decode & check displayName
   const decoded = decodeJwt(token);
-  const userName = decoded?.name;
-  const userEmail = decoded?.email;
-  const userPhone = decoded?.phone;
 
-  const isProfileComplete = userName && userEmail && userPhone;
+  const isProfileComplete = decoded?.profileComplete;
 
-  const isProfileCompletePage = pathname.startsWith(
-    "/account/complete-profile",
-  );
+  const isProfileCompletePage = pathname.startsWith("/account/profile");
 
   if (!isProfileComplete && !isProfileCompletePage) {
     // Preserve where they originally wanted to go
     const redirectTo = encodeURIComponent(pathname + request.nextUrl.search);
     return NextResponse.redirect(
-      new URL(`/account/complete-profile?redirect=${redirectTo}`, origin),
+      new URL(`/account/profile?redirect=${redirectTo}`, origin),
     );
   }
 
@@ -90,7 +86,7 @@ export const config = {
     "/register",
     "/account",
     "/account/:path*",
-    "/account/complete-profile",
+    "/account/profile",
     "/products-list",
   ],
 };

@@ -10,6 +10,8 @@ import Image from "next/image";
 import BrandLogo from "../../public/brand-logo.svg";
 import ContactUsLink from "@/components/custom/contact-us-link";
 import { AuthProvider } from "@/context/auth-context";
+import { UserData } from "@/types/user";
+import { getUserFromDB } from "@/data/user";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -22,11 +24,13 @@ export const metadata: Metadata = {
   icons: "/brand-logo.svg",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const clientUser = await getUserFromDB(); // From Firestore
+
   return (
     <html lang="en">
       <meta
@@ -57,7 +61,7 @@ export default function RootLayout({
                 <ContactUsLink />
               </li>
               <li className="flex items-center justify-center">
-                <AuthButtons />
+                <AuthButtons user={clientUser} />
               </li>
             </ul>
           </nav>
@@ -69,7 +73,7 @@ export default function RootLayout({
             offset={{ top: 100 }}
           ></Toaster>
         </AuthProvider>
-        
+        <div id="recaptcha-container" className="opacity-100" />
         <Analytics />
         <SpeedInsights />
       </body>

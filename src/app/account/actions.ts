@@ -3,7 +3,7 @@
 import { auth, fireStore } from "@/firebase/server";
 import { cookies } from "next/headers";
 
-export default async function deleteUserFavourites() {
+export async function deleteUserFavourites() {
   const cookieStore = await cookies();
   const token = cookieStore.get("firebaseAuthToken")?.value;
   if (!token) {

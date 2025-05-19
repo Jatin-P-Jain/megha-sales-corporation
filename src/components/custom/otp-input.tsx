@@ -38,7 +38,7 @@ const OTPInput: FC<OTPInputProps> = ({ length = 6, value, onChange }) => {
 
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement>,
-    idx: number
+    idx: number,
   ) => {
     if (e.key === "Backspace" && !e.currentTarget.value && idx > 0) {
       inputsRef.current[idx - 1]?.focus();
@@ -46,14 +46,14 @@ const OTPInput: FC<OTPInputProps> = ({ length = 6, value, onChange }) => {
   };
 
   return (
-    <div className="flex gap-3 md:gap-4 justify-center items-center mt-4 max-w-screen w-full md:w-3/4 mx-auto">
+    <div className="mx-auto flex w-full items-center justify-center gap-3 md:w-3/4 md:gap-4">
       {Array.from({ length }).map((_, i) => (
         <Input
           key={i}
           type="tel"
           inputMode="numeric"
           maxLength={1}
-          className="flex-1 min-w-0 text-center text-lg md:text-xl"
+          className="min-w-0 flex-1 text-center text-lg md:text-xl"
           ref={(el) => {
             inputsRef.current[i] = el ?? null;
           }}

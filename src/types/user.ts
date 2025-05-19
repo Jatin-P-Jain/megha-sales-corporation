@@ -1,11 +1,23 @@
+export interface FirebaseAuthData {
+  identities: Record<string, string>;
+  sign_in_provider: string;
+}
+
+export type UserRole =
+  | "admin"
+  | "retailer"
+  | "wholesaler"
+  | "distributor"
+  | "other";
+
 export type UserData = {
   uid: string;
-  role: string | null;
+  role: UserRole | null;
   email: string | null;
   phone: string | null;
   displayName: string | null;
-  authProviders: string[];
   firmName?: string;
-  photo?: string | null;
+  photoUrl?: string | null;
   profileComplete?: boolean;
+  firebaseAuth?: FirebaseAuthData;
 };

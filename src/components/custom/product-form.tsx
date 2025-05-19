@@ -64,7 +64,6 @@ export default function ProductForm({
     image: { id: "", url: "" },
     ...defaultValues,
   };
-  console.log({ combineDefaultValues });
 
   const form = useForm<z.infer<typeof productSchema>>({
     resolver: zodResolver(productSchema),
