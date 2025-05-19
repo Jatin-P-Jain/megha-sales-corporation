@@ -67,7 +67,7 @@ export function useMobileOtp({
             await linkWithCredential(user, credential);
             const token = await user.getIdToken(true);
             await setToken(token, user.refreshToken);
-          } catch (error: any) {
+          } catch (error: unknown) {
             handleFirebaseAuthError(error);
             return;
           }

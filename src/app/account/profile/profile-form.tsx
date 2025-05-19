@@ -14,7 +14,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import {
-  mobileOtpSchema,
   userProfileDataSchema,
   userProfileSchema,
 } from "@/validation/profileSchema";
@@ -90,8 +89,8 @@ export default function ProfileForm({
     currentUser: User | null,
   ) => {
     console.log({ data });
-
-    const { otp, otherUserRole, ...rest } = data;
+    delete data.otp;
+    const { otherUserRole, ...rest } = data;
 
     const finalRole =
       data.role === "other" && otherUserRole ? otherUserRole : data.role;
@@ -101,8 +100,6 @@ export default function ProfileForm({
       const response = await updateUserProfile(
         { ...rest, role: finalRole },
         verifiedToken,
-        token,
-        refreshToken,
       );
       if (!!response?.error) {
         toast.error("Error!", { description: response.message });

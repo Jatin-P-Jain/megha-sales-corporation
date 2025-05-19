@@ -1,9 +1,7 @@
 "use server";
-import { setToken } from "@/context/actions";
 import { auth, fireStore } from "@/firebase/server";
 import { userProfileDataSchema } from "@/validation/profileSchema";
 import { DecodedIdToken } from "firebase-admin/auth";
-import { User } from "firebase/auth";
 import { revalidatePath } from "next/cache";
 
 export const updateUserProfile = async (
@@ -16,8 +14,6 @@ export const updateUserProfile = async (
     photo?: string;
   },
   verifiedToken: DecodedIdToken | null,
-  token: string,
-  refreshToken: string,
 ) => {
   if (!verifiedToken) {
     return;

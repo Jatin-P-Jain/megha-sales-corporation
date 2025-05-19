@@ -25,7 +25,6 @@ import {
 import { Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import deleteUserFavourites from "./actions";
 
 export default function DeleteAccountButton({
   isPasswordProvider,
@@ -50,8 +49,6 @@ export default function DeleteAccountButton({
       } else {
         await reauthenticateWithPopup(user, new GoogleAuthProvider());
       }
-
-      await deleteUserFavourites();
       await deleteUser(user);
       toast.success("Account deleted successfully");
     } catch (e: unknown) {

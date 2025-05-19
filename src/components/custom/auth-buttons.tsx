@@ -13,10 +13,9 @@ import {
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import Image from "next/image";
 import useIsMobile from "@/hooks/useIsMobile";
-import { Loader2, MenuIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { User } from "firebase/auth";
 import { UserData } from "@/types/user";
+import { MenuIcon } from "lucide-react";
 
 export default function AuthButtons({ user }: { user: UserData | undefined }) {
   const auth = useAuth();

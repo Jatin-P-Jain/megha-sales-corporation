@@ -1,8 +1,7 @@
 import { auth, fireStore } from "@/firebase/server";
 import { cookies } from "next/headers";
 
-import { UserData, UserRole, FirebaseAuthData } from "@/types/user";
-import { User } from "firebase/auth";
+import { UserData, UserRole } from "@/types/user";
 
 export function mapDbUserToClientUser(
   dbUser: FirebaseFirestore.DocumentData | undefined,
