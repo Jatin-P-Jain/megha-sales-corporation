@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           phone: user.phoneNumber?.slice(3) ?? null,
           displayName: user.displayName ?? null,
           role: result?.claims?.admin ? "admin" : null,
-          photo: user.photoURL,
+          photoUrl: user.photoURL,
           firmName: "",
           firebaseAuth,
         };
