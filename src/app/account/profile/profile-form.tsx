@@ -95,8 +95,6 @@ export default function ProfileForm({
     const finalRole =
       data.role === "other" && otherUserRole ? otherUserRole : data.role;
     if (currentUser) {
-      const token = await currentUser.getIdToken(true); // Get a fresh ID token
-      const refreshToken = currentUser.refreshToken;
       const response = await updateUserProfile(
         { ...rest, role: finalRole },
         verifiedToken,
