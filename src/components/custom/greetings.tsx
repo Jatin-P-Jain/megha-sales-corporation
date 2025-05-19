@@ -40,13 +40,6 @@ const Greetings = ({ user }: { user: UserData | undefined }) => {
         <Button className="w-full" asChild>
           <Link href={"/products-list"}>Explore Products</Link>
         </Button>
-        <Button
-          onClick={async () => {
-            await auth.logout();
-          }}
-        >
-          Logout
-        </Button>
       </CardContent>
     </Card>
   );
