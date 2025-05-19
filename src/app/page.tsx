@@ -1,9 +1,12 @@
 import Greetings from "@/components/custom/greetings";
+import { getUserFromDB } from "@/data/user";
 
-export default function Home() {
+export default async function Home() {
+  const clientUser = await getUserFromDB(); // From Firestore
+
   return (
-    <main className="flex h-full flex-col p-5 items-center justify-center">
-      <Greetings />
+    <main className="flex h-full flex-col items-center justify-center p-5">
+      <Greetings user={clientUser} />
     </main>
   );
 }

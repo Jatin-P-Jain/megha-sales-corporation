@@ -1,80 +1,87 @@
+// middleware.ts
 import { decodeJwt } from "jose";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function middleware(request: NextRequest) {
-  const { pathname, origin, searchParams } = request.nextUrl;
+  const { pathname, origin, search } = request.nextUrl;
 
-  // 1) Let POSTs through immediately
-  if (request.method === "POST") {
+  // 0) Bypass POSTs, Next.js internals, and your refresh endpoint
+  if (
+    request.method === "POST" ||
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/favicon.ico") ||
+    pathname.startsWith("/api/refresh-token")
+  ) {
     return NextResponse.next();
   }
 
-  // 2) Grab the token
+  // 1) Grab the raw ID‐token from the cookie
   const cookieStore = await cookies();
   const token = cookieStore.get("firebaseAuthToken")?.value;
 
-  if (!token && pathname.startsWith("/account")) {
-    return NextResponse.redirect(new URL("/login", origin));
-  }
-
-  // 3) Public‐routes that never require login
+  // 2) If no token at all, treat as “not logged in”
   const publicPaths = ["/", "/login", "/register", "/products-list"];
-  if (!token && publicPaths.includes(pathname)) {
-    return NextResponse.next();
-  }
-
-  // 4) If no token at all, send them to /login
-  if (token === undefined) {
+  if (!token) {
+    // allow public pages
+    if (publicPaths.includes(pathname)) {
+      return NextResponse.next();
+    }
+    // any other page requires login
     return NextResponse.redirect(new URL("/login", origin));
   }
-  if (
-    token &&
-    (pathname.startsWith("/login") || pathname.startsWith("/register"))
-  ) {
+
+  // From here on, TS knows token is a `string`
+  // 3) Prevent logged‐in users from hitting /login or /register
+  if (pathname === "/login" || pathname === "/register") {
     return NextResponse.redirect(new URL("/", origin));
   }
-  // 5) Decode & check displayName
-  const decoded = decodeJwt(token);
 
-  const isProfileComplete = decoded?.profileComplete;
+  // 4) Decode your JWT and extract claims
+  const { profileComplete, admin, exp } = decodeJwt(token) as {
+    profileComplete?: boolean;
+    admin?: boolean;
+    exp?: number;
+  };
 
-  const isProfileCompletePage = pathname.startsWith("/account/profile");
-
-  if (!isProfileComplete && !isProfileCompletePage) {
-    // Preserve where they originally wanted to go
-    const redirectTo = encodeURIComponent(pathname + request.nextUrl.search);
-    return NextResponse.redirect(
-      new URL(`/account/profile?redirect=${redirectTo}`, origin),
-    );
-  }
-
-  // 8) If they now have a name but somehow hit details, send them home
-  if (isProfileComplete && isProfileCompletePage) {
-    // If you passed a redirect param, use it; otherwise just go “/”
-    const back = searchParams.get("redirect");
-    return NextResponse.redirect(new URL(back ?? "/", origin));
-  }
-  // 9) Now continue with your expiry check, admin guards, etc.
-  if (decoded.exp && (decoded.exp - 5 * 60) * 1000 < Date.now()) {
-    const redirectTo = encodeURIComponent(pathname + request.nextUrl.search);
+  // 5) If the token is about to expire (within 5m) or already has, refresh it
+  if (exp && (exp - 5 * 60) * 1000 < Date.now()) {
+    const redirectTo = encodeURIComponent(pathname + search);
     return NextResponse.redirect(
       new URL(`/api/refresh-token?redirect=${redirectTo}`, origin),
     );
   }
 
-  // 10) Admin vs user guards
-  if (!decoded.admin && pathname.startsWith("/admin-dashboard")) {
+  // 6) If profile isn’t complete yet, send them through your refresh-route dance
+  if (!profileComplete) {
+    // but don’t block the actual profile page
+    if (pathname === "/account/profile") {
+      return NextResponse.next();
+    }
+    const redirectTo = encodeURIComponent(pathname + search);
+    return NextResponse.redirect(
+      new URL(`/api/refresh-token?redirect=${redirectTo}`, origin),
+    );
+  }
+
+  // 7) If they’ve just finished the profile page, bounce them on
+  if (profileComplete && pathname === "/account/profile") {
+    const back = request.nextUrl.searchParams.get("redirect") ?? "/";
+    return NextResponse.redirect(new URL(back, origin));
+  }
+
+  // 8) Admin vs. user guards
+  if (!admin && pathname.startsWith("/admin-dashboard")) {
     return NextResponse.redirect(new URL("/", origin));
   }
-  if (decoded.admin && pathname === "/admin-dashboard") {
+  if (admin && pathname === "/admin-dashboard") {
     return NextResponse.redirect(new URL("/admin-dashboard/brands", origin));
   }
-  if (decoded.admin && pathname.startsWith("/account/my-favourites")) {
+  if (admin && pathname.startsWith("/account/my-favourites")) {
     return NextResponse.redirect(new URL("/", origin));
   }
 
-  // 11) All clear
+  // 9) All clear
   return NextResponse.next();
 }
 
@@ -86,7 +93,6 @@ export const config = {
     "/register",
     "/account",
     "/account/:path*",
-    "/account/profile",
     "/products-list",
   ],
 };

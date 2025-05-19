@@ -58,7 +58,7 @@ export const updateUserProfile = async (
   });
 
   // Invalidate cache
-  revalidatePath(`/account/${uid}`);
+  revalidatePath(`/account/profile`);
   return {
     error: false,
     message: "Profile updated successfully",

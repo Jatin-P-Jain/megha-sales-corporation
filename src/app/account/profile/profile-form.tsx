@@ -36,7 +36,6 @@ import { toast } from "sonner";
 import { useAuth } from "@/context/useAuth";
 import { updateUserProfile } from "./action";
 import { DecodedIdToken } from "firebase-admin/auth";
-import { User } from "firebase/auth";
 
 export default function ProfileForm({
   defaultValues,
@@ -84,31 +83,24 @@ export default function ProfileForm({
 
   const [isPhoneValid, setIsPhoneValid] = useState(false);
 
-  const handleSubmit = async (
-    data: z.infer<typeof userProfileSchema>,
-    currentUser: User | null,
-  ) => {
+  const handleSubmit = async (data: z.infer<typeof userProfileSchema>) => {
     console.log({ data });
     delete data.otp;
     const { otherUserRole, ...rest } = data;
 
     const finalRole =
       data.role === "other" && otherUserRole ? otherUserRole : data.role;
-    if (currentUser) {
-      const response = await updateUserProfile(
-        { ...rest, role: finalRole },
-        verifiedToken,
-      );
-      if (!!response?.error) {
-        toast.error("Error!", { description: response.message });
-      } else {
-        toast.success("Success!", {
-          description: "Your profile has been saved successfully!",
-        });
-        router.push("/");
-      }
+    const response = await updateUserProfile(
+      { ...rest, role: finalRole },
+      verifiedToken,
+    );
+    if (!!response?.error) {
+      toast.error("Error!", { description: response.message });
     } else {
-      toast.error("Error!", { description: "Not logged in user." });
+      toast.success("Success!", {
+        description: "Your profile has been saved successfully!",
+      });
+      router.push("/");
     }
   };
 
@@ -126,11 +118,7 @@ export default function ProfileForm({
           </div>
         )}
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit((data) =>
-              handleSubmit(data, auth.currentUser),
-            )}
-          >
+          <form onSubmit={form.handleSubmit((data) => handleSubmit(data))}>
             <fieldset
               className="flex flex-col gap-5"
               disabled={form.formState.isSubmitting}
