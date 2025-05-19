@@ -10,7 +10,6 @@ export default async function Profile() {
   const cookieStore = await cookies();
   const token = cookieStore.get("firebaseAuthToken")?.value;
   const verifiedToken = token ? await auth.verifyIdToken(token) : null;
-  console.log({ verifiedToken });
 
   const user = await getUserFromDB();
 
