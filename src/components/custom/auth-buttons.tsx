@@ -19,7 +19,6 @@ import { Loader2Icon, MenuIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function AuthButtons({ user }: { user: UserData | undefined }) {
-  const router = useRouter();
   const auth = useAuth();
   const isMobile = useIsMobile();
   const [isAdmin, setIsAdmin] = useState(false);
