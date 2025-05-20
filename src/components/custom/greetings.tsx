@@ -8,7 +8,7 @@ import { Loader2Icon } from "lucide-react";
 
 const Greetings = () => {
   const auth = useAuth();
-  const { clientUser, clientUserLoading } = auth;
+  const { clientUser, clientUserLoading, currentUser } = auth;
   const user = clientUser;
   const { displayName, role } = user ?? {};
   const isAdmin = role === "admin";
@@ -16,7 +16,7 @@ const Greetings = () => {
 
   return (
     <>
-      {clientUserLoading ? (
+      {currentUser && clientUserLoading ? (
         <div className="bg-muted text-muted-foreground mx-auto flex min-h-30 w-1/2 flex-col items-center justify-center gap-4 rounded-lg p-4">
           <Loader2Icon className="size-5 animate-spin" />
           <span className="text-sm font-semibold">Please wait!</span>

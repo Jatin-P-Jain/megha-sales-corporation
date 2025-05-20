@@ -35,7 +35,7 @@ export default function AuthButtons() {
   // 1) Loading state
   if (currentUser && clientUserLoading) {
     return (
-      <div className="flex items-center justify-center px-4">
+      <div className="flex items-center justify-center">
         <Loader2Icon className="h-5 w-5 animate-spin" />
       </div>
     );
