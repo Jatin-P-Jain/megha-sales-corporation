@@ -49,7 +49,7 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [clientUser, setClientUser] = useState<UserData | null>(null);
-  const [clientUserLoading, setClientUserLoading] = useState(false);
+  const [clientUserLoading, setClientUserLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [customClaims, setCustomClaims] = useState<ParsedToken | null>(null);
   const [loading, setLoading] = useState(true);
@@ -79,7 +79,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         await createUserIfNotExists(safeUser);
         setCustomClaims(result.claims ?? null);
-        setClientUserLoading(true);
         const userDoc = await getDoc(doc(firestore, "users", safeUser.uid));
         if (userDoc.exists()) {
           const userFromDB = userDoc.data();

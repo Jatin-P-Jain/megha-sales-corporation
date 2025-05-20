@@ -13,7 +13,11 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
       <span className="my-4 flex w-full justify-center text-[14px] text-zinc-500">
         or
       </span>
-      <GoogleLoginButton variant="outline" onSuccess={onSuccess} />
+      <GoogleLoginButton
+        variant="outline"
+        onSuccess={onSuccess}
+        isLogin={true}
+      />
       <span className="my-4 flex w-full justify-center text-[14px] text-zinc-500">
         or
       </span>

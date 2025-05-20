@@ -21,6 +21,7 @@ export default function AuthButtons() {
   const router = useRouter();
   const auth = useAuth();
   const user = auth.clientUser;
+  const userLoading = auth.clientUserLoading;
   const isMobile = useIsMobile();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -32,7 +33,7 @@ export default function AuthButtons() {
     try {
       await auth.logout();
       setIsLoggingOut(false);
-      router.refresh();
+      router.push("/");
     } catch (err) {
       console.error("Logout failed", err);
       setIsLoggingOut(false);
@@ -41,6 +42,11 @@ export default function AuthButtons() {
   return (
     <>
       <div className="">
+        {userLoading && !user && (
+          <div className="flex items-center justify-center">
+            <Loader2Icon className="size-5 animate-spin" />
+          </div>
+        )}
         {!!user && (
           <DropdownMenu>
             <DropdownMenuTrigger className="flex h-full">
@@ -95,7 +101,8 @@ export default function AuthButtons() {
             </DropdownMenuContent>
           </DropdownMenu>
         )}
-        {!user &&
+        {!userLoading &&
+          !user &&
           (isMobile ? (
             <DropdownMenu>
               <DropdownMenuTrigger>

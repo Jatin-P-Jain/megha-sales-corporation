@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "../ui/button";
 import { useAuth } from "@/context/useAuth";
 import GoogleIcon from "@/components/custom/google-icon.svg";
+import GoogleLoadingIcon from "@/assets/icons/google-loading.gif";
 import Image from "next/image";
 import { useState } from "react";
 import { Loader2Icon } from "lucide-react";
@@ -19,12 +20,14 @@ type ButtonProps = {
     | undefined;
   className?: string;
   onSuccess?: () => void;
+  isLogin?: boolean;
 };
 
 export default function GoogleLoginButton({
   variant,
   className,
   onSuccess,
+  isLogin,
 }: ButtonProps) {
   const auth = useAuth();
   const router = useRouter();
@@ -55,8 +58,12 @@ export default function GoogleLoginButton({
     >
       {signingIn ? (
         <>
-          <Loader2Icon className="size-4 animate-spin" />
-          Continuing with Google
+          <Image
+            src={GoogleLoadingIcon}
+            alt=""
+            className="relative h-20 max-h-14 w-20 max-w-14"
+          />
+          {isLogin ? "Logging In with Google" : "Continue with Google"}
         </>
       ) : (
         <>
@@ -65,7 +72,7 @@ export default function GoogleLoginButton({
             alt=""
             className="relative h-8 max-h-8 w-8 max-w-8"
           />
-          Continue with Google
+          {isLogin ? "Login with Google" : "Continue with Google"}
         </>
       )}
     </Button>

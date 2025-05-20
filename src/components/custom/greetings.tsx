@@ -16,8 +16,9 @@ const Greetings = () => {
   return (
     <>
       {clientUserLoading ? (
-        <div className="bg-muted text-muted-foreground mx-auto flex w-1/2 items-center justify-center rounded-lg p-4">
+        <div className="bg-muted text-muted-foreground mx-auto gap-4 flex min-h-30 w-1/2 flex-col items-center justify-center rounded-lg p-4">
           <Loader2Icon className="size-5 animate-spin" />
+          <span className="text-sm font-semibold">Please wait!</span>
         </div>
       ) : (
         <Card className="mx-auto max-w-lg shadow-lg">
