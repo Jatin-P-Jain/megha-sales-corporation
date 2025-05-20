@@ -16,16 +16,27 @@ import useIsMobile from "@/hooks/useIsMobile";
 import { useEffect, useState } from "react";
 import { UserData } from "@/types/user";
 import { Loader2Icon, MenuIcon } from "lucide-react";
-// import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export default function AuthButtons({ user }: { user: UserData | undefined }) {
-  // const router = useRouter();
+  const router = useRouter();
   const auth = useAuth();
   const isMobile = useIsMobile();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   useEffect(() => {
     if (user?.role === "admin") setIsAdmin(true);
   }, [user]);
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await auth.logout();
+      router.refresh();
+    } catch (err) {
+      console.error("Logout failed", err);
+      setIsLoggingOut(false);
+    }
+  };
   return (
     <>
       <div className="">
@@ -79,14 +90,7 @@ export default function AuthButtons({ user }: { user: UserData | undefined }) {
                   <Link href="/account/saved-items">Saved for Later</Link>
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem
-                onClick={async () => {
-                  await auth.logout();
-                  window.location.assign("/");
-                }}
-              >
-                Logout
-              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         )}
@@ -122,6 +126,14 @@ export default function AuthButtons({ user }: { user: UserData | undefined }) {
               </Link>
             </div>
           ))}
+        {isLoggingOut && (
+          <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black/20">
+            <div className="flex flex-col items-center text-muted-foreground bg-muted p-4 rounded-lg">
+              <Loader2Icon className="mb-4 h-8 w-8 animate-spin" />
+              <span className="text-sm">Logging you out…</span>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
