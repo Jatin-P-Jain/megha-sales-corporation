@@ -67,6 +67,7 @@ export default async function RootLayout({
             closeButton
             position="top-right"
             offset={{ top: 100 }}
+            style={{ top: 70 }}
           ></Toaster>
         </AuthProvider>
         <div id="recaptcha-container" className="opacity-100" />

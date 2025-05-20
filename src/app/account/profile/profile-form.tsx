@@ -139,8 +139,12 @@ export default function ProfileForm({
         description: "Your profile has been saved successfully!",
       });
       router.push("/");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to update profile");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        toast.error(err.message || "Failed to update profile");
+      } else {
+        toast.error("Failed to update profile");
+      }
     }
   };
 
