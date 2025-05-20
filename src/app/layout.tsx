@@ -10,7 +10,6 @@ import Image from "next/image";
 import BrandLogo from "../../public/brand-logo.svg";
 import ContactUsLink from "@/components/custom/contact-us-link";
 import { AuthProvider } from "@/context/auth-context";
-import { getUserFromDB } from "@/data/user";
 
 const poppins = Poppins({
   subsets: ["latin"],

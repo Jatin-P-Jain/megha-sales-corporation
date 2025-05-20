@@ -2,7 +2,7 @@ import "server-only"
 import { auth, fireStore } from "@/firebase/server";
 import { cookies } from "next/headers";
 
-import { UserData, UserRole } from "@/types/user";
+import { UserData } from "@/types/user";
 import { mapDbUserToClientUser } from "@/lib/firebase/mapDBUserToClient";
 
 

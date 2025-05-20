@@ -3,7 +3,6 @@ import React from "react";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Button } from "../ui/button";
 import Link from "next/link";
-import { UserData } from "@/types/user";
 import { useAuth } from "@/context/useAuth";
 
 const Greetings = () => {

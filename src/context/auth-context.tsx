@@ -18,7 +18,6 @@ import {
 import { createContext, useEffect, useState } from "react";
 import { createUserIfNotExists } from "@/lib/firebase/createUserIfNotExists";
 import { UserData } from "@/types/user";
-import { useRouter } from "next/navigation";
 
 import { doc, getDoc } from "firebase/firestore";
 import { mapDbUserToClientUser } from "@/lib/firebase/mapDBUserToClient";
@@ -51,7 +50,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [customClaims, setCustomClaims] = useState<ParsedToken | null>(null);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {

@@ -1,5 +1,4 @@
 import Greetings from "@/components/custom/greetings";
-import { getUserFromDB } from "@/data/user";
 
 export default async function Home() {
   return (
