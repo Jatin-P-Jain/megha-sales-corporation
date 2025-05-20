@@ -18,6 +18,7 @@ import {
 import { createContext, useEffect, useState } from "react";
 import { createUserIfNotExists } from "@/lib/firebase/createUserIfNotExists";
 import { UserData } from "@/types/user";
+import { useRouter } from "next/navigation";
 
 type AuthContextType = {
   loading: boolean;
@@ -45,6 +46,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [customClaims, setCustomClaims] = useState<ParsedToken | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -73,6 +75,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setCustomClaims(result.claims ?? null);
       } else {
         await removeToken();
+        router.refresh();
       }
     });
     return unsubscribe;

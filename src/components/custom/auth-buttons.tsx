@@ -31,7 +31,7 @@ export default function AuthButtons({ user }: { user: UserData | undefined }) {
     setIsLoggingOut(true);
     try {
       await auth.logout();
-      router.refresh();
+      window.location.assign("/");
     } catch (err) {
       console.error("Logout failed", err);
       setIsLoggingOut(false);
@@ -128,7 +128,7 @@ export default function AuthButtons({ user }: { user: UserData | undefined }) {
           ))}
         {isLoggingOut && (
           <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black/20">
-            <div className="flex flex-col items-center text-muted-foreground bg-muted p-4 rounded-lg">
+            <div className="text-muted-foreground bg-muted flex flex-col items-center rounded-lg p-4">
               <Loader2Icon className="mb-4 h-8 w-8 animate-spin" />
               <span className="text-sm">Logging you out…</span>
             </div>

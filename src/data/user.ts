@@ -1,3 +1,4 @@
+import "server-only"
 import { auth, fireStore } from "@/firebase/server";
 import { cookies } from "next/headers";
 
