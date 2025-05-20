@@ -55,7 +55,7 @@ export default function GoogleLoginButton({
       className={`${combinedClassName}`}
       variant={variant}
     >
-      {!signingIn ? (
+      {signingIn ? (
         <>
           <Image src={GoogleLoadingIcon} alt="" className="relative size-14" />
           {isLogin ? "Logging In with Google" : "Continue with Google"}
