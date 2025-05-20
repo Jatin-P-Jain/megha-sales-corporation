@@ -1,18 +1,21 @@
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen overflow-hidden w-full max-w-md mx-auto text-center px-1 md:px-4">
-      <h1 className="text-xl md:text-4xl font-bold mb-4">Page Coming Soon</h1>
-      <p className="text-md md:text-lg text-gray-700 mb-2">
+    <div className="mx-auto flex min-h-screen w-full max-w-md flex-col items-center justify-center overflow-hidden px-1 text-center md:px-4">
+      <h1 className="mb-4 text-xl font-bold md:text-4xl">Page Coming Soon</h1>
+      <p className="text-md mb-2 text-gray-700 md:text-lg">
         We are putting the finishing touches on this page. Hang tight!
       </p>
-      <p className="text-xs md:text-sm text-gray-500 mb-6">
+      <p className="mb-6 text-xs text-gray-500 md:text-sm">
         Expect it to be live within the next few days.
       </p>
-      <Button asChild>
-        <Link href="/">← Back to Home</Link>
+      <Button
+        onClick={() => {
+          window.location.assign("/");
+        }}
+      >
+        ← Back to Home
       </Button>
     </div>
   );
