@@ -135,7 +135,7 @@ export default function ProfileForm({
 
       const finalRole =
         data.role === "other" && otherUserRole ? otherUserRole : data.role;
-      const updatedUser = await updateUserProfile(
+      await updateUserProfile(
         { ...rest, role: finalRole },
         verifiedToken,
       );

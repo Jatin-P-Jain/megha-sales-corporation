@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/useAuth";
 import useIsMobile from "@/hooks/useIsMobile";
