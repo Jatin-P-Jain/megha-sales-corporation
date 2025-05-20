@@ -55,23 +55,17 @@ export default function GoogleLoginButton({
       className={`${combinedClassName}`}
       variant={variant}
     >
-      {signingIn ? (
+      {!signingIn ? (
         <>
-          <Image
-            src={GoogleLoadingIcon}
-            alt=""
-            className="relative h-20 max-h-14 w-20 max-w-14"
-          />
+          <Image src={GoogleLoadingIcon} alt="" className="relative size-14" />
           {isLogin ? "Logging In with Google" : "Continue with Google"}
         </>
       ) : (
         <>
-          <Image
-            src={GoogleIcon}
-            alt=""
-            className="relative h-8 max-h-8 w-8 max-w-8"
-          />
-          {isLogin ? "Login with Google" : "Continue with Google"}
+          <>
+            <Image src={GoogleIcon} alt="" className="relative size-8" />
+            {isLogin ? "Login with Google" : "Continue with Google"}
+          </>
         </>
       )}
     </Button>

@@ -22,6 +22,7 @@ export function useMobileOtp({
 }) {
   const auth = useAuth();
 
+  const [otpReset, setOtpReset] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [sendingOtp, setSendingOtp] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
@@ -79,13 +80,17 @@ export function useMobileOtp({
     } catch (e) {
       console.error(e);
       toast.error("Invalid OTP or verification failed.");
+
       throw e;
     } finally {
+      setOtpSent(false);
+      setOtpReset(true);
       setIsVerifying(false);
     }
   };
 
   return {
+    otpReset,
     otpSent,
     sendingOtp,
     isVerifying,

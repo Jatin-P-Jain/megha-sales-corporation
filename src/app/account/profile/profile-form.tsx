@@ -56,8 +56,8 @@ export default function ProfileForm({
     !!defaultValues?.phone ? true : false,
   );
   const [isAccountLinking, setIsAccountLinking] = useState(false);
-  const { otpSent, sendingOtp, isVerifying, sendOtp, verifyOtp } = useMobileOtp(
-    {
+  const { otpReset, otpSent, sendingOtp, isVerifying, sendOtp, verifyOtp } =
+    useMobileOtp({
       onSuccess: () => {
         setIsVerified(true);
         toast.success("Phone number verified!", {
@@ -67,8 +67,7 @@ export default function ProfileForm({
       },
       appVerifier: recaptchaVerifier,
       isProfile: true,
-    },
-  );
+    });
   const form = useForm<z.infer<typeof userProfileSchema>>({
     resolver: zodResolver(userProfileSchema),
     defaultValues,
@@ -76,6 +75,12 @@ export default function ProfileForm({
   const selectedRole = form.watch("role");
   const phoneNumber = form.watch("phone");
   const otp = form.watch("otp");
+
+  useEffect(() => {
+    if (otpReset) {
+      form.resetField("otp");
+    }
+  }, [otpReset, form]);
   const isPhoneAuthProvider =
     verifiedToken?.firebase["sign_in_provider"] === "phone";
 

@@ -68,7 +68,7 @@ export default function AuthButtons() {
               </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="mr-4">
-              <DropdownMenuLabel className="flex flex-col items-start gap-1">
+              <DropdownMenuLabel className="flex flex-col items-start gap-2">
                 <div>{user.displayName}</div>
                 <div className="text-xs font-normal">{user.email}</div>
                 {user.phone && (
@@ -76,6 +76,11 @@ export default function AuthButtons() {
                     +91-
                     <span className="font-semibold">{user.phone}</span>
                   </div>
+                )}
+                {user.role && (
+                  <span className="bg-muted text-primary rounded-full p-4 py-1 text-xs font-semibold">
+                    {user.role[0].toUpperCase() + user.role.slice(1)}
+                  </span>
                 )}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />

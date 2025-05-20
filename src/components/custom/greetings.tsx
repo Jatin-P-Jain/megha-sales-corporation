@@ -24,7 +24,7 @@ const Greetings = () => {
         <Card className="mx-auto max-w-lg shadow-lg">
           <CardHeader>
             <h1 className="text-center text-xl font-bold">
-              Welcome, {userName}
+              Hello, {userName} 👋
             </h1>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-4">
