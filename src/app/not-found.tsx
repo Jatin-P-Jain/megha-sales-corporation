@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import GoHomeButton from "@/components/custom/go-home-button";
 
 export default function NotFound() {
   return (
@@ -10,13 +10,7 @@ export default function NotFound() {
       <p className="mb-6 text-xs text-gray-500 md:text-sm">
         Expect it to be live within the next few days.
       </p>
-      <Button
-        onClick={() => {
-          window.location.assign("/");
-        }}
-      >
-        ← Back to Home
-      </Button>
+      <GoHomeButton />
     </div>
   );
 }
