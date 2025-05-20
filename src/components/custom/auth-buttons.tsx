@@ -83,6 +83,7 @@ export default function AuthButtons({ user }: { user: UserData | undefined }) {
                 onClick={async () => {
                   await auth.logout();
                   router.refresh();
+                  setTimeout(() => router.refresh(), 1000);
                 }}
               >
                 Logout
