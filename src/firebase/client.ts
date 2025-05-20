@@ -2,6 +2,7 @@
 import { initializeApp, getApps } from "firebase/app";
 import { getAuth, Auth, RecaptchaVerifier } from "firebase/auth";
 import { getStorage, FirebaseStorage } from "firebase/storage";
+import { Firestore, getFirestore } from "firebase/firestore";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -20,17 +21,20 @@ const firebaseConfig = {
 const currentApps = getApps();
 let auth: Auth;
 let storage: FirebaseStorage;
+let firestore: Firestore;
 if (!currentApps.length) {
   const app = initializeApp(firebaseConfig);
   auth = getAuth(app);
   storage = getStorage(app);
+  firestore = getFirestore(app);
 } else {
   const app = currentApps[0];
   auth = getAuth(app);
   storage = getStorage(app);
+  firestore = getFirestore(app);
 }
 // if (process.env.NODE_ENV === "development") {
 //   connectAuthEmulator(auth, "http://localhost:9099", { disableWarnings: true });
 // }
 
-export { auth, storage, RecaptchaVerifier };
+export { auth, storage,firestore, RecaptchaVerifier };

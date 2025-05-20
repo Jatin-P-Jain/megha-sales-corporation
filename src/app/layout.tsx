@@ -28,8 +28,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const clientUser = await getUserFromDB(); // From Firestore
-
   return (
     <html lang="en">
       <meta
@@ -60,7 +58,7 @@ export default async function RootLayout({
                 <ContactUsLink />
               </li>
               <li className="flex items-center justify-center">
-                <AuthButtons user={clientUser} />
+                <AuthButtons />
               </li>
             </ul>
           </nav>

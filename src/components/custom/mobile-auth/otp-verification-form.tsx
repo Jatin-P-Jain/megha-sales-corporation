@@ -53,7 +53,7 @@ export function OtpVerificationForm({
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full">
+        <Button type="submit" className="w-full" disabled={isVerifying}>
           {isVerifying ? (
             <>
               <Loader2 className="animate-spin" /> Verifying OTP

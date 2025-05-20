@@ -14,13 +14,13 @@ import { Avatar, AvatarFallback } from "../ui/avatar";
 import Image from "next/image";
 import useIsMobile from "@/hooks/useIsMobile";
 import { useEffect, useState } from "react";
-import { UserData } from "@/types/user";
 import { Loader2Icon, MenuIcon } from "lucide-react";
-// import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
-export default function AuthButtons({ user }: { user: UserData | undefined }) {
-  // const router = useRouter();
+export default function AuthButtons() {
+  const router = useRouter();
   const auth = useAuth();
+  const user = auth.clientUser;
   const isMobile = useIsMobile();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -31,7 +31,8 @@ export default function AuthButtons({ user }: { user: UserData | undefined }) {
     setIsLoggingOut(true);
     try {
       await auth.logout();
-      window.location.assign("/");
+      setIsLoggingOut(false);
+      router.refresh();
     } catch (err) {
       console.error("Logout failed", err);
       setIsLoggingOut(false);
