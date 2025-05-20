@@ -144,7 +144,6 @@ export default function AuthButtons() {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* global overlay spinner during logout */}
         {isLoggingOut && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/30">
             <div className="bg-primary flex flex-col items-center rounded-lg p-4">
