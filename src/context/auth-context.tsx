@@ -25,6 +25,8 @@ import { mapDbUserToClientUser } from "@/lib/firebase/mapDBUserToClient";
 type AuthContextType = {
   loading: boolean;
   clientUser: UserData | null;
+  setClientUser: (user: UserData | null) => void;
+  clientUserLoading: boolean;
   currentUser: User | null;
   customClaims: ParsedToken | null;
   logout: () => Promise<void>;
@@ -47,6 +49,7 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [clientUser, setClientUser] = useState<UserData | null>(null);
+  const [clientUserLoading, setClientUserLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [customClaims, setCustomClaims] = useState<ParsedToken | null>(null);
   const [loading, setLoading] = useState(true);
@@ -76,16 +79,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         await createUserIfNotExists(safeUser);
         setCustomClaims(result.claims ?? null);
-
+        setClientUserLoading(true);
         const userDoc = await getDoc(doc(firestore, "users", safeUser.uid));
         if (userDoc.exists()) {
           const userFromDB = userDoc.data();
           const clientUser: UserData = mapDbUserToClientUser(userFromDB);
           setClientUser(clientUser);
+          setClientUserLoading(false);
         }
       } else {
         await removeToken();
         setClientUser(null);
+        setClientUserLoading(false);
       }
     });
     return unsubscribe;
@@ -96,6 +101,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       value={{
         loading,
         clientUser,
+        setClientUser: (user) => setClientUser(user),
+        clientUserLoading,
         currentUser,
         customClaims,
         logout: logoutUser,

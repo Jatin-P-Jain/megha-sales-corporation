@@ -12,7 +12,7 @@ export type UserRole =
 
 export type UserData = {
   uid: string;
-  role: UserRole | null;
+  role: UserRole | string | null;
   email: string | null;
   phone: string | null;
   displayName: string | null;

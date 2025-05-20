@@ -99,6 +99,7 @@ export default function ProfileForm({
     try {
       await user.getIdToken(true);
       const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: "select_account" });
       const result = await linkWithPopup(user, provider);
       await user.reload();
       const freshToken = await user.getIdToken(/* forceRefresh */ true);
@@ -123,22 +124,23 @@ export default function ProfileForm({
   };
 
   const handleSubmit = async (data: z.infer<typeof userProfileSchema>) => {
-    delete data.otp;
-    const { otherUserRole, ...rest } = data;
+    try {
+      delete data.otp;
+      const { otherUserRole, ...rest } = data;
 
-    const finalRole =
-      data.role === "other" && otherUserRole ? otherUserRole : data.role;
-    const response = await updateUserProfile(
-      { ...rest, role: finalRole },
-      verifiedToken,
-    );
-    if (!!response?.error) {
-      toast.error("Error!", { description: response.message });
-    } else {
+      const finalRole =
+        data.role === "other" && otherUserRole ? otherUserRole : data.role;
+      const updatedUser = await updateUserProfile(
+        { ...rest, role: finalRole },
+        verifiedToken,
+      );
+      auth.setClientUser(updatedUser ?? null);
       toast.success("Success!", {
         description: "Your profile has been saved successfully!",
       });
       router.push("/");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update profile");
     }
   };
 
@@ -360,6 +362,7 @@ export default function ProfileForm({
                     )}
                   />
                   <Button
+                    disabled={isVerifying}
                     type="button"
                     className="w-full"
                     variant={"outline"}

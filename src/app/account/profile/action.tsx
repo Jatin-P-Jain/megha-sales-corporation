@@ -2,7 +2,6 @@
 import { auth, fireStore } from "@/firebase/server";
 import { userProfileDataSchema } from "@/validation/profileSchema";
 import { DecodedIdToken } from "firebase-admin/auth";
-import { revalidatePath } from "next/cache";
 
 export const updateUserProfile = async (
   data: {
@@ -15,54 +14,41 @@ export const updateUserProfile = async (
   },
   verifiedToken: DecodedIdToken | null,
 ) => {
+  // 1) Authentication check
   if (!verifiedToken) {
-    return;
+    throw new Error("You must be signed in to update your profile.");
   }
 
+  // 2) Validation check
   const validation = userProfileDataSchema.safeParse(data);
   if (!validation.success) {
-    return {
-      error: true,
-      message: validation.error.issues[0]?.message || "An error occurred",
-    };
+    // pick the first issue for simplicity
+    throw new Error(validation.error.issues[0].message);
   }
 
+  const uid = verifiedToken.uid;
   const userData = {
     ...data,
     profileComplete: true,
     firebaseAuth: verifiedToken.firebase,
   };
 
-  const uid = verifiedToken.uid;
-
-  // Update Firestore profile
+  await auth.updateUser(uid, {
+    displayName: data.displayName,
+    email: data.email,
+  });
   await fireStore
     .collection("users")
     .doc(uid)
     .update({ ...userData, updatedAt: new Date() });
 
-  // Update custom claims to mark profile as complete
   const userRecord = await auth.getUser(uid);
   const existingClaims = userRecord.customClaims ?? {};
-
-  await auth.updateUser(uid, {
-    displayName: data.displayName,
-    email: data.email,
-  });
-
   await auth.setCustomUserClaims(uid, {
     ...existingClaims,
     profileComplete: true,
   });
 
-  // Invalidate cache
-  revalidatePath(`/account/profile`);
-  return {
-    error: false,
-    message: "Profile updated successfully",
-    user: {
-      uid,
-      ...userData,
-    },
-  };
+  // 6) Return the updated user for your client
+  return { uid, ...userData };
 };
