@@ -7,7 +7,6 @@ import GoogleIcon from "@/components/custom/google-icon.svg";
 import GoogleLoadingIcon from "@/assets/icons/google-loading.gif";
 import Image from "next/image";
 import { useState } from "react";
-import { Loader2Icon } from "lucide-react";
 type ButtonProps = {
   variant?:
     | "link"
