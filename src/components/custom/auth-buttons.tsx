@@ -1,153 +1,193 @@
 "use client";
 
-import { useAuth } from "@/context/useAuth";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useAuth } from "@/context/useAuth";
+import useIsMobile from "@/hooks/useIsMobile";
 import {
   DropdownMenu,
+  DropdownMenuTrigger,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
+  DropdownMenuItem,
 } from "../ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import Image from "next/image";
-import useIsMobile from "@/hooks/useIsMobile";
-import { useEffect, useState } from "react";
-import { Loader2Icon, MenuIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
+import {
+  ClipboardList,
+  HeartIcon,
+  Loader2Icon,
+  LogOutIcon,
+  MenuIcon,
+  ShieldUserIcon,
+  UserRound,
+} from "lucide-react";
 
 export default function AuthButtons() {
-  const router = useRouter();
   const auth = useAuth();
-  const user = auth.clientUser;
-  const userLoading = auth.clientUserLoading;
+  const { clientUser, clientUserLoading, logout, currentUser, isLoggingOut } =
+    auth;
   const isMobile = useIsMobile();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-  useEffect(() => {
-    if (user?.role === "admin") setIsAdmin(true);
-  }, [user]);
-  const handleLogout = async () => {
-    setIsLoggingOut(true);
-    try {
-      await auth.logout();
-      setIsLoggingOut(false);
-      router.push("/");
-    } catch (err) {
-      console.error("Logout failed", err);
-      setIsLoggingOut(false);
-    }
-  };
-  return (
-    <>
-      <div className="">
-        {userLoading && !user && (
-          <div className="flex items-center justify-center">
-            <Loader2Icon className="size-5 animate-spin" />
-          </div>
-        )}
-        {!!user && (
-          <DropdownMenu>
-            <DropdownMenuTrigger className="flex h-full">
-              <Avatar className="size-9 ring-1">
-                {!!user?.photoUrl && (
+
+  // Determine admin once
+  const isAdmin = clientUser?.role === "admin";
+
+  // 1) Loading state
+  if (currentUser && clientUserLoading) {
+    return (
+      <div className="flex items-center justify-center px-4">
+        <Loader2Icon className="h-5 w-5 animate-spin" />
+      </div>
+    );
+  }
+
+  // 2) Logged-in state
+  if (clientUser) {
+    return (
+      <>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="flex items-center">
+              <Avatar className="h-9 w-9 ring-1">
+                {clientUser.photoUrl ? (
                   <Image
-                    src={user?.photoUrl}
-                    alt={`${user?.displayName} avatar`}
-                    width={100}
-                    height={100}
-                    className=""
+                    src={clientUser.photoUrl}
+                    alt="avatar"
+                    width={36}
+                    height={36}
+                    className="rounded-full"
                   />
+                ) : (
+                  <AvatarFallback className="bg-cyan-800">
+                    {(clientUser.displayName || clientUser.email)?.[0] || "U"}
+                  </AvatarFallback>
                 )}
-                <AvatarFallback className="bg-cyan-800">
-                  {(user.displayName || user.email)?.[0] || (
-                    <Loader2Icon className="size-4 animate-spin" />
-                  )}
-                </AvatarFallback>
               </Avatar>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="mr-4">
-              <DropdownMenuLabel className="flex flex-col items-start gap-2">
-                <div>{user.displayName}</div>
-                <div className="text-xs font-normal">{user.email}</div>
-                {user.phone && (
-                  <div className="text-xs font-normal">
-                    +91-
-                    <span className="font-semibold">{user.phone}</span>
-                  </div>
-                )}
-                {user.role && (
-                  <span className="bg-muted text-primary rounded-full p-4 py-1 text-xs font-semibold">
-                    {user.role[0].toUpperCase() + user.role.slice(1)}
-                  </span>
-                )}
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
+            </button>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent align="end" sideOffset={4}>
+            <DropdownMenuLabel className="flex flex-col items-start space-y-1 px-4 py-2">
+              <span className="font-medium">{clientUser.displayName}</span>
+              <span className="text-muted-foreground text-xs">
+                {clientUser.email}
+              </span>
+              {clientUser.phone && (
+                <span className="text-muted-foreground text-xs">
+                  +91-{clientUser.phone}
+                </span>
+              )}
+              {clientUser.role && (
+                <span className="bg-muted rounded-full px-2 py-0.5 text-xs font-semibold">
+                  {clientUser.role.charAt(0).toUpperCase() +
+                    clientUser.role.slice(1)}
+                </span>
+              )}
+            </DropdownMenuLabel>
+
+            <DropdownMenuSeparator />
+
+            <DropdownMenuItem asChild>
+              <Link
+                href="/account"
+                className="flex items-center justify-between"
+              >
+                My Account
+                <UserRound className="text-secondary-foreground" />
+              </Link>
+            </DropdownMenuItem>
+
+            {isAdmin ? (
               <DropdownMenuItem asChild>
-                <Link href="/account">My Account</Link>
+                <Link
+                  href="/admin-dashboard"
+                  className="flex items-center justify-between"
+                >
+                  Admin Dashboard
+                  <ShieldUserIcon className="text-secondary-foreground" />
+                </Link>
               </DropdownMenuItem>
-              {isAdmin && (
+            ) : (
+              <>
                 <DropdownMenuItem asChild>
-                  <Link href="/admin-dashboard">Admin Dashboard</Link>
-                </DropdownMenuItem>
-              )}
-              {!isAdmin && (
-                <DropdownMenuItem asChild>
-                  <Link href="/account/order-history">Order History</Link>
-                </DropdownMenuItem>
-              )}
-              {!isAdmin && (
-                <DropdownMenuItem asChild>
-                  <Link href="/account/saved-items">Saved for Later</Link>
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-        {!userLoading &&
-          !user &&
-          (isMobile ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger>
-                <div className="flex h-fit items-center justify-center pt-2">
-                  <MenuIcon className="flex items-center justify-center" />
-                </div>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="mr-4">
-                <DropdownMenuItem asChild>
-                  <Link href="/login" className="uppercase hover:underline">
-                    Login
+                  <Link
+                    href="/account/order-history"
+                    className="flex items-center justify-between"
+                  >
+                    Order History
+                    <ClipboardList className="text-secondary-foreground" />
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/register" className="uppercase hover:underline">
-                    Signup
+                  <Link
+                    href="/account/saved-items"
+                    className="flex items-center justify-between"
+                  >
+                    Saved for Later{" "}
+                    <HeartIcon className="text-secondary-foreground" />
                   </Link>
                 </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <div className="flex items-center gap-2 text-sm md:gap-4 md:text-base">
-              <Link href="/login" className="uppercase hover:underline">
-                Login
-              </Link>
-              <div className="h-8 w-[1px] bg-white/50"></div>
-              <Link href="/register" className="uppercase hover:underline">
-                Signup
-              </Link>
-            </div>
-          ))}
+              </>
+            )}
+
+            <DropdownMenuSeparator />
+
+            <DropdownMenuItem
+              className="flex items-center justify-between"
+              onClick={() => {
+                logout();
+                window.location.assign("/");
+              }}
+            >
+              Logout <LogOutIcon className="text-secondary-foreground" />
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* global overlay spinner during logout */}
         {isLoggingOut && (
-          <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black/20">
-            <div className="text-muted-foreground bg-muted flex flex-col items-center rounded-lg p-4">
-              <Loader2Icon className="mb-4 h-8 w-8 animate-spin" />
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/30">
+            <div className="bg-primary flex flex-col items-center rounded-lg p-4">
+              <Loader2Icon className="mb-2 h-8 w-8 animate-spin" />
               <span className="text-sm">Logging you out…</span>
             </div>
           </div>
         )}
-      </div>
-    </>
+      </>
+    );
+  }
+
+  // 3) Logged-out state
+  if (isMobile) {
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button>
+            <MenuIcon className="h-5 w-5" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" sideOffset={4}>
+          <DropdownMenuItem asChild>
+            <Link href="/login">Login</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/register">Signup</Link>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-4">
+      <Link href="/login" className="uppercase hover:underline">
+        Login
+      </Link>
+      <span className="h-6 w-px bg-white/50" />
+      <Link href="/register" className="uppercase hover:underline">
+        Signup
+      </Link>
+    </div>
   );
 }

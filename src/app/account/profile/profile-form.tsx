@@ -139,7 +139,7 @@ export default function ProfileForm({
         { ...rest, role: finalRole },
         verifiedToken,
       );
-      auth.setClientUser(updatedUser ?? null);
+      await auth.refreshClientUser();
       toast.success("Success!", {
         description: "Your profile has been saved successfully!",
       });

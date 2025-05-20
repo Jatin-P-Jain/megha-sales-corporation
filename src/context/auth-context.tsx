@@ -25,8 +25,9 @@ import { mapDbUserToClientUser } from "@/lib/firebase/mapDBUserToClient";
 type AuthContextType = {
   loading: boolean;
   clientUser: UserData | null;
-  setClientUser: (user: UserData | null) => void;
+  refreshClientUser: () => Promise<void>;
   clientUserLoading: boolean;
+  isLoggingOut: boolean;
   currentUser: User | null;
   customClaims: ParsedToken | null;
   logout: () => Promise<void>;
@@ -53,6 +54,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [customClaims, setCustomClaims] = useState<ParsedToken | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const refreshClientUser = async () => {
+    console.log({ currentUser });
+
+    if (!currentUser) return;
+    try {
+      const snap = await getDoc(doc(firestore, "users", currentUser.uid));
+      if (snap.exists()) {
+        setClientUser(mapDbUserToClientUser(snap.data()));
+      }
+    } catch (e) {
+      console.error("refreshClientUser failed", e);
+    } finally {
+      setClientUserLoading(false);
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -79,11 +97,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         await createUserIfNotExists(safeUser);
         setCustomClaims(result.claims ?? null);
-        const userDoc = await getDoc(doc(firestore, "users", safeUser.uid));
-        if (userDoc.exists()) {
-          const userFromDB = userDoc.data();
-          const clientUser: UserData = mapDbUserToClientUser(userFromDB);
-          setClientUser(clientUser);
+        try {
+          const snap = await getDoc(doc(firestore, "users", safeUser.uid));
+          if (snap.exists()) {
+            setClientUser(mapDbUserToClientUser(snap.data()));
+          }
+        } catch (e) {
+          console.error("refreshClientUser failed", e);
+        } finally {
           setClientUserLoading(false);
         }
       } else {
@@ -100,11 +121,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       value={{
         loading,
         clientUser,
-        setClientUser: (user) => setClientUser(user),
         clientUserLoading,
+        refreshClientUser,
+        isLoggingOut,
         currentUser,
         customClaims,
-        logout: logoutUser,
+        logout: async () => {
+          setIsLoggingOut(true);
+          try {
+            await logoutUser();
+          } catch (err) {
+            console.error("Logout failed", err);
+            setIsLoggingOut(false);
+          }
+        },
         loginWithGoogle,
         loginWithEmailAndPassword: ({ email, password }) =>
           loginWithEmailAndPass(email, password),
