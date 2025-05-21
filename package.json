@@ -6,8 +6,7 @@
     "dev": "next dev --turbopack",
     "build": "next build --clearCache",
     "start": "next start",
-    "lint": "next lint",
-    "prebuild": "rimraf .next"
+    "lint": "next lint"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",
