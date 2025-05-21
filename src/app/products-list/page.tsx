@@ -33,7 +33,7 @@ export default async function ProductsList({
 
   return (
     <div className="mx-auto flex max-w-screen-lg flex-col gap-4">
-      <div className="fixed top-17 z-30 w-full max-w-screen-lg rounded-xl bg-white px-4 shadow-md md:py-2">
+      <div className="fixed inset-x-0 top-0 z-30 flex h-66 flex-col w-full max-w-screen-lg mx-auto rounded-lg justify-end bg-white px-4 shadow-md md:h-70 lg:h-70 items-end">
         <div className="mx-auto w-full max-w-screen-lg pt-3 md:pt-6">
           <EllipsisBreadCrumbs
             items={[
@@ -50,7 +50,7 @@ export default async function ProductsList({
           <ResponsiveProductFilters isAdmin={isAdmin} />
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto px-4 pt-55 md:pt-60">
+      <div className="flex-1 overflow-y-auto pt-53 px-4 md:pt-58">
         <Suspense
           fallback={
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">

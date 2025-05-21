@@ -20,6 +20,7 @@ const AddToCartButton: React.FC = () => {
         return;
       }
       router.refresh();
+      setLoading(false);
     } catch (e) {
       setLoading(false);
       console.log("e -- ", e);

@@ -2,7 +2,7 @@ import AddToCartButton from "@/components/custom/add-to-cart-button";
 import ProductImage from "@/components/custom/product-image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { slugify } from "@/lib/utils";
+import { formatINR, slugify } from "@/lib/utils";
 import { Product } from "@/types/product";
 import { PencilIcon } from "lucide-react";
 import Link from "next/link";
@@ -80,13 +80,13 @@ export default async function ProductList({
                       <ProductImage productImage={product?.image} />
                     </div>
                   </CardContent>
-                  <CardFooter className="grid grid-cols-2 items-end justify-center md:grid-cols-[3fr_1fr]">
+                  <CardFooter className="grid grid-cols-[3fr_1fr] items-end justify-center">
                     <div className="flex w-full flex-col items-start justify-start md:flex-row md:justify-between">
                       <div className="text-primary flex items-center gap-2 text-lg font-semibold">
                         <span className="text-foreground text-base font-normal">
                           Price :
                         </span>
-                        ₹{product?.price}
+                        {formatINR(product?.price)}
                       </div>
                       <div className="text-primary flex items-center gap-2 text-sm font-semibold">
                         <span className="text-foreground text-sm font-normal">

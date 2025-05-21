@@ -38,7 +38,7 @@ const Greetings = () => {
               We are delighted to have you here. Explore our products and
               services to find what suits your needs.
             </p>
-            {!user && (
+            {!currentUser && (
               <Button className="w-full" asChild>
                 <Link href={"/login"}>Login</Link>
               </Button>

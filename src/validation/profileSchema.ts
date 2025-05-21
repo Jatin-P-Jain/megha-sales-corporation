@@ -11,7 +11,9 @@ export const userProfileDataSchema = z
       .string()
       .regex(/^[6-9]\d{9}$/, { message: "Invalid mobile number" }),
     photoUrl: z.string().optional(),
-    role: z.enum(["retailer", "wholesaler", "distributor", "admin", "other"]),
+    role: z
+      .enum(["retailer", "wholesaler", "distributor", "admin", "other"])
+      .or(z.string()),
     otherUserRole: z
       .string()
       .min(2, "You should specify your role.")

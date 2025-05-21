@@ -13,7 +13,7 @@ export default async function Profile() {
 
   const user = await getUserFromDB();
 
-  let role: UserRole;
+  let role: UserRole | string;
   let otherUserRole: string | undefined = undefined;
 
   if (verifiedToken?.admin) {
@@ -28,7 +28,7 @@ export default async function Profile() {
     role = "other";
     otherUserRole = user.role;
   } else {
-    role = "retailer"; // or a sensible fallback default
+    role = ""; // or a sensible fallback default
   }
 
   const mergedUser = {
