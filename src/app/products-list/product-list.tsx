@@ -44,22 +44,22 @@ export default async function ProductList({
                 >
                   <CardContent className="grid text-sm md:grid-cols-[3fr_1fr] md:text-base">
                     <div className="flex flex-col gap-1 md:w-3/4 md:gap-2">
-                      <div className="text-primary flex w-full items-center justify-between font-bold">
+                      <div className="text-primary flex w-full items-center justify-between font-semibold">
                         <span className="text-sm font-normal">Brand :</span>
                         {product.brandName}
                       </div>
-                      <div className="text-primary flex w-full items-center justify-between font-bold">
+                      <div className="text-primary flex w-full items-center justify-between font-semibold">
                         <span className="text-sm font-normal">Part Name :</span>
                         <span className="line-clamp-1">{product.partName}</span>
                       </div>
-                      <div className="text-primary flex w-full items-center justify-between font-bold">
+                      <div className="text-primary flex w-full items-center justify-between font-semibold">
                         <span className="text-sm font-normal">
                           Part Number :
                         </span>
                         {product.partNumber}
                       </div>
 
-                      <div className="text-primary flex w-full items-center justify-between font-bold">
+                      <div className="text-primary flex w-full items-center justify-between font-semibold">
                         <span className="w-full text-sm font-normal">
                           Vehicle Name :
                         </span>
@@ -69,7 +69,7 @@ export default async function ProductList({
                           </span>
                         </div>
                       </div>
-                      <div className="text-primary flex w-full items-center justify-between font-bold">
+                      <div className="text-primary flex w-full items-center justify-between font-semibold">
                         <span className="text-sm font-normal">Category :</span>{" "}
                         {product.partCategory}
                       </div>
