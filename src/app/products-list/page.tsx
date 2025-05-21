@@ -24,7 +24,7 @@ export default async function ProductsList({
   const searchParamsValues = await searchParams;
   const parsedPage = parseInt(searchParamsValues.page);
   const page = isNaN(parsedPage) ? 1 : parsedPage;
-  let productsFilters: ProductStatus[] = [];
+  const productsFilters: ProductStatus[] = [];
   if (!isAdmin) productsFilters.push("for-sale");
 
   const productsPromise = getProducts({
