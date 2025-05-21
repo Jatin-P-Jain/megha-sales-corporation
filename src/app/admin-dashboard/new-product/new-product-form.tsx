@@ -47,7 +47,7 @@ export default function NewProductForm({ brand }: { brand?: Brand | Brand[] }) {
     await updateBrandProcuctCount(
       {
         brandId: brandSelected?.id ?? "",
-        totalProducts: brandSelected?.totalProducts ?? 0 + 1,
+        totalProducts: (brandSelected?.totalProducts ?? 0) + 1,
       },
       token,
     );

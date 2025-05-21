@@ -30,6 +30,13 @@ export default async function ProductList({
         <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col justify-between">
           <div className="flex w-full flex-1 flex-grow flex-col gap-5">
             {data.map((product) => {
+              const company = product.vehicleCompany;
+              const names = Array.isArray(product.vehicleName)
+                ? product.vehicleName.join(", ")
+                : "";
+              const vehicleNameProcessed = names
+                ? `${company} - ${names}`
+                : company;
               return (
                 <Card
                   key={product?.id}
@@ -56,31 +63,22 @@ export default async function ProductList({
                         <span className="w-full text-sm font-normal">
                           Vehicle Name :
                         </span>
-                        <span className="line-clamp-1">
-                          {" "}
-                          {product.vehicleCompany + " - "}
-                          {product?.vehicleName?.map((vehicleName, index) => {
-                            if (
-                              product?.vehicleName &&
-                              index == product?.vehicleName?.length - 1
-                            ) {
-                              return <span key={index}>{vehicleName} </span>;
-                            } else {
-                              return <span key={index}>{vehicleName}, </span>;
-                            }
-                          })}
-                        </span>
+                        <div className="flex w-full items-end justify-end">
+                          <span className="line-clamp-1">
+                            {vehicleNameProcessed}
+                          </span>
+                        </div>
                       </div>
                       <div className="text-primary flex w-full items-center justify-between font-bold">
                         <span className="text-sm font-normal">Category :</span>{" "}
                         {product.partCategory}
                       </div>
                     </div>
-                    <div className="flex min-h-15 w-full items-end justify-end justify-self-end md:min-h-30 md:w-3/4">
+                    <div className="flex min-h-20 w-full items-end justify-end justify-self-end md:min-h-30 md:w-3/4">
                       <ProductImage productImage={product?.image} />
                     </div>
                   </CardContent>
-                  <CardFooter className="grid grid-cols-[3fr_1fr] items-end justify-center">
+                  <CardFooter className="grid grid-cols-[3fr_1fr] items-end justify-center gap-4">
                     <div className="flex w-full flex-col items-start justify-start md:flex-row md:justify-between">
                       <div className="text-primary flex items-center gap-2 text-lg font-semibold">
                         <span className="text-foreground text-base font-normal">
@@ -101,16 +99,55 @@ export default async function ProductList({
                         {product?.gst}%
                       </div>
                     </div>
-                    <div className="flex w-full items-center justify-end">
+                    <div className="flex w-full items-center justify-end gap-2">
                       {isAdmin ? (
-                        <Button variant={"outline"} asChild>
-                          <Link
-                            href={`/admin-dashboard/edit-product/${slugify(product?.brandName)}/${product?.id}`}
+                        <div className="flex w-full flex-col">
+                          <div
+                            className={`${
+                              product.status === "draft"
+                                ? "border-amber-100 bg-amber-100 text-yellow-600"
+                                : product.status === "for-sale"
+                                  ? "border-green-100 bg-green-100 text-green-700"
+                                  : product.status === "out-of-stock"
+                                    ? "border-zinc-100 bg-zinc-100 text-zinc-800"
+                                    : product.status === "discontinued"
+                                      ? "border-red-100 bg-red-100 text-red-600"
+                                      : ""
+                            } py-1font-semibold flex w-full items-center justify-center gap-1 rounded-t-lg border-1 px-1 pt-1 text-xs font-semibold`}
                           >
-                            <PencilIcon />
-                            Edit Product
-                          </Link>
-                        </Button>
+                            {product.status === "draft"
+                              ? "DRAFT"
+                              : product.status === "for-sale"
+                                ? "FOR SALE"
+                                : product.status === "out-of-stock"
+                                  ? "OUT OF STOCK"
+                                  : product.status === "discontinued"
+                                    ? "DISCONTINUED"
+                                    : ""}
+                          </div>
+                          <Button
+                            variant={"outline"}
+                            asChild
+                            className={`${
+                              product.status === "draft"
+                                ? "border-amber-100"
+                                : product.status === "for-sale"
+                                  ? "border-green-100"
+                                  : product.status === "out-of-stock"
+                                    ? "border-zinc-100"
+                                    : product.status === "discontinued"
+                                      ? "border-red-100"
+                                      : ""
+                            } rounded-t-none`}
+                          >
+                            <Link
+                              href={`/admin-dashboard/edit-product/${slugify(product?.brandName)}/${product?.id}`}
+                            >
+                              <PencilIcon />
+                              Edit Product
+                            </Link>
+                          </Button>
+                        </div>
                       ) : (
                         <AddToCartButton />
                       )}

@@ -13,7 +13,7 @@ export const saveBrandMedia = async (
     brandMedia: BrandMedia[];
     brandId: string;
   },
-  authtoken: string
+  authtoken: string,
 ) => {
   const verifiedToken = await auth.verifyIdToken(authtoken);
   if (!verifiedToken.admin) {
@@ -25,7 +25,7 @@ export const saveBrandMedia = async (
   const schema = z.object({
     brandId: z.string(),
     brandMedia: z.array(
-      z.object({ fileName: z.string(), fileUrl: z.string() })
+      z.object({ fileName: z.string(), fileUrl: z.string() }),
     ),
     brandLogo: z.string(),
   });
@@ -51,7 +51,7 @@ export const saveProductMedia = async (
     image: string;
     productId: string;
   },
-  authtoken: string
+  authtoken: string,
 ) => {
   const verifiedToken = await auth.verifyIdToken(authtoken);
   if (!verifiedToken.admin) {
@@ -83,7 +83,7 @@ export const updateBrandProcuctCount = async (
     brandId: string;
     totalProducts: number;
   },
-  authtoken: string
+  authtoken: string,
 ) => {
   const verifiedToken = await auth.verifyIdToken(authtoken);
   if (!verifiedToken.admin) {
@@ -94,4 +94,5 @@ export const updateBrandProcuctCount = async (
   }
 
   await fireStore.collection("brands").doc(brandId).update({ totalProducts });
+  console.log({ totalProducts });
 };

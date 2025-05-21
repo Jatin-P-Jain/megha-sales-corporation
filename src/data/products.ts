@@ -34,7 +34,7 @@ export const getProducts = async (options?: GetPropertiesOptions) => {
   // if (minBedrooms != null && minBedrooms != undefined) {
   //   productsQuery = productsQuery.where("bedrooms", ">=", minBedrooms);
   // }
-  if (status) {
+  if (Array.isArray(status) && status.length > 0) {
     productsQuery = productsQuery.where("status", "in", status);
   }
 
