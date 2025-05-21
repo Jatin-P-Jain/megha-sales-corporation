@@ -9,9 +9,8 @@ export default function LoginForm() {
   return (
     <CommonLoginForm
       onSuccess={() => {
-        const user = auth?.currentUser;
-        if (user?.displayName && user?.phoneNumber && user?.email)
-          window.location.assign("/");
+        const profileComplete = auth?.customClaims?.profileComplete;
+        if (profileComplete) window.location.assign("/");
         else window.location.assign("/account/profile");
       }}
     />

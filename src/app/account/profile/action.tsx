@@ -37,10 +37,13 @@ export const updateUserProfile = async (
     displayName: data.displayName,
     email: data.email,
   });
+  console.log("update user token");
+
   await fireStore
     .collection("users")
     .doc(uid)
     .update({ ...userData, updatedAt: new Date() });
+  console.log("update user in db");
 
   const userRecord = await auth.getUser(uid);
   const existingClaims = userRecord.customClaims ?? {};
@@ -48,6 +51,7 @@ export const updateUserProfile = async (
     ...existingClaims,
     profileComplete: true,
   });
+  console.log("update user claims complete profile");
 
   // 6) Return the updated user for your client
   return { uid, ...userData };

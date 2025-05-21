@@ -47,6 +47,8 @@ export async function middleware(request: NextRequest) {
     exp?: number;
   };
 
+  console.log({ profileComplete });
+
   // 5) If the token is about to expire (within 5m) or already has, refresh it
   if (exp && (exp - 5 * 60) * 1000 < Date.now()) {
     const redirectTo = encodeURIComponent(pathname + search);

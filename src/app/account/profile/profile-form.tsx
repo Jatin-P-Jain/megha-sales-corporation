@@ -135,10 +135,7 @@ export default function ProfileForm({
 
       const finalRole =
         data.role === "other" && otherUserRole ? otherUserRole : data.role;
-      await updateUserProfile(
-        { ...rest, role: finalRole },
-        verifiedToken,
-      );
+      await updateUserProfile({ ...rest, role: finalRole }, verifiedToken);
       await auth.refreshClientUser();
       toast.success("Success!", {
         description: "Your profile has been saved successfully!",
@@ -279,8 +276,7 @@ export default function ProfileForm({
               <div className="flex flex-col gap-2">
                 <div
                   className={clsx(
-                    isPhoneValid &&
-                      !otpSent &&
+                    !otpSent &&
                       !isVerified &&
                       "grid grid-cols-[8fr_1fr] items-end justify-center gap-2",
                   )}
@@ -310,8 +306,9 @@ export default function ProfileForm({
                       </FormItem>
                     )}
                   />
-                  {isPhoneValid && !otpSent && !isVerified && (
+                  {!otpSent && !isVerified && (
                     <Button
+                      disabled={!isPhoneValid}
                       type="button"
                       className="self-end"
                       onClick={() => sendOtp(phoneNumber)}
@@ -374,7 +371,6 @@ export default function ProfileForm({
                     disabled={isVerifying}
                     type="button"
                     className="w-full"
-                    variant={"outline"}
                     onClick={() => verifyOtp(otp ?? "")}
                   >
                     {isVerifying ? (
@@ -467,7 +463,7 @@ export default function ProfileForm({
             </fieldset>
           </form>
         </Form>
-        <div id="recaptcha-container" className="opacity-100" />
+        <div id="recaptcha-container" className="opacity-0" />
       </div>
     </>
   );

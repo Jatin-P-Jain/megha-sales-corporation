@@ -57,7 +57,7 @@ export default function GoogleLoginButton({
     >
       {signingIn ? (
         <>
-          <Image src={GoogleLoadingIcon} alt="" className="relative size-14" />
+          <Image src={GoogleLoadingIcon} alt="" className="relative size-16" />
           {isLogin ? "Logging In with Google" : "Continue with Google"}
         </>
       ) : (
