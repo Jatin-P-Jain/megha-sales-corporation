@@ -36,6 +36,7 @@ export async function middleware(request: NextRequest) {
     admin?: boolean;
     exp?: number;
   };
+  console.log({ profileComplete });
 
   // 4) If your token’s about to expire, refresh it (once)
   if (exp && (exp - 5 * 60) * 1000 < Date.now()) {

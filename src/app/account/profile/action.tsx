@@ -49,6 +49,7 @@ export const updateUserProfile = async (
   const existingClaims = userRecord.customClaims ?? {};
   await auth.setCustomUserClaims(uid, {
     ...existingClaims,
+    role: data.role,
     profileComplete: true,
   });
   console.log("update user claims complete profile");
