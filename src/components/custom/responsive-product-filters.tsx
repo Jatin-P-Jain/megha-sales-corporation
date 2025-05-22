@@ -14,11 +14,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const ResponsiveProductFilters: React.FC<{ isAdmin: boolean }> = ({
   isAdmin,
 }) => {
   const isMobile = useIsMobile();
+  const router = useRouter();
+  const params = useSearchParams();
+
+  // 1) Read existing params
+  const currentStatus = params.get("status") ?? "";
+
+  // 2) When the user picks a new status:
+  function onStatusChange(newStatus: string) {
+    const qp = new URLSearchParams(Array.from(params.entries()));
+    qp.set("status", newStatus);
+    qp.set("page", "1"); // reset paging when filters change
+    router.push(`/products-list?${qp.toString()}`);
+  }
   return (
     <>
       {isMobile && (
@@ -26,7 +40,6 @@ const ResponsiveProductFilters: React.FC<{ isAdmin: boolean }> = ({
           <div className="overflow-x-auto">
             <CategoryChips />
           </div>
-
           <div
             className={clsx(
               "grid w-full min-w-0 grid-cols-[1fr_2fr_3fr] gap-2 pb-3",
@@ -38,7 +51,7 @@ const ResponsiveProductFilters: React.FC<{ isAdmin: boolean }> = ({
             </Button>
             {isAdmin ? (
               <>
-                <Select>
+                <Select value={currentStatus} onValueChange={onStatusChange}>
                   <SelectTrigger className="w-full min-w-40">
                     <SelectValue placeholder="Filter on Status" />
                   </SelectTrigger>
@@ -63,7 +76,9 @@ const ResponsiveProductFilters: React.FC<{ isAdmin: boolean }> = ({
             ) : (
               <div className="grid grid-cols-[4fr_1fr] items-center justify-center rounded-lg border-1 p-1 pl-2 text-sm">
                 <div className="flex flex-col pr-4">
-                  <div className="text-muted-foreground text-xs">Total Cart</div>
+                  <div className="text-muted-foreground text-xs">
+                    Total Cart
+                  </div>
                   <div className="flex w-full justify-between">
                     <div>
                       Items:{" "}
@@ -86,17 +101,18 @@ const ResponsiveProductFilters: React.FC<{ isAdmin: boolean }> = ({
       {!isMobile &&
         (isAdmin ? (
           <div className="grid grid-cols-[6fr_1fr_3fr_2fr] gap-4 pb-4">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto mr-auto">
               <CategoryChips />
             </div>
             <Button variant={"outline"} className="h-full w-full">
               <FunnelPlusIcon />
             </Button>
-            <Select>
-              <SelectTrigger className="w-full">
+            <Select value={currentStatus} onValueChange={onStatusChange}>
+              <SelectTrigger className="w-full min-w-40">
                 <SelectValue placeholder="Filter on Status" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="all">All</SelectItem>
                 <SelectItem value="draft">Draft</SelectItem>
                 <SelectItem value="for-sale">For Sale</SelectItem>
                 <SelectItem value="out-of-stock">Out of Stock</SelectItem>
@@ -113,7 +129,7 @@ const ResponsiveProductFilters: React.FC<{ isAdmin: boolean }> = ({
         ) : (
           <div className="flex flex-col gap-3 pb-2">
             <div className="grid grid-cols-[8fr_1fr] gap-4">
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto mr-auto">
                 <CategoryChips />
               </div>
               <Button variant={"outline"} className="h-full w-full">
@@ -140,19 +156,6 @@ const ResponsiveProductFilters: React.FC<{ isAdmin: boolean }> = ({
             </div>
           </div>
         ))}
-      {/* <div className="flex flex-col gap-2 pb-4 md:grid md:grid-cols-1 md:gap-4">
-        <div
-          className={clsx(
-            "grid w-full grid-cols-[1fr_8fr] items-center justify-between gap-2 md:grid-cols-[1fr_1fr]",
-          )}
-        >
-          {isAdmin ? (
-            <></>
-          ) : (
-           
-          )}
-        </div>
-      </div> */}
     </>
   );
 };

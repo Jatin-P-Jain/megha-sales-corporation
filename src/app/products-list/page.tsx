@@ -14,6 +14,8 @@ export default async function ProductsList({
   searchParams: Promise<{
     page: string;
     brandId: string;
+    status: string;
+    category: string | string[];
   }>;
 }) {
   const cookieStore = await cookies();
@@ -24,14 +26,25 @@ export default async function ProductsList({
   const searchParamsValues = await searchParams;
   const parsedPage = parseInt(searchParamsValues.page);
   const page = isNaN(parsedPage) ? 1 : parsedPage;
+  const statusParam = searchParamsValues.status ?? "";
+  const categoryParam = searchParamsValues.category ?? "";
+  const categoryFilters = Array.isArray(categoryParam)
+    ? categoryParam
+    : categoryParam
+      ? [categoryParam]
+      : [];
+
   const productsFilters: ProductStatus[] = [];
-  if (!isAdmin) productsFilters.push("for-sale");
+  if (statusParam && statusParam !== "all") {
+    productsFilters.push(statusParam as ProductStatus);
+  } else if (!isAdmin) productsFilters.push("for-sale");
 
   const productsPromise = getProducts({
     filters: {
       status: productsFilters,
+      partCategory: categoryFilters,
     },
-    pagination: { page: page, pageSize: 6 },
+    pagination: { page: page, pageSize: 5 },
   });
 
   return (
@@ -61,7 +74,7 @@ export default async function ProductsList({
         <Suspense
           fallback={
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-              {Array.from({ length: 6 }).map((_, index) => (
+              {Array.from({ length: 3 }).map((_, index) => (
                 <ProductCardLoading key={index} />
               ))}
             </div>

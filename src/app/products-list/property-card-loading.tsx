@@ -5,7 +5,7 @@ export default function ProductCardLoading() {
   return (
     <Card className="relative overflow-hidden p-0">
       <CardContent className="p-0">
-        <div className="relative flex h-55 flex-col items-center justify-center bg-cyan-100">
+        <div className="relative flex h-55 flex-col items-center justify-center">
           <Skeleton className="h-full w-full" />
         </div>
         <div className="flex flex-col gap-5 p-5.5">

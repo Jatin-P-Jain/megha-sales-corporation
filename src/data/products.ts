@@ -5,10 +5,8 @@ import { Property } from "@/types/property";
 
 type GetPropertiesOptions = {
   filters?: {
-    minPrice?: number | null;
-    maxPrice?: number | null;
-    minBedrooms?: number | null;
     status: ProductStatus[] | null;
+    partCategory: string[] | null;
   };
   pagination?: {
     pageSize?: number;
@@ -20,7 +18,7 @@ export const getProducts = async (options?: GetPropertiesOptions) => {
   const page = options?.pagination?.page || 1;
   const pageSize = options?.pagination?.pageSize || 10;
 
-  const { status } = options?.filters || {};
+  const { status, partCategory } = options?.filters || {};
 
   let productsQuery = fireStore
     .collection("products")
@@ -36,6 +34,9 @@ export const getProducts = async (options?: GetPropertiesOptions) => {
   // }
   if (Array.isArray(status) && status.length > 0) {
     productsQuery = productsQuery.where("status", "in", status);
+  }
+  if (Array.isArray(partCategory) && partCategory.length > 0) {
+    productsQuery = productsQuery.where("partCategory", "in", partCategory);
   }
 
   const productsTotalPages = await getTotalPages(productsQuery, pageSize);
