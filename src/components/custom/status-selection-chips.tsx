@@ -72,7 +72,7 @@ export default function StatusChips() {
         selected.length == 0 && "!grid-cols-[1fr]",
       )}
     >
-      <Card className="no-scrollbar flex flex-row items-center gap-1 overflow-x-auto border-0 p-0 shadow-none justify-start">
+      <Card className="no-scrollbar flex flex-row items-center justify-start gap-1 overflow-x-auto border-0 p-0 shadow-none">
         {STATUSES.map(({ label, value }) => {
           const isSel = selected.includes(value);
           const isThisPending = isPending && pendingStatus === value;
@@ -83,8 +83,20 @@ export default function StatusChips() {
               onClick={() => toggleStatus(value)}
               disabled={isThisPending}
               className={clsx(
-                "min-w-max shrink-0 rounded-full p-1 px-3 md:px-6 text-sm h-fit",
-                isSel && "bg-primary text-white",
+                "h-fit min-w-max shrink-0 rounded-full p-1 px-3 text-sm md:px-6",
+                isSel &&
+                  `${
+                    value === "draft"
+                      ? "border-amber-600 bg-amber-100 text-yellow-600"
+                      : value === "for-sale"
+                        ? "border-green-700 bg-green-100 text-green-700"
+                        : value === "out-of-stock"
+                          ? "border-zinc-800 bg-zinc-100 text-zinc-800"
+                          : value === "discontinued"
+                            ? "border-red-600 bg-red-100 text-red-600"
+                            : ""
+                  }`,
+                "border-1",
                 isThisPending && "cursor-wait opacity-60",
               )}
             >

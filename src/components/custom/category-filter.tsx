@@ -19,13 +19,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ChevronDown, Loader2Icon } from "lucide-react";
 import clsx from "clsx";
 
-const categories = [
-  "Nuts",
-  "Suspensions",
-  "Fastners",
-  "Repair Kits",
-  "Bushing",
-];
+const categories = ["Nuts", "Suspension", "Fastners", "Repair Kits", "Bushing"];
 
 export default function CategoryMultiSelect() {
   const router = useRouter();
@@ -84,7 +78,14 @@ export default function CategoryMultiSelect() {
       </PopoverTrigger>
 
       {/* fixed width popover */}
-      <PopoverContent className="w-60 p-0">
+      <PopoverContent
+        className="w-60 p-0"
+        collisionBoundary={[]}
+        collisionPadding={0}
+        side="bottom"
+        align="start"
+        sideOffset={4}
+      >
         <Command>
           {/* full-width input */}
           <CommandInput className="w-full" placeholder="Search categories..." />
