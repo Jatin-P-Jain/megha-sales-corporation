@@ -81,10 +81,12 @@ export default function CategoryMultiSelect() {
       <PopoverContent
         className="w-60 p-0"
         collisionBoundary={[]}
-        collisionPadding={0}
+        collisionPadding={8}
         side="bottom"
         align="start"
         sideOffset={4}
+        avoidCollisions={true}
+        sticky={"always"}
       >
         <Command>
           {/* full-width input */}
