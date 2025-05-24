@@ -95,7 +95,7 @@ export default function CategoryMultiSelect() {
           {/* full-width input */}
           <CommandInput className="w-full" placeholder="Search categories..." />
           <CommandEmpty>No categories found.</CommandEmpty>
-          <CommandGroup>
+          <CommandGroup className="max-h-35 overflow-auto">
             {categories.map((cat) => {
               const isSel = selected.includes(cat);
               const thisPending = pendingKey === cat && isPending;
