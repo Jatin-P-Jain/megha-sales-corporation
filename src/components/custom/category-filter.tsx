@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useTransition, useState, useEffect } from "react";
+import { useTransition, useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -26,6 +26,7 @@ export default function CategoryMultiSelect() {
   const params = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const [pendingKey, setPendingKey] = useState<string | null>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   // read selected
   const selected = params.getAll("category");
@@ -60,6 +61,7 @@ export default function CategoryMultiSelect() {
         <Button
           variant="outline"
           className="flex w-full min-w-0 items-center justify-between gap-2"
+          ref={triggerRef}
         >
           {/* truncate here */}
           <span
@@ -79,14 +81,15 @@ export default function CategoryMultiSelect() {
 
       {/* fixed width popover */}
       <PopoverContent
-        className="w-60 p-0"
-        collisionBoundary={[]}
+        className="p-0"
+        collisionBoundary={
+          typeof document !== "undefined" ? [document.body] : []
+        }
         collisionPadding={8}
         side="bottom"
         align="start"
         sideOffset={4}
         avoidCollisions={true}
-        sticky={"always"}
       >
         <Command>
           {/* full-width input */}
