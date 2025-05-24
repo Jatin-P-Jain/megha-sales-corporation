@@ -32,7 +32,7 @@ const ResponsiveProductFilters: React.FC<{
               )}
             >
               <MoreFilters />
-              <CategoryFilter isAdmin />
+              <CategoryFilter />
               <Button className="w-full min-w-0" asChild>
                 <Link href={"/admin-dashboard/new-product"} className="min-w-0">
                   <PlusCircleIcon className="" />
@@ -45,7 +45,7 @@ const ResponsiveProductFilters: React.FC<{
           <>
             <div className="flex flex-col gap-2 pb-4">
               <div className="grid grid-cols-[8fr_1fr] gap-4">
-                <CategoryFilter isAdmin />
+                <CategoryFilter />
                 <MoreFilters />
               </div>
               {isUser ? <CartOverview isUser /> : <></>}
@@ -60,7 +60,7 @@ const ResponsiveProductFilters: React.FC<{
             </div>
             <MoreFilters />
 
-            <CategoryFilter isAdmin />
+            <CategoryFilter />
             <Button className="w-full" asChild>
               <Link href={"/admin-dashboard/new-product"}>
                 <PlusCircleIcon className="" />
@@ -72,7 +72,7 @@ const ResponsiveProductFilters: React.FC<{
           <div className="flex flex-col gap-3 pb-2">
             <div className="grid grid-cols-[8fr_1fr] gap-4">
               <div className="w-full">
-                <CategoryFilter isAdmin />
+                <CategoryFilter />
               </div>
               <MoreFilters />
             </div>

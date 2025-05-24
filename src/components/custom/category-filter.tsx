@@ -27,7 +27,7 @@ const categories = [
   "Bushing",
 ];
 
-export default function CategoryMultiSelect({ isAdmin }: { isAdmin: boolean }) {
+export default function CategoryMultiSelect() {
   const router = useRouter();
   const params = useSearchParams();
   const [isPending, startTransition] = useTransition();
