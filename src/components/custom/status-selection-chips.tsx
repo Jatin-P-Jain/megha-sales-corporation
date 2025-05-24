@@ -8,10 +8,10 @@ import { CircleXIcon, Loader2Icon } from "lucide-react";
 import { useTransition, useState, useEffect } from "react";
 
 export const STATUSES: { label: string; value: string }[] = [
-  { label: "Draft", value: "draft" },
   { label: "For Sale", value: "for-sale" },
-  { label: "Discontinued", value: "discontinued" },
+  { label: "Draft", value: "draft" },
   { label: "Out of Stock", value: "out-of-stock" },
+  { label: "Discontinued", value: "discontinued" },
 ];
 
 export default function StatusChips() {
