@@ -22,6 +22,7 @@ export default async function ProductsList({
   const token = cookieStore.get("firebaseAuthToken")?.value;
   const verifiedToken = token ? await auth.verifyIdToken(token) : null;
   const isAdmin = verifiedToken?.admin;
+  const isUser = verifiedToken ? true : false;
 
   const searchParamsValues = await searchParams;
   const parsedPage = parseInt(searchParamsValues.page);
@@ -65,7 +66,9 @@ export default async function ProductsList({
           <h1 className="py-2 text-xl font-[600] tracking-wide text-cyan-950 md:text-2xl">
             Product Listings
           </h1>
-          <ResponsiveProductFilters isAdmin={isAdmin} />
+          <Suspense fallback={<div>Loading...</div>}>
+            <ResponsiveProductFilters isAdmin={isAdmin} isUser={isUser} />
+          </Suspense>
         </div>
       </div>
       <div

@@ -7,45 +7,44 @@ import clsx from "clsx";
 import { CircleXIcon, Loader2Icon } from "lucide-react";
 import { useTransition, useState, useEffect } from "react";
 
-const categories = [
-  "Nuts",
-  "Suspensions",
-  "Fastners",
-  "Repair Kits",
-  "Bushing",
+export const STATUSES: { label: string; value: string }[] = [
+  { label: "Draft", value: "draft" },
+  { label: "For Sale", value: "for-sale" },
+  { label: "Discontinued", value: "discontinued" },
+  { label: "Out of Stock", value: "out-of-stock" },
 ];
 
-export default function CategoryChips() {
+export default function StatusChips() {
   const router = useRouter();
   const params = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
   // track exactly which chip is being toggled (or "clear" for the clear button)
-  const [pendingCategory, setPendingCategory] = useState<string | null>(null);
+  const [pendingStatus, setPendingStatus] = useState<string | null>(null);
 
   // reset pendingCategory once React finishes the transition
   useEffect(() => {
     if (!isPending) {
-      setPendingCategory(null);
+      setPendingStatus(null);
     }
   }, [isPending]);
 
   // read current selected categories
-  const selected = params.getAll("category");
+  const selected = params.getAll("status");
 
   // toggle one category on/off
-  function toggleCat(cat: string) {
+  function toggleStatus(status: string) {
     // mark this one as pending
-    setPendingCategory(cat);
+    setPendingStatus(status);
 
     const qp = new URLSearchParams(Array.from(params.entries()));
-    qp.delete("category");
+    qp.delete("status");
 
-    const next = selected.includes(cat)
-      ? selected.filter((c) => c !== cat)
-      : [...selected, cat];
+    const next = selected.includes(status)
+      ? selected.filter((c) => c !== status)
+      : [...selected, status];
 
-    next.forEach((c) => qp.append("category", c));
+    next.forEach((s) => qp.append("status", s));
     qp.set("page", "1");
 
     startTransition(() => {
@@ -54,11 +53,11 @@ export default function CategoryChips() {
   }
 
   // clear all categories
-  function clearCategories() {
-    setPendingCategory("clear");
+  function clearStatuses() {
+    setPendingStatus("clear");
 
     const qp = new URLSearchParams(Array.from(params.entries()));
-    qp.delete("category");
+    qp.delete("status");
     qp.set("page", "1");
 
     startTransition(() => {
@@ -73,18 +72,18 @@ export default function CategoryChips() {
         selected.length == 0 && "!grid-cols-[1fr]",
       )}
     >
-      <Card className="no-scrollbar flex flex-row items-center gap-2 overflow-x-auto border-0 p-0 shadow-none ">
-        {categories.map((label) => {
-          const isSel = selected.includes(label);
-          const isThisPending = isPending && pendingCategory === label;
+      <Card className="no-scrollbar flex flex-row items-center gap-1 overflow-x-auto border-0 p-0 shadow-none justify-start">
+        {STATUSES.map(({ label, value }) => {
+          const isSel = selected.includes(value);
+          const isThisPending = isPending && pendingStatus === value;
           return (
             <Button
               key={label}
               variant={isSel ? "default" : "outline"}
-              onClick={() => toggleCat(label)}
+              onClick={() => toggleStatus(value)}
               disabled={isThisPending}
               className={clsx(
-                "min-w-max shrink-0 rounded-full px-4 py-2 text-sm",
+                "min-w-max shrink-0 rounded-full p-1 px-3 md:px-6 text-sm h-fit",
                 isSel && "bg-primary text-white",
                 isThisPending && "cursor-wait opacity-60",
               )}
@@ -99,15 +98,15 @@ export default function CategoryChips() {
       </Card>
       {selected.length > 0 && (
         <div
-          onClick={clearCategories}
+          onClick={clearStatuses}
           className={clsx(
             "flex items-center justify-center rounded-full p-2",
-            pendingCategory === "clear" && isPending
+            pendingStatus === "clear" && isPending
               ? "cursor-wait opacity-60"
               : "bg-muted cursor-pointer",
           )}
         >
-          {pendingCategory === "clear" && isPending ? (
+          {pendingStatus === "clear" && isPending ? (
             <Loader2Icon className="h-5 w-5 animate-spin" />
           ) : (
             <CircleXIcon className="text-muted-foreground h-5 w-5" />
