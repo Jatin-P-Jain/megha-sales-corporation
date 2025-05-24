@@ -4,7 +4,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
 import clsx from "clsx";
-import { CircleXIcon } from "lucide-react";
+import { CircleXIcon, Loader2Icon } from "lucide-react";
+import { useTransition, useState, useEffect } from "react";
 
 const categories = [
   "Nuts",
@@ -17,66 +18,102 @@ const categories = [
 export default function CategoryChips() {
   const router = useRouter();
   const params = useSearchParams();
+  const [isPending, startTransition] = useTransition();
 
-  // 1) Read current categories from ?category=… params (can be repeated)
+  // track exactly which chip is being toggled (or "clear" for the clear button)
+  const [pendingCategory, setPendingCategory] = useState<string | null>(null);
+
+  // reset pendingCategory once React finishes the transition
+  useEffect(() => {
+    if (!isPending) {
+      setPendingCategory(null);
+    }
+  }, [isPending]);
+
+  // read current selected categories
   const selected = params.getAll("category");
 
-  // 2) Toggle one on/off and push a new URL
+  // toggle one category on/off
   function toggleCat(cat: string) {
-    // build a fresh URLSearchParams from the existing ones
+    // mark this one as pending
+    setPendingCategory(cat);
+
     const qp = new URLSearchParams(Array.from(params.entries()));
-    // remove all old category keys
     qp.delete("category");
 
-    // compute new list
     const next = selected.includes(cat)
       ? selected.filter((c) => c !== cat)
       : [...selected, cat];
 
-    // append each back
     next.forEach((c) => qp.append("category", c));
-
-    // reset page to 1 when filters change
     qp.set("page", "1");
 
-    // finally push the new route
-    router.push(`/products-list?${qp.toString()}`);
+    startTransition(() => {
+      router.push(`/products-list?${qp.toString()}`);
+    });
   }
+
+  // clear all categories
   function clearCategories() {
+    setPendingCategory("clear");
+
     const qp = new URLSearchParams(Array.from(params.entries()));
     qp.delete("category");
     qp.set("page", "1");
-    router.push(`/products-list?${qp.toString()}`);
+
+    startTransition(() => {
+      router.push(`/products-list?${qp.toString()}`);
+    });
   }
 
   return (
-    <Card className="no-scrollbar flex flex-row items-center justify-center gap-0 border-0 p-0 shadow-none">
-      <div className="no-scrollbar flex gap-2 overflow-x-auto">
-        {categories.map((label) => (
-          <Button
-            key={label}
-            variant={selected.includes(label) ? "default" : "outline"}
-            onClick={() => toggleCat(label)}
-            className={clsx(
-              "min-w-max shrink-0 rounded-full px-4 py-2 text-sm",
-              selected.includes(label) && "bg-primary text-white",
-            )}
-          >
-            {label}
-          </Button>
-        ))}
-      </div>
+    <div
+      className={clsx(
+        "grid grid-cols-[8fr_1fr] gap-2",
+        selected.length == 0 && "!grid-cols-[1fr]",
+      )}
+    >
+      <Card className="no-scrollbar flex flex-row items-center gap-2 overflow-x-auto border-0 p-0 shadow-none ">
+        {categories.map((label) => {
+          const isSel = selected.includes(label);
+          const isThisPending = isPending && pendingCategory === label;
+          return (
+            <Button
+              key={label}
+              variant={isSel ? "default" : "outline"}
+              onClick={() => toggleCat(label)}
+              disabled={isThisPending}
+              className={clsx(
+                "min-w-max shrink-0 rounded-full px-4 py-2 text-sm",
+                isSel && "bg-primary text-white",
+                isThisPending && "cursor-wait opacity-60",
+              )}
+            >
+              {label}
+              {isThisPending && (
+                <Loader2Icon className="h-4 w-4 animate-spin" />
+              )}
+            </Button>
+          );
+        })}
+      </Card>
       {selected.length > 0 && (
         <div
-          className={clsx(
-            "bg-muted no-scrollbar w-0 cursor-pointer rounded-full p-1 opacity-0 transition-all duration-300 ease-in-out",
-            selected.length > 0 && "no-scrollbar w-fit opacity-100",
-          )}
           onClick={clearCategories}
+          className={clsx(
+            "flex items-center justify-center rounded-full p-2",
+            pendingCategory === "clear" && isPending
+              ? "cursor-wait opacity-60"
+              : "bg-muted cursor-pointer",
+          )}
         >
-          <CircleXIcon className="text-primary size-6" />
+          {pendingCategory === "clear" && isPending ? (
+            <Loader2Icon className="h-5 w-5 animate-spin" />
+          ) : (
+            <CircleXIcon className="text-muted-foreground h-5 w-5" />
+          )}
         </div>
       )}
-    </Card>
+    </div>
   );
 }

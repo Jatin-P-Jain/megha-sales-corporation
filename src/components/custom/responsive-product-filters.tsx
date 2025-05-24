@@ -2,67 +2,37 @@
 import React from "react";
 import clsx from "clsx";
 import { Button } from "@/components/ui/button";
-import { PlusCircleIcon, FunnelPlusIcon } from "lucide-react";
+import { PlusCircleIcon } from "lucide-react";
 import CategoryChips from "./category-selection-chips";
 import Link from "next/link";
 import useIsMobile from "@/hooks/useIsMobile";
-import CartButton from "./cart-button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
-import { useRouter, useSearchParams } from "next/navigation";
+import StatusFilter from "./status-filter";
+import MoreFilters from "./more-filters";
+import CartOverview from "./cart-overview";
+import { useAuth } from "@/context/useAuth";
 
 const ResponsiveProductFilters: React.FC<{ isAdmin: boolean }> = ({
   isAdmin,
 }) => {
   const isMobile = useIsMobile();
-  const router = useRouter();
-  const params = useSearchParams();
-
-  // 1) Read existing params
-  const currentStatus = params.get("status") ?? "";
-
-  // 2) When the user picks a new status:
-  function onStatusChange(newStatus: string) {
-    const qp = new URLSearchParams(Array.from(params.entries()));
-    qp.set("status", newStatus);
-    qp.set("page", "1"); // reset paging when filters change
-    router.push(`/products-list?${qp.toString()}`);
-  }
+  const auth = useAuth();
+  const isUser = auth?.currentUser ? true : false;
   return (
     <>
       {isMobile && (
         <div className="flex flex-col gap-2">
-          <div className="overflow-x-auto">
-            <CategoryChips />
-          </div>
+          <CategoryChips />
           <div
             className={clsx(
               "grid w-full min-w-0 grid-cols-[1fr_2fr_3fr] gap-2 pb-3",
+              !isUser && "!grid-cols-1",
               !isAdmin && "grid-cols-[1fr_8fr]",
             )}
           >
-            <Button variant={"outline"} className="h-full w-full">
-              <FunnelPlusIcon />
-            </Button>
+            <MoreFilters />
             {isAdmin ? (
               <>
-                <Select value={currentStatus} onValueChange={onStatusChange}>
-                  <SelectTrigger className="w-full min-w-40">
-                    <SelectValue placeholder="Filter on Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
-                    <SelectItem value="draft">Draft</SelectItem>
-                    <SelectItem value="for-sale">For Sale</SelectItem>
-                    <SelectItem value="out-of-stock">Out of Stock</SelectItem>
-                    <SelectItem value="discontinued">Discontinued</SelectItem>
-                  </SelectContent>
-                </Select>
+                <StatusFilter isAdmin />
                 <Button className="w-full min-w-0" asChild>
                   <Link
                     href={"/admin-dashboard/new-product"}
@@ -73,52 +43,22 @@ const ResponsiveProductFilters: React.FC<{ isAdmin: boolean }> = ({
                   </Link>
                 </Button>
               </>
+            ) : isUser ? (
+              <CartOverview isUser />
             ) : (
-              <div className="grid grid-cols-[4fr_1fr] items-center justify-center rounded-lg border-1 p-1 pl-2 text-sm">
-                <div className="flex flex-col pr-4">
-                  <div className="text-muted-foreground text-xs">
-                    Total Cart
-                  </div>
-                  <div className="flex w-full justify-between">
-                    <div>
-                      Items:{" "}
-                      <span className="text-primary font-semibold">17</span>
-                    </div>
-                    <div>
-                      Amount:{" "}
-                      <span className="text-primary font-semibold">
-                        ₹1,50,000
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <CartButton />
-              </div>
+              <></>
             )}
           </div>
         </div>
       )}
       {!isMobile &&
         (isAdmin ? (
-          <div className="grid grid-cols-[6fr_1fr_3fr_2fr] gap-4 pb-4">
-            <div className="overflow-x-auto mr-auto">
+          <div className="grid grid-cols-[8fr_1fr_3fr_2fr] gap-2 pb-4">
+            <div className="overflow-x-auto">
               <CategoryChips />
             </div>
-            <Button variant={"outline"} className="h-full w-full">
-              <FunnelPlusIcon />
-            </Button>
-            <Select value={currentStatus} onValueChange={onStatusChange}>
-              <SelectTrigger className="w-full min-w-40">
-                <SelectValue placeholder="Filter on Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="draft">Draft</SelectItem>
-                <SelectItem value="for-sale">For Sale</SelectItem>
-                <SelectItem value="out-of-stock">Out of Stock</SelectItem>
-                <SelectItem value="discontinued">Discontinued</SelectItem>
-              </SelectContent>
-            </Select>
+            <MoreFilters />
+            <StatusFilter isAdmin />
             <Button className="w-full" asChild>
               <Link href={"/admin-dashboard/new-product"}>
                 <PlusCircleIcon className="" />
@@ -129,31 +69,12 @@ const ResponsiveProductFilters: React.FC<{ isAdmin: boolean }> = ({
         ) : (
           <div className="flex flex-col gap-3 pb-2">
             <div className="grid grid-cols-[8fr_1fr] gap-4">
-              <div className="overflow-x-auto mr-auto">
+              <div className="mr-auto overflow-x-auto">
                 <CategoryChips />
               </div>
-              <Button variant={"outline"} className="h-full w-full">
-                <FunnelPlusIcon />
-              </Button>
+              <MoreFilters />
             </div>
-            <div className="grid grid-cols-[3fr_2fr] items-center justify-center gap-4 rounded-lg border-1 p-1 px-2">
-              <div className="flex flex-col">
-                <div className="text-muted-foreground">Total Cart</div>
-                <div className="flex w-full justify-between">
-                  <div>
-                    Items:{" "}
-                    <span className="text-primary font-semibold">17</span>
-                  </div>
-                  <div>
-                    Amount:{" "}
-                    <span className="text-primary font-semibold">
-                      ₹1,50,000
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <CartButton />
-            </div>
+            {isUser ? <CartOverview isUser /> : <></>}
           </div>
         ))}
     </>

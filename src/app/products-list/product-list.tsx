@@ -191,7 +191,7 @@ export default async function ProductList({
       )}
       {data.length === 0 && (
         <div className="text-center font-medium text-cyan-900">
-          No Products found
+          No Products!
         </div>
       )}
     </>

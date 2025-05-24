@@ -1,29 +1,54 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/context/useAuth";
 import { ArrowBigRightDashIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
 
 export default function CartButton() {
-  const auth = useAuth();
   const router = useRouter();
-  const handleCartClick = async () => {
-    try {
-      const tokenResult = await auth?.currentUser?.getIdTokenResult();
-      if (!tokenResult) {
-        router.push("/login");
-        return;
-      }
-      router.push("account/cart");
-    } catch (e) {
-      console.log("e -- ", e);
-      toast.error("Error!", { description: "An error occurred" });
-    }
+
+  // when confirmed, we really navigate
+  const checkOutHandler = () => {
+    router.push("/account/cart/checkout");
   };
+
   return (
-    <Button className="w-full" onClick={handleCartClick}>
-      Cart <ArrowBigRightDashIcon className="size-5" />
-    </Button>
+    <Dialog>
+      {/* use the existing button as the trigger */}
+      <DialogTrigger asChild>
+        <Button className="flex w-full items-center justify-center">
+          <span>Cart</span>
+          <ArrowBigRightDashIcon className="size-5" />
+        </Button>
+      </DialogTrigger>
+
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Cart</DialogTitle>
+          <DialogDescription>Yout Items</DialogDescription>
+        </DialogHeader>
+        <span className="text-primary flex items-center justify-center font-bold">
+          (WORK IN PROGRESS)
+        </span>
+
+        <DialogFooter className="flex flex-row space-x-2 justify-between">
+          {/* Always offer a Cancel */}
+          <DialogClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DialogClose>
+          <Button onClick={checkOutHandler}>Proceed to Checkout</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

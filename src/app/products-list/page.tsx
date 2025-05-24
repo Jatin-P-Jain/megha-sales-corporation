@@ -50,7 +50,7 @@ export default async function ProductsList({
   return (
     <div className="mx-auto flex max-w-screen-lg flex-col gap-4">
       <div
-        className={`fixed inset-x-0 top-0 z-30 mx-auto flex h-60 w-full max-w-screen-lg flex-col items-end justify-end rounded-lg bg-white px-4 shadow-md md:h-65 lg:h-55 ${!isAdmin && "pt-65 lg:pt-68"}`}
+        className={`fixed inset-x-0 top-0 z-30 mx-auto flex h-60 w-full max-w-screen-lg flex-col items-end justify-end rounded-lg bg-white px-4 shadow-md md:h-65 lg:h-55 ${!isAdmin && "pt-63 lg:pt-68"}`}
       >
         <div className="mx-auto flex w-full max-w-screen-lg flex-col pt-3 md:pt-6">
           <EllipsisBreadCrumbs
