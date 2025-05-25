@@ -19,9 +19,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ChevronDown, Loader2Icon } from "lucide-react";
 import clsx from "clsx";
 
-const categories = ["Nuts", "Suspension", "Fastners", "Repair Kits", "Bushing"];
+export default function CategoryMultiSelect({
+  categories,
+}: {
+  categories: string[];
+}) {
+  console.log({ categories });
 
-export default function CategoryMultiSelect() {
   const router = useRouter();
   const params = useSearchParams();
   const [isPending, startTransition] = useTransition();
