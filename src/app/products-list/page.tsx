@@ -37,9 +37,16 @@ export default async function ProductsList({
       : [];
 
   const productsFilters: ProductStatus[] = [];
-  if (statusParam && statusParam !== "all") {
-    productsFilters.push(statusParam as ProductStatus);
+  if (statusParam) {
+    if (Array.isArray(statusParam))
+      statusParam.forEach((status) => {
+        productsFilters.push(status as ProductStatus);
+      });
+    else {
+      productsFilters.push(statusParam as ProductStatus);
+    }
   } else if (!isAdmin) productsFilters.push("for-sale");
+  console.log(productsFilters);
 
   const productsPromise = getProducts({
     filters: {
