@@ -24,8 +24,6 @@ export default function CategoryMultiSelect({
 }: {
   categories: string[];
 }) {
-  console.log({ categories });
-
   const router = useRouter();
   const params = useSearchParams();
   const [isPending, startTransition] = useTransition();
