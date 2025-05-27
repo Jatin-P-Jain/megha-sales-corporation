@@ -5,9 +5,9 @@ import { getProducts } from "@/data/products";
 import ProductList from "./product-list";
 import ProductCardLoading from "./property-card-loading";
 import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
-import ResponsiveProductFilters from "@/components/custom/responsive-product-filters";
 import { ProductStatus } from "@/types/product";
 import { getAllCategories } from "@/data/categories";
+import ResponsiveProductFiltersServer from "./responsive-product-filters.server";
 
 export default async function ProductsList({
   searchParams,
@@ -56,12 +56,12 @@ export default async function ProductsList({
     pagination: { page: page, pageSize: 5 },
   });
 
-  const categories = await getAllCategories();
+  const categoriesPromise = getAllCategories();
 
   return (
     <div className="mx-auto flex max-w-screen-lg flex-col gap-4">
       <div
-        className={`fixed inset-x-0 top-0 z-30 mx-auto flex h-60 w-full max-w-screen-lg flex-col items-end justify-end rounded-lg bg-white px-4 shadow-md md:h-65 lg:h-55 ${!isAdmin && "pt-63 lg:pt-68"} ${!isUser && "!h-50 !pt-0"}`}
+        className={`fixed inset-x-0 top-0 z-30 mx-auto flex h-60 w-full max-w-screen-lg flex-col items-end justify-end rounded-lg bg-white px-4 pb-1 shadow-md md:h-65 lg:h-55 ${!isAdmin && "pt-63 lg:pt-68"} ${!isUser && "!h-50 !pt-0"}`}
       >
         <div className="mx-auto flex w-full max-w-screen-lg flex-col pt-3 md:pt-6">
           <EllipsisBreadCrumbs
@@ -76,13 +76,11 @@ export default async function ProductsList({
           <h1 className="py-2 text-xl font-[600] tracking-wide text-cyan-950 md:text-2xl">
             Product Listings
           </h1>
-          <Suspense fallback={<div>Loading...</div>}>
-            <ResponsiveProductFilters
-              isAdmin={isAdmin}
-              isUser={isUser}
-              categories={categories}
-            />
-          </Suspense>
+          <ResponsiveProductFiltersServer
+            isAdmin={isAdmin}
+            isUser={isUser}
+            categoriesPromise={categoriesPromise}
+          />
         </div>
       </div>
       <div

@@ -1,4 +1,4 @@
-import AddToCartButton from "@/components/custom/add-to-cart-button";
+import CartControls from "@/components/custom/cart-controls";
 import ProductImage from "@/components/custom/product-image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -27,7 +27,7 @@ export default async function ProductList({
   return (
     <>
       {data.length > 0 && (
-        <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col justify-between">
+        <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col justify-between gap-4 py-2">
           <div className="flex w-full flex-1 flex-grow flex-col gap-5">
             {data.map((product) => {
               const company = product.vehicleCompany;
@@ -149,7 +149,16 @@ export default async function ProductList({
                           </Button>
                         </div>
                       ) : (
-                        <AddToCartButton />
+                        <div className="flex w-full items-center justify-end">
+                          <CartControls
+                            productId={product?.id}
+                            productPricing={{
+                              price: product.price,
+                              discount: product?.discount,
+                              gst: product?.gst,
+                            }}
+                          />
+                        </div>
                       )}
                     </div>
                   </CardFooter>
@@ -160,18 +169,6 @@ export default async function ProductList({
           <div className="flex items-center justify-center gap-4 p-2">
             {Array.from({ length: totalPages }).map((_, i) => {
               const newSearchParams = new URLSearchParams();
-              // if (searchParamsValues.minPrice) {
-              //   newSearchParams.set("minPrice", searchParamsValues.minPrice);
-              // }
-              // if (searchParamsValues.maxPrice) {
-              //   newSearchParams.set("maxPrice", searchParamsValues.maxPrice);
-              // }
-              // if (searchParamsValues.minBedrooms) {
-              //   newSearchParams.set(
-              //     "minBedrooms",
-              //     searchParamsValues.minBedrooms,
-              //   );
-              // }
               newSearchParams.set("page", `${i + 1}`);
               return (
                 <Button
@@ -179,6 +176,7 @@ export default async function ProductList({
                   disabled={i + 1 === page}
                   key={i}
                   variant={"outline"}
+                  className="h-0 min-h-0 p-3"
                 >
                   <Link href={`/products-list?${newSearchParams}`}>
                     {i + 1}

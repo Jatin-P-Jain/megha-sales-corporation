@@ -1,7 +1,7 @@
 import "server-only";
 import { fireStore, getTotalPages } from "@/firebase/server";
 import { Product, ProductStatus } from "@/types/product";
-import { Property } from "@/types/property";
+import { CartProduct } from "@/types/cartProduct";
 
 type GetPropertiesOptions = {
   filters?: {
@@ -23,15 +23,6 @@ export const getProducts = async (options?: GetPropertiesOptions) => {
   let productsQuery = fireStore
     .collection("products")
     .orderBy("updated", "desc");
-  // if (minPrice != null && minPrice != undefined) {
-  //   productsQuery = productsQuery.where("price", ">=", minPrice);
-  // }
-  // if (maxPrice != null && maxPrice != undefined) {
-  //   productsQuery = productsQuery.where("price", "<=", maxPrice);
-  // }
-  // if (minBedrooms != null && minBedrooms != undefined) {
-  //   productsQuery = productsQuery.where("bedrooms", ">=", minBedrooms);
-  // }
   if (Array.isArray(status) && status.length > 0) {
     productsQuery = productsQuery.where("status", "in", status);
   }
@@ -83,16 +74,33 @@ export const getProductById = async (productId: string) => {
 
   return product;
 };
-export const getPropertiesById = async (propertyIds: string[]) => {
-  if (!propertyIds.length) {
+export const getProductsById = async (productIds: string[]) => {
+  if (!productIds.length) {
     return [];
   }
   const propertySnapshot = await fireStore
-    .collection("properties")
-    .where("__name__", "in", propertyIds)
+    .collection("products")
+    .where("__name__", "in", productIds)
     .get();
-  const propertiesData = propertySnapshot.docs.map((property) => {
-    return { id: property.id, ...property.data() } as Property;
+  const productsData = propertySnapshot.docs.map((property) => {
+    const rawProductData = property.data();
+    const product: Omit<CartProduct, "quantity"> = {
+      id: property.id,
+      brandName: rawProductData.brandName as string,
+      companyName: rawProductData.companyName as string,
+      vehicleCompany: rawProductData.vehicleCompany as string,
+      vehicleName: rawProductData.vehicleName as string[],
+      partCategory: rawProductData.partCategory as string,
+      partNumber: rawProductData.partNumber as string,
+      partName: rawProductData.partName as string,
+      price: rawProductData.price as number,
+      discount: rawProductData.discount as number,
+      gst: rawProductData.gst as number,
+      stock: rawProductData.stock as number,
+      status: rawProductData.status as ProductStatus,
+      image: rawProductData.image as string | undefined,
+    };
+    return product;
   });
-  return propertiesData;
+  return productsData;
 };

@@ -55,7 +55,9 @@ export default function CategoryMultiSelect({
   }, [isPending]);
 
   // label text
-  const label = selected.length ? selected.join(", ") : "Select Categories";
+  const label = selected.length
+    ? selected.join(", ")
+    : "Select Part Categories";
 
   return (
     <Popover>
@@ -77,7 +79,7 @@ export default function CategoryMultiSelect({
           {isPending && pendingKey !== null && (
             <Loader2Icon className="h-4 w-4 animate-spin" />
           )}
-          <ChevronDown />
+          <ChevronDown className="text-muted-foreground" />
         </Button>
       </PopoverTrigger>
 
