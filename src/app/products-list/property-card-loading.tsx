@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ProductCardLoading() {
   return (
-    <Card className="relative gap-2 overflow-hidden p-4 px-1 shadow-md">
+    <Card className="relative w-full gap-2 overflow-hidden p-4 px-1 shadow-md">
       <CardContent className="flex flex-col gap-2">
         <Skeleton className="flex h-4 w-full" />
         <Skeleton className="flex h-4 w-full" />

@@ -17,13 +17,12 @@ export default async function Cart() {
   const cartProductIds = await getCartProductIds(verifiedToken?.uid);
   console.log({ cartProductIds });
 
-  const cartItems = await getProductsById(cartProductIds);
-  console.log({ cartItems });
+  const cartItemsPromise = getProductsById(cartProductIds);
 
   return (
     <div className="mx-auto flex max-w-screen-lg flex-col gap-4">
       <div
-        className={`fixed inset-x-0 top-0 z-30 mx-auto flex h-45 w-full max-w-screen-lg flex-col items-end justify-end rounded-lg bg-white px-4 py-4 shadow-md md:h-50`}
+        className={`fixed inset-x-0 top-0 z-30 mx-auto flex h-55 w-full max-w-screen-lg flex-col items-end justify-end rounded-lg bg-white px-4 py-4 shadow-md md:h-60`}
       >
         <div className="mx-auto flex w-full max-w-screen-lg flex-col pt-3 md:pt-6">
           <EllipsisBreadCrumbs
@@ -40,11 +39,11 @@ export default async function Cart() {
             Your Cart
           </h1>
           <Suspense fallback={<div>Loading...</div>}>
-            <CartSummary />
+            <CartSummary isUser={!!verifiedToken} />
           </Suspense>
         </div>
       </div>
-      <div className={`flex h-[100%] flex-1 px-4 pt-45 md:pt-53 lg:pt-40`}>
+      <div className={`flex h-[100%] flex-1 px-4 pt-43 md:pt-48`}>
         <Suspense
           fallback={
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
@@ -54,7 +53,7 @@ export default async function Cart() {
             </div>
           }
         >
-          <CartItems items={cartItems} />
+          <CartItems itemsPromise={cartItemsPromise} />
         </Suspense>
       </div>
     </div>

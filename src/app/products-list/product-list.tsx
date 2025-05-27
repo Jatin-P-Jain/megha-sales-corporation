@@ -40,7 +40,7 @@ export default async function ProductList({
               return (
                 <Card
                   key={product?.id}
-                  className="relative gap-0 overflow-hidden p-4 px-1 shadow-md"
+                  className="relative gap-0 overflow-hidden p-4 px-0 shadow-md"
                 >
                   <CardContent className="grid text-sm md:grid-cols-[3fr_1fr] md:text-base">
                     <div className="flex flex-col gap-1 md:w-3/4 md:gap-2">

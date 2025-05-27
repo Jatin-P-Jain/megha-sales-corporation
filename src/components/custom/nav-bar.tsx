@@ -8,6 +8,7 @@ import ContactUsLink from "./contact-us-link";
 import AuthButtons from "./auth-buttons";
 import { AuthProvider } from "@/context/useAuth";
 import { CartProvider } from "@/context/cartContext";
+import SearchBar from "./search-bar";
 
 type NavBarProps = {
   children: ReactNode;
@@ -32,11 +33,14 @@ export default function NavBar({ children }: NavBarProps) {
               </span>
             </div>
           </Link>
-          <ul className="flex flex-wrap items-center justify-center gap-4 md:mt-0 md:gap-6">
-            <li>
+          <ul className="flex items-center justify-between gap-4 md:mt-0 md:gap-6">
+            <li className="">
               <ContactUsLink />
             </li>
-            <li className="flex items-center justify-center">
+            <li className="w-full">
+              <SearchBar onSearch={() => {}} />
+            </li>
+            <li className="flex w-fit items-center justify-center">
               <AuthButtons />
             </li>
           </ul>

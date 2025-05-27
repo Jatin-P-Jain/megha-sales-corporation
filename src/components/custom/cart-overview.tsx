@@ -32,9 +32,13 @@ function CartOverview({ isUser }: { isUser: boolean }) {
   if (!isUser) return null;
 
   return (
-    <div className="grid grid-cols-[1fr_4fr_1fr] items-center justify-center rounded-lg border p-1 text-sm md:px-4">
-      <div className="text-muted-foreground text-xs md:text-sm">
+    <div className="grid grid-cols-[2fr_4fr_2fr] items-center justify-center rounded-lg border p-1 text-sm md:px-4">
+      <div className="text-muted-foreground text-xs md:text-sm flex-col flex w-full">
         Cart Overview
+        <span className="text-muted-foreground text-[8px]">
+          {" "}
+          (after discount & GST)
+        </span>
       </div>
       <div className="mx-auto flex flex-col items-center justify-center md:w-fit">
         <div className="flex w-full flex-col justify-between gap-0 px-2 py-0">
@@ -53,11 +57,13 @@ function CartOverview({ isUser }: { isUser: boolean }) {
             </div>
           </div>
 
-          <div className="flex items-center gap-1 text-xs md:text-sm">
-            Amount:{" "}
-            <span className="text-primary text-sm font-semibold md:text-base">
-              {currencyFormatter(totalAmount)}
-            </span>
+          <div className="flex flex-col items-center justify-start gap-0 text-xs md:text-sm">
+            <div className="flex items-center gap-1">
+              Amount:{" "}
+              <span className="text-primary text-sm font-semibold md:text-base">
+                {currencyFormatter(totalAmount)}
+              </span>
+            </div>
           </div>
         </div>
       </div>

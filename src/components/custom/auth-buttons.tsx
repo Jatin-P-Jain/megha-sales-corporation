@@ -20,6 +20,7 @@ import {
   LogOutIcon,
   MenuIcon,
   ShieldUserIcon,
+  ShoppingCartIcon,
   UserRound,
 } from "lucide-react";
 
@@ -109,6 +110,15 @@ export default function AuthButtons() {
               </DropdownMenuItem>
             ) : (
               <>
+                <DropdownMenuItem asChild>
+                  <Link
+                    href="/cart"
+                    className="flex items-center justify-between"
+                  >
+                    My Cart
+                    <ShoppingCartIcon className="text-secondary-foreground" />
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link
                     href="/account/order-history"
