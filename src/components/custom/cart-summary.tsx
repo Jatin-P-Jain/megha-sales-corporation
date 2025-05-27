@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { Button } from "../ui/button";
-import { ArrowBigRightDashIcon, ShoppingCartIcon } from "lucide-react";
+import { ArrowBigRightDashIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/cartContext";
 import currencyFormatter from "@/lib/currency-formatter";
