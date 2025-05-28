@@ -6,9 +6,9 @@ import Link from "next/link";
 export default async function OrderPlacedPage({
   params,
 }: {
-  params: { orderId: string };
+  params: Promise<{ orderId: string }>;
 }) {
-  const { orderId } = params;
+  const { orderId } = await params;
   return (
     <div className="mx-auto flex max-w-screen-lg flex-col items-center justify-center gap-4 py-12">
       <div className="flex w-full flex-col items-center justify-center gap-4 px-8">
