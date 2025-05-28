@@ -104,5 +104,6 @@ export const config = {
     "/account/:path*",
     "/products-list",
     "/cart",
+    "/checkout",
   ],
 };

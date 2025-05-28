@@ -15,7 +15,6 @@ export default async function Cart() {
   const isAdmin = verifiedToken?.admin;
 
   const cartProductIds = await getCartProductIds(verifiedToken?.uid);
-  console.log({ cartProductIds });
 
   const cartItemsPromise = getProductsById(cartProductIds);
 

@@ -69,7 +69,7 @@ function CartSummary({ isUser }: { isUser: boolean }) {
       </div>
       <Button
         className="flex w-full items-center justify-center"
-        onClick={() => router.push("/cart")}
+        onClick={() => router.push("/checkout")}
       >
         <span>Checkout</span>
         <ArrowBigRightDashIcon className="size-5" />

@@ -10,6 +10,8 @@ import { Separator } from "@/components/ui/separator";
 import { XCircleIcon } from "lucide-react";
 import { PartDetailsDialog } from "@/components/custom/part-details-dialog";
 import CartItemLoading from "./cart-item-loading";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export function CartItems({
   itemsPromise,
@@ -79,7 +81,14 @@ export function CartItems({
     return <CartItemLoading />;
   }
   if (itemsWithQty.length === 0) {
-    return <div>Your cart is empty.</div>;
+    return (
+      <div className="flex w-full flex-col items-center justify-center gap-4">
+        Your cart is empty!
+        <Button asChild>
+          <Link href={"/products-list"}>Build your cart</Link>
+        </Button>
+      </div>
+    );
   }
 
   return (

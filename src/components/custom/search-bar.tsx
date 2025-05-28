@@ -53,7 +53,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
 
   // 3) The inner form UI
   const FormUI = (
-    <div className="flex min-w-80 flex-1 rounded-lg border-1">
+    <div className="flex min-w-75 flex-1 rounded-lg border-1">
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(handleSearch)}
@@ -76,7 +76,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
               </FormItem>
             )}
           />
-          <Button type="submit" className="md:bg-primary">
+          <Button type="submit" className="md:bg-transparent">
             <SearchIcon className="size-4" />
           </Button>
         </form>
