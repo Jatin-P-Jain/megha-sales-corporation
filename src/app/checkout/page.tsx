@@ -1,11 +1,9 @@
 import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
-import { Button } from "@/components/ui/button";
 import { auth } from "@/firebase/server";
-import { ThumbsUpIcon } from "lucide-react";
 import { cookies } from "next/headers";
 import React, { Suspense } from "react";
 import { CheckoutItems } from "./checkout-items";
-import CheckoutFooter from "@/components/custom/checkout-footer";
+import CheckoutFooter from "@/app/checkout/checkout-footer";
 
 export default async function CheckoutPage() {
   const cookieStore = await cookies();
@@ -33,7 +31,7 @@ export default async function CheckoutPage() {
             Checkout
           </h1>
           <p className="text-muted-foreground text-xs md:text-sm">
-            Review your items and total. {" "}
+            Review your items and total.{" "}
             <span className="font-semibold text-black">
               &apos;Confirm & Place Order&apos;
             </span>{" "}
