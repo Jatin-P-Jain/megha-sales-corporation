@@ -4,10 +4,17 @@ import { Button } from "@/components/ui/button";
 import { Loader2Icon, ThumbsUpIcon } from "lucide-react";
 import { useCart } from "@/context/cartContext";
 import currencyFormatter from "@/lib/currency-formatter";
+import { createOrder } from "./actions";
+import { useAuth } from "@/context/useAuth";
+import { toast } from "sonner";
+import { OrderData } from "@/types/order";
+import { redirect } from "next/navigation";
 
 export default function CheckoutFooter() {
-  const { cart, loading } = useCart();
+  const auth = useAuth();
+  const { cart, loading, cartProducts, resetCartContext } = useCart();
   const [hasMounted, setHasMounted] = useState(false);
+  const [isPlacingOrder, setIsOrderPlacing] = useState(false);
 
   // 1) hydration guard
   useEffect(() => {
@@ -29,6 +36,9 @@ export default function CheckoutFooter() {
     return () => clearTimeout(t);
   }, [cart.length]);
 
+  const totalUnits = cart.reduce((sum, i) => {
+    return sum + i.quantity;
+  }, 0);
   const totalAmount = cart.reduce((sum, i) => {
     const { price = 0, discount = 0, gst = 0 } = i.productPricing ?? {};
     const afterDisc = price * (1 - discount / 100);
@@ -38,6 +48,35 @@ export default function CheckoutFooter() {
 
   const isValueAbsent =
     !hasMounted || loading || (cart.length === 0 && !showEmpty);
+
+  const orderPlaceHandler = async () => {
+    setIsOrderPlacing(true);
+    const token = await auth?.currentUser?.getIdToken();
+    if (!token) {
+      setIsOrderPlacing(false);
+      return;
+    }
+    const data: OrderData = {
+      products: cartProducts,
+      totals: {
+        amount: Math.ceil(totalAmount),
+        items: cartProducts.length,
+        units: totalUnits,
+      },
+    };
+    const orderResponse = await createOrder(data, token);
+
+    if (!!orderResponse.error || !orderResponse.orderId) {
+      toast.error("Error!", { description: orderResponse.message });
+      setIsOrderPlacing(false);
+      return;
+    }
+
+    toast.success("Order Placed!");
+    setIsOrderPlacing(false);
+    resetCartContext();
+    redirect(`/order-placed/${orderResponse.orderId}`);
+  };
   return (
     <div className="flex w-full items-center justify-between py-4">
       <p className="text-muted-foreground flex flex-col text-xs md:text-sm">
@@ -50,9 +89,23 @@ export default function CheckoutFooter() {
           <Loader2Icon className="size-4 animate-spin" />
         )}
       </p>
-      <Button>
-        Confirm & Place Order
-        <ThumbsUpIcon className="size-4" />
+      <Button
+        className="flex items-center justify-center"
+        disabled={isValueAbsent || isPlacingOrder || cart.length === 0}
+        onClick={orderPlaceHandler}
+      >
+        {isPlacingOrder ? (
+          <>
+            Placing your order...{" "}
+            <Loader2Icon className="size-4 animate-spin" />
+          </>
+        ) : (
+          <>
+            {" "}
+            Confirm & Place Order
+            <ThumbsUpIcon className="size-4" />
+          </>
+        )}
       </Button>
     </div>
   );

@@ -18,7 +18,7 @@ export function CartItems({
 }: {
   itemsPromise: Promise<Product[]>;
 }) {
-  const { cart, loading, removeFromCart } = useCart();
+  const { cart, loading, removeFromCart, setCartProducts } = useCart();
 
   const [items, setItems] = useState<Product[]>([]);
   const [itemsLoaded, setItemsLoaded] = useState(false);
@@ -62,6 +62,7 @@ export function CartItems({
     if (itemsWithQty.length > 0) {
       // if we have items, immediately hide “empty”
       setShowEmpty(false);
+      setCartProducts(itemsWithQty);
       return;
     }
     // if no items, wait 200 ms before showing empty

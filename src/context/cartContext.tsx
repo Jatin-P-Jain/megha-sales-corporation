@@ -14,8 +14,8 @@ import {
   onSnapshot,
   setDoc,
   deleteDoc,
-  FirestoreError,
   writeBatch,
+  FirestoreError,
 } from "firebase/firestore";
 import { useAuth } from "./useAuth";
 import { firestore } from "@/firebase/client";
@@ -33,7 +33,7 @@ export type CartItem = {
 
 type CartContextType = {
   cart: CartItem[];
-  itemsWithQty: CartProduct[];
+  cartProducts: CartProduct[];
   loading: boolean;
   error?: FirestoreError;
   addToCart: (
@@ -45,7 +45,9 @@ type CartContextType = {
   clearCart: () => Promise<void>;
   increment: (productId: string) => Promise<void>;
   decrement: (productId: string) => Promise<void>;
-  setItemsWithQty: (items: CartProduct[]) => void;
+  setCartProducts: (cartProducts: CartProduct[]) => void;
+  /** ← new: wipe both Firestore _and_ local state */
+  resetCartContext: () => Promise<void>;
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -59,23 +61,22 @@ export function useCart() {
 export function CartProvider({ children }: { children: ReactNode }) {
   const { currentUser } = useAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [cartProducts, setCartProducts] = useState<CartProduct[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<FirestoreError>();
-  const [itemsWithQty, setItemsWithQty] = useState<CartProduct[]>([]);
 
+  // Firestore listener
   useEffect(() => {
     if (!currentUser) {
       setCart([]);
       setLoading(false);
       return;
     }
-
-    // Listen to `/carts/{uid}/items`
     const itemsCol = collection(firestore, "carts", currentUser.uid, "items");
     const unsub = onSnapshot(
       itemsCol,
       (snap) => {
-        const data: CartItem[] = snap.docs.map((d) => ({
+        const data = snap.docs.map((d) => ({
           productId: d.id,
           productPricing: d.data().productPricing || {},
           quantity: (d.data().quantity as number) || 0,
@@ -89,43 +90,28 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setLoading(false);
       },
     );
-
     return () => unsub();
   }, [currentUser]);
 
+  // existing CRUD methods…
   const addToCart = async (
     productId: string,
     productPricing: { price?: number; discount?: number; gst?: number },
     qty = 1,
   ) => {
     if (!currentUser) throw new Error("Not authenticated");
-    const itemRef = doc(
-      firestore,
-      "carts",
-      currentUser.uid,
-      "items",
-      productId,
-    );
-    // overwrite or create with new quantity
-    await setDoc(itemRef, { quantity: qty, productPricing }, { merge: true });
+    const ref = doc(firestore, "carts", currentUser.uid, "items", productId);
+    await setDoc(ref, { quantity: qty, productPricing }, { merge: true });
   };
 
   const removeFromCart = async (productId: string) => {
     if (!currentUser) throw new Error("Not authenticated");
-    const itemRef = doc(
-      firestore,
-      "carts",
-      currentUser.uid,
-      "items",
-      productId,
-    );
-    await deleteDoc(itemRef);
+    const ref = doc(firestore, "carts", currentUser.uid, "items", productId);
+    await deleteDoc(ref);
   };
-  // inside your CartProvider, after addToCart/removeFromCart…
 
   const increment = async (productId: string) => {
     if (!currentUser) throw new Error("Not authenticated");
-    // find existing quantity
     const existing = cart.find((i) => i.productId === productId);
     const newQty = existing ? existing.quantity + 1 : 1;
     const ref = doc(firestore, "carts", currentUser.uid, "items", productId);
@@ -146,26 +132,48 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const clearCart = async () => {
     if (!currentUser) throw new Error("Not authenticated");
-    // you could batch‐delete all docs under `/carts/{uid}/items`
     const batch = writeBatch(firestore);
     cart.forEach((i) => {
-      const itemRef = doc(
+      const ref = doc(
         firestore,
         "carts",
         currentUser.uid,
         "items",
         i.productId,
       );
-      batch.delete(itemRef);
+      batch.delete(ref);
     });
     await batch.commit();
+  };
+
+  // ← New: reset _both_ Firestore _and_ local state
+  const resetCartContext = async () => {
+    // 1) clear remote
+    if (currentUser) {
+      const batch = writeBatch(firestore);
+      cart.forEach((i) => {
+        const ref = doc(
+          firestore,
+          "carts",
+          currentUser.uid,
+          "items",
+          i.productId,
+        );
+        batch.delete(ref);
+      });
+      await batch.commit();
+    }
+    // 2) clear local
+    setCart([]);
+    setCartProducts([]);
+    setLoading(false);
   };
 
   return (
     <CartContext.Provider
       value={{
         cart,
-        itemsWithQty,
+        cartProducts,
         loading,
         error,
         addToCart,
@@ -173,7 +181,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         clearCart,
         increment,
         decrement,
-        setItemsWithQty,
+        setCartProducts,
+        resetCartContext,
       }}
     >
       {children}
