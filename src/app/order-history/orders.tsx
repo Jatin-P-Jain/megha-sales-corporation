@@ -1,7 +1,7 @@
 "use client";
 
 import OrderDetails from "@/components/custom/order-details";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { formatDateTime } from "@/lib/utils";
 import { Order } from "@/types/order";
 import clsx from "clsx";

@@ -108,12 +108,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
           const data = snap.data() || {};
           return {
             id: snap.id,
-            partName: (data as any).partName,
-            partNumber: (data as any).partNumber,
-            image: (data as any).image,
-            price: (data as any).price,
-            discount: (data as any).discount,
-            gst: (data as any).gst,
+            partName: data.partName as string,
+            partNumber: data.partNumber as string,
+            image: data.image as string,
+            price: data.price as number,
+            discount: data.discount as number,
+            gst: data.gst as number,
             quantity,
           } as CartProduct;
         });
