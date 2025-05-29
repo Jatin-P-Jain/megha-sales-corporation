@@ -103,7 +103,6 @@ export function formatDateTime(input?: string): string {
   const year = date.getFullYear();
 
   let hours = date.getHours();
-  const ampm = hours >= 12 ? "PM" : "AM";
   hours = hours; // convert 0 → 12
   const hh = String(hours).padStart(2, "0");
   const mm = String(date.getMinutes()).padStart(2, "0");
