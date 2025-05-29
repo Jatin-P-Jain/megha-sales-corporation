@@ -80,7 +80,7 @@ export function CheckoutItems() {
       </Table>
 
       {/* 2) Scrollable body */}
-      <ScrollArea className="max-h-[300px] min-h-[250px]">
+      <ScrollArea className="max-h-[400px] min-h-[250px] overflow-auto">
         <Table className="table-fixed">
           <TableBody>
             {cart.map((item) => {

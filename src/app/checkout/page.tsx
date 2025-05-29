@@ -39,7 +39,9 @@ export default async function CheckoutPage() {
           </p>
         </div>
       </div>
-      <div className={`flex flex-1 px-4 pt-35 md:pt-38`}>
+      <div
+        className={`flex flex-1 overflow-auto scroll-auto px-4 pt-30 md:pt-38 !h-0`}
+      >
         <Suspense
           fallback={
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
@@ -51,7 +53,7 @@ export default async function CheckoutPage() {
         </Suspense>
       </div>
       <div
-        className={`fixed inset-x-0 bottom-0 z-30 mx-auto flex h-fit w-full max-w-screen-lg flex-col items-end justify-end rounded-t-lg bg-white px-4 py-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]`}
+        className={`fixed inset-x-0 bottom-0 z-30 mx-auto flex h-fit w-full max-w-screen-lg flex-col items-end justify-end rounded-t-lg bg-white px-4 py-1 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]`}
       >
         <CheckoutFooter />
       </div>

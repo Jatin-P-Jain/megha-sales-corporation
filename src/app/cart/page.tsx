@@ -5,18 +5,12 @@ import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
 import ProductCardLoading from "../products-list/property-card-loading";
 import { CartItems } from "./cart-items";
 import CartSummary from "@/components/custom/cart-summary";
-import { getCartProductIds } from "@/data/cartItems";
-import { getProductsById } from "@/data/products";
 
 export default async function Cart() {
   const cookieStore = await cookies();
   const token = cookieStore.get("firebaseAuthToken")?.value;
   const verifiedToken = token ? await auth.verifyIdToken(token) : null;
   const isAdmin = verifiedToken?.admin;
-
-  const cartProductIds = await getCartProductIds(verifiedToken?.uid);
-
-  const cartItemsPromise = getProductsById(cartProductIds);
 
   return (
     <div className="mx-auto flex max-w-screen-lg flex-col gap-4">
@@ -52,7 +46,7 @@ export default async function Cart() {
             </div>
           }
         >
-          <CartItems itemsPromise={cartItemsPromise} />
+          <CartItems />
         </Suspense>
       </div>
     </div>

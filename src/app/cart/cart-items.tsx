@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useCart } from "@/context/cartContext";
-import { Product } from "@/types/product";
 import CartControls from "@/components/custom/cart-controls";
 import currencyFormatter from "@/lib/currency-formatter";
 import ProductImage from "@/components/custom/product-image";
@@ -13,15 +12,9 @@ import CartItemLoading from "./cart-item-loading";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-export function CartItems({
-  itemsPromise,
-}: {
-  itemsPromise: Promise<Product[]>;
-}) {
-  const { cart, loading, removeFromCart, setCartProducts } = useCart();
+export function CartItems() {
+  const { cartProducts, loading, removeFromCart } = useCart();
 
-  const [items, setItems] = useState<Product[]>([]);
-  const [itemsLoaded, setItemsLoaded] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
 
   // 1) hydration guard
@@ -29,43 +22,9 @@ export function CartItems({
     setHasMounted(true);
   }, []);
 
-  // 2) load the Product[] from your promise
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      try {
-        const data = await itemsPromise;
-        if (active) {
-          setItems(data);
-          setItemsLoaded(true);
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    })();
-    return () => {
-      active = false;
-    };
-  }, [itemsPromise]);
-
-  // 3) merge + filter
-  const itemsWithQty = useMemo(() => {
-    return items
-      .map((p) => ({
-        ...p,
-        quantity: cart.find((c) => c.productId === p.id)?.quantity ?? 0,
-      }))
-      .filter((p) => p.quantity > 0);
-  }, [items, cart]);
-
-  useEffect(() => {
-    setCartProducts(itemsWithQty);
-  }, [itemsWithQty, setCartProducts]);
-
-  // 4) debounce the empty-cart state
   const [showEmpty, setShowEmpty] = useState(false);
   useEffect(() => {
-    if (itemsWithQty.length > 0) {
+    if (cartProducts.length > 0) {
       // if we have items, immediately hide “empty”
       setShowEmpty(false);
       return;
@@ -75,18 +34,13 @@ export function CartItems({
       setShowEmpty(true);
     }, 1000);
     return () => clearTimeout(t);
-  }, [itemsWithQty.length]);
+  }, [cartProducts.length]);
 
   // 5) final render logic
-  if (
-    !hasMounted ||
-    loading ||
-    !itemsLoaded ||
-    (itemsWithQty.length === 0 && !showEmpty)
-  ) {
+  if (loading || !hasMounted || (cartProducts.length === 0 && !showEmpty)) {
     return <CartItemLoading />;
   }
-  if (itemsWithQty.length === 0) {
+  if (cartProducts.length === 0) {
     return (
       <div className="flex w-full flex-col items-center justify-center gap-4">
         Your cart is empty!
@@ -99,7 +53,7 @@ export function CartItems({
 
   return (
     <ul className="mx-auto flex h-full flex-1 flex-col gap-4 pb-4">
-      {itemsWithQty.map((item) => {
+      {cartProducts.map((item) => {
         const discountValue = Math.ceil(item.price * (item.discount / 100));
         const gstValue = Math.ceil(
           (item.price - discountValue) * (item.gst / 100),

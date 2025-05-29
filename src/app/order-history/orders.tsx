@@ -90,10 +90,6 @@ export default function Orders({
                 )}
               </div>
             </CardContent>
-            <CardFooter className="grid grid-cols-[3fr_1fr] items-end justify-center gap-4">
-              <div className="flex w-full flex-col items-start justify-start md:flex-row md:justify-between"></div>
-              <div className="flex w-full items-center justify-end gap-2"></div>
-            </CardFooter>
           </Card>
         );
       })}

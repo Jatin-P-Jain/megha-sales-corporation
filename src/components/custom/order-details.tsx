@@ -86,7 +86,7 @@ export default function OrderDetails({
               </Table>
 
               {/* 2) Scrollable body */}
-              <ScrollArea className="max-h-[150px]">
+              <ScrollArea className="pointer-events-auto max-h-[200px] overflow-auto">
                 <Table className="table-fixed">
                   <TableBody>
                     {products.map((item) => {

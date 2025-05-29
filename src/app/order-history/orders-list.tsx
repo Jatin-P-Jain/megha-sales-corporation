@@ -20,14 +20,14 @@ export default async function OrdersList({
   return (
     <>
       {data.length > 0 && (
-        <div className="flex h-full min-h-[calc(100vh-210px)] w-full flex-1 flex-col justify-between gap-4 py-2">
+        <div className="flex h-full w-full flex-1 flex-col justify-between gap-4">
           <Orders orderData={data} isAdmin={isAdmin} />
           {requestedOrderId ? (
             <Button className="mx-auto w-3/4" asChild>
               <Link href={"/order-history"}>View all orders</Link>
             </Button>
           ) : (
-            <div className="flex items-center justify-center gap-4 p-2">
+            <div className="flex w-full items-center justify-center gap-4 p-2">
               {Array.from({ length: totalPages }).map((_, i) => {
                 const newSearchParams = new URLSearchParams();
                 newSearchParams.set("page", `${i + 1}`);

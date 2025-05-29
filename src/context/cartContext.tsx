@@ -16,6 +16,7 @@ import {
   deleteDoc,
   writeBatch,
   FirestoreError,
+  getDoc,
 } from "firebase/firestore";
 import { useAuth } from "./useAuth";
 import { firestore } from "@/firebase/client";
@@ -92,6 +93,41 @@ export function CartProvider({ children }: { children: ReactNode }) {
     );
     return () => unsub();
   }, [currentUser]);
+
+  useEffect(() => {
+    if (!currentUser) {
+      setCartProducts([]);
+      setLoading(false);
+      return;
+    }
+    let active = true;
+    (async () => {
+      try {
+        const proms = cart.map(async ({ productId, quantity }) => {
+          const snap = await getDoc(doc(firestore, "products", productId));
+          const data = snap.data() || {};
+          return {
+            id: snap.id,
+            partName: (data as any).partName,
+            partNumber: (data as any).partNumber,
+            image: (data as any).image,
+            price: (data as any).price,
+            discount: (data as any).discount,
+            gst: (data as any).gst,
+            quantity,
+          } as CartProduct;
+        });
+        const results = await Promise.all(proms);
+        if (active) setCartProducts(results);
+      } catch (e) {
+        console.error("Failed to fetch products for cart:", e);
+      }
+      setLoading(false);
+    })();
+    return () => {
+      active = false;
+    };
+  }, [cart, currentUser]);
 
   // existing CRUD methods…
   const addToCart = async (
