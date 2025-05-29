@@ -20,9 +20,15 @@ export const createOrder = async (data: OrderData, authtoken: string) => {
     const now = new Date();
     const orderData: Omit<Order, "id"> = {
       ...data,
-      userId: verifiedToken.uid,
+      user: {
+        id: verifiedToken.uid,
+        email: verifiedToken.email,
+        name: verifiedToken.name,
+        phone: verifiedToken.phone_number,
+      },
       status: "pending",
       createdAt: now.toISOString(),
+      updatedAt: now.toISOString(),
     };
     await newRef.set(orderData);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useCart } from "@/context/cartContext";
 import { Product } from "@/types/product";
 import CartControls from "@/components/custom/cart-controls";
@@ -49,12 +49,18 @@ export function CartItems({
   }, [itemsPromise]);
 
   // 3) merge + filter
-  const itemsWithQty = items
-    .map((p) => ({
-      ...p,
-      quantity: cart.find((c) => c.productId === p.id)?.quantity ?? 0,
-    }))
-    .filter((p) => p.quantity > 0);
+  const itemsWithQty = useMemo(() => {
+    return items
+      .map((p) => ({
+        ...p,
+        quantity: cart.find((c) => c.productId === p.id)?.quantity ?? 0,
+      }))
+      .filter((p) => p.quantity > 0);
+  }, [items, cart]);
+
+  useEffect(() => {
+    setCartProducts(itemsWithQty);
+  }, [itemsWithQty, setCartProducts]);
 
   // 4) debounce the empty-cart state
   const [showEmpty, setShowEmpty] = useState(false);
@@ -62,7 +68,6 @@ export function CartItems({
     if (itemsWithQty.length > 0) {
       // if we have items, immediately hide “empty”
       setShowEmpty(false);
-      setCartProducts(itemsWithQty);
       return;
     }
     // if no items, wait 200 ms before showing empty
@@ -95,12 +100,12 @@ export function CartItems({
   return (
     <ul className="mx-auto flex h-full flex-1 flex-col gap-4 pb-4">
       {itemsWithQty.map((item) => {
-        const discountedPrice = Math.ceil(item.price * (item.discount / 100));
-        const afterGstPrice = Math.ceil(item.price * (item.gst / 100));
-        const totalPrice = currencyFormatter(
-          Math.ceil(
-            item.quantity * (item.price - discountedPrice + afterGstPrice),
-          ),
+        const discountValue = Math.ceil(item.price * (item.discount / 100));
+        const gstValue = Math.ceil(
+          (item.price - discountValue) * (item.gst / 100),
+        );
+        const totalPrice = Math.ceil(
+          item.quantity * (item.price - discountValue + gstValue),
         );
         return (
           <li
@@ -150,7 +155,7 @@ export function CartItems({
                     <span className="text-muted-foreground text-xs font-normal">
                       {"(-) "}
                     </span>
-                    {currencyFormatter(discountedPrice)}
+                    {currencyFormatter(discountValue)}
                   </span>
                 </div>
                 <div className="flex w-full items-center justify-between text-xs md:text-sm">
@@ -159,14 +164,14 @@ export function CartItems({
                     <span className="text-muted-foreground text-xs font-normal">
                       {"(+) "}
                     </span>
-                    {currencyFormatter(afterGstPrice)}{" "}
+                    {currencyFormatter(gstValue)}{" "}
                   </span>
                 </div>
                 <Separator />
                 <div className="flex w-full items-center justify-between text-xs md:text-sm">
                   Amount :{" "}
                   <span className="text-primary text-base font-semibold md:text-lg">
-                    {totalPrice}
+                    {currencyFormatter(totalPrice)}
                   </span>
                 </div>
                 <div className="flex h-full items-end justify-end pt-4">

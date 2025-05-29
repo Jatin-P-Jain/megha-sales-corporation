@@ -46,7 +46,6 @@ export default async function ProductsList({
       productsFilters.push(statusParam as ProductStatus);
     }
   } else if (!isAdmin) productsFilters.push("for-sale");
-  console.log(productsFilters);
 
   const productsPromise = getProducts({
     filters: {

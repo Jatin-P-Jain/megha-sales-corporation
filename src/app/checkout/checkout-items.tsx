@@ -51,12 +51,14 @@ export function CheckoutItems() {
 
   // Totals
   const totalUnits = cart.reduce((sum, i) => sum + i.quantity, 0);
-  const totalAmount = cart.reduce((sum, i) => {
-    const { price = 0, discount = 0, gst = 0 } = i.productPricing ?? {};
-    const afterDisc = price * (1 - discount / 100);
-    const withGst = afterDisc * (1 + gst / 100);
-    return sum + withGst * i.quantity;
-  }, 0);
+  const totalAmount = Math.ceil(
+    cart.reduce((sum, i) => {
+      const { price = 0, discount = 0, gst = 0 } = i.productPricing ?? {};
+      const afterDisc = price * (1 - discount / 100);
+      const withGst = afterDisc * (1 + gst / 100);
+      return sum + withGst * i.quantity;
+    }, 0),
+  );
 
   return (
     <div className="flex h-full flex-col rounded-lg border shadow-sm">
@@ -78,7 +80,7 @@ export function CheckoutItems() {
       </Table>
 
       {/* 2) Scrollable body */}
-      <ScrollArea className="h-[400px]">
+      <ScrollArea className="max-h-[300px] min-h-[250px]">
         <Table className="table-fixed">
           <TableBody>
             {cart.map((item) => {
@@ -89,12 +91,11 @@ export function CheckoutItems() {
               } = item.productPricing ?? {};
               const afterDisc = price * (1 - discount / 100);
               const withGst = afterDisc * (1 + gst / 100);
-              const lineTotal = withGst * item.quantity;
+              const lineTotal = Math.ceil(withGst * item.quantity);
               return (
                 <TableRow key={item.productId} className="">
                   <TableCell>{item.productId}</TableCell>
                   <TableCell className="text-right">{item.quantity}</TableCell>
-                  
                   <TableCell className="text-right">
                     {currencyFormatter(lineTotal)}
                   </TableCell>

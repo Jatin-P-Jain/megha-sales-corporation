@@ -19,6 +19,7 @@ import {
   Loader2Icon,
   LogOutIcon,
   MenuIcon,
+  NotebookTextIcon,
   ShieldUserIcon,
   ShoppingCartIcon,
   UserRound,
@@ -99,15 +100,26 @@ export default function AuthButtons() {
             </DropdownMenuItem>
 
             {isAdmin ? (
-              <DropdownMenuItem asChild>
-                <Link
-                  href="/admin-dashboard"
-                  className="flex items-center justify-between"
-                >
-                  Admin Dashboard
-                  <ShieldUserIcon className="text-secondary-foreground" />
-                </Link>
-              </DropdownMenuItem>
+              <>
+                <DropdownMenuItem asChild>
+                  <Link
+                    href="/order-history"
+                    className="flex items-center justify-between"
+                  >
+                    Order Book
+                    <NotebookTextIcon className="text-secondary-foreground" />
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link
+                    href="/admin-dashboard"
+                    className="flex items-center justify-between"
+                  >
+                    Admin Dashboard
+                    <ShieldUserIcon className="text-secondary-foreground" />
+                  </Link>
+                </DropdownMenuItem>
+              </>
             ) : (
               <>
                 <DropdownMenuItem asChild>
@@ -121,7 +133,7 @@ export default function AuthButtons() {
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link
-                    href="/account/order-history"
+                    href="/order-history"
                     className="flex items-center justify-between"
                   >
                     Order History

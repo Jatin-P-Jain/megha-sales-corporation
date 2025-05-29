@@ -39,12 +39,14 @@ export default function CheckoutFooter() {
   const totalUnits = cart.reduce((sum, i) => {
     return sum + i.quantity;
   }, 0);
-  const totalAmount = cart.reduce((sum, i) => {
-    const { price = 0, discount = 0, gst = 0 } = i.productPricing ?? {};
-    const afterDisc = price * (1 - discount / 100);
-    const withGst = afterDisc * (1 + gst / 100);
-    return sum + withGst * i.quantity;
-  }, 0);
+  const totalAmount = Math.ceil(
+    cart.reduce((sum, i) => {
+      const { price = 0, discount = 0, gst = 0 } = i.productPricing ?? {};
+      const afterDisc = price * (1 - discount / 100);
+      const withGst = afterDisc * (1 + gst / 100);
+      return sum + withGst * i.quantity;
+    }, 0),
+  );
 
   const isValueAbsent =
     !hasMounted || loading || (cart.length === 0 && !showEmpty);
@@ -59,7 +61,7 @@ export default function CheckoutFooter() {
     const data: OrderData = {
       products: cartProducts,
       totals: {
-        amount: Math.ceil(totalAmount),
+        amount: totalAmount,
         items: cartProducts.length,
         units: totalUnits,
       },
@@ -80,7 +82,7 @@ export default function CheckoutFooter() {
   return (
     <div className="flex w-full items-center justify-between py-4">
       <p className="text-muted-foreground flex flex-col text-xs md:text-sm">
-        Total Amount Payable:{"   "}
+        Total Amount :{"   "}
         {!isValueAbsent ? (
           <span className="text-primary text-base font-semibold">
             {currencyFormatter(totalAmount)}/-

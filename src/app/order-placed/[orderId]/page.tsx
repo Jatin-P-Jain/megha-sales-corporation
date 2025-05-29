@@ -21,7 +21,7 @@ export default async function OrderPlacedPage({
           <p>We will pack your order shortly.</p>
         </div>{" "}
         <Button asChild className="w-full">
-          <Link href={`/order-history/${orderId}`}>View Order</Link>
+          <Link href={`/order-history/?orderId=${orderId}`}>View Order</Link>
         </Button>
       </div>
 

@@ -1,5 +1,5 @@
 import { CartProduct } from "./cartProduct";
-export type OrderStatus = "pending" | "packing" | "Complete";
+export type OrderStatus = "pending" | "packing" | "complete";
 export type OrderData = {
   products: CartProduct[];
   totals: {
@@ -11,7 +11,7 @@ export type OrderData = {
 };
 export type Order = {
   id: string;
-  userId: string;
+  user: { id: string; name?: string; email?: string; phone?: string };
   products: CartProduct[];
   totals: {
     items: number;

@@ -17,23 +17,25 @@ function CartOverview({ isUser }: { isUser: boolean }) {
   const totalItems = cart.length;
 
   // 3) total amount after discount & gst
-  const totalAmount = cart.reduce((sum, item) => {
-    const { price = 0, discount = 0, gst = 0 } = item.productPricing ?? {};
+  const totalAmount = Math.ceil(
+    cart.reduce((sum, item) => {
+      const { price = 0, discount = 0, gst = 0 } = item.productPricing ?? {};
 
-    // 1) compute the price after % discount
-    const afterDiscount = price * (1 - discount / 100);
+      // 1) compute the price after % discount
+      const afterDiscount = price * (1 - discount / 100);
 
-    // 2) apply GST % on top of that
-    const netPerUnit = afterDiscount * (1 + gst / 100);
+      // 2) apply GST % on top of that
+      const netPerUnit = afterDiscount * (1 + gst / 100);
 
-    return sum + netPerUnit * item.quantity;
-  }, 0);
+      return sum + netPerUnit * item.quantity;
+    }, 0),
+  );
 
   if (!isUser) return null;
 
   return (
     <div className="grid grid-cols-[2fr_4fr_2fr] items-center justify-center rounded-lg border p-1 text-sm md:px-4">
-      <div className="text-muted-foreground text-xs md:text-sm flex-col flex w-full">
+      <div className="text-muted-foreground flex w-full flex-col text-xs md:text-sm">
         Cart Overview
         <span className="text-muted-foreground text-[8px]">
           {" "}

@@ -105,5 +105,6 @@ export const config = {
     "/products-list",
     "/cart",
     "/checkout",
+    "/order-history",
   ],
 };

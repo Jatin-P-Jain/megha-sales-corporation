@@ -17,17 +17,19 @@ function CartSummary({ isUser }: { isUser: boolean }) {
   const totalItems = cart.length;
 
   // 3) total amount after discount & gst
-  const totalAmount = cart.reduce((sum, item) => {
-    const { price = 0, discount = 0, gst = 0 } = item.productPricing ?? {};
+  const totalAmount = Math.ceil(
+    cart.reduce((sum, item) => {
+      const { price = 0, discount = 0, gst = 0 } = item.productPricing ?? {};
 
-    // 1) compute the price after % discount
-    const afterDiscount = price * (1 - discount / 100);
+      // 1) compute the price after % discount
+      const afterDiscount = price * (1 - discount / 100);
 
-    // 2) apply GST % on top of that
-    const netPerUnit = afterDiscount * (1 + gst / 100);
+      // 2) apply GST % on top of that
+      const netPerUnit = afterDiscount * (1 + gst / 100);
 
-    return sum + netPerUnit * item.quantity;
-  }, 0);
+      return sum + netPerUnit * item.quantity;
+    }, 0),
+  );
 
   if (!isUser) return null;
 
