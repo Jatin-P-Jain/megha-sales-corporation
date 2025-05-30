@@ -74,7 +74,7 @@ export default function CheckoutFooter() {
       return;
     }
 
-    const res = await fetch("/api/wa-send-message", {
+    await fetch("/api/wa-send-message", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

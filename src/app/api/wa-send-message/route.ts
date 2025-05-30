@@ -60,10 +60,11 @@ export async function POST(req: NextRequest) {
       orderId: orderId,
       whatsapp: result,
     });
-  } catch (e: any) {
+  } catch (e) {
     console.error(e);
+    const errorMessage = (e instanceof Error) ? e.message : String(e);
     return NextResponse.json(
-      { success: false, error: e.message },
+      { success: false, error: errorMessage },
       { status: 500 },
     );
   }
