@@ -74,6 +74,16 @@ export default function CheckoutFooter() {
       return;
     }
 
+    const res = await fetch("/api/wa-send-message", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        customerName: auth.clientUser?.displayName,
+        customerPhone: auth.clientUser?.phone,
+        orderId: orderResponse.orderId,
+      }),
+    });
+
     toast.success("Order Placed!");
     setIsOrderPlacing(false);
     resetCartContext();

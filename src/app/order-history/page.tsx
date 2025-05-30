@@ -44,10 +44,8 @@ export default async function OrderHistoryPage({
 
   // 3) pick the right promise
   let ordersPromise;
-  if (isAdmin) {
+  if (isAdmin && !requestedOrderId) {
     // admin: fetch all, unfiltered
-    console.log("here");
-
     ordersPromise = getOrders({
       filters: { status: orderStatusFilter },
       pagination: { page, pageSize: 5 },
@@ -73,7 +71,7 @@ export default async function OrderHistoryPage({
       <div
         className={clsx(
           "fixed inset-x-0 top-0 z-30 mx-auto flex h-45 w-full max-w-screen-lg flex-col justify-end rounded-b-lg bg-white px-4 py-2 shadow-md md:h-50",
-          requestedOrderId && "!h-40",
+          requestedOrderId && "!h-40 md:!h-45",
         )}
       >
         <div className="mx-auto w-full max-w-screen-lg px-0 pt-4 md:pt-6">
@@ -86,7 +84,10 @@ export default async function OrderHistoryPage({
                       label: isAdmin ? "Admin Dashboard" : "Home",
                     },
                     { href: "/account", label: "My Account" },
-                    { href: "/order-history", label: "Order History" },
+                    {
+                      href: "/order-history",
+                      label: isAdmin ? "Order Book" : "Order History",
+                    },
                     { label: "Order Details" },
                   ]
                 : [
