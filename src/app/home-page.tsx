@@ -1,11 +1,9 @@
 "use client";
-import React, { Suspense } from "react";
+import React from "react";
 import { useAuth } from "@/context/useAuth";
 import { Loader2Icon } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import BrandsGrid from "./brands-grid";
 import { Brand } from "@/types/brand";
-import { Skeleton } from "@/components/ui/skeleton";
 
 const HomePage = ({
   brandsPromise,
@@ -16,7 +14,6 @@ const HomePage = ({
   const { clientUser, clientUserLoading, currentUser } = auth;
   const user = clientUser;
   const { displayName, role } = user ?? {};
-  const isAdmin = role === "admin";
   const userName = displayName ?? "Guest";
 
   return (
