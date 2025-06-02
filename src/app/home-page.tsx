@@ -13,7 +13,7 @@ const HomePage = ({
   const auth = useAuth();
   const { clientUser, clientUserLoading, currentUser } = auth;
   const user = clientUser;
-  const { displayName, role } = user ?? {};
+  const { displayName } = user ?? {};
   const userName = displayName ?? "Guest";
 
   return (
