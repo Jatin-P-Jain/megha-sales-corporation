@@ -36,7 +36,6 @@ export async function middleware(request: NextRequest) {
     admin?: boolean;
     exp?: number;
   };
-  console.log({ profileComplete });
 
   // 4) If your token’s about to expire, refresh it (once)
   if (exp && (exp - 5 * 60) * 1000 < Date.now()) {
@@ -75,7 +74,8 @@ export async function middleware(request: NextRequest) {
 
   // 6) If they’ve now completed the profile but are stuck on /account/profile, bounce on
   if (profileComplete && pathname === "/account/profile") {
-    const back = searchParams.get("redirect") ?? "/";
+    const back =
+      (searchParams.get("redirect") ?? admin) ? "/products-list" : "/";
     return NextResponse.redirect(new URL(back, origin));
   }
 
@@ -103,6 +103,7 @@ export const config = {
     "/account",
     "/account/:path*",
     "/products-list",
+    "/products-list/:path*",
     "/cart",
     "/checkout",
     "/order-history",

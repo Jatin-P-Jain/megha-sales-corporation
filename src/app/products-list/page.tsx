@@ -8,6 +8,7 @@ import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
 import { ProductStatus } from "@/types/product";
 import { getAllCategories } from "@/data/categories";
 import ResponsiveProductFiltersServer from "./responsive-product-filters.server";
+import { unslugify } from "@/lib/utils";
 
 export default async function ProductsList({
   searchParams,
@@ -28,6 +29,8 @@ export default async function ProductsList({
   const searchParamsValues = await searchParams;
   const parsedPage = parseInt(searchParamsValues.page);
   const page = isNaN(parsedPage) ? 1 : parsedPage;
+  const brandId = searchParamsValues?.brandId ?? "";
+  const brandName = unslugify(brandId);
   const statusParam = searchParamsValues.status ?? "";
   const categoryParam = searchParamsValues.category ?? "";
   const categoryFilters = Array.isArray(categoryParam)
@@ -49,6 +52,7 @@ export default async function ProductsList({
 
   const productsPromise = getProducts({
     filters: {
+      brandId: brandId,
       status: productsFilters,
       partCategory: categoryFilters,
     },
@@ -57,21 +61,31 @@ export default async function ProductsList({
 
   const categoriesPromise = getAllCategories();
 
+  const breadcrumbs = [
+    {
+      href: isAdmin ? "/admin-dashboard/brands" : "/",
+      label: isAdmin ? "All Brands" : "Home",
+    },
+    ...(brandId
+      ? [
+          {
+            href: `/brands/${brandId}`,
+            label: brandName ?? brandId,
+          },
+        ]
+      : []),
+    {
+      label: "Product Listings",
+    },
+  ];
+
   return (
     <div className="mx-auto flex max-w-screen-lg flex-col gap-4">
       <div
         className={`fixed inset-x-0 top-0 z-30 mx-auto flex h-60 w-full max-w-screen-lg flex-col items-end justify-end rounded-lg bg-white px-4 pb-1 shadow-md md:h-65 lg:h-55 ${!isAdmin && "pt-63 lg:pt-68"} ${!isUser && "!h-50 !pt-0"}`}
       >
         <div className="mx-auto flex w-full max-w-screen-lg flex-col pt-3 md:pt-6">
-          <EllipsisBreadCrumbs
-            items={[
-              {
-                href: `${isAdmin ? "/admin-dashboard" : "/"}`,
-                label: `${isAdmin ? "Admin Dashboard" : "Home"}`,
-              },
-              { label: "Product Listings" },
-            ]}
-          />
+          <EllipsisBreadCrumbs items={breadcrumbs} />
           <h1 className="py-2 text-xl font-[600] tracking-wide text-cyan-950 md:text-2xl">
             Product Listings
           </h1>
@@ -97,7 +111,6 @@ export default async function ProductsList({
           <ProductList
             productsPromise={productsPromise}
             isAdmin={isAdmin}
-            searchParamsValues={searchParamsValues}
             page={page}
           />
         </Suspense>

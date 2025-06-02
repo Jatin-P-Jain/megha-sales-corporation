@@ -5,6 +5,7 @@ export type Brand = {
   brandName: string;
   brandLogo: string;
   companies: string[];
+  vehicleCategory: string;
   vehicleCompanies: string[];
   vehicleNames?: string[];
   partCategories: string[];

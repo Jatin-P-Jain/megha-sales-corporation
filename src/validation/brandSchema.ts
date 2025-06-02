@@ -5,11 +5,13 @@ export const brandDataSchema = z.object({
   companies: z
     .array(z.string().min(2, "Company Name must be at least 2 characters"))
     .min(1, "At least 1 company is required"),
+  vehicleCategory: z.string().min(2, "Select the vehicle category"),
   vehicleCompanies: z
     .array(z.string().min(2, "Vehicle Company must be at least 2 characters"))
     .min(1, "At least 1 vehicle company is required"),
   vehicleNames: z
-    .array(z.string().min(2, "Vehicle Type must be at least 2 characters")).optional(),
+    .array(z.string().min(2, "Vehicle Type must be at least 2 characters"))
+    .optional(),
   partCategories: z
     .array(z.string().min(2, "Part Category must be at least 2 characters"))
     .min(1, "At least 1 part category is required"),
@@ -40,7 +42,7 @@ export const brandMediaSchema = z.object({
         typeof window !== "undefined"
           ? z.instanceof(File).optional()
           : z.any().optional(),
-    })
+    }),
   ),
 });
 

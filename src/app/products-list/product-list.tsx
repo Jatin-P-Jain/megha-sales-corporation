@@ -10,19 +10,14 @@ import Link from "next/link";
 export default async function ProductList({
   productsPromise,
   isAdmin,
-  searchParamsValues,
   page,
 }: {
   productsPromise: Promise<{ data: Product[]; totalPages: number }>;
   isAdmin: boolean;
-  searchParamsValues: {
-    page: string;
-  };
   page: number;
 }) {
   const [products] = await Promise.all([productsPromise]);
   const { data, totalPages } = products;
-  console.log({ searchParamsValues });
 
   return (
     <>

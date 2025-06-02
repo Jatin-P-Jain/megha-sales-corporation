@@ -5,13 +5,22 @@ import { useAuth } from "@/context/useAuth";
 
 export default function LoginForm() {
   const auth = useAuth();
-
   return (
     <CommonLoginForm
       onSuccess={() => {
         const profileComplete = auth?.customClaims?.profileComplete;
-        if (profileComplete) window.location.assign("/");
-        else window.location.assign("/account/profile");
+        const isAdmin = auth?.customClaims?.admin;
+        console.log(auth?.customClaims);
+
+        console.log({ profileComplete, isAdmin });
+
+        if (profileComplete) {
+          if (isAdmin) {
+            window.location.assign("/products-list");
+          }
+        } else {
+          window.location.assign("/account/profile");
+        }
       }}
     />
   );

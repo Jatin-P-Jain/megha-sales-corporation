@@ -1,7 +1,7 @@
 "use server";
 
 import { auth, fireStore } from "@/firebase/server";
-import { slugifyPartNumber } from "@/lib/utils";
+import { slugify, slugifyPartNumber } from "@/lib/utils";
 import { productDataSchema } from "@/validation/productSchema";
 
 export const createProduct = async (
@@ -48,6 +48,7 @@ export const createProduct = async (
       txn.set(docRef, {
         ...data,
         id: slug,
+        brandId: slugify(data?.brandName),
         available: data?.stock > 0,
         created: new Date(),
         updated: new Date(),

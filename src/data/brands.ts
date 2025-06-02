@@ -17,6 +17,11 @@ type GetBrandsOptions = {
     page?: number;
   };
 };
+
+export const VEHICLE_CATEGORIES: { lcv: string; hcv: string } = {
+  lcv: "Light Commercial Vehicles (LCV)",
+  hcv: "Heavy Commercial Vehicles (HCV)",
+};
 export const getBrandsForDropDown = async (options?: BrandOptions) => {
   const { status } = options?.filters || {};
   let brandsQuery = fireStore.collection("brands").orderBy("updated", "desc");
@@ -27,20 +32,21 @@ export const getBrandsForDropDown = async (options?: BrandOptions) => {
   const brands = brandsSnapshot.docs.map((doc) => {
     const rawBrandData = doc.data()!;
 
-  // build a pure‐JS object matching your Brand type
-  const brand: Brand = {
-    id: doc.id,
-    brandName: rawBrandData?.brandName as string,
-    brandLogo: rawBrandData?.brandLogo as string,
-    companies: (rawBrandData?.companies as string[]) || [],
-    vehicleCompanies: (rawBrandData?.vehicleCompanies as string[]) || [],
-    vehicleNames: (rawBrandData?.vehicleNames as string[]) || [],
-    partCategories: (rawBrandData?.partCategories as string[]) || [],
-    totalProducts: (rawBrandData?.totalProducts as number) || 0,
-    description: rawBrandData?.description as string,
-    status: rawBrandData?.status as Brand["status"],
-    brandMedia: (rawBrandData?.brandMedia as BrandMedia[]) || [],
-  };
+    // build a pure‐JS object matching your Brand type
+    const brand: Brand = {
+      id: doc.id,
+      brandName: rawBrandData?.brandName as string,
+      brandLogo: rawBrandData?.brandLogo as string,
+      companies: (rawBrandData?.companies as string[]) || [],
+      vehicleCategory: rawBrandData?.vehicleCategory as string,
+      vehicleCompanies: (rawBrandData?.vehicleCompanies as string[]) || [],
+      vehicleNames: (rawBrandData?.vehicleNames as string[]) || [],
+      partCategories: (rawBrandData?.partCategories as string[]) || [],
+      totalProducts: (rawBrandData?.totalProducts as number) || 0,
+      description: rawBrandData?.description as string,
+      status: rawBrandData?.status as Brand["status"],
+      brandMedia: (rawBrandData?.brandMedia as BrandMedia[]) || [],
+    };
     return brand;
   });
 
@@ -52,8 +58,10 @@ export const getBrands = async (options?: GetBrandsOptions) => {
 
   const { status } = options?.filters || {};
 
-  let brandsQuery = fireStore.collection("brands").orderBy("updated", "desc");
-  if (status) {
+  let brandsQuery = fireStore
+    .collection("brands")
+    .orderBy("totalProducts", "desc");
+  if (status && status.length > 0) {
     brandsQuery = brandsQuery.where("status", "in", status);
   }
 
@@ -65,10 +73,22 @@ export const getBrands = async (options?: GetBrandsOptions) => {
     .get();
 
   const brands = brandsSnapshot.docs.map((doc) => {
-    return {
+    const rawBrand = doc.data();
+    const brand: Brand = {
       id: doc.id,
-      ...doc.data(),
-    } as Brand;
+      brandName: rawBrand?.brandName as string,
+      brandLogo: rawBrand?.brandLogo as string,
+      companies: (rawBrand?.companies as string[]) || [],
+      vehicleCategory: rawBrand?.vehicleCategory as string,
+      vehicleCompanies: (rawBrand?.vehicleCompanies as string[]) || [],
+      vehicleNames: (rawBrand?.vehicleNames as string[]) || [],
+      partCategories: (rawBrand?.partCategories as string[]) || [],
+      totalProducts: (rawBrand?.totalProducts as number) || 0,
+      description: rawBrand?.description as string,
+      status: rawBrand?.status as Brand["status"],
+      brandMedia: (rawBrand?.brandMedia as BrandMedia[]) || [],
+    };
+    return brand;
   });
 
   return { data: brands, totalPages: brandTotalPages };
@@ -83,6 +103,7 @@ export const getBrandById = async (brandId: string) => {
     brandName: rawBrandData?.brandName as string,
     brandLogo: rawBrandData?.brandLogo as string,
     companies: (rawBrandData?.companies as string[]) || [],
+    vehicleCategory: rawBrandData?.vehicleCategory as string,
     vehicleCompanies: (rawBrandData?.vehicleCompanies as string[]) || [],
     vehicleNames: (rawBrandData?.vehicleNames as string[]) || [],
     partCategories: (rawBrandData?.partCategories as string[]) || [],

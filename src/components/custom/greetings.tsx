@@ -22,11 +22,9 @@ const Greetings = () => {
           <span className="text-sm font-semibold">Please wait!</span>
         </div>
       ) : (
-        <Card className="mx-auto max-w-lg shadow-lg">
+        <Card className="mx-auto w-full max-w-lg shadow-lg">
           <CardHeader>
-            <h1 className="text-center text-xl font-bold">
-              Hello, {userName} 👋
-            </h1>
+            <h1 className="text-xl font-bold">Hello, {userName} 👋</h1>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-4">
             {isAdmin && (

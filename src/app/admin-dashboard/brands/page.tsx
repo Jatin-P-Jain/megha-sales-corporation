@@ -1,5 +1,4 @@
 import BrandLogo from "@/components/custom/brand-logo";
-import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
 import PublishBrandButton from "@/components/custom/publish-brand-button";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,8 +9,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getBrands } from "@/data/brands";
+import { getBrands, VEHICLE_CATEGORIES } from "@/data/brands";
+import { auth } from "@/firebase/server";
 import { PencilIcon, PlusCircleIcon, WrenchIcon } from "lucide-react";
+import { cookies } from "next/headers";
 import Link from "next/link";
 
 const AdminBrands = async ({
@@ -19,6 +20,11 @@ const AdminBrands = async ({
 }: {
   searchParams?: Promise<{ page: string }>;
 }) => {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("firebaseAuthToken")?.value;
+  const verifiedToken = token ? await auth.verifyIdToken(token) : null;
+  const adminName = verifiedToken?.name;
+
   const searchParamsValue = await searchParams;
   const page = searchParamsValue?.page ? parseInt(searchParamsValue.page) : 1;
   const { data } = await getBrands({
@@ -26,21 +32,28 @@ const AdminBrands = async ({
   });
   return (
     <div>
-      <EllipsisBreadCrumbs
-        items={[
-          { href: "/admin-dashboard", label: "Admin Dashboard" },
-          { label: "Brands" },
-        ]}
-      />
-      <h1 className="mt-6 text-4xl font-bold">Brands</h1>
+      <div className="mb-4 flex w-full items-center justify-between">
+        <h1>
+          Welcome, <span className="font-semibold">{adminName}</span>!
+        </h1>{" "}
+        <span className="rounded-lg border-1 border-green-700 bg-green-100 p-1 px-2 text-sm font-semibold text-green-700">
+          Admin Account
+        </span>
+      </div>
+      <div className="flex w-full items-center justify-between">
+        <h1 className="text-2xl font-bold">Brands</h1>
+        <Button variant={"link"} asChild className="p-0">
+          <Link href={"/products-list"}>Show All Products</Link>
+        </Button>
+      </div>
       <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <Card className="flex min-h-50 cursor-pointer items-center justify-center gap-4 border-2 border-dashed bg-gray-100/50 p-4 shadow-md">
+        <Card className="flex cursor-pointer items-center justify-center gap-4 border-2 border-dashed bg-gray-100/50 p-1 px-3 shadow-md">
           <Link
             href={"/admin-dashboard/new-brand"}
-            className="text-primary flex h-full w-full items-center justify-center gap-2 text-lg font-semibold"
+            className="text-primary flex h-full w-full items-center justify-center gap-2 font-semibold"
           >
-            <PlusCircleIcon className="h-4 w-4" />
-            Add Brand
+            <PlusCircleIcon className="h-3 w-3" />
+            <span className="text-sm font-normal">Add New Brand</span>
           </Link>
         </Card>
         {data.map((brand) => (
@@ -78,15 +91,21 @@ const AdminBrands = async ({
                 </Link>
               </div>
             </CardHeader>
-            <CardContent className="flex flex-1 flex-col gap-1 p-0">
-              <div className="relative flex h-30 w-full flex-col items-center justify-center">
+            <CardContent className="flex flex-1 flex-col gap-0 p-0">
+              <div className="relative flex h-15 w-full flex-col items-center justify-center">
                 <BrandLogo brandLogo={brand?.brandLogo} />
               </div>
               <CardDescription className="flex w-full flex-1 flex-col justify-center gap-2 p-0">
                 <div className="text-muted-foreground mb-2 line-clamp-2 text-justify text-xs text-ellipsis">
                   {brand.description}
                 </div>
-
+                <div className="font-semibold">
+                  {
+                    VEHICLE_CATEGORIES[
+                      brand?.vehicleCategory as keyof typeof VEHICLE_CATEGORIES
+                    ]
+                  }
+                </div>
                 {brand?.vehicleNames && brand?.vehicleNames.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {brand?.vehicleNames.slice(0, 2).map((company, i) => (

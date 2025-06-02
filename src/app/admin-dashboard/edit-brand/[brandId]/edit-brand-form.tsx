@@ -24,6 +24,7 @@ export default function EditBrandForm({
   brandName,
   brandLogo,
   companies,
+  vehicleCategory,
   vehicleCompanies,
   vehicleNames,
   partCategories,
@@ -49,7 +50,7 @@ export default function EditBrandForm({
     } = data;
     const updateResponse = await updateBrand(
       { ...rest, id, brandLogo, brandMedia, totalProducts },
-      token
+      token,
     );
     if (!!updateResponse?.error) {
       toast.error("Error", { description: updateResponse.message });
@@ -59,7 +60,7 @@ export default function EditBrandForm({
     const storageTasks: (UploadTask | Promise<void>)[] = [];
     const mediaToDelete = brandMedia.filter(
       (media) =>
-        !newBrandMedia.find((newMedia) => media.fileUrl === newMedia.url)
+        !newBrandMedia.find((newMedia) => media.fileUrl === newMedia.url),
     );
     mediaToDelete.forEach((image) => {
       storageTasks.push(deleteObject(ref(storage, image.fileUrl)));
@@ -69,7 +70,7 @@ export default function EditBrandForm({
     newBrandMedia.forEach((brandMedia, index) => {
       if (brandMedia.file) {
         const path = `brands/${slugify(
-          brandName
+          brandName,
         )}/brandsMedia/${Date.now()}-${index}-u-${brandMedia.file.name}`;
         media.push({ fileName: brandMedia.file.name, fileUrl: path });
         const storageRef = ref(storage, path);
@@ -78,7 +79,7 @@ export default function EditBrandForm({
           "state_changed",
           (snapshot) => {
             const percent = Math.round(
-              (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100,
             );
             setProgressMap((prev) => ({
               ...prev,
@@ -88,7 +89,7 @@ export default function EditBrandForm({
           (error) => {
             console.error("Upload failed", error);
             toast.error("Upload failed for " + brandMedia.file!.name);
-          }
+          },
         );
 
         storageTasks.push(task.then(() => {}) as Promise<void>);
@@ -119,7 +120,7 @@ export default function EditBrandForm({
             "state_changed",
             (snapshot) => {
               const percent = Math.round(
-                (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+                (snapshot.bytesTransferred / snapshot.totalBytes) * 100,
               );
               setProgressMap((prev) => ({
                 ...prev,
@@ -129,7 +130,7 @@ export default function EditBrandForm({
             (error) => {
               console.error("Upload failed", error);
               toast.error("Upload failed for " + newBrandLogo.file!.name);
-            }
+            },
           );
 
           storageTasks.push(task.then(() => {}) as Promise<void>);
@@ -142,7 +143,7 @@ export default function EditBrandForm({
     await Promise.all(storageTasks);
     await saveBrandMedia(
       { brandMedia: media, brandId: id, brandLogo: logoPath },
-      token
+      token,
     );
     setIsLoading(false);
     toast.success("Success!", { description: "Brand Updated" });
@@ -161,7 +162,7 @@ export default function EditBrandForm({
             </>
           ) : (
             <>
-              <div className="flex items-center text-center gap-2">
+              <div className="flex items-center gap-2 text-center">
                 <SaveIcon />
                 Save Brand
               </div>
@@ -172,6 +173,7 @@ export default function EditBrandForm({
           brandName,
           brandLogo: { id: brandLogo, url: brandLogo },
           companies,
+          vehicleCategory,
           vehicleCompanies,
           vehicleNames,
           partCategories,

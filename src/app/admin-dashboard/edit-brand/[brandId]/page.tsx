@@ -24,10 +24,10 @@ export default async function EditProperty({
       />
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle className="flex justify-between items-center">
-            <div className="text-3xl font-bold flex flex-col">
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex flex-col text-3xl font-bold">
               Edit Brand
-              <span className="text-xs text-muted-foreground font-normal">
+              <span className="text-muted-foreground text-xs font-normal">
                 * marked fields are mandotory
               </span>
             </div>
@@ -40,6 +40,7 @@ export default async function EditProperty({
             brandName={brand.brandName}
             brandLogo={brand.brandLogo}
             companies={brand.companies}
+            vehicleCategory={brand.vehicleCategory}
             vehicleCompanies={brand.vehicleCompanies}
             vehicleNames={brand.vehicleNames}
             partCategories={brand.partCategories}

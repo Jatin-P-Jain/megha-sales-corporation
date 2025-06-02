@@ -45,6 +45,7 @@ export default function BrandForm({
     brandName: "",
     brandLogo: { id: "", url: "" },
     companies: [],
+    vehicleCategory: "",
     vehicleCompanies: [],
     vehicleNames: [],
     partCategories: [],
@@ -68,17 +69,17 @@ export default function BrandForm({
         className="flex flex-col gap-0 md:gap-6"
       >
         <div className="flex flex-col gap-4">
-          <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-4 justify-center items-start ">
+          <div className="grid grid-cols-1 items-start justify-center gap-4 md:grid-cols-[2fr_1fr]">
             <div className="flex flex-col gap-4">
               {/* Status */}
               <FormField
                 control={form.control}
                 name="status"
                 render={({ field }) => (
-                  <FormItem className="flex flex-col ">
-                    <FormLabel className="gap-1 flex items-start">
+                  <FormItem className="flex flex-col">
+                    <FormLabel className="flex items-start gap-1">
                       Status
-                      <span className="text-xs text-muted-foreground">*</span>
+                      <span className="text-muted-foreground text-xs">*</span>
                     </FormLabel>
                     <FormControl>
                       <Select
@@ -108,9 +109,9 @@ export default function BrandForm({
                 name="brandName"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel className="gap-1 flex items-start">
+                    <FormLabel className="flex items-start gap-1">
                       Brand Name
-                      <span className="text-xs text-muted-foreground">*</span>
+                      <span className="text-muted-foreground text-xs">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -143,13 +144,46 @@ export default function BrandForm({
                   </FormItem>
                 )}
               />
+              {/* Status */}
+              <FormField
+                control={form.control}
+                name="vehicleCategory"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel className="flex items-start gap-1">
+                      Deals in Vehicle Category
+                      <span className="text-muted-foreground text-xs">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Select
+                        disabled={isSubmitting}
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select Vehicle Category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="lcv">
+                            Light Commercial Vehicle (LCV)
+                          </SelectItem>
+                          <SelectItem value="hcv">
+                            Heavy Commercial Vehicle (HCV)
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
             {/* Brand Logo */}
             <FormField
               control={form.control}
               name="brandLogo"
               render={({ field }) => (
-                <FormItem className=" h-full">
+                <FormItem className="h-full">
                   <FormControl>
                     <ImageUploader
                       parent="brand"
@@ -234,7 +268,7 @@ export default function BrandForm({
             )}
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-4 justify-center items-start">
+          <div className="grid grid-cols-1 items-start justify-center gap-4 md:grid-cols-[1fr_2fr]">
             {/* Description */}
             <FormField
               control={form.control}
@@ -246,7 +280,7 @@ export default function BrandForm({
                     <Textarea
                       disabled={isSubmitting}
                       {...field}
-                      className="resize-none md:h-50 flex"
+                      className="flex resize-none md:h-50"
                     />
                   </FormControl>
                   <FormMessage />
@@ -282,7 +316,7 @@ export default function BrandForm({
 
         <Button
           type="submit"
-          className="max-w-md mx-auto w-full flex gap-2"
+          className="mx-auto flex w-full max-w-md gap-2"
           disabled={isSubmitting}
         >
           {submitButtonLabel}

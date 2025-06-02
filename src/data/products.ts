@@ -5,6 +5,7 @@ import { CartProduct } from "@/types/cartProduct";
 
 type GetPropertiesOptions = {
   filters?: {
+    brandId: string | null;
     status: ProductStatus[] | null;
     partCategory: string[] | null;
   };
@@ -18,11 +19,14 @@ export const getProducts = async (options?: GetPropertiesOptions) => {
   const page = options?.pagination?.page || 1;
   const pageSize = options?.pagination?.pageSize || 10;
 
-  const { status, partCategory } = options?.filters || {};
+  const { status, partCategory, brandId } = options?.filters || {};
 
   let productsQuery = fireStore
     .collection("products")
     .orderBy("updated", "desc");
+  if (brandId) {
+    productsQuery = productsQuery.where("brandId", "==", brandId);
+  }
   if (Array.isArray(status) && status.length > 0) {
     productsQuery = productsQuery.where("status", "in", status);
   }
@@ -57,6 +61,7 @@ export const getProductById = async (productId: string) => {
   // build a pure‐JS object matching your Product type
   const product: Product = {
     id: productSnapshot.id,
+    brandId: rawProductData.brandId as string,
     brandName: rawProductData.brandName as string,
     companyName: rawProductData.companyName as string,
     vehicleCompany: rawProductData.vehicleCompany as string,
@@ -87,6 +92,7 @@ export const getProductsById = async (productIds: string[]) => {
     const product: Omit<CartProduct, "quantity"> = {
       id: property.id,
       brandName: rawProductData.brandName as string,
+      brandId: rawProductData.brandId as string,
       companyName: rawProductData.companyName as string,
       vehicleCompany: rawProductData.vehicleCompany as string,
       vehicleName: rawProductData.vehicleName as string[],

@@ -6,6 +6,7 @@ export type ProductStatus =
 
 export type Product = {
   id: string;
+  brandId: string;
   brandName: string;
   companyName: string;
   vehicleCompany: string;

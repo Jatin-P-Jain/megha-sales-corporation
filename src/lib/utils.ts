@@ -43,6 +43,15 @@ export function slugify(name: string) {
     .replace(/[^\w\s-]/g, "") // remove punctuation
     .replace(/\s+/g, "-"); // spaces → hyphens
 }
+export function unslugify(slug: string): string {
+  return slug
+    .split("-")
+    .map((word) =>
+      word.length > 0 ? word.charAt(0).toUpperCase() + word.slice(1) : "",
+    )
+    .join(" ");
+}
+
 export function slugifyPartNumber(partNumber: string) {
   return partNumber
     .trim()

@@ -9,6 +9,7 @@ export default async function OrderPlacedPage({
   params: Promise<{ orderId: string }>;
 }) {
   const { orderId } = await params;
+  const newSearchParams = new URLSearchParams();
   return (
     <div className="mx-auto flex max-w-screen-lg flex-col items-center justify-center gap-4 py-12">
       <div className="flex w-full flex-col items-center justify-center gap-4 px-8">
@@ -21,7 +22,7 @@ export default async function OrderPlacedPage({
           <p>We will pack your order shortly.</p>
         </div>{" "}
         <Button asChild className="w-full">
-          <Link href={`/order-history/?orderId=${orderId}`}>View Order</Link>
+          <Link href={`/order-history?${newSearchParams}`}>View Order</Link>
         </Button>
       </div>
 
