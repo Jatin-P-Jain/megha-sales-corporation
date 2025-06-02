@@ -1,6 +1,7 @@
 "use server";
 
 import { auth, fireStore, storage } from "@/firebase/server";
+import { slugify } from "@/lib/utils";
 import { Product } from "@/types/product";
 import { productDataSchema } from "@/validation/productSchema";
 import { revalidatePath } from "next/cache";
@@ -27,11 +28,15 @@ export const updateProduct = async (data: Product, authToken: string) => {
   await fireStore
     .collection("products")
     .doc(id)
-    .update({ ...productData, updated: new Date() });
+    .update({
+      ...productData,
+      brandId: slugify(productData?.brandName),
+      updated: new Date(),
+    });
 
   revalidatePath(`/products/${id}`);
 };
-export const deleteProduct = async (productId: string,) => {
+export const deleteProduct = async (productId: string) => {
   const cookieStore = await cookies();
   const token = cookieStore.get("firebaseAuthToken")?.value;
   if (!token) {
@@ -51,7 +56,6 @@ export const deleteProduct = async (productId: string,) => {
 
   await Promise.all(files.map((file) => file.delete()));
   await fireStore.collection("products").doc(productId).delete();
-
 
   revalidatePath(`/products-list`);
 };

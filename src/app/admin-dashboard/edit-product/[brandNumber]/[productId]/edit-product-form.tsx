@@ -28,6 +28,7 @@ export default function EditProductForm({
 }) {
   const {
     id,
+    brandId,
     brandName,
     companyName,
     vehicleCompany,
@@ -54,7 +55,10 @@ export default function EditProductForm({
     }
     const { image: newImage, ...rest } = data;
 
-    const updateResponse = await updateProduct({ ...rest, id, image }, token);
+    const updateResponse = await updateProduct(
+      { ...rest, id, brandId, image },
+      token,
+    );
     if (!!updateResponse?.error) {
       toast.error("Error", { description: updateResponse.message });
       setIsLoading(false);
