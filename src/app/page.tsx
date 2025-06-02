@@ -35,7 +35,7 @@ export default async function Home({
     pagination: { page, pageSize: 10 },
   });
   return (
-    <main className="flex h-full flex-col items-center justify-center p-5">
+    <main className="mx-auto flex h-full max-w-screen-lg flex-col items-center justify-center p-3 px-4 md:p-8 lg:p-10">
       <HomePage brandsPromise={brandsPromise} />
     </main>
   );
