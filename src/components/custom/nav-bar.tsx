@@ -24,7 +24,7 @@ export default function NavBar({ children }: NavBarProps) {
             href="/"
             className="flex items-center justify-end gap-2 text-lg tracking-wider uppercase md:gap-4 md:text-2xl"
           >
-            <div className="relative h-10 w-8 md:h-14 md:w-14">
+            <div className="relative h-12 w-10">
               <Image src={JinendraLogo} alt="" fill className="object-center" />
             </div>
             <div className="relative h-10 w-10 md:h-14 md:w-14">
