@@ -10,9 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getBrands, VEHICLE_CATEGORIES } from "@/data/brands";
-import { auth } from "@/firebase/server";
 import { PencilIcon, PlusCircleIcon, WrenchIcon } from "lucide-react";
-import { cookies } from "next/headers";
 import Link from "next/link";
 
 const AdminBrands = async ({
