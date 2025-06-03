@@ -4,6 +4,7 @@ import { useAuth } from "@/context/useAuth";
 import { Loader2Icon } from "lucide-react";
 import BrandsGrid from "./brands-grid";
 import { Brand } from "@/types/brand";
+import Link from "next/link";
 
 const HomePage = ({
   brandsPromise,
@@ -15,6 +16,7 @@ const HomePage = ({
   const user = clientUser;
   const { displayName } = user ?? {};
   const userName = displayName ?? "Guest";
+  const isAdmin = auth?.customClaims?.admin ?? false;
 
   return (
     <>
@@ -25,9 +27,20 @@ const HomePage = ({
         </div>
       ) : (
         <>
-          <h1 className="w-full text-lg font-semibold">
-            Hello, <span className="text-xl font-bold">{userName}! 👋</span>
-          </h1>
+          <div className="flex w-full flex-col items-center justify-center gap-4 md:flex-row">
+            <h1 className="w-full text-center text-lg font-semibold">
+              Hello, <span className="text-xl font-bold">{userName}! 👋</span>
+            </h1>
+
+            {isAdmin && (
+              <Link
+                href="/admin-dashboard"
+                className="w-3/4 rounded-lg border-1 border-green-700 p-1 px-2 text-center text-sm font-semibold text-green-700"
+              >
+                Go to Admin Dasboard
+              </Link>
+            )}
+          </div>
           <BrandsGrid brandsPromise={brandsPromise} />
         </>
       )}

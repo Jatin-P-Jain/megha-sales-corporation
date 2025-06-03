@@ -27,6 +27,7 @@ import MultiMediaUploader, { MediaUpload } from "./multi-media-uploader";
 import ImageUploader, { ImageUpload } from "./image-uploader";
 import { capitalize } from "@/lib/capitalize";
 import imageUrlFormatter from "@/lib/image-urlFormatter";
+import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 
 type Props = {
   progressMap?: Record<string, number>;
@@ -145,38 +146,6 @@ export default function BrandForm({
                 )}
               />
               {/* Status */}
-              <FormField
-                control={form.control}
-                name="vehicleCategory"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel className="flex items-start gap-1">
-                      Deals in Vehicle Category
-                      <span className="text-muted-foreground text-xs">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Select
-                        disabled={isSubmitting}
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select Vehicle Category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="lcv">
-                            Light Commercial Vehicle (LCV)
-                          </SelectItem>
-                          <SelectItem value="hcv">
-                            Heavy Commercial Vehicle (HCV)
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
             {/* Brand Logo */}
             <FormField
@@ -206,7 +175,60 @@ export default function BrandForm({
               )}
             />
           </div>
+          <FormField
+            control={form.control}
+            name="vehicleCategory"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel className="flex items-start gap-1">
+                  Deals in Vehicle Category
+                  <span className="text-muted-foreground text-xs">*</span>
+                </FormLabel>
+                <FormControl>
+                  <RadioGroup
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    className="ml-4 flex flex-col gap-4 md:flex-row md:items-center"
+                  >
+                    <label className="inline-flex cursor-pointer items-center gap-2">
+                      <RadioGroupItem
+                        value="lcv"
+                        id="vehicle-category-lcv"
+                        disabled={isSubmitting}
+                        className="border-input bg-background text-background-foreground focus:ring-ring h-4 w-4 rounded-full border focus:ring-3"
+                      />
+                      <span className="text-sm">
+                        Light Commercial Vehicle (LCV)
+                      </span>
+                    </label>
 
+                    <label className="inline-flex cursor-pointer items-center gap-2">
+                      <RadioGroupItem
+                        value="hcv"
+                        id="vehicle-category-hcv"
+                        disabled={isSubmitting}
+                        className="border-input bg-background text-background-foreground focus:ring-ring h-4 w-4 rounded-full border focus:ring-2"
+                      />
+                      <span className="text-sm">
+                        Heavy Commercial Vehicle (HCV)
+                      </span>
+                    </label>
+
+                    <label className="inline-flex cursor-pointer items-center gap-2">
+                      <RadioGroupItem
+                        value="both"
+                        id="vehicle-category-universal"
+                        disabled={isSubmitting}
+                        className="border-input bg-background text-background-foreground focus:ring-ring h-4 w-4 rounded-full border focus:ring-2"
+                      />
+                      <span className="text-sm">LCV & HCV</span>
+                    </label>
+                  </RadioGroup>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           {/* Vehicle Company */}
           <FormField
             control={form.control}

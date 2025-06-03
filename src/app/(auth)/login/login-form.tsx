@@ -16,7 +16,7 @@ export default function LoginForm() {
 
         if (profileComplete) {
           if (isAdmin) {
-            window.location.assign("/products-list");
+            window.location.assign("/admin-dashboard");
           }
         } else {
           window.location.assign("/account/profile");

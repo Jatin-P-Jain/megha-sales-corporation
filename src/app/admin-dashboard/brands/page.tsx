@@ -28,18 +28,10 @@ const AdminBrands = async ({
   const searchParamsValue = await searchParams;
   const page = searchParamsValue?.page ? parseInt(searchParamsValue.page) : 1;
   const { data } = await getBrands({
-    pagination: { page, pageSize: 10 },
+    pagination: { page, pageSize: 50 },
   });
   return (
     <div>
-      <div className="mb-4 flex w-full items-center justify-between">
-        <h1>
-          Welcome, <span className="font-semibold">{adminName}</span>!
-        </h1>{" "}
-        <span className="rounded-lg border-1 border-green-700 bg-green-100 p-1 px-2 text-sm font-semibold text-green-700">
-          Admin Account
-        </span>
-      </div>
       <div className="flex w-full items-center justify-between">
         <h1 className="text-2xl font-bold">Brands</h1>
         <Button variant={"link"} asChild className="p-0">

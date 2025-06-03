@@ -41,6 +41,7 @@ export default function BrandsGrid({ brandsPromise }: Props) {
   // Split into categories
   const lcvBrands = brands.filter((b) => b.vehicleCategory === "lcv");
   const hcvBrands = brands.filter((b) => b.vehicleCategory === "hcv");
+  const bothBrands = brands.filter((b) => b.vehicleCategory === "both");
 
   // 1) While loading, show a skeleton placeholder
   if (loading) {
@@ -89,7 +90,7 @@ export default function BrandsGrid({ brandsPromise }: Props) {
                 (Light Commercial Vehicles)
               </span>
             </div>
-            <div className="grid w-full grid-cols-2 items-center gap-4 md:grid-cols-4">
+            <div className="grid w-full grid-cols-3 items-center gap-3 md:grid-cols-4">
               {lcvBrands.map((brand) => (
                 <BrandCard brand={brand} key={brand.id} />
               ))}
@@ -105,8 +106,23 @@ export default function BrandsGrid({ brandsPromise }: Props) {
                 (Heavy Commercial Vehicles)
               </span>
             </div>
-            <div className="grid w-full grid-cols-2 items-center gap-4 md:grid-cols-4">
+            <div className="grid w-full grid-cols-3 items-center gap-3 md:grid-cols-4">
               {hcvBrands.map((brand) => (
+                <BrandCard brand={brand} key={brand.id} />
+              ))}
+            </div>
+          </div>
+        )}
+        {bothBrands.length > 0 && (
+          <div className="flex w-full flex-col gap-2">
+            <div className="font-medium">
+              LCV & HCV Brands{" "}
+              <span className="text-muted-foreground ml-2 text-xs">
+                (Light & Heavy Commercial Vehicles)
+              </span>
+            </div>
+            <div className="grid w-full grid-cols-3 items-center gap-3 md:grid-cols-4">
+              {bothBrands.map((brand) => (
                 <BrandCard brand={brand} key={brand.id} />
               ))}
             </div>

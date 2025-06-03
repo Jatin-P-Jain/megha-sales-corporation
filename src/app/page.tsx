@@ -28,14 +28,13 @@ export default async function Home({
     brandFilters.push("live");
   } else {
   }
-  console.log({ brandFilters });
 
   const brandsPromise = getBrands({
     filters: { status: brandFilters },
-    pagination: { page, pageSize: 10 },
+    pagination: { page, pageSize: 50 },
   });
   return (
-    <main className="mx-auto flex h-full max-w-screen-lg flex-col items-center justify-center p-3 px-4 md:p-8 lg:p-10">
+    <main className="mx-auto flex h-full max-w-screen-lg flex-col items-center justify-center p-4 px-4 pb-8 md:p-8 lg:p-10">
       <HomePage brandsPromise={brandsPromise} />
     </main>
   );
