@@ -20,11 +20,6 @@ const AdminBrands = async ({
 }: {
   searchParams?: Promise<{ page: string }>;
 }) => {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("firebaseAuthToken")?.value;
-  const verifiedToken = token ? await auth.verifyIdToken(token) : null;
-  const adminName = verifiedToken?.name;
-
   const searchParamsValue = await searchParams;
   const page = searchParamsValue?.page ? parseInt(searchParamsValue.page) : 1;
   const { data } = await getBrands({
