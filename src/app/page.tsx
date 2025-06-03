@@ -18,9 +18,9 @@ export default async function Home({
     try {
       // If the token is expired or invalid, this throws
       verifiedToken = await auth.verifyIdToken(token);
-    } catch (err: any) {
+    } catch (err: unknown) {
       // If it’s specifically “token expired,” send them to refresh (or login)
-      if (err.code === "auth/id-token-expired") {
+      if ((err as { code?: string }).code === "auth/id-token-expired") {
         // Redirect to your refresh‐route (which should get a new ID token)
         return redirect(
           `/api/refresh-token?redirect=${encodeURIComponent("/")}`,
