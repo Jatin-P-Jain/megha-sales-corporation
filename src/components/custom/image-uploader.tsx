@@ -52,8 +52,6 @@ export default function ImageUploader({
     onMediaChange(newImage);
   };
 
-  console.log("image -- ", image);
-
   return (
     <div className="mx-auto w-full max-w-3xl pb-0 md:pt-4">
       {!image?.url ? (

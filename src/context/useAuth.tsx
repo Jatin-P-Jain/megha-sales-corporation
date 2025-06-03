@@ -58,8 +58,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const refreshClientUser = async () => {
-    console.log({ currentUser });
-
     if (!currentUser) return;
     try {
       const snap = await getDoc(doc(firestore, "users", currentUser.uid));

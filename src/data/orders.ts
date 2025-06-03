@@ -37,7 +37,6 @@ export const getOrders = async (options?: GetOrdersOptions) => {
       ...doc.data(),
     } as Order;
   });
-  console.log({ orders });
 
   return { data: orders, totalPages: ordersTotalPages };
 };

@@ -64,8 +64,6 @@ export const setToken = async (token: string, refreshToken: string) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
     });
-
-    // console.log("Claims set:", newClaims);
   } catch (e) {
     console.error("Error setting token/claims:", e);
   }

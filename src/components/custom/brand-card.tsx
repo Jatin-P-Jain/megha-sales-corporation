@@ -11,7 +11,6 @@ export default function BrandCard({ brand }: { brand: Brand }) {
     newSearchParams.set("brandId", brandId);
     router.push(`/products-list?${newSearchParams}`);
   };
-  console.log(brand.id);
 
   return (
     <Card

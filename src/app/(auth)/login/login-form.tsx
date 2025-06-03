@@ -9,11 +9,6 @@ export default function LoginForm() {
     <CommonLoginForm
       onSuccess={() => {
         const profileComplete = auth?.customClaims?.profileComplete;
-        const isAdmin = auth?.customClaims?.admin;
-        console.log(auth?.customClaims);
-
-        console.log({ profileComplete, isAdmin });
-
         if (profileComplete) {
           window.location.assign("/");
         } else {

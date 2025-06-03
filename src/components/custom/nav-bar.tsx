@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Toaster } from "sonner";
 import BrandLogo from "../../../public/brand-logo.svg";
+import JinendraLogo from "../../../public/jai-jinendra.png";
 import ContactUsLink from "./contact-us-link";
 import AuthButtons from "./auth-buttons";
 import { AuthProvider } from "@/context/useAuth";
@@ -23,6 +24,9 @@ export default function NavBar({ children }: NavBarProps) {
             href="/"
             className="flex items-center justify-end gap-2 text-lg tracking-wider uppercase md:gap-4 md:text-2xl"
           >
+            <div className="relative h-10 w-8 md:h-14 md:w-14">
+              <Image src={JinendraLogo} alt="" fill className="object-center" />
+            </div>
             <div className="relative h-10 w-10 md:h-14 md:w-14">
               <Image src={BrandLogo} alt="" fill className="object-center" />
             </div>

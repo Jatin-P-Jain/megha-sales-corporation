@@ -94,5 +94,4 @@ export const updateBrandProcuctCount = async (
   }
 
   await fireStore.collection("brands").doc(brandId).update({ totalProducts });
-  console.log({ totalProducts });
 };

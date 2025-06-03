@@ -18,7 +18,6 @@ const ResponsiveProductFilters: React.FC<{
 }> = ({ isAdmin, isUser, categories, brandId }) => {
   const isMobile = useIsMobile();
   const newSearchParams = new URLSearchParams();
-  console.log({ brandId });
 
   if (brandId) {
     newSearchParams.set("brandId", brandId);
