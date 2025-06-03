@@ -14,8 +14,16 @@ const ResponsiveProductFilters: React.FC<{
   isAdmin: boolean;
   isUser: boolean;
   categories: string[];
-}> = ({ isAdmin, isUser, categories }) => {
+  brandId?: string;
+}> = ({ isAdmin, isUser, categories, brandId }) => {
   const isMobile = useIsMobile();
+  const newSearchParams = new URLSearchParams();
+  console.log({ brandId });
+
+  if (brandId) {
+    newSearchParams.set("brandId", brandId);
+  }
+  console.log(newSearchParams.get("brandId"));
 
   return (
     <>
@@ -35,7 +43,10 @@ const ResponsiveProductFilters: React.FC<{
               <MoreFilters />
               <CategoryFilter categories={categories} />
               <Button className="w-full min-w-0" asChild>
-                <Link href={"/admin-dashboard/new-product"} className="min-w-0">
+                <Link
+                  href={`/admin-dashboard/new-product?${newSearchParams}`}
+                  className="min-w-0"
+                >
                   <PlusCircleIcon className="" />
                   Add Product
                 </Link>
@@ -63,7 +74,7 @@ const ResponsiveProductFilters: React.FC<{
 
             <CategoryFilter categories={categories} />
             <Button className="w-full" asChild>
-              <Link href={"/admin-dashboard/new-product"}>
+              <Link href={`/admin-dashboard/new-product?${newSearchParams}`}>
                 <PlusCircleIcon className="" />
                 Add New Product
               </Link>

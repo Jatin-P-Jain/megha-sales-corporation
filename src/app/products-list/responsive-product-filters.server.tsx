@@ -7,10 +7,12 @@ export default async function ResponsiveProductFiltersServer({
   isAdmin,
   isUser,
   categoriesPromise,
+  brandId,
 }: {
   isAdmin: boolean;
   isUser: boolean;
   categoriesPromise: Promise<string[]>;
+  brandId?: string;
 }) {
   const categories = await categoriesPromise;
   return (
@@ -19,6 +21,7 @@ export default async function ResponsiveProductFiltersServer({
         isAdmin={isAdmin}
         isUser={isUser}
         categories={categories}
+        brandId={brandId}
       />
     </Suspense>
   );

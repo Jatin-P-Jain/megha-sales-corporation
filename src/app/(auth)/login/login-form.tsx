@@ -15,9 +15,7 @@ export default function LoginForm() {
         console.log({ profileComplete, isAdmin });
 
         if (profileComplete) {
-          if (isAdmin) {
-            window.location.assign("/admin-dashboard");
-          }
+          window.location.assign("/");
         } else {
           window.location.assign("/account/profile");
         }

@@ -74,7 +74,7 @@ export async function middleware(request: NextRequest) {
 
   // 6) If they’ve now completed the profile but are stuck on /account/profile, bounce on
   if (profileComplete && pathname === "/account/profile") {
-    const back = admin ? "/admin-dashboard" : "/";
+    const back = "/";
     return NextResponse.redirect(new URL(back, origin));
   }
 

@@ -27,9 +27,9 @@ const HomePage = ({
         </div>
       ) : (
         <>
-          <div className="flex w-full flex-col items-center justify-center gap-4 md:flex-row">
-            <h1 className="w-full text-center text-lg font-semibold">
-              Hello, <span className="text-xl font-bold">{userName}! 👋</span>
+          <div className="flex w-full flex-col items-center justify-between gap-4 md:flex-row">
+            <h1 className="w-full text-lg font-semibold">
+              Hello, <span className="text-xl font-bold">{userName}!</span>
             </h1>
 
             {isAdmin && (

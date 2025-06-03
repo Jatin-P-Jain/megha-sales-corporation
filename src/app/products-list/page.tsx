@@ -93,6 +93,7 @@ export default async function ProductsList({
             isAdmin={isAdmin}
             isUser={isUser}
             categoriesPromise={categoriesPromise}
+            brandId={brandId}
           />
         </div>
       </div>
