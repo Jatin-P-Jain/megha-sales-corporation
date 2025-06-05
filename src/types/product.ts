@@ -17,7 +17,7 @@ export type Product = {
   price: number;
   discount: number;
   gst: number;
-  stock: number;
+  stock?: number;
   status: ProductStatus;
   image?: string;
 };

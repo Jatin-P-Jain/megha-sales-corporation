@@ -19,7 +19,7 @@ export const productDataSchema = z.object({
     .number()
     .min(0, "GST must be at least 0%")
     .max(100, "GST cannot exceed 100%"),
-  stock: z.coerce.number().positive("Stock must be greater than zero"),
+  stock: z.coerce.number().optional(),
   status: z.enum(["draft", "for-sale", "discontinued", "out-of-stock"]),
 });
 

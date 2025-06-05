@@ -69,7 +69,7 @@ export default async function ProductList({
                         {product.partCategory}
                       </div>
                     </div>
-                    <div className="flex min-h-20 w-full items-end justify-end justify-self-end md:min-h-30 md:w-3/4">
+                    <div className="mb-2 flex min-h-20 w-full items-center justify-center md:min-h-30 md:w-full">
                       <ProductImage productImage={product?.image} />
                     </div>
                   </CardContent>
