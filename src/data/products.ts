@@ -34,7 +34,9 @@ export const getProducts = async (options?: GetPropertiesOptions) => {
     productsQuery = productsQuery.where("partCategory", "in", partCategory);
   }
 
-  const productsTotalPages = await getTotalPages(productsQuery, pageSize);
+  const totals = await getTotalPages(productsQuery, pageSize);
+
+  const { totalPages, totalItems } = totals;
 
   const productsSnapshot = await productsQuery
     .limit(pageSize)
@@ -48,7 +50,7 @@ export const getProducts = async (options?: GetPropertiesOptions) => {
     } as Product;
   });
 
-  return { data: products, totalPages: productsTotalPages };
+  return { data: products, totalPages: totalPages, totalItems: totalItems };
 };
 
 export const getProductById = async (productId: string) => {

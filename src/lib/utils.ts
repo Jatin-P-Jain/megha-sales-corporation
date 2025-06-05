@@ -5,6 +5,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export const PAGE_SIZE: number = 1;
 // utils/fileType.ts
 export type FileType = "image" | "video" | "pdf" | "excel" | "word" | "generic";
 
