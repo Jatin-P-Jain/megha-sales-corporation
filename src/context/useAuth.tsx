@@ -76,7 +76,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setCurrentUser(user ?? null);
       setLoading(false);
       if (user) {
-        const result = await user.getIdTokenResult();
+        const result = await user.getIdTokenResult(true);
         const firebaseAuth = result.claims.firebase
           ? {
               identities: result.claims.firebase.identities ?? {},
@@ -103,6 +103,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
         } catch (e) {
           console.error("refreshClientUser failed", e);
+          await logoutUser();
+          await removeToken();
+          setCurrentUser(null);
+          setClientUser(null);
         } finally {
           setClientUserLoading(false);
         }
