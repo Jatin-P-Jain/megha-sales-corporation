@@ -37,7 +37,7 @@ export default async function ProductList({
 
   return (
     <div className="relative mx-auto flex max-w-screen-lg flex-col">
-      <p className="text-muted-foreground sticky top-0 z-30 w-full px-4 py-1 text-center text-sm">
+      <p className="text-muted-foreground sticky top-0 z-10 w-full px-4 py-1 text-center text-sm">
         Page {page} • Showing {start}–{end} of {totalItems} results
       </p>
       {data.length > 0 && (
