@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "target": "ES2020",
+    "moduleResolution": "Node",
+    "outDir": "dist",
+    "esModuleInterop": true,
+    "allowJs": false,
+    "noEmit": false,
+    "resolveJsonModule": true
+  },
+  "include": ["migrate-firestore.ts"]
+}

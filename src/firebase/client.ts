@@ -9,12 +9,12 @@ import { Firestore, getFirestore } from "firebase/firestore";
 // Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_CLIENT_API_KEY,
-  authDomain: "megha-sales-corporation.firebaseapp.com",
-  projectId: "megha-sales-corporation",
-  storageBucket: "megha-sales-corporation.firebasestorage.app",
-  messagingSenderId: "279587746987",
-  appId: "1:279587746987:web:f3142e3ae123d4cc5d33ee",
-  measurementId: "G-VLHND3DPSR",
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_CLIENT_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSANGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
 // Initialize Firebase
@@ -37,4 +37,4 @@ if (!currentApps.length) {
 //   connectAuthEmulator(auth, "http://localhost:9099", { disableWarnings: true });
 // }
 
-export { auth, storage,firestore, RecaptchaVerifier };
+export { auth, storage, firestore, RecaptchaVerifier };
