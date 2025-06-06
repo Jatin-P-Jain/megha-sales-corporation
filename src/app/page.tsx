@@ -4,6 +4,7 @@ import { BrandStatus } from "@/types/brandStatus";
 import { auth } from "@/firebase/server";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { PAGE_SIZE } from "@/lib/utils";
 
 export default async function Home({
   searchParams,
@@ -48,7 +49,7 @@ export default async function Home({
 
   const brandsPromise = getBrands({
     filters: { status: brandFilters },
-    pagination: { page, pageSize: 50 },
+    pagination: { page, pageSize: PAGE_SIZE + 10 },
   });
   return (
     <main className="mx-auto flex h-full max-w-screen-lg flex-col items-center justify-center p-4 px-4 pb-8 md:p-8 lg:p-10">
