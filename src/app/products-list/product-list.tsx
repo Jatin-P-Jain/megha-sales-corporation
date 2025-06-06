@@ -64,7 +64,7 @@ export default async function ProductList({
                   className="relative gap-0 overflow-hidden p-4 px-0 shadow-md"
                 >
                   <CardContent className="grid text-sm md:grid-cols-[3fr_1fr] md:text-base">
-                    <div className="flex flex-col gap-1 md:w-3/4 md:gap-2">
+                    <div className="flex w-full flex-col gap-1 md:gap-2">
                       <div className="text-primary flex w-full items-center justify-between font-semibold">
                         <span className="text-sm font-normal">Brand :</span>
                         {product.brandName}
@@ -95,7 +95,7 @@ export default async function ProductList({
                         {product.partCategory}
                       </div>
                     </div>
-                    <div className="mb-2 flex min-h-20 w-full items-center justify-center md:min-h-30 md:w-full">
+                    <div className="flex min-h-27 w-full items-center justify-center md:min-h-30 md:w-full">
                       <ProductImage productImage={product?.image} />
                     </div>
                   </CardContent>
