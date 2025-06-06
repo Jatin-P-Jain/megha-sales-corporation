@@ -99,7 +99,7 @@ export default async function ProductList({
                       <ProductImage productImage={product?.image} />
                     </div>
                   </CardContent>
-                  <CardFooter className="grid grid-cols-[3fr_1fr] items-end justify-center gap-4">
+                  <CardFooter className="grid grid-cols-[3fr_1fr] items-end justify-center gap-0">
                     <div className="flex w-full flex-col items-start justify-start md:flex-row md:justify-between">
                       <div className="text-primary flex items-center gap-2 text-lg font-semibold">
                         <span className="text-foreground text-base font-normal">
