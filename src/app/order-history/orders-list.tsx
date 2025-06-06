@@ -10,7 +10,11 @@ export default async function OrdersList({
   isAdmin,
 }: {
   requestedOrderId?: string;
-  ordersPromise: Promise<{ data: Order[]; totalPages: number }>;
+  ordersPromise: Promise<{
+    data: Order[];
+    totalPages: number;
+    totalItems?: number;
+  }>;
   page: number;
   isAdmin: boolean;
 }) {
