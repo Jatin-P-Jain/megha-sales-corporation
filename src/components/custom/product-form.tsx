@@ -26,6 +26,10 @@ import ImageUploader, { ImageUpload } from "./image-uploader";
 import imageUrlFormatter from "@/lib/image-urlFormatter";
 import { TagInput } from "./tag-input";
 import { useEffect } from "react";
+import { Switch } from "../ui/switch";
+import { Checkbox } from "../ui/checkbox";
+import { XIcon } from "lucide-react";
+import clsx from "clsx";
 
 type Props = {
   progressMap?: Record<string, number>;
@@ -51,7 +55,7 @@ export default function ProductForm({
     companyName: brand?.companies.length === 1 ? brand?.companies[0] : "",
     vehicleCompany:
       brand?.vehicleCompanies.length === 1 ? brand?.vehicleCompanies?.[0] : "",
-    vehicleName: [],
+    vehicleNames: [],
     partCategory:
       brand?.partCategories.length === 1 ? brand?.partCategories[0] : "",
     partNumber: "",
@@ -62,6 +66,9 @@ export default function ProductForm({
     stock: 0,
     status: "draft",
     image: { id: "", url: "" },
+    hasSizes: false,
+    samePriceForAllSizes: false,
+    sizes: [],
     ...defaultValues,
   };
 
@@ -209,7 +216,7 @@ export default function ProductForm({
             {/* Vehicle Name */}
             <FormField
               control={form.control}
-              name="vehicleName"
+              name="vehicleNames"
               render={({ field }) => {
                 return (
                   <FormItem>
@@ -301,104 +308,283 @@ export default function ProductForm({
               )}
             />
           </div>
-          {/* Price, Discount, GST Row */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_2fr]">
-            <FormField
-              control={form.control}
-              name="price"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-start gap-1">
-                    Price (₹)
-                    <span className="text-muted-foreground text-xs">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      disabled={isSubmitting || !brand}
-                      {...field}
-                      onFocus={() => {
-                        if (field.value === 0) {
-                          field.onChange("");
-                        }
-                      }}
-                      onBlur={(e) => {
-                        const value = e.target.value;
-                        if (value === "" || isNaN(Number(value))) {
-                          field.onChange(0);
-                        }
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+
+          <div className="flex flex-col justify-between gap-8 rounded-md border p-3 shadow-sm md:flex-row">
+            <div className="flex flex-col gap-3 md:w-1/4 md:gap-4">
+              <FormField
+                control={form.control}
+                name="hasSizes"
+                render={({ field }) => (
+                  <FormItem className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-sm font-medium">
+                        Sizes Available?
+                      </FormLabel>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        disabled={isSubmitting || !brand}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              {form.watch("hasSizes") && (
+                <FormField
+                  control={form.control}
+                  name="samePriceForAllSizes"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center justify-between gap-3">
+                      <FormLabel className="text-sm font-medium">
+                        Same price for all sizes?
+                      </FormLabel>
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                          disabled={isSubmitting || !brand}
+                          className="size-5"
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
               )}
-            />
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="discount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-start gap-1">
-                      Discount (%)
-                      <span className="text-muted-foreground text-xs">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        disabled={isSubmitting || !brand}
-                        {...field}
-                        onFocus={() => {
-                          if (field.value === 0) {
-                            field.onChange("");
-                          }
-                        }}
-                        onBlur={(e) => {
-                          const value = e.target.value;
-                          if (value === "" || isNaN(Number(value))) {
-                            field.onChange(0);
-                          }
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="gst"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-start gap-1">
-                      GST (%)
-                      <span className="text-muted-foreground text-xs">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        disabled={isSubmitting || !brand}
-                        {...field}
-                        onFocus={() => {
-                          if (field.value === 0) {
-                            field.onChange("");
-                          }
-                        }}
-                        onBlur={(e) => {
-                          const value = e.target.value;
-                          if (value === "" || isNaN(Number(value))) {
-                            field.onChange(0);
-                          }
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
+            {form.watch("hasSizes") && (
+              <FormField
+                control={form.control}
+                name="sizes"
+                render={({ field }) => (
+                  <FormItem className="flex items-end justify-end gap-2 md:w-3/4">
+                    <FormControl>
+                      <div className="flex w-full flex-col items-end justify-end gap-4">
+                        {field.value?.map((entry, idx) => (
+                          <div
+                            key={idx}
+                            className={clsx(
+                              "grid grid-cols-[1fr_2fr_auto] items-end justify-end gap-2",
+                              form.watch("samePriceForAllSizes") &&
+                                "w-3/4 grid-cols-[1fr_auto]",
+                            )}
+                          >
+                            <div className="flex flex-col gap-1">
+                              <FormLabel>Size</FormLabel>
+                              <Input
+                                placeholder="Enter Size"
+                                value={entry.size}
+                                onChange={(e) => {
+                                  const updated = [...field.value];
+                                  updated[idx].size = e.target.value;
+                                  field.onChange(updated);
+                                }}
+                                className=""
+                              />
+                            </div>
+                            {!form.watch("samePriceForAllSizes") && (
+                              <div className="flex w-full gap-1">
+                                <div className="flex flex-col gap-1">
+                                  <FormLabel>Price(₹)</FormLabel>
+                                  <Input
+                                    type="number"
+                                    placeholder="Price"
+                                    value={
+                                      Number.isFinite(entry.price)
+                                        ? entry.price
+                                        : ""
+                                    }
+                                    onFocus={(e) => {
+                                      if (entry.price === 0) {
+                                        const updated = [...field.value];
+                                        updated[idx].price = NaN; // temporarily clear value
+                                        field.onChange(updated);
+                                      }
+                                    }}
+                                    onBlur={(e) => {
+                                      const val = e.target.value;
+                                      const updated = [...field.value];
+                                      updated[idx].price =
+                                        val === "" || isNaN(Number(val))
+                                          ? 0
+                                          : Number(val);
+                                      field.onChange(updated);
+                                    }}
+                                    onChange={(e) => {
+                                      const updated = [...field.value];
+                                      updated[idx].price = Number(
+                                        e.target.value,
+                                      );
+                                      field.onChange(updated);
+                                    }}
+                                  />
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                  <FormLabel>Disc.(%)</FormLabel>
+                                  <Input
+                                    type="number"
+                                    placeholder="Discount (%)"
+                                    value={entry.discount}
+                                    onChange={(e) => {
+                                      const updated = [...field.value];
+                                      updated[idx].discount = Number(
+                                        e.target.value,
+                                      );
+                                      field.onChange(updated);
+                                    }}
+                                  />
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                  <FormLabel>GST (%)</FormLabel>
+                                  <Input
+                                    type="number"
+                                    placeholder="GST (%)"
+                                    value={entry.gst}
+                                    onChange={(e) => {
+                                      const updated = [...field.value];
+                                      updated[idx].gst = Number(e.target.value);
+                                      field.onChange(updated);
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            )}
+                            <Button
+                              type="button"
+                              variant={"link"}
+                              onClick={() => {
+                                const updated = [...field.value];
+                                updated.splice(idx, 1);
+                                field.onChange(updated);
+                              }}
+                            >
+                              <XIcon className="text-muted-foreground size-6 rounded-full border p-1" />
+                            </Button>
+                          </div>
+                        ))}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() =>
+                            field.onChange([
+                              ...(field.value ?? []),
+                              { size: "" },
+                            ])
+                          }
+                          className="border-primary hover:bg-primary/10 text-primary w-fit"
+                        >
+                          + Add Size
+                        </Button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
           </div>
+
+          {/* Price, Discount, GST Row */}
+          {(!form.watch("hasSizes") || form.watch("samePriceForAllSizes")) && (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_2fr]">
+              <FormField
+                control={form.control}
+                name="price"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-start gap-1">
+                      Price (₹)
+                      <span className="text-muted-foreground text-xs">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        disabled={isSubmitting || !brand}
+                        {...field}
+                        onFocus={() => {
+                          if (field.value === 0) {
+                            field.onChange("");
+                          }
+                        }}
+                        onBlur={(e) => {
+                          const value = e.target.value;
+                          if (value === "" || isNaN(Number(value))) {
+                            field.onChange(0);
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="discount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-start gap-1">
+                        Discount (%)
+                        <span className="text-muted-foreground text-xs">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          disabled={isSubmitting || !brand}
+                          {...field}
+                          onFocus={() => {
+                            if (field.value === 0) {
+                              field.onChange("");
+                            }
+                          }}
+                          onBlur={(e) => {
+                            const value = e.target.value;
+                            if (value === "" || isNaN(Number(value))) {
+                              field.onChange(0);
+                            }
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="gst"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-start gap-1">
+                        GST (%)
+                        <span className="text-muted-foreground text-xs">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          disabled={isSubmitting || !brand}
+                          {...field}
+                          onFocus={() => {
+                            if (field.value === 0) {
+                              field.onChange("");
+                            }
+                          }}
+                          onBlur={(e) => {
+                            const value = e.target.value;
+                            if (value === "" || isNaN(Number(value))) {
+                              field.onChange(0);
+                            }
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+          )}
 
           {/* Status */}
           <FormField

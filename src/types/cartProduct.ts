@@ -1,4 +1,4 @@
-import { ProductStatus } from "./product";
+import { ProductSize, ProductStatus } from "./product";
 
 export type CartProduct = {
   id: string;
@@ -6,7 +6,7 @@ export type CartProduct = {
   brandId: string;
   companyName: string;
   vehicleCompany: string;
-  vehicleName?: string[];
+  vehicleNames?: string[];
   partCategory: string;
   partNumber: string;
   partName: string;
@@ -14,6 +14,9 @@ export type CartProduct = {
   discount: number;
   gst: number;
   stock: number;
+  hasSizes?: boolean;
+  sizes?: ProductSize[];
+  samePriceForAllSizes?: boolean;
   status: ProductStatus;
   image?: string;
   quantity: number; // added for cart

@@ -18,9 +18,10 @@ type GetBrandsOptions = {
   };
 };
 
-export const VEHICLE_CATEGORIES: { lcv: string; hcv: string } = {
+export const VEHICLE_CATEGORIES: { lcv: string; hcv: string; both: string } = {
   lcv: "Light Commercial Vehicles (LCV)",
   hcv: "Heavy Commercial Vehicles (HCV)",
+  both: "LCV & HCV",
 };
 export const getBrandsForDropDown = async (options?: BrandOptions) => {
   const { status } = options?.filters || {};

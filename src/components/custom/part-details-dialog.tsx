@@ -23,8 +23,8 @@ interface PartDetailsDialogProps {
 
 export function PartDetailsDialog({ part }: PartDetailsDialogProps) {
   const company = part.vehicleCompany;
-  const names = Array.isArray(part.vehicleName)
-    ? part.vehicleName.join(", ")
+  const names = Array.isArray(part.vehicleNames)
+    ? part.vehicleNames.join(", ")
     : "";
   const vehicleNameProcessed = names ? `${company} - ${names}` : company;
   return (

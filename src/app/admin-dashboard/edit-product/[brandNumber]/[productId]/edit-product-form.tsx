@@ -33,7 +33,7 @@ export default function EditProductForm({
     brandName,
     companyName,
     vehicleCompany,
-    vehicleName,
+    vehicleNames,
     partCategory,
     partName,
     partNumber,
@@ -42,6 +42,9 @@ export default function EditProductForm({
     gst,
     status,
     stock,
+    hasSizes,
+    samePriceForAllSizes,
+    sizes,
     image,
   } = product;
   const router = useRouter();
@@ -192,7 +195,7 @@ export default function EditProductForm({
           brandName,
           companyName,
           vehicleCompany,
-          vehicleName,
+          vehicleNames,
           partCategory,
           partName,
           partNumber,
@@ -201,6 +204,9 @@ export default function EditProductForm({
           gst,
           status,
           stock,
+          hasSizes: hasSizes ?? false,
+          samePriceForAllSizes: samePriceForAllSizes ?? true,
+          sizes: sizes ?? [],
           image: { id: image ?? "", url: image ?? "" },
         }}
       />

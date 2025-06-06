@@ -64,7 +64,10 @@ export function slugifyPartNumber(partNumber: string) {
 /**
  * Formats a number or numeric‐string as Indian rupees, e.g. "1234567.8" → "₹12,34,567.80"
  */
-export function formatINR(value: number | string): string {
+export function formatINR(value?: number | string): string {
+  if (!value) {
+    return "";
+  }
   // 1) Coerce to a number (strip out any commas)
   const num =
     typeof value === "string" ? parseFloat(value.replace(/,/g, "")) : value;

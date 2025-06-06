@@ -67,7 +67,7 @@ export const getProductById = async (productId: string) => {
     brandName: rawProductData.brandName as string,
     companyName: rawProductData.companyName as string,
     vehicleCompany: rawProductData.vehicleCompany as string,
-    vehicleName: rawProductData.vehicleName as string[],
+    vehicleNames: rawProductData.vehicleNames as string[],
     partCategory: rawProductData.partCategory as string,
     partNumber: rawProductData.partNumber as string,
     partName: rawProductData.partName as string,
@@ -75,6 +75,14 @@ export const getProductById = async (productId: string) => {
     discount: rawProductData.discount as number,
     gst: rawProductData.gst as number,
     stock: rawProductData.stock as number,
+    hasSizes: rawProductData.hasSizes as boolean,
+    samePriceForAllSizes: rawProductData.samePriceForAllSizes as boolean,
+    sizes: rawProductData.sizes as {
+      size: string;
+      price: number;
+      discount?: number;
+      gst?: number;
+    }[],
     status: rawProductData.status as ProductStatus,
     image: rawProductData.image as string | undefined,
   };
@@ -97,7 +105,7 @@ export const getProductsById = async (productIds: string[]) => {
       brandId: rawProductData.brandId as string,
       companyName: rawProductData.companyName as string,
       vehicleCompany: rawProductData.vehicleCompany as string,
-      vehicleName: rawProductData.vehicleName as string[],
+      vehicleNames: rawProductData.vehicleNames as string[],
       partCategory: rawProductData.partCategory as string,
       partNumber: rawProductData.partNumber as string,
       partName: rawProductData.partName as string,
@@ -106,6 +114,14 @@ export const getProductsById = async (productIds: string[]) => {
       gst: rawProductData.gst as number,
       stock: rawProductData.stock as number,
       status: rawProductData.status as ProductStatus,
+      hasSizes: rawProductData.hasSizes as boolean,
+      samePriceForAllSizes: rawProductData.samePriceForAllSizes as boolean,
+      sizes: rawProductData.sizes as {
+        size: string;
+        price?: number;
+        discount?: number;
+        gst?: number;
+      }[],
       image: rawProductData.image as string | undefined,
     };
     return product;

@@ -20,6 +20,7 @@ export default async function ProductList({
   productsPromise,
   isAdmin,
   page,
+  searchParamsValues,
 }: {
   productsPromise: Promise<{
     data: Product[];
@@ -28,6 +29,12 @@ export default async function ProductList({
   }>;
   isAdmin: boolean;
   page: number;
+  searchParamsValues: {
+    page: string;
+    brandId: string;
+    status: string;
+    category: string | string[];
+  };
 }) {
   const pageSize = PAGE_SIZE;
   const [products] = await Promise.all([productsPromise]);
@@ -45,8 +52,8 @@ export default async function ProductList({
           <div className="flex w-full flex-1 flex-grow flex-col gap-5">
             {data.map((product) => {
               const company = product.vehicleCompany;
-              const names = Array.isArray(product.vehicleName)
-                ? product.vehicleName.join(", ")
+              const names = Array.isArray(product.vehicleNames)
+                ? product.vehicleNames.join(", ")
                 : "";
               const vehicleNameProcessed = names
                 ? `${company} - ${names}`
@@ -195,6 +202,15 @@ export default async function ProductList({
                 const pageNum = i + 1;
                 const isCurrent = page === pageNum;
                 const newSearchParams = new URLSearchParams();
+                Object.entries(searchParamsValues).forEach(([key, value]) => {
+                  if (value !== undefined) {
+                    if (Array.isArray(value)) {
+                      value.forEach((v) => newSearchParams.append(key, v));
+                    } else {
+                      newSearchParams.set(key, value);
+                    }
+                  }
+                });
                 newSearchParams.set("page", `${pageNum}`);
 
                 return (

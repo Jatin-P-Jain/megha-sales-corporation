@@ -3,21 +3,29 @@ export type ProductStatus =
   | "for-sale"
   | "discontinued"
   | "out-of-stock";
-
+export type ProductSize = {
+  size: string;
+  price?: number;
+  discount?: number;
+  gst?: number;
+};
 export type Product = {
   id: string;
   brandId: string;
   brandName: string;
   companyName: string;
   vehicleCompany: string;
-  vehicleName?: string[];
+  vehicleNames: string[];
   partCategory: string;
   partNumber: string;
   partName: string;
-  price: number;
-  discount: number;
-  gst: number;
+  price?: number;
+  discount?: number;
+  gst?: number;
   stock?: number;
+  hasSizes?: boolean;
+  sizes?: ProductSize[];
+  samePriceForAllSizes?: boolean;
   status: ProductStatus;
   image?: string;
 };

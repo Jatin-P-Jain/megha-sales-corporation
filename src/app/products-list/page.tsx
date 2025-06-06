@@ -113,6 +113,7 @@ export default async function ProductsList({
             productsPromise={productsPromise}
             isAdmin={isAdmin}
             page={page}
+            searchParamsValues={searchParamsValues}
           />
         </Suspense>
       </div>
