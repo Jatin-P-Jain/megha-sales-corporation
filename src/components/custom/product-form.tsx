@@ -395,7 +395,7 @@ export default function ProductForm({
                                         ? entry.price
                                         : ""
                                     }
-                                    onFocus={(e) => {
+                                    onFocus={() => {
                                       if (entry.price === 0) {
                                         const updated = [...field.value];
                                         updated[idx].price = NaN; // temporarily clear value
