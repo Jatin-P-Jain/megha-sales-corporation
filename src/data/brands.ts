@@ -65,7 +65,8 @@ export const getBrands = async (options?: GetBrandsOptions) => {
     brandsQuery = brandsQuery.where("status", "in", status);
   }
 
-  const brandTotalPages = await getTotalPages(brandsQuery, pageSize);
+  const brandTotal = await getTotalPages(brandsQuery, pageSize);
+  const { totalPages: brandTotalPages, totalItems } = brandTotal;
 
   const brandsSnapshot = await brandsQuery
     .limit(pageSize)
@@ -91,7 +92,7 @@ export const getBrands = async (options?: GetBrandsOptions) => {
     return brand;
   });
 
-  return { data: brands, totalPages: brandTotalPages };
+  return { data: brands, totalPages: brandTotalPages, totalItems: totalItems };
 };
 export const getBrandById = async (brandId: string) => {
   const brandSnapshot = await fireStore.collection("brands").doc(brandId).get();

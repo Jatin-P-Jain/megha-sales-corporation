@@ -15,7 +15,7 @@ export const createProduct = async (
     price: number;
     discount: number;
     gst: number;
-    stock: number;
+    stock?: number;
     description?: string;
     status: "draft" | "for-sale" | "discontinued" | "out-of-stock";
   },
@@ -49,7 +49,8 @@ export const createProduct = async (
         ...data,
         id: slug,
         brandId: slugify(data?.brandName),
-        available: data?.stock > 0,
+        partNumber: data?.partNumber.toUpperCase(),
+        available: data?.stock ? data?.stock > 0 : false,
         created: new Date(),
         updated: new Date(),
       });

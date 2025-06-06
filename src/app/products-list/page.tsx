@@ -8,7 +8,7 @@ import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
 import { ProductStatus } from "@/types/product";
 import { getAllCategories } from "@/data/categories";
 import ResponsiveProductFiltersServer from "./responsive-product-filters.server";
-import { unslugify } from "@/lib/utils";
+import { PAGE_SIZE, unslugify } from "@/lib/utils";
 
 export default async function ProductsList({
   searchParams,
@@ -56,7 +56,7 @@ export default async function ProductsList({
       status: productsFilters,
       partCategory: categoryFilters,
     },
-    pagination: { page: page, pageSize: 5 },
+    pagination: { page: page, pageSize: PAGE_SIZE },
   });
 
   const categoriesPromise = getAllCategories();

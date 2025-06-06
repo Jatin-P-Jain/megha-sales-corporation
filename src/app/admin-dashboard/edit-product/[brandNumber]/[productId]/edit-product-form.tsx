@@ -17,7 +17,8 @@ import { saveProductMedia } from "@/app/admin-dashboard/actions";
 import { Product } from "@/types/product";
 import ProductForm from "@/components/custom/product-form";
 import { productSchema } from "@/validation/productSchema";
-import { updateProduct } from "./actions";
+import { deleteProduct, updateProduct } from "./actions";
+import { createProduct } from "@/app/admin-dashboard/new-product/actions";
 
 export default function EditProductForm({
   product,
@@ -55,15 +56,15 @@ export default function EditProductForm({
     }
     const { image: newImage, ...rest } = data;
 
-    const updateResponse = await updateProduct(
-      { ...rest, id, brandId, image },
-      token,
-    );
-    if (!!updateResponse?.error) {
-      toast.error("Error", { description: updateResponse.message });
-      setIsLoading(false);
-      return;
-    }
+    // const updateResponse = await updateProduct(
+    //   { ...rest, id, brandId, image },
+    //   token,
+    // );
+    // if (!!updateResponse?.error) {
+    //   toast.error("Error", { description: updateResponse.message });
+    //   setIsLoading(false);
+    //   return;
+    // }
     const storageTasks: (UploadTask | Promise<void>)[] = [];
 
     let logoPath = image; // default to whatever was there
@@ -105,11 +106,66 @@ export default function EditProductForm({
       }
     }
 
-    await Promise.all(storageTasks);
-    await saveProductMedia({ productId: id, image: logoPath ?? "" }, token);
-    setIsLoading(false);
-    toast.success("Success!", { description: "Product Updated" });
-    router.push("/products-list");
+    const partNumberChanged = data?.partNumber !== partNumber;
+    if (partNumberChanged) {
+      // 🔥 Delete existing product
+      const deleteRes = await deleteProduct(id);
+      if (deleteRes?.error) {
+        toast.error("Failed to delete old product");
+        setIsLoading(false);
+        return;
+      }
+
+      // 🆕 Create new product
+      const createRes = await createProduct(
+        {
+          ...rest,
+          partNumber: data?.partNumber,
+        },
+        token,
+      );
+
+      if (createRes?.error) {
+        toast.error("Failed to create product", {
+          description: createRes.message,
+        });
+        setIsLoading(false);
+        return;
+      }
+      await Promise.all(storageTasks);
+      await saveProductMedia(
+        {
+          productId: createRes.productId ?? "",
+          image: logoPath ?? "",
+        },
+        token,
+      );
+      setIsLoading(false);
+      toast.success("Success!", { description: "Product Updated" });
+      router.push("/products-list");
+    } else {
+      // ✅ Just update normally
+      const updateResponse = await updateProduct(
+        { ...rest, id, brandId, image },
+        token,
+      );
+      if (updateResponse?.error) {
+        toast.error("Update failed", { description: updateResponse.message });
+        setIsLoading(false);
+        return;
+      }
+      await Promise.all(storageTasks);
+      await saveProductMedia(
+        {
+          productId: id,
+          image: logoPath ?? "",
+        },
+        token,
+      );
+      setIsLoading(false);
+      toast.success("Success!", { description: "Product Updated" });
+      router.push("/products-list");
+    }
   };
   return (
     <div className="relative">

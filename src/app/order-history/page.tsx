@@ -10,6 +10,7 @@ import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
 import OrderStatusChips from "@/components/custom/order-status-chips";
 import clsx from "clsx";
 import { OrderStatus } from "@/types/order";
+import { PAGE_SIZE } from "@/lib/utils";
 
 export default async function OrderHistoryPage({
   searchParams,
@@ -48,7 +49,7 @@ export default async function OrderHistoryPage({
     // admin: fetch all, unfiltered
     ordersPromise = getOrders({
       filters: { status: orderStatusFilter },
-      pagination: { page, pageSize: 5 },
+      pagination: { page, pageSize: PAGE_SIZE },
     });
   } else if (isUser) {
     // regular user: only their orders
@@ -57,12 +58,12 @@ export default async function OrderHistoryPage({
     } else {
       ordersPromise = getUserOrders(verified?.uid, {
         filters: { status: orderStatusFilter },
-        pagination: { page, pageSize: 5 },
+        pagination: { page, pageSize: PAGE_SIZE },
       });
     }
   } else {
     // not logged in at all: empty list
-    ordersPromise = Promise.resolve({ data: [], totalPages: 0 });
+    ordersPromise = Promise.resolve({ data: [], totalPages: 0, totalItems: 0 });
   }
 
   return (

@@ -80,6 +80,8 @@ export async function middleware(request: NextRequest) {
 
   // 7) Admin vs user guards
   if (!admin && pathname.startsWith("/admin-dashboard")) {
+    console.log("here");
+
     return NextResponse.redirect(new URL("/", origin));
   }
   if (admin && pathname === "/admin-dashboard") {

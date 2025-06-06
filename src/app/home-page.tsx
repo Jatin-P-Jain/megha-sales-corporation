@@ -9,7 +9,11 @@ import Link from "next/link";
 const HomePage = ({
   brandsPromise,
 }: {
-  brandsPromise: Promise<{ data: Brand[]; totalPages: number }>;
+  brandsPromise: Promise<{
+    data: Brand[];
+    totalPages: number;
+    totalItems: number;
+  }>;
 }) => {
   const auth = useAuth();
   const { clientUser, clientUserLoading, currentUser } = auth;

@@ -2,8 +2,17 @@ import CartControls from "@/components/custom/cart-controls";
 import ProductImage from "@/components/custom/product-image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { formatINR, slugify } from "@/lib/utils";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { formatINR, PAGE_SIZE, slugify } from "@/lib/utils";
 import { Product } from "@/types/product";
+import clsx from "clsx";
 import { PencilIcon } from "lucide-react";
 import Link from "next/link";
 
@@ -12,15 +21,25 @@ export default async function ProductList({
   isAdmin,
   page,
 }: {
-  productsPromise: Promise<{ data: Product[]; totalPages: number }>;
+  productsPromise: Promise<{
+    data: Product[];
+    totalPages: number;
+    totalItems: number;
+  }>;
   isAdmin: boolean;
   page: number;
 }) {
+  const pageSize = PAGE_SIZE;
   const [products] = await Promise.all([productsPromise]);
-  const { data, totalPages } = products;
+  const { data, totalPages, totalItems } = products;
+  const start = (page - 1) * pageSize + 1;
+  const end = Math.min(page * pageSize, totalItems);
 
   return (
-    <>
+    <div className="relative mx-auto flex max-w-screen-lg flex-col">
+      <p className="text-muted-foreground sticky top-0 z-10 w-full px-4 py-1 text-center text-sm">
+        Page {page} • Showing {start}–{end} of {totalItems} results
+      </p>
       {data.length > 0 && (
         <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col justify-between gap-4 py-2">
           <div className="flex w-full flex-1 flex-grow flex-col gap-5">
@@ -69,7 +88,7 @@ export default async function ProductList({
                         {product.partCategory}
                       </div>
                     </div>
-                    <div className="flex min-h-20 w-full items-end justify-end justify-self-end md:min-h-30 md:w-3/4">
+                    <div className="mb-2 flex min-h-20 w-full items-center justify-center md:min-h-30 md:w-full">
                       <ProductImage productImage={product?.image} />
                     </div>
                   </CardContent>
@@ -161,25 +180,45 @@ export default async function ProductList({
               );
             })}
           </div>
-          <div className="flex items-center justify-center gap-4 p-2">
-            {Array.from({ length: totalPages }).map((_, i) => {
-              const newSearchParams = new URLSearchParams();
-              newSearchParams.set("page", `${i + 1}`);
-              return (
-                <Button
-                  asChild={page != i + 1}
-                  disabled={i + 1 === page}
-                  key={i}
-                  variant={"outline"}
-                  className="h-0 min-h-0 p-3"
-                >
-                  <Link href={`/products-list?${newSearchParams}`}>
-                    {i + 1}
-                  </Link>
-                </Button>
-              );
-            })}
-          </div>
+
+          <Pagination>
+            <PaginationContent className="w-full items-center justify-center">
+              {page > 1 && (
+                <PaginationItem>
+                  <PaginationPrevious
+                    href={`/products-list?page=${page - 1}`}
+                  />
+                </PaginationItem>
+              )}
+
+              {Array.from({ length: totalPages }).map((_, i) => {
+                const pageNum = i + 1;
+                const isCurrent = page === pageNum;
+                const newSearchParams = new URLSearchParams();
+                newSearchParams.set("page", `${pageNum}`);
+
+                return (
+                  <PaginationItem key={pageNum}>
+                    <PaginationLink
+                      href={`/products-list?${newSearchParams}`}
+                      isActive={isCurrent}
+                      className={clsx(
+                        isCurrent && "bg-primary font-bold text-white",
+                      )}
+                    >
+                      {pageNum}
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              })}
+
+              {page < totalPages && (
+                <PaginationItem>
+                  <PaginationNext href={`/products-list?page=${page + 1}`} />
+                </PaginationItem>
+              )}
+            </PaginationContent>
+          </Pagination>
         </div>
       )}
       {data.length === 0 && (
@@ -187,6 +226,6 @@ export default async function ProductList({
           No Products!
         </div>
       )}
-    </>
+    </div>
   );
 }

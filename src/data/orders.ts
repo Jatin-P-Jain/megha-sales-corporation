@@ -24,7 +24,9 @@ export const getOrders = async (options?: GetOrdersOptions) => {
     ordersQuery = ordersQuery.where("status", "in", status);
   }
 
-  const ordersTotalPages = await getTotalPages(ordersQuery, pageSize);
+  const ordersTotal = await getTotalPages(ordersQuery, pageSize);
+  const { totalPages: ordersTotalPages, totalItems: ordersTotalItems } =
+    ordersTotal;
 
   const ordersSnapshot = await ordersQuery
     .limit(pageSize)
@@ -38,7 +40,11 @@ export const getOrders = async (options?: GetOrdersOptions) => {
     } as Order;
   });
 
-  return { data: orders, totalPages: ordersTotalPages };
+  return {
+    data: orders,
+    totalPages: ordersTotalPages,
+    totalItems: ordersTotalItems,
+  };
 };
 
 export const getOrderById = async (orderId: string) => {
@@ -65,7 +71,7 @@ export const getOrderById = async (orderId: string) => {
     createdAt: rawOrderData?.createdAt as string,
     updatedAt: rawOrderData?.updatedAt as string,
   };
-  return { data: [order], totalPages: 1 };
+  return { data: [order], totalPages: 1, totalItems: 1 };
 };
 export const getUserOrders = async (
   userId?: string,
@@ -87,7 +93,9 @@ export const getUserOrders = async (
     ordersQuery = ordersQuery.where("status", "in", status);
   }
 
-  const ordersTotalPages = await getTotalPages(ordersQuery, pageSize);
+  const ordersTotal = await getTotalPages(ordersQuery, pageSize);
+  const { totalPages: ordersTotalPages, totalItems: ordersTotalItems } =
+    ordersTotal;
 
   const ordersSnapshot = await ordersQuery
     .limit(pageSize)
@@ -117,5 +125,9 @@ export const getUserOrders = async (
     return order;
   });
 
-  return { data: ordersData, totalPages: ordersTotalPages };
+  return {
+    data: ordersData,
+    totalPages: ordersTotalPages,
+    totalItems: ordersTotalItems,
+  };
 };
