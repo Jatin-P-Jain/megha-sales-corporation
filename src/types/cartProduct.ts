@@ -20,4 +20,5 @@ export type CartProduct = {
   status: ProductStatus;
   image?: string;
   quantity: number; // added for cart
+  selectedSize?: string; // added for cart
 };

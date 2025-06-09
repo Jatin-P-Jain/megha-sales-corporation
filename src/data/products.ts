@@ -43,14 +43,37 @@ export const getProducts = async (options?: GetPropertiesOptions) => {
     .offset((page - 1) * pageSize)
     .get();
 
-  const products = productsSnapshot.docs.map((doc) => {
-    return {
-      id: doc.id,
-      ...doc.data(),
-    } as Product;
+  const productsData = productsSnapshot.docs.map((productItem) => {
+    const rawProductData = productItem.data();
+    const product: Product = {
+      id: productItem.id,
+      brandName: rawProductData.brandName as string,
+      brandId: rawProductData.brandId as string,
+      companyName: rawProductData.companyName as string,
+      vehicleCompany: rawProductData.vehicleCompany as string,
+      vehicleNames: rawProductData.vehicleNames as string[],
+      partCategory: rawProductData.partCategory as string,
+      partNumber: rawProductData.partNumber as string,
+      partName: rawProductData.partName as string,
+      price: rawProductData.price as number,
+      discount: rawProductData.discount as number,
+      gst: rawProductData.gst as number,
+      stock: rawProductData.stock as number,
+      status: rawProductData.status as ProductStatus,
+      hasSizes: rawProductData.hasSizes as boolean,
+      samePriceForAllSizes: rawProductData.samePriceForAllSizes as boolean,
+      sizes: rawProductData.sizes as {
+        size: string;
+        price?: number;
+        discount?: number;
+        gst?: number;
+      }[],
+      image: rawProductData.image as string | undefined,
+    };
+    return product;
   });
 
-  return { data: products, totalPages: totalPages, totalItems: totalItems };
+  return { data: productsData, totalPages: totalPages, totalItems: totalItems };
 };
 
 export const getProductById = async (productId: string) => {

@@ -50,7 +50,6 @@ export function CartItems() {
       </div>
     );
   }
-
   return (
     <ul className="mx-auto flex h-full flex-1 flex-col gap-4 pb-4">
       {cartProducts.map((item) => {

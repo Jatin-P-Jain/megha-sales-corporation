@@ -30,6 +30,7 @@ export type CartItem = {
     gst?: number;
   };
   quantity: number;
+  selectedSize?: string;
 };
 
 type CartContextType = {
@@ -40,6 +41,7 @@ type CartContextType = {
   addToCart: (
     productId: string,
     productPricing: { price?: number; discount?: number; gst?: number },
+    selectedSize?: string,
     qty?: number,
   ) => Promise<void>;
   removeFromCart: (productId: string) => Promise<void>;
@@ -81,6 +83,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           productId: d.id,
           productPricing: d.data().productPricing || {},
           quantity: (d.data().quantity as number) || 0,
+          selectedSize: d.data().selectedSize as string | undefined,
         }));
         setCart(data);
         setLoading(false);
@@ -103,20 +106,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
     let active = true;
     (async () => {
       try {
-        const proms = cart.map(async ({ productId, quantity }) => {
-          const snap = await getDoc(doc(firestore, "products", productId));
-          const data = snap.data() || {};
-          return {
-            id: snap.id,
-            partName: data.partName as string,
-            partNumber: data.partNumber as string,
-            image: data.image as string,
-            price: data.price as number,
-            discount: data.discount as number,
-            gst: data.gst as number,
-            quantity,
-          } as CartProduct;
-        });
+        const proms = cart.map(
+          async ({ productId, quantity, selectedSize }) => {
+            const snap = await getDoc(doc(firestore, "products", productId));
+            const data = snap.data() || {};
+            return {
+              id: snap.id,
+              partName: data.partName as string,
+              partNumber: data.partNumber as string,
+              image: data.image as string,
+              price: data.price as number,
+              discount: data.discount as number,
+              gst: data.gst as number,
+              quantity,
+              selectedSize,
+            } as CartProduct;
+          },
+        );
         const results = await Promise.all(proms);
         if (active) setCartProducts(results);
       } catch (e) {
@@ -133,11 +139,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const addToCart = async (
     productId: string,
     productPricing: { price?: number; discount?: number; gst?: number },
+    selectedSize?: string,
     qty = 1,
   ) => {
     if (!currentUser) throw new Error("Not authenticated");
-    const ref = doc(firestore, "carts", currentUser.uid, "items", productId);
-    await setDoc(ref, { quantity: qty, productPricing }, { merge: true });
+    const key = selectedSize
+      ? `${productId}_${selectedSize.replaceAll(" ", "")}`
+      : productId;
+
+    const ref = doc(firestore, "carts", currentUser.uid, "items", key);
+    await setDoc(
+      ref,
+      {
+        productId,
+        cartItemKey: productId + "_" + selectedSize?.replaceAll(" ", ""),
+        quantity: qty,
+        productPricing,
+        selectedSize,
+      },
+      { merge: true },
+    );
   };
 
   const removeFromCart = async (productId: string) => {

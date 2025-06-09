@@ -11,11 +11,13 @@ import { useCart } from "@/context/cartContext";
 
 interface Props {
   productId: string;
+  selectedSize?: string;
   productPricing: {
     price?: number;
     discount?: number;
     gst?: number;
   };
+  hasSizes?: boolean;
 }
 
 function usePrevious<T>(value: T) {
@@ -26,16 +28,29 @@ function usePrevious<T>(value: T) {
   return ref.current;
 }
 
-export default function CartControls({ productId, productPricing }: Props) {
+export default function CartControls({
+  productId,
+  productPricing,
+  selectedSize,
+  hasSizes,
+}: Props) {
   const { currentUser } = useAuth();
   const { cart, increment, decrement, addToCart } = useCart();
   const router = useRouter();
   const [loadingAction, setLoadingAction] = useState<
     "add" | "inc" | "dec" | null
   >(null);
+  console.log({ cart, productId });
 
   // find current qty
-  const item = cart.find((i) => i.productId === productId);
+  const item = cart.find((i) => {
+    const pId = i.productId.split("_")[0];
+    if (hasSizes && selectedSize)
+      return pId === productId && i.selectedSize === selectedSize;
+    else return pId === productId;
+  });
+  console.log({ item });
+
   const qty = item?.quantity ?? 0;
 
   // remember previous qty for animation direction
@@ -47,9 +62,14 @@ export default function CartControls({ productId, productPricing }: Props) {
       router.push("/login");
       return;
     }
+    if (hasSizes && !selectedSize) {
+      toast.error("Please select a size before adding to cart");
+      return;
+    }
+
     setLoadingAction("add");
     try {
-      await addToCart(productId, productPricing);
+      await addToCart(productId, productPricing, selectedSize);
       toast.success("Added to cart!");
     } catch (e) {
       console.error(e);
@@ -62,7 +82,10 @@ export default function CartControls({ productId, productPricing }: Props) {
   const handleInc = async () => {
     setLoadingAction("inc");
     try {
-      await increment(productId);
+      const productKey =
+        productId +
+        (selectedSize ? `_${selectedSize.replaceAll(" ", "")}` : "");
+      await increment(productKey);
     } catch (e) {
       console.error(e);
       toast.error("Error updating quantity");
@@ -74,7 +97,10 @@ export default function CartControls({ productId, productPricing }: Props) {
   const handleDec = async () => {
     setLoadingAction("dec");
     try {
-      await decrement(productId);
+      const productKey =
+        productId +
+        (selectedSize ? `_${selectedSize.replaceAll(" ", "")}` : "");
+      await decrement(productKey);
     } catch (e) {
       console.error(e);
       toast.error("Error updating quantity");
