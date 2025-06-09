@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCart } from "@/context/cartContext";
+import { Skeleton } from "../ui/skeleton";
 
 interface Props {
   productId: string;
@@ -35,27 +36,42 @@ export default function CartControls({
   hasSizes,
 }: Props) {
   const { currentUser } = useAuth();
-  const { cart, increment, decrement, addToCart } = useCart();
+  const { cart, increment, decrement, addToCart, loading } = useCart();
   const router = useRouter();
   const [loadingAction, setLoadingAction] = useState<
     "add" | "inc" | "dec" | null
   >(null);
-  console.log({ cart, productId });
+
+  const [hasMounted, setHasMounted] = useState(false);
+  const [ready, setReady] = useState(false);
+  // 1) hydration guard
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  // 4) debounce the empty-cart state
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setReady(true);
+    }, 1000);
+    return () => clearTimeout(t);
+  }, [cart.length]);
 
   // find current qty
   const item = cart.find((i) => {
-    const pId = i.productId.split("_")[0];
     if (hasSizes && selectedSize)
-      return pId === productId && i.selectedSize === selectedSize;
-    else return pId === productId;
+      return i.productId === productId && i.selectedSize === selectedSize;
+    else return i.productId === productId;
   });
-  console.log({ item });
 
   const qty = item?.quantity ?? 0;
+  const selectedSizeValue = item?.selectedSize ?? selectedSize ?? "";
 
   // remember previous qty for animation direction
   const prevQty = usePrevious(qty);
   const direction = qty > (prevQty ?? qty) ? 1 : -1;
+
+  const isLoading = !hasMounted || loading || !ready;
 
   const handleAdd = async () => {
     if (!currentUser) {
@@ -82,10 +98,12 @@ export default function CartControls({
   const handleInc = async () => {
     setLoadingAction("inc");
     try {
-      const productKey =
+      await increment(
         productId +
-        (selectedSize ? `_${selectedSize.replaceAll(" ", "")}` : "");
-      await increment(productKey);
+          (selectedSizeValue
+            ? "_" + selectedSizeValue.replaceAll(" ", "")
+            : ""),
+      );
     } catch (e) {
       console.error(e);
       toast.error("Error updating quantity");
@@ -97,10 +115,12 @@ export default function CartControls({
   const handleDec = async () => {
     setLoadingAction("dec");
     try {
-      const productKey =
+      await decrement(
         productId +
-        (selectedSize ? `_${selectedSize.replaceAll(" ", "")}` : "");
-      await decrement(productKey);
+          (selectedSizeValue
+            ? "_" + selectedSizeValue.replaceAll(" ", "")
+            : ""),
+      );
     } catch (e) {
       console.error(e);
       toast.error("Error updating quantity");
@@ -108,6 +128,10 @@ export default function CartControls({
       setLoadingAction(null);
     }
   };
+
+  if (isLoading) {
+    return <Skeleton className="h-8 w-full md:w-1/2" />;
+  }
 
   // If the user just clicked +/– or add, we could disable controls briefly
   const isBusy = loadingAction !== null;

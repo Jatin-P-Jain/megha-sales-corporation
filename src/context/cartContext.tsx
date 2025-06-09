@@ -17,6 +17,8 @@ import {
   writeBatch,
   FirestoreError,
   getDoc,
+  query,
+  orderBy,
 } from "firebase/firestore";
 import { useAuth } from "./useAuth";
 import { firestore } from "@/firebase/client";
@@ -24,6 +26,7 @@ import { CartProduct } from "@/types/cartProduct";
 
 export type CartItem = {
   productId: string;
+  cartItemKey: string;
   productPricing: {
     price?: number;
     discount?: number;
@@ -76,11 +79,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return;
     }
     const itemsCol = collection(firestore, "carts", currentUser.uid, "items");
+    const orderedQuery = query(itemsCol, orderBy("createdAt", "desc"));
     const unsub = onSnapshot(
-      itemsCol,
+      orderedQuery,
       (snap) => {
         const data = snap.docs.map((d) => ({
-          productId: d.id,
+          id: d.id,
+          productId: d.data().productId,
+          cartItemKey: d.data().cartItemKey,
           productPricing: d.data().productPricing || {},
           quantity: (d.data().quantity as number) || 0,
           selectedSize: d.data().selectedSize as string | undefined,
@@ -152,10 +158,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
       ref,
       {
         productId,
-        cartItemKey: productId + "_" + selectedSize?.replaceAll(" ", ""),
+        cartItemKey:
+          productId +
+          (selectedSize ? "_" + selectedSize?.replaceAll(" ", "") : ""),
         quantity: qty,
         productPricing,
         selectedSize,
+        createdAt: new Date(),
       },
       { merge: true },
     );
@@ -169,7 +178,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const increment = async (productId: string) => {
     if (!currentUser) throw new Error("Not authenticated");
-    const existing = cart.find((i) => i.productId === productId);
+    const existing = cart.find((i) => i?.cartItemKey === productId);
     const newQty = existing ? existing.quantity + 1 : 1;
     const ref = doc(firestore, "carts", currentUser.uid, "items", productId);
     await setDoc(ref, { quantity: newQty }, { merge: true });
@@ -177,7 +186,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const decrement = async (productId: string) => {
     if (!currentUser) throw new Error("Not authenticated");
-    const existing = cart.find((i) => i.productId === productId);
+    const existing = cart.find((i) => i.cartItemKey === productId);
     if (!existing) return;
     const ref = doc(firestore, "carts", currentUser.uid, "items", productId);
     if (existing.quantity > 1) {

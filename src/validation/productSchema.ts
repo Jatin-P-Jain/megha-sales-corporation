@@ -39,8 +39,6 @@ export const productDataSchema = z
     const hasSizes = data.hasSizes ?? false;
     const samePrice = data.samePriceForAllSizes ?? true;
 
-    console.log({ data });
-
     if (!hasSizes || (hasSizes && samePrice)) {
       // Require global pricing
       if (

@@ -10,7 +10,6 @@ interface BrandLogoProps {
 
 const BrandLogo: React.FC<BrandLogoProps> = ({ brandLogo }: BrandLogoProps) => {
   const [loading, setLoading] = useState(true);
-  console.log({ brandLogo });
 
   return (
     <div className="relative flex h-full w-full items-center justify-center">

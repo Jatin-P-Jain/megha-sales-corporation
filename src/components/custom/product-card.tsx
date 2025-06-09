@@ -58,7 +58,7 @@ export default function ProductCard({
       className="relative gap-0 overflow-hidden p-4 px-0 shadow-md"
     >
       <CardContent className="flex text-sm md:grid md:grid-cols-[3fr_1fr] md:text-base">
-        <div className="flex w-full flex-col gap-1 md:gap-2">
+        <div className="flex w-full flex-col md:gap-2">
           <div className="text-primary flex w-full items-center justify-between font-semibold">
             <span className="text-sm font-normal">Brand :</span>
             {product.brandName}
@@ -85,19 +85,19 @@ export default function ProductCard({
             <ProductImage productImage={product?.image} />
           </div>
           {product.sizes && product.sizes.length > 0 && (
-            <div className="mb-2 flex flex-col gap-2">
-              <div className="text-primary flex h-full w-full flex-col items-start justify-between gap-2 font-semibold md:flex-row md:items-center">
-                <span className="text-sm font-normal">Select Size:</span>
-                {isLoading ? (
-                  <Skeleton className="flex h-6 w-full" />
-                ) : (
-                  <SizeChips
-                    productId={product.id}
-                    sizes={product.sizes}
-                    onSelectSize={(selected) => setSelectedSize(selected)}
-                  />
-                )}
-              </div>
+            <div className="text-primary mb-1 flex h-full w-full flex-col items-start justify-between gap-1 font-semibold md:mb-2 md:flex-row md:items-center">
+              <span className="text-sm font-normal">Select Size:</span>
+              {isLoading ? (
+                <Skeleton className="flex h-6 w-full" />
+              ) : (
+                <SizeChips
+                  productId={
+                    !!selectedSize ? product.id + selectedSize.size : product.id
+                  }
+                  sizes={product.sizes}
+                  onSelectSize={(selected) => setSelectedSize(selected)}
+                />
+              )}
             </div>
           )}
         </div>
@@ -120,6 +120,13 @@ export default function ProductCard({
             <span className="text-foreground font-normal">GST :</span>
             {selectedSize?.gst ?? product?.gst}%
           </div>
+          {product.hasSizes &&
+            !product?.samePriceForAllSizes &&
+            !selectedSize && (
+              <span className="text-muted-foreground text-[10px] italic">
+                Price varies by size. Select a size.
+              </span>
+            )}
         </div>
         <div className="flex w-full items-center justify-end gap-2">
           {isAdmin ? (

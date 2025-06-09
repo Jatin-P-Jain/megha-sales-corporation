@@ -30,34 +30,27 @@ export default function SizeChips({
   const { cart, loading } = useCart();
 
   const [hasMounted, setHasMounted] = useState(false);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+
+  const [isPending, startTransition] = useTransition();
+
+  const chipRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+
+  const [stateLoaded, setStateLoaded] = useState(false);
   // 1) hydration guard
   useEffect(() => {
     setHasMounted(true);
   }, []);
-
-  // 4) debounce the empty-cart state
-  const [ready, setReady] = useState(false);
   useEffect(() => {
-    const t = setTimeout(() => {
-      setReady(true);
-    }, 1000);
-    return () => clearTimeout(t);
-  }, [cart.length]);
-
-  const isLoading = !hasMounted || loading || !ready;
-
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
-  const chipRefs = useRef<Record<string, HTMLButtonElement | null>>({});
-
-  useEffect(() => {
-    const existingItem = [...cart].reverse().find((item) => {
-      const pId = item.productId.split("_")[0];
-      return pId === productId && item.selectedSize !== undefined;
+    const existingItem = cart.find((item) => {
+      return item.productId === productId;
     });
 
     if (existingItem?.selectedSize) {
       setSelectedSize(existingItem.selectedSize);
+      setStateLoaded(true);
+    } else {
+      setStateLoaded(true);
     }
   }, [cart, productId]);
 
@@ -86,6 +79,9 @@ export default function SizeChips({
       onSelectSize(sizeObj);
     });
   }
+
+  const isLoading = !hasMounted || loading || !stateLoaded;
+
   if (isLoading) {
     return <Skeleton className="flex h-6 w-full" />;
   }
