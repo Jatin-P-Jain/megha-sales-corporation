@@ -7,11 +7,9 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { formatINR, PAGE_SIZE, slugify } from "@/lib/utils";
+import { PAGE_SIZE } from "@/lib/utils";
 import { Product } from "@/types/product";
 import clsx from "clsx";
-import { PencilIcon } from "lucide-react";
-import Link from "next/link";
 
 export default async function ProductList({
   productsPromise,
