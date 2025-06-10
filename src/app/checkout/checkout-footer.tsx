@@ -12,10 +12,12 @@ import { redirect } from "next/navigation";
 
 export default function CheckoutFooter() {
   const auth = useAuth();
-  const { cart, loading, cartProducts, resetCartContext } = useCart();
+  const { cart, loading, cartProducts, resetCartContext, cartTotals } =
+    useCart();
   const [hasMounted, setHasMounted] = useState(false);
   const [isPlacingOrder, setIsOrderPlacing] = useState(false);
 
+  const { totalAmount, totalUnits } = cartTotals;
   // 1) hydration guard
   useEffect(() => {
     setHasMounted(true);
@@ -35,18 +37,6 @@ export default function CheckoutFooter() {
     }, 1000);
     return () => clearTimeout(t);
   }, [cart.length]);
-
-  const totalUnits = cart.reduce((sum, i) => {
-    return sum + i.quantity;
-  }, 0);
-  const totalAmount = Math.ceil(
-    cart.reduce((sum, i) => {
-      const { price = 0, discount = 0, gst = 0 } = i.productPricing ?? {};
-      const afterDisc = price * (1 - discount / 100);
-      const withGst = afterDisc * (1 + gst / 100);
-      return sum + withGst * i.quantity;
-    }, 0),
-  );
 
   const isValueAbsent =
     !hasMounted || loading || (cart.length === 0 && !showEmpty);

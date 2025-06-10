@@ -90,7 +90,11 @@ export default function OrderDetails({
                 <Table className="table-fixed">
                   <TableBody>
                     {products.map((item) => {
-                      const { price = 0, discount = 0, gst = 0 } = item ?? {};
+                      const {
+                        price = 0,
+                        discount = 0,
+                        gst = 0,
+                      } = item?.productPricing ?? {};
                       const afterDisc = price * (1 - discount / 100);
                       const withGst = afterDisc * (1 + gst / 100);
                       const lineTotal = Math.ceil(withGst * item.quantity);

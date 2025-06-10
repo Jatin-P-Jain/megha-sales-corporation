@@ -24,6 +24,7 @@ import { useAuth } from "./useAuth";
 import { firestore } from "@/firebase/client";
 import { CartProduct } from "@/types/cartProduct";
 import { Product } from "@/types/product";
+import { organizeCartProducts } from "@/lib/utils";
 
 export type CartItem = {
   id: string; // Firestore document ID
@@ -190,7 +191,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         );
         const results = await Promise.all(proms);
         if (active) {
-          setCartProducts(results);
+          const organizedCartProducts = organizeCartProducts(results);
+          setCartProducts(organizedCartProducts);
         }
       } catch (e) {
         console.error("Failed to fetch products for cart:", e);

@@ -156,3 +156,7 @@
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;     /* Firefox */
 }
+tbody.child\:border-b-on-last-row tr:last-child {
+  border-bottom-width: 1px;
+  border-style: solid;
+}

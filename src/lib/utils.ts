@@ -1,3 +1,4 @@
+import { CartProduct } from "@/types/cartProduct";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -122,3 +123,29 @@ export function formatDateTime(input?: string): string {
 
   return `${day} ${month} ${year - 2000}, ${hh}:${mm}`;
 }
+
+export const organizeCartProducts = (cartProducts: CartProduct[]) => {
+  const grouped = cartProducts.reduce(
+    (acc, item) => {
+      const key = item.id ?? "";
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(item);
+      return acc;
+    },
+    {} as Record<string, CartProduct[]>,
+  );
+
+  console.log({ grouped });
+
+  const sortedAndFlattened = Object.values(grouped).reverse()
+    .map((group) =>
+      group.sort((a, b) => {
+        const sizeA = a.selectedSize?.toLowerCase() ?? "";
+        const sizeB = b.selectedSize?.toLowerCase() ?? "";
+        return sizeA.localeCompare(sizeB);
+      }),
+    )
+    .flat();
+
+  return sortedAndFlattened;
+};
