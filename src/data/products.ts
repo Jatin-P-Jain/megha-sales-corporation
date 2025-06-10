@@ -1,7 +1,6 @@
 import "server-only";
 import { fireStore, getTotalPages } from "@/firebase/server";
 import { Product, ProductStatus } from "@/types/product";
-import { CartProduct } from "@/types/cartProduct";
 
 type GetPropertiesOptions = {
   filters?: {
@@ -111,43 +110,4 @@ export const getProductById = async (productId: string) => {
   };
 
   return product;
-};
-export const getProductsById = async (productIds: string[]) => {
-  if (!productIds.length) {
-    return [];
-  }
-  const propertySnapshot = await fireStore
-    .collection("products")
-    .where("__name__", "in", productIds)
-    .get();
-  const productsData = propertySnapshot.docs.map((property) => {
-    const rawProductData = property.data();
-    const product: Omit<CartProduct, "quantity"> = {
-      id: property.id,
-      brandName: rawProductData.brandName as string,
-      brandId: rawProductData.brandId as string,
-      companyName: rawProductData.companyName as string,
-      vehicleCompany: rawProductData.vehicleCompany as string,
-      vehicleNames: rawProductData.vehicleNames as string[],
-      partCategory: rawProductData.partCategory as string,
-      partNumber: rawProductData.partNumber as string,
-      partName: rawProductData.partName as string,
-      price: rawProductData.price as number,
-      discount: rawProductData.discount as number,
-      gst: rawProductData.gst as number,
-      stock: rawProductData.stock as number,
-      status: rawProductData.status as ProductStatus,
-      hasSizes: rawProductData.hasSizes as boolean,
-      samePriceForAllSizes: rawProductData.samePriceForAllSizes as boolean,
-      sizes: rawProductData.sizes as {
-        size: string;
-        price?: number;
-        discount?: number;
-        gst?: number;
-      }[],
-      image: rawProductData.image as string | undefined,
-    };
-    return product;
-  });
-  return productsData;
 };
