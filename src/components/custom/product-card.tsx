@@ -41,6 +41,24 @@ export default function ProductCard({
     return () => clearTimeout(t);
   }, [cart.length]);
 
+  useEffect(() => {
+    if (!product || !product.sizes) return;
+
+    const existingItem = cart.find(
+      (item) => item.productId === product.id && item.selectedSize,
+    );
+
+    if (existingItem?.selectedSize) {
+      const matchedSizeObj = product.sizes.find(
+        (size) => size.size === existingItem.selectedSize,
+      );
+
+      if (matchedSizeObj) {
+        setSelectedSize(matchedSizeObj);
+      }
+    }
+  }, [cart, product]);
+
   const isLoading = !hasMounted || loading || !ready;
 
   const vehicleNameProcessed = useMemo(() => {
@@ -108,23 +126,53 @@ export default function ProductCard({
             <span className="text-foreground text-base font-normal">
               Price :
             </span>
-            {formatINR(selectedSize?.price ?? product?.price)}
+            {product?.hasSizes &&
+            !product.samePriceForAllSizes &&
+            !selectedSize ? (
+              <span className="text-muted-foreground text-[10px] font-normal italic">
+                Select a size
+              </span>
+            ) : (
+              <span className="font-semibold">
+                {formatINR(selectedSize?.price ?? product?.price)}
+              </span>
+            )}
           </div>
           <div className="text-primary flex items-center gap-2 text-sm font-semibold">
             <span className="text-foreground text-sm font-normal">
               Discount :
             </span>
-            {selectedSize?.discount ?? product?.discount}%
+            {product?.hasSizes &&
+            !product.samePriceForAllSizes &&
+            !selectedSize ? (
+              <span className="text-muted-foreground text-[10px] font-normal italic">
+                Select a size
+              </span>
+            ) : (
+              <span className="font-semibold">
+                {selectedSize?.discount ?? product?.discount}%
+              </span>
+            )}
           </div>
           <div className="text-primary flex items-center gap-2 text-sm font-semibold">
             <span className="text-foreground font-normal">GST :</span>
-            {selectedSize?.gst ?? product?.gst}%
+            {product?.hasSizes &&
+            !product.samePriceForAllSizes &&
+            !selectedSize ? (
+              <span className="text-muted-foreground text-[10px] font-normal italic">
+                Select a size
+              </span>
+            ) : (
+              <span className="font-semibold">
+                {selectedSize?.gst ?? product?.gst}%
+              </span>
+            )}
           </div>
           {product.hasSizes &&
             !product?.samePriceForAllSizes &&
             !selectedSize && (
               <span className="text-muted-foreground text-[10px] italic">
-                Price varies by size. Select a size.
+                Pricing varies by size.
               </span>
             )}
         </div>

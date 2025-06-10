@@ -19,6 +19,7 @@ interface Props {
     gst?: number;
   };
   hasSizes?: boolean;
+  isCartPage?: boolean;
 }
 
 function usePrevious<T>(value: T) {
@@ -34,6 +35,7 @@ export default function CartControls({
   productPricing,
   selectedSize,
   hasSizes,
+  isCartPage = false,
 }: Props) {
   const { currentUser } = useAuth();
   const { cart, increment, decrement, addToCart, loading } = useCart();
@@ -58,11 +60,15 @@ export default function CartControls({
   }, [cart.length]);
 
   // find current qty
-  const item = cart.find((i) => {
-    if (hasSizes && selectedSize)
-      return i.productId === productId && i.selectedSize === selectedSize;
-    else return i.productId === productId;
-  });
+  const item = isCartPage
+    ? cart.find((i) => {
+        return i.cartItemKey === productId;
+      })
+    : cart.find((i) => {
+        if (hasSizes && selectedSize)
+          return i.productId === productId && i.selectedSize === selectedSize;
+        else return i.productId === productId;
+      });
 
   const qty = item?.quantity ?? 0;
   const selectedSizeValue = item?.selectedSize ?? selectedSize ?? "";
@@ -98,12 +104,13 @@ export default function CartControls({
   const handleInc = async () => {
     setLoadingAction("inc");
     try {
-      await increment(
-        productId +
+      const key = isCartPage
+        ? productId
+        : productId +
           (selectedSizeValue
             ? "_" + selectedSizeValue.replaceAll(" ", "")
-            : ""),
-      );
+            : "");
+      await increment(key);
     } catch (e) {
       console.error(e);
       toast.error("Error updating quantity");
@@ -115,12 +122,13 @@ export default function CartControls({
   const handleDec = async () => {
     setLoadingAction("dec");
     try {
-      await decrement(
-        productId +
+      const key = isCartPage
+        ? productId
+        : productId +
           (selectedSizeValue
             ? "_" + selectedSizeValue.replaceAll(" ", "")
-            : ""),
-      );
+            : "");
+      await decrement(key);
     } catch (e) {
       console.error(e);
       toast.error("Error updating quantity");

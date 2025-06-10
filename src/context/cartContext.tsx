@@ -23,8 +23,10 @@ import {
 import { useAuth } from "./useAuth";
 import { firestore } from "@/firebase/client";
 import { CartProduct } from "@/types/cartProduct";
+import { Product } from "@/types/product";
 
 export type CartItem = {
+  id: string; // Firestore document ID
   productId: string;
   cartItemKey: string;
   productPricing: {
@@ -35,12 +37,22 @@ export type CartItem = {
   quantity: number;
   selectedSize?: string;
 };
+export type CartTotals = {
+  totalUnits: number;
+  totalItems: number;
+  totalAmount: number; // after discount & GST
+  totalDiscount: number; // total discount applied
+  totalGST: number; // total GST applied
+  totalNetAmount: number; // total after discount & GST
+  totalSavings: number; // total savings from discounts
+};
 
 type CartContextType = {
   cart: CartItem[];
   cartProducts: CartProduct[];
   loading: boolean;
   error?: FirestoreError;
+  cartTotals: CartTotals;
   addToCart: (
     productId: string,
     productPricing: { price?: number; discount?: number; gst?: number },
@@ -68,6 +80,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const { currentUser } = useAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartProducts, setCartProducts] = useState<CartProduct[]>([]);
+  const [cartTotals, setCartTotals] = useState<CartTotals>({} as CartTotals);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<FirestoreError>();
 
@@ -83,14 +96,53 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const unsub = onSnapshot(
       orderedQuery,
       (snap) => {
-        const data = snap.docs.map((d) => ({
-          id: d.id,
-          productId: d.data().productId,
-          cartItemKey: d.data().cartItemKey,
-          productPricing: d.data().productPricing || {},
-          quantity: (d.data().quantity as number) || 0,
-          selectedSize: d.data().selectedSize as string | undefined,
-        }));
+        const data = snap.docs.map((d) => {
+          return {
+            id: d.id,
+            productId: d.data().productId,
+            cartItemKey: d.data().cartItemKey,
+            productPricing: d.data().productPricing || {},
+            quantity: (d.data().quantity as number) || 0,
+            selectedSize: d.data().selectedSize as string | undefined,
+          };
+        });
+        let totalUnits = 0;
+        let totalDiscount = 0;
+        let totalGST = 0;
+        let totalAmount = 0;
+        data.forEach((item) => {
+          const qty = item.quantity;
+          const {
+            price = 0,
+            discount = 0,
+            gst = 0,
+          } = item.productPricing || {};
+
+          const unitDiscount = Math.round((discount / 100) * price);
+          const unitPriceAfterDiscount = Math.round(price - unitDiscount);
+          const unitGST = Math.round((gst / 100) * unitPriceAfterDiscount);
+          const unitNetPrice = Math.round(unitPriceAfterDiscount + unitGST);
+          const totalPrice = Math.round(unitNetPrice * qty);
+          const discountAmt = Math.round(unitDiscount * qty);
+          const gstAmt = Math.round(unitGST * qty);
+          const finalAmount = totalPrice;
+
+          totalUnits += qty;
+          totalDiscount += discountAmt;
+          totalGST += gstAmt;
+          totalAmount += finalAmount;
+        });
+
+        const round = Math.round;
+        setCartTotals({
+          totalUnits: round(totalUnits),
+          totalItems: data.length,
+          totalAmount: round(totalAmount),
+          totalDiscount: round(totalDiscount),
+          totalGST: round(totalGST),
+          totalNetAmount: round(totalAmount), // or round(discountedTotal + gst) if you separate
+          totalSavings: round(totalDiscount),
+        });
         setCart(data);
         setLoading(false);
       },
@@ -113,24 +165,33 @@ export function CartProvider({ children }: { children: ReactNode }) {
     (async () => {
       try {
         const proms = cart.map(
-          async ({ productId, quantity, selectedSize }) => {
+          async ({
+            productId,
+            quantity,
+            selectedSize,
+            cartItemKey,
+            productPricing,
+          }) => {
             const snap = await getDoc(doc(firestore, "products", productId));
             const data = snap.data() || {};
             return {
               id: snap.id,
-              partName: data.partName as string,
-              partNumber: data.partNumber as string,
-              image: data.image as string,
-              price: data.price as number,
-              discount: data.discount as number,
-              gst: data.gst as number,
+              product: data as Product,
               quantity,
               selectedSize,
+              cartItemKey,
+              productPricing: {
+                price: productPricing?.price,
+                discount: productPricing?.discount,
+                gst: productPricing?.gst,
+              },
             } as CartProduct;
           },
         );
         const results = await Promise.all(proms);
-        if (active) setCartProducts(results);
+        if (active) {
+          setCartProducts(results);
+        }
       } catch (e) {
         console.error("Failed to fetch products for cart:", e);
       }
@@ -240,6 +301,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       value={{
         cart,
         cartProducts,
+        cartTotals,
         loading,
         error,
         addToCart,

@@ -9,7 +9,7 @@ import { Skeleton } from "../ui/skeleton";
 
 function CartOverview({ isUser }: { isUser: boolean }) {
   const router = useRouter();
-  const { cart, loading } = useCart();
+  const { cart, loading, cartTotals } = useCart();
   const [hasMounted, setHasMounted] = useState(false);
   // 1) hydration guard
   useEffect(() => {
@@ -24,29 +24,9 @@ function CartOverview({ isUser }: { isUser: boolean }) {
     }, 1000);
     return () => clearTimeout(t);
   }, [cart.length]);
+  const { totalUnits = 0, totalItems = 0, totalAmount = 0 } = cartTotals || {};
 
   const isLoading = !hasMounted || loading || !ready;
-
-  // 1) total units = sum of all quantities
-  const totalUnits = cart.reduce((sum, item) => sum + item.quantity, 0);
-
-  // 2) total distinct items = number of lines in the cart
-  const totalItems = cart.length;
-
-  // 3) total amount after discount & gst
-  const totalAmount = Math.ceil(
-    cart.reduce((sum, item) => {
-      const { price = 0, discount = 0, gst = 0 } = item.productPricing ?? {};
-
-      // 1) compute the price after % discount
-      const afterDiscount = price * (1 - discount / 100);
-
-      // 2) apply GST % on top of that
-      const netPerUnit = afterDiscount * (1 + gst / 100);
-
-      return sum + netPerUnit * item.quantity;
-    }, 0),
-  );
 
   if (!isUser) return null;
 

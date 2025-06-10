@@ -1,24 +1,15 @@
-import { ProductSize, ProductStatus } from "./product";
+import { Product } from "./product";
 
 export type CartProduct = {
   id: string;
-  brandName: string;
-  brandId: string;
-  companyName: string;
-  vehicleCompany: string;
-  vehicleNames?: string[];
-  partCategory: string;
-  partNumber: string;
-  partName: string;
-  price: number;
-  discount: number;
-  gst: number;
-  stock: number;
-  hasSizes?: boolean;
-  sizes?: ProductSize[];
-  samePriceForAllSizes?: boolean;
-  status: ProductStatus;
-  image?: string;
+  product: Product;
   quantity: number; // added for cart
   selectedSize?: string; // added for cart
+  cartItemKey: string; // added for cart
+  productId?: string; // added for cart
+  productPricing: {
+    price?: number;
+    discount?: number;
+    gst?: number;
+  };
 };
