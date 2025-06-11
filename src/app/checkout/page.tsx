@@ -1,7 +1,6 @@
 import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
 import { auth } from "@/firebase/server";
 import { cookies } from "next/headers";
-import React, { Suspense } from "react";
 import { CheckoutItems } from "./checkout-items";
 import CheckoutFooter from "@/app/checkout/checkout-footer";
 

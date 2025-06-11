@@ -23,7 +23,6 @@ import {
 import { useAuth } from "./useAuth";
 import { firestore } from "@/firebase/client";
 import { CartProduct } from "@/types/cartProduct";
-import { Product } from "@/types/product";
 import { mapProductToClientProduct, organizeCartProducts } from "@/lib/utils";
 
 export type CartItem = {
