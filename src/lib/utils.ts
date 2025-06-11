@@ -1,5 +1,7 @@
 import { CartProduct } from "@/types/cartProduct";
+import { Product, ProductStatus } from "@/types/product";
 import { clsx, type ClassValue } from "clsx";
+import { DocumentData } from "firebase/firestore";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -135,9 +137,8 @@ export const organizeCartProducts = (cartProducts: CartProduct[]) => {
     {} as Record<string, CartProduct[]>,
   );
 
-  console.log({ grouped });
-
-  const sortedAndFlattened = Object.values(grouped).reverse()
+  const sortedAndFlattened = Object.values(grouped)
+    .reverse()
     .map((group) =>
       group.sort((a, b) => {
         const sizeA = a.selectedSize?.toLowerCase() ?? "";
@@ -148,4 +149,34 @@ export const organizeCartProducts = (cartProducts: CartProduct[]) => {
     .flat();
 
   return sortedAndFlattened;
+};
+
+export const mapProductToClientProduct = (data: DocumentData) => {
+  const rawProductData = data;
+  const product: Product = {
+    id: data.id,
+    brandName: rawProductData.brandName as string,
+    brandId: rawProductData.brandId as string,
+    companyName: rawProductData.companyName as string,
+    vehicleCompany: rawProductData.vehicleCompany as string,
+    vehicleNames: rawProductData.vehicleNames as string[],
+    partCategory: rawProductData.partCategory as string,
+    partNumber: rawProductData.partNumber as string,
+    partName: rawProductData.partName as string,
+    price: rawProductData.price as number,
+    discount: rawProductData.discount as number,
+    gst: rawProductData.gst as number,
+    stock: rawProductData.stock as number,
+    status: rawProductData.status as ProductStatus,
+    hasSizes: rawProductData.hasSizes as boolean,
+    samePriceForAllSizes: rawProductData.samePriceForAllSizes as boolean,
+    sizes: rawProductData.sizes as {
+      size: string;
+      price?: number;
+      discount?: number;
+      gst?: number;
+    }[],
+    image: rawProductData.image as string | undefined,
+  };
+  return product;
 };

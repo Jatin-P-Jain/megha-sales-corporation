@@ -24,7 +24,7 @@ import { useAuth } from "./useAuth";
 import { firestore } from "@/firebase/client";
 import { CartProduct } from "@/types/cartProduct";
 import { Product } from "@/types/product";
-import { organizeCartProducts } from "@/lib/utils";
+import { mapProductToClientProduct, organizeCartProducts } from "@/lib/utils";
 
 export type CartItem = {
   id: string; // Firestore document ID
@@ -177,7 +177,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
             const data = snap.data() || {};
             return {
               id: snap.id,
-              product: data as Product,
+              product: mapProductToClientProduct(data),
               quantity,
               selectedSize,
               cartItemKey,
