@@ -75,7 +75,7 @@ export default function ProductCard({
       key={product?.id}
       className="relative gap-0 overflow-hidden p-4 px-0 shadow-md"
     >
-      <CardContent className="flex text-sm md:grid md:grid-cols-[3fr_1fr] md:text-base">
+      <CardContent className="flex flex-col text-sm md:grid md:grid-cols-[3fr_1fr] md:text-base">
         <div className="flex w-full flex-col md:gap-2">
           <div className="text-primary flex w-full items-center justify-between font-semibold">
             <span className="text-sm font-normal">Brand :</span>
@@ -99,9 +99,7 @@ export default function ProductCard({
             <span className="text-sm font-normal">Category :</span>
             {product.partCategory}
           </div>
-          <div className="flex min-h-27 w-full items-center justify-center md:min-h-30 md:w-full">
-            <ProductImage productImage={product?.image} />
-          </div>
+
           {product.sizes && product.sizes.length > 0 && (
             <div className="text-primary mb-1 flex h-full w-full flex-col items-start justify-between gap-1 font-semibold md:mb-2 md:flex-row md:items-center">
               <span className="text-sm font-normal">Select Size:</span>
@@ -118,6 +116,9 @@ export default function ProductCard({
               )}
             </div>
           )}
+        </div>
+        <div className="flex min-h-27 w-full items-center justify-center md:min-h-30 md:w-full h-27">
+          <ProductImage productImage={product?.image} />
         </div>
       </CardContent>
       <CardFooter className="grid grid-cols-[3fr_1fr] items-end justify-center gap-0">
