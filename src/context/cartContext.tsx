@@ -277,24 +277,30 @@ export function CartProvider({ children }: { children: ReactNode }) {
   // ← New: reset _both_ Firestore _and_ local state
   const resetCartContext = async () => {
     // 1) clear remote
-    if (currentUser) {
+    if (currentUser?.uid) {
       const batch = writeBatch(firestore);
       cart.forEach((i) => {
-        const ref = doc(
-          firestore,
-          "carts",
-          currentUser.uid,
-          "items",
-          i.productId,
-        );
-        batch.delete(ref);
+        if (i?.cartItemKey) {
+          const ref = doc(
+            firestore,
+            "carts",
+            currentUser?.uid,
+            "items",
+            i.cartItemKey,
+          );
+          batch.delete(ref);
+        }
       });
-      await batch.commit();
+      try {
+        await batch.commit();
+        setCart([]);
+        setCartProducts([]);
+      } catch (err) {
+        console.error("Failed to reset remote cart:", err);
+      } finally {
+        setLoading(false);
+      }
     }
-    // 2) clear local
-    setCart([]);
-    setCartProducts([]);
-    setLoading(false);
   };
 
   return (

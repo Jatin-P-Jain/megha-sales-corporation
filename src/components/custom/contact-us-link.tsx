@@ -11,7 +11,7 @@ export default function ContactUsLink() {
       href="/contact-us"
       className="w-full text-sm tracking-wider uppercase hover:underline md:text-base whitespace-nowrap"
     >
-      {isMobile ? <PhoneIcon className="size-5" /> : "Contact Us"}
+      {isMobile ? <PhoneIcon className="size-4" /> : "Contact Us"}
     </Link>
   );
 }

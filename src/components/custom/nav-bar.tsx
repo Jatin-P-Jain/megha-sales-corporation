@@ -37,7 +37,7 @@ export default function NavBar({ children }: NavBarProps) {
               </span>
             </div>
           </Link>
-          <ul className="flex items-center justify-between gap-4 md:mt-0 md:gap-6">
+          <ul className="flex items-center justify-between gap-2 md:mt-0 md:gap-4">
             <li className="">
               <ContactUsLink />
             </li>

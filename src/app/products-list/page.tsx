@@ -103,7 +103,7 @@ export default async function ProductsList({
         <Suspense
           fallback={
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-              {Array.from({ length: 3 }).map((_, index) => (
+              {Array.from({ length: 5 }).map((_, index) => (
                 <ProductCardLoading key={index} />
               ))}
             </div>

@@ -51,8 +51,9 @@ export default function OrderDetails({
         <CardContent className="flex w-full flex-col p-0">
           <CollapsibleTrigger asChild>
             <Button
+              variant={"default"}
               className={clsx(
-                "bg-muted text-primary flex w-full justify-between border-1 font-semibold",
+                "bg-muted text-primary flex w-full justify-between border-1 font-semibold hover:bg-transparent",
                 isOpen && "rounded-none rounded-t-lg",
               )}
             >

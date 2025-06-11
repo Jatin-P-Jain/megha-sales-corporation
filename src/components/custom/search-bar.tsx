@@ -90,7 +90,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button variant="ghost">
-            <SearchIcon className="size-5" />
+            <SearchIcon className="size-4" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="mx-auto mr-4 w-[90vw] max-w-md p-2">

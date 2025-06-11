@@ -3,7 +3,6 @@ export const dynamic = "force-dynamic";
 import { cookies } from "next/headers";
 import { auth } from "@/firebase/server";
 import { Suspense } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
 import OrdersList from "./orders-list";
 import { getOrderById, getOrders, getUserOrders } from "@/data/orders";
 import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
@@ -11,6 +10,7 @@ import OrderStatusChips from "@/components/custom/order-status-chips";
 import clsx from "clsx";
 import { OrderStatus } from "@/types/order";
 import { PAGE_SIZE } from "@/lib/utils";
+import { Loader2Icon } from "lucide-react";
 
 export default async function OrderHistoryPage({
   searchParams,
@@ -125,11 +125,10 @@ export default async function OrderHistoryPage({
       >
         <Suspense
           fallback={
-            <>
-              <Skeleton className="h-40 w-full rounded-lg" />
-              <Skeleton className="h-40 w-full rounded-lg" />
-              <Skeleton className="h-40 w-full rounded-lg" />
-            </>
+            <div className="text-muted-foreground mx-auto flex items-center justify-center gap-2 text-sm">
+              <Loader2Icon className="size-4 animate-spin" />
+              <span>Fetching your orders...</span>
+            </div>
           }
         >
           <OrdersList
@@ -137,6 +136,7 @@ export default async function OrderHistoryPage({
             ordersPromise={ordersPromise}
             page={page}
             isAdmin={isAdmin}
+            searchParamsValues={searchParamValues}
           />
         </Suspense>
       </div>
