@@ -11,6 +11,7 @@ import CartControls from "./cart-controls";
 import SizeChips from "./size-selection-chips";
 import { useCart } from "@/context/cartContext";
 import { Skeleton } from "../ui/skeleton";
+import useIsMobile from "@/hooks/useIsMobile";
 
 type ProductCardProps = {
   product: Product;
@@ -25,6 +26,7 @@ export default function ProductCard({
   const [selectedSize, setSelectedSize] = useState<ProductSize | undefined>(
     undefined,
   );
+  const isMobile = useIsMobile();
 
   const [hasMounted, setHasMounted] = useState(false);
   // 1) hydration guard
@@ -99,6 +101,11 @@ export default function ProductCard({
             <span className="text-sm font-normal">Category :</span>
             {product.partCategory}
           </div>
+          {isMobile && (
+            <div className="flex h-27 min-h-27 w-full items-center justify-center md:min-h-30 md:w-full">
+              <ProductImage productImage={product?.image} />
+            </div>
+          )}
 
           {product.sizes && product.sizes.length > 0 && (
             <div className="text-primary mb-1 flex h-full w-full flex-col items-start justify-between gap-1 font-semibold md:mb-2 md:flex-row md:items-center">
@@ -117,9 +124,11 @@ export default function ProductCard({
             </div>
           )}
         </div>
-        <div className="flex min-h-27 w-full items-center justify-center md:min-h-30 md:w-full h-27">
-          <ProductImage productImage={product?.image} />
-        </div>
+        {!isMobile && (
+          <div className="flex h-27 min-h-27 w-full items-center justify-center md:min-h-30 md:w-full">
+            <ProductImage productImage={product?.image} />
+          </div>
+        )}
       </CardContent>
       <CardFooter className="grid grid-cols-[3fr_1fr] items-end justify-center gap-0">
         <div className="flex w-full flex-col items-start justify-start md:flex-row md:justify-between">

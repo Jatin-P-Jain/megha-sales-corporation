@@ -9,8 +9,6 @@ const useMonitorInactivity = (
   currentUser: User | null,
   INACTIVITY_LIMIT: number | null,
 ) => {
-  console.log({ currentUser, INACTIVITY_LIMIT });
-
   useEffect(() => {
     if (!currentUser) return;
 
