@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -20,7 +20,7 @@ import { EnquiryDialog } from "@/components/custom/wa-enquiry-dialog";
 
 export default function AboutAndContact() {
   return (
-    <div className="container mx-auto flex max-w-2xl flex-col p-4 overflow-auto">
+    <div className="container mx-auto flex max-w-2xl flex-col overflow-auto p-4">
       <div className="relative size-15 w-full">
         <Image alt="" src={BhagwanSlok} fill />
         <Image alt="" src={BhagwanSlok} fill />

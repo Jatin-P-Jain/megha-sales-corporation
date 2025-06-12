@@ -12,7 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import React, { useState } from "react";
-import { SendIcon } from "lucide-react";
+import { Loader2Icon, SendIcon } from "lucide-react";
 import { useAuth } from "@/context/useAuth";
 
 type EnquiryDialogProps = {
@@ -102,8 +102,17 @@ export function EnquiryDialog({ trigger }: EnquiryDialogProps) {
                 />
               </div>
               <Button type="submit" className="w-full">
-                <SendIcon className="size-4" />
-                Send
+                {isSending ? (
+                  <>
+                    <Loader2Icon className="animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <SendIcon className="size-4" />
+                    Send
+                  </>
+                )}
               </Button>
             </form>
           </CardContent>

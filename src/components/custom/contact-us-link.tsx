@@ -1,7 +1,6 @@
 "use client";
 
 import useIsMobile from "@/hooks/useIsMobile";
-import { PhoneIcon } from "lucide-react";
 import Link from "next/link";
 import AboutUsContactIcon from "@/assets/icons/about-contact.svg";
 import Image from "next/image";
