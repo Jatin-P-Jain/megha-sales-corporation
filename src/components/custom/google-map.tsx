@@ -8,7 +8,7 @@ import { Loader2Icon } from "lucide-react";
 const containerStyle = {
   width: "100%",
   height: "250px",
-  margin: "auto"
+  margin: "auto",
 };
 
 export default function GoogleMapComponent({ address }: { address: string }) {
@@ -44,11 +44,11 @@ export default function GoogleMapComponent({ address }: { address: string }) {
     );
 
   return (
-    <>
+    <div className="w-full md:w-3/4">
       <GoogleMap mapContainerStyle={containerStyle} center={coords} zoom={15}>
         <Marker position={coords} />
       </GoogleMap>
       <GetDirectionsButton destination={address} />
-    </>
+    </div>
   );
 }
