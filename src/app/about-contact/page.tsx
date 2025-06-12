@@ -27,12 +27,18 @@ export default function AboutAndContact() {
         <div className="relative size-15">
           <Image alt="" src={JainLogo} fill />
           <Image alt="" src={JainLogo} fill />
+          <Image alt="" src={JainLogo} fill />
+          <Image alt="" src={JainLogo} fill />
         </div>
         <div className="relative size-15 w-full">
           <Image alt="" src={BhagwanSlok} fill />
           <Image alt="" src={BhagwanSlok} fill />
+          <Image alt="" src={BhagwanSlok} fill />
+          <Image alt="" src={BhagwanSlok} fill />
         </div>
         <div className="relative size-15">
+          <Image alt="" src={JainLogo} fill />
+          <Image alt="" src={JainLogo} fill />
           <Image alt="" src={JainLogo} fill />
           <Image alt="" src={JainLogo} fill />
         </div>
