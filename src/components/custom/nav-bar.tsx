@@ -37,11 +37,11 @@ export default function NavBar({ children }: NavBarProps) {
               </span>
             </div>
           </Link>
-          <ul className="flex items-center justify-between gap-2 md:mt-0 md:gap-4">
+          <ul className="flex items-center justify-between gap-1 md:mt-0 md:gap-4">
             <li className="">
               <ContactUsLink />
             </li>
-            <li className="w-full">
+            <li className="">
               <SearchBar onSearch={() => {}} />
             </li>
             <li className="flex w-fit items-center justify-center">

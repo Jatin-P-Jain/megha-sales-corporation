@@ -3,15 +3,38 @@
 import useIsMobile from "@/hooks/useIsMobile";
 import { PhoneIcon } from "lucide-react";
 import Link from "next/link";
+import AboutUsContactIcon from "@/assets/icons/about-contact.svg";
+import Image from "next/image";
 
 export default function ContactUsLink() {
   const isMobile = useIsMobile();
   return (
     <Link
-      href="/contact-us"
-      className="w-full text-sm tracking-wider uppercase hover:underline md:text-base whitespace-nowrap"
+      href="/about-contact"
+      className="w-full text-sm tracking-wider whitespace-nowrap uppercase hover:underline md:text-base"
     >
-      {isMobile ? <PhoneIcon className="size-4" /> : "Contact Us"}
+      {isMobile ? (
+        <div className="relative size-6">
+          <Image
+            src={AboutUsContactIcon}
+            alt=""
+            fill
+            className="object-center"
+          />
+        </div>
+      ) : (
+        <div className="flex items-center justify-center gap-2">
+          <div className="relative size-6">
+            <Image
+              src={AboutUsContactIcon}
+              alt=""
+              fill
+              className="object-center"
+            />
+          </div>
+          About & Contact
+        </div>
+      )}
     </Link>
   );
 }
