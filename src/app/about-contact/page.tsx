@@ -10,7 +10,6 @@ import {
   User2Icon,
   StoreIcon,
   FootprintsIcon,
-  MapPin,
   MapPinIcon,
 } from "lucide-react";
 import Image from "next/image";
