@@ -8,6 +8,7 @@ export async function middleware(request: NextRequest) {
 
   // ✅ Bypass auth for static public files
   if (
+    request.method === "GET" ||
     pathname.startsWith("/manifest.json") ||
     pathname.startsWith("/sw.js") ||
     pathname.startsWith("/icons") ||
@@ -104,17 +105,18 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/manifest.json",
-    "/admin-dashboard",
-    "/admin-dashboard/:path*",
-    "/login",
-    "/register",
-    "/account",
-    "/account/:path*",
-    "/products-list",
-    "/products-list/:path*",
-    "/cart",
-    "/checkout",
-    "/order-history",
+    // "/manifest.json",
+    // "/admin-dashboard",
+    // "/admin-dashboard/:path*",
+    // "/login",
+    // "/register",
+    // "/account",
+    // "/account/:path*",
+    // "/products-list",
+    // "/products-list/:path*",
+    // "/cart",
+    // "/checkout",
+    // "/order-history",
+    "/((?!manifest\\.json|sw\\.js|icons|favicon\\.ico|_next|$).*)",
   ],
 };
