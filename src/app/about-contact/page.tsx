@@ -47,29 +47,27 @@ export default function AboutAndContact() {
         Megha Sales Corporation
       </h2> */}
       <AboutAutoPartsShop />
-      <div className="text-muted-foreground mt-4 flex w-full flex-col items-start justify-center gap-4 px-4 md:mt-0">
+      <div className="text-muted-foreground mt-4 flex w-full flex-col items-start justify-center gap-4 px-4">
         <div className="flex w-full flex-col items-start justify-start gap-2">
           <p className="flex items-center gap-2 text-sm font-normal">
             <StoreIcon className="size-4" />
             Proprietorship :{" "}
           </p>
-          <div className="text-primary/70 flex w-full flex-col gap-1 text-sm font-semibold">
+          <div className="text-primary/95 flex w-full flex-col gap-1 text-sm font-semibold">
             <p className="flex items-center justify-start gap-2">
               <User2Icon className="size-5" />
-              <span className="text-primary text-base font-semibold">
-                Yashwant Jain
-              </span>
+              <span className="text-base font-semibold">Yashwant Jain</span>
             </p>
             <div className="flex w-full items-center justify-between gap-4">
               <p className="flex items-center gap-2 text-base">
                 <Phone className="size-5" />
-                <span className="text-primary">+91-9425505557</span>
+                <span className="">+91-9425505557</span>
               </p>
               <EnquiryDialog
                 trigger={
                   <Button
                     variant="outline"
-                    className="h-0 min-h-0 w-fit gap-2 rounded-full border-green-600 p-3 px-5 text-green-700"
+                    className="h-0 min-h-0 w-fit gap-2 rounded-full border-green-600 p-3 px-5 text-green-600"
                   >
                     <div className="relative size-4">
                       <Image src={WhatsappIcon} alt="" fill />
@@ -81,7 +79,7 @@ export default function AboutAndContact() {
             </div>
             <p className="flex items-center gap-2 text-base">
               <Mail className="size-5" />
-              <span className="text-primary">yashwantraipur@gmail.com</span>
+              <span className="">yashwantraipur@gmail.com</span>
             </p>
           </div>
         </div>
@@ -90,7 +88,7 @@ export default function AboutAndContact() {
             <FootprintsIcon className="size-4" /> Find us here
           </p>
           <div className="justify-ceenter flex w-full flex-col items-center gap-2 md:flex-row">
-            <div className="text-primary/70 flex items-start justify-start gap-2 font-semibold md:w-1/4">
+            <div className="text-primary/90 flex items-start justify-start gap-2 font-semibold md:w-1/4">
               <MapPinIcon className="size-6 md:size-20" />
               <span className="text-sm">
                 Shop No.140, Eskay Plaza Complex, New Bombay Market Road,
@@ -117,7 +115,7 @@ export default function AboutAndContact() {
               trigger={
                 <Button
                   variant="outline"
-                  className="w-full gap-4 border-green-600 text-green-700"
+                  className="w-full gap-4 border-green-600 text-green-600"
                 >
                   <div className="relative size-5">
                     <Image src={WhatsappIcon} alt="" fill />

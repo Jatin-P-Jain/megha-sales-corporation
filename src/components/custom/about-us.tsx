@@ -10,8 +10,8 @@ export default function AboutAutoPartsShop() {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="mt-2 space-y-2 p-2 md:p-8">
-      <div className="space-y-1 text-center">
+    <div className="space-y-2 p-2 md:p-0">
+      <div className="space-y-2 text-center">
         <h1 className="text-primary text-2xl font-bold md:text-3xl">
           Megha Sales Corporation
         </h1>
@@ -20,9 +20,9 @@ export default function AboutAutoPartsShop() {
         </p>
       </div>
 
-      <Card className="p-0">
-        <CardContent className="space-y-2 p-3">
-          <p className="text-sm leading-relaxed md:text-base">
+      <Card className="px-3">
+        <CardContent className="space-y-4 px-3">
+          <p className="text-sm leading-relaxed md:text-base text-justify">
             At <strong>Megha Sales Corporation</strong>, we specialize in
             wholesale distribution of high-quality{" "}
             <strong>automobile spare parts</strong> for <strong>Light</strong>{" "}
