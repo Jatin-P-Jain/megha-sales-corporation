@@ -31,7 +31,7 @@ export default async function RootLayout({
         content="width=device-width, initial-scale=1, height=device-height"
       />
       <head>
-        {/* <link rel="manifest" href="/manifest.json" /> */}
+        <link rel="manifest" href="/manifest.json" />
         <link
           rel="icon"
           type="image/png"
