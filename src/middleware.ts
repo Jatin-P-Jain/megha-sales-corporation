@@ -6,6 +6,15 @@ import { NextRequest, NextResponse } from "next/server";
 export async function middleware(request: NextRequest) {
   const { pathname, origin, searchParams } = request.nextUrl;
 
+  // ✅ Bypass auth for static public files
+  if (
+    pathname.startsWith("/manifest.json") ||
+    pathname.startsWith("/sw.js") ||
+    pathname.startsWith("/icons") ||
+    pathname.startsWith("/favicon.ico")
+  ) {
+    return NextResponse.next();
+  }
   // 0) Bypass internals & your refresh endpoint
   if (
     request.method === "POST" ||
@@ -80,7 +89,6 @@ export async function middleware(request: NextRequest) {
 
   // 7) Admin vs user guards
   if (!admin && pathname.startsWith("/admin-dashboard")) {
-
     return NextResponse.redirect(new URL("/", origin));
   }
   if (admin && pathname === "/admin-dashboard") {
