@@ -8,11 +8,11 @@ export async function middleware(request: NextRequest) {
   console.log("MIDDLEWARE TRIGGERED:", request.nextUrl.pathname);
   // ✅ Bypass auth for static public files
   if (
-    request.method === "GET" ||
-    pathname.startsWith("/manifest.json") ||
-    pathname.startsWith("/sw.js") ||
+    pathname === "/manifest.json" ||
+    pathname === "/sw.js" ||
+    pathname.startsWith("/_next") ||
     pathname.startsWith("/icons") ||
-    pathname.startsWith("/favicon.ico")
+    pathname === "/favicon.ico"
   ) {
     return NextResponse.next();
   }
@@ -102,20 +102,31 @@ export async function middleware(request: NextRequest) {
   // 8) All clear
   return NextResponse.next();
 }
-
 export const config = {
   matcher: [
-    "/manifest.json",
-    "/admin-dashboard",
-    "/admin-dashboard/:path*",
-    "/login",
-    "/register",
-    "/account",
-    "/account/:path*",
-    "/products-list",
-    "/products-list/:path*",
-    "/cart",
-    "/checkout",
-    "/order-history",
+    // Match all routes except:
+    // - /manifest.json
+    // - /sw.js
+    // - /icons/*
+    // - /_next/*
+    // - /favicon.ico
+    // - /
+    "/((?!^manifest\\.json$|^sw\\.js$|^icons/|^_next/|^favicon\\.ico$|^api/refresh-token|^$).*)",
   ],
 };
+// export const config = {
+//   matcher: [
+//     "/manifest.json",
+//     "/admin-dashboard",
+//     "/admin-dashboard/:path*",
+//     "/login",
+//     "/register",
+//     "/account",
+//     "/account/:path*",
+//     "/products-list",
+//     "/products-list/:path*",
+//     "/cart",
+//     "/checkout",
+//     "/order-history",
+//   ],
+// };
