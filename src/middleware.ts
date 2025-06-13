@@ -104,6 +104,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
+    "/manifest.json",
     "/admin-dashboard",
     "/admin-dashboard/:path*",
     "/login",
