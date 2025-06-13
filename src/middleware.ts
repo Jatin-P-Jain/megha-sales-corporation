@@ -117,6 +117,6 @@ export const config = {
     // "/cart",
     // "/checkout",
     // "/order-history",
-    "/((?!manifest\\.json|sw\\.js|icons|favicon\\.ico|_next|$).*)",
+    "/((?!^manifest\\.json$|^sw\\.js$|^icons/|^favicon\\.ico$|^_next/|^api/refresh-token|^$).*)",
   ],
 };
