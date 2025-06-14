@@ -104,15 +104,8 @@ export async function middleware(request: NextRequest) {
 }
 export const config = {
   matcher: [
-    // This matches everything except:
-    // /manifest.json
-    // /sw.js
-    // /icons/*
-    // /_next/*
-    // /favicon.ico
-    // /api/refresh-token
-    // /
-    "/((?!manifest\\.json$|sw\\.js$|icons/|_next/|favicon\\.ico$|api/refresh-token|^$).*)",
+    // Match only app routes — exclude all static/public files and the homepage
+    "/((?!_next|favicon.ico|manifest.json|sw.js|icons/|api/refresh-token|^$).*)",
   ],
 };
 // export const config = {
