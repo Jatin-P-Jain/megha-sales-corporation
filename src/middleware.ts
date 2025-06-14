@@ -102,25 +102,25 @@ export async function middleware(request: NextRequest) {
   // 8) All clear
   return NextResponse.next();
 }
-export const config = {
-  matcher: [
-    // Match only app routes — exclude all static/public files and the homepage
-    "/((?!_next|favicon.ico|manifest.json|sw.js|icons/|api/refresh-token|^$).*)",
-  ],
-};
 // export const config = {
 //   matcher: [
-//     "/manifest.json",
-//     "/admin-dashboard",
-//     "/admin-dashboard/:path*",
-//     "/login",
-//     "/register",
-//     "/account",
-//     "/account/:path*",
-//     "/products-list",
-//     "/products-list/:path*",
-//     "/cart",
-//     "/checkout",
-//     "/order-history",
+//     // Match only app routes — exclude all static/public files and the homepage
+//     "/((?!_next|favicon.ico|manifest.json|sw.js|icons/|api/refresh-token|^$).*)",
 //   ],
 // };
+export const config = {
+  matcher: [
+    "/manifest.json",
+    "/admin-dashboard",
+    "/admin-dashboard/:path*",
+    "/login",
+    "/register",
+    "/account",
+    "/account/:path*",
+    "/products-list",
+    "/products-list/:path*",
+    "/cart",
+    "/checkout",
+    "/order-history",
+  ],
+};
