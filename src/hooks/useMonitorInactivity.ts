@@ -14,7 +14,7 @@ const log = (...args: string[]) => {
 
 const useMonitorInactivity = (
   currentUser: User | null,
-  INACTIVITY_LIMIT: number | undefined,
+  INACTIVITY_LIMIT: number | null,
 ) => {
   useEffect(() => {
     if (!currentUser || !INACTIVITY_LIMIT) return;
