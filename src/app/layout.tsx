@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: "Megha Sales Corporation",
   description: "Auto accessories store in Raipur, Chhattisgarh",
   icons: "/brand-logo.svg",
-  manifest:'/manifest.json'
+  manifest: "/manifest.json",
 };
 
 export default async function RootLayout({
@@ -31,7 +31,11 @@ export default async function RootLayout({
         content="width=device-width, initial-scale=1, height=device-height"
       />
       <head>
-        <link rel="manifest" href="/manifest.json" crossOrigin="use-credentials"/>
+        <link
+          rel="manifest"
+          href="/manifest.json"
+          crossOrigin="use-credentials"
+        />
         <link
           rel="icon"
           type="image/png"

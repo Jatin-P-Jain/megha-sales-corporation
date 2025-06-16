@@ -23,6 +23,9 @@ import { UserData } from "@/types/user";
 import { doc, getDoc } from "firebase/firestore";
 import { mapDbUserToClientUser } from "@/lib/firebase/mapDBUserToClient";
 import useMonitorInactivity from "@/hooks/useMonitorInactivity";
+import { getFcmToken } from "@/firebase/firebase-messaging";
+import { getDeviceMetadata } from "@/lib/utils";
+import { saveFcmToken } from "@/firebase/saveFcmToken";
 
 type AuthContextType = {
   loading: boolean;
@@ -55,9 +58,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [clientUserLoading, setClientUserLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [customClaims, setCustomClaims] = useState<ParsedToken | null>(null);
-  const [inactivityLimit, setInactivityLimit] = useState<number | null>(
-    null,
-  );
+  const [inactivityLimit, setInactivityLimit] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -74,6 +75,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setClientUserLoading(false);
     }
   };
+
+  useEffect(() => {
+    const setupFcm = async () => {
+      if (!currentUser) return;
+
+      try {
+        const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY!;
+        const token = await getFcmToken(vapidKey);
+
+        if (token) {
+          const metadata = getDeviceMetadata();
+          await saveFcmToken(currentUser.uid, token, metadata);
+          console.log("✅ FCM Token saved:", token);
+        }
+      } catch (err) {
+        console.error("❌ FCM token error:", err);
+      }
+    };
+
+    setupFcm();
+  }, [currentUser]);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {

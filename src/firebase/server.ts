@@ -3,6 +3,7 @@ import admin from "firebase-admin";
 import { Firestore, getFirestore } from "firebase-admin/firestore";
 import { Auth, getAuth } from "firebase-admin/auth";
 import { getStorage, Storage } from "firebase-admin/storage";
+import { getMessaging, Messaging } from "firebase-admin/messaging";
 
 const serviceAccount = {
   type: "service_account",
@@ -17,7 +18,7 @@ const serviceAccount = {
   client_x509_cert_url: process.env.FIREBASE_CLIENT_CERT_URL,
   universe_domain: "googleapis.com",
 };
-
+let messaging: Messaging;
 let fireStore: Firestore;
 let auth: Auth;
 let storage: Storage;
@@ -30,14 +31,16 @@ if (!currentApps.length) {
   fireStore = getFirestore(app);
   auth = getAuth(app);
   storage = getStorage(app);
+  messaging = getMessaging(app);
 } else {
   const app = currentApps[0];
   fireStore = getFirestore(app);
   auth = getAuth(app);
   storage = getStorage(app);
+  messaging = getMessaging(app);
 }
 
-export { fireStore, auth, storage };
+export { fireStore, auth, storage, messaging };
 
 export const getTotalPages = async (
   firestoreQuery: FirebaseFirestore.Query<
