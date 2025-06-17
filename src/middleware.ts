@@ -5,7 +5,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function middleware(request: NextRequest) {
   const { pathname, origin, searchParams } = request.nextUrl;
-  console.log("MIDDLEWARE TRIGGERED:", request.nextUrl.pathname);
   // ✅ Bypass auth for static public files
   if (
     pathname === "/manifest.json" ||

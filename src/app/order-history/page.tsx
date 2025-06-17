@@ -27,7 +27,7 @@ export default async function OrderHistoryPage({
   const searchParamValues = await searchParams;
 
   // 2) parse pagination + optional single‐order
-  const pageRaw = parseInt(searchParamValues.page || "1", 10);
+  const pageRaw = parseInt(searchParamValues.page || "1");
   const page = Number.isNaN(pageRaw) ? 1 : pageRaw;
   const requestedOrderId = searchParamValues.orderId ?? "";
   const statusParam = searchParamValues.status ?? "";
