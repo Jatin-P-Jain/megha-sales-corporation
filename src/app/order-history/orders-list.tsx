@@ -58,7 +58,7 @@ export default async function OrdersList({
                 {page > 1 && (
                   <PaginationItem>
                     <PaginationPrevious
-                      href={`/products-list?page=${page - 1}`}
+                      href={`/order-history?page=${page - 1}`}
                     />
                   </PaginationItem>
                 )}
@@ -81,7 +81,7 @@ export default async function OrdersList({
                   return (
                     <PaginationItem key={pageNum}>
                       <PaginationLink
-                        href={`/products-list?${newSearchParams}`}
+                        href={`/order-history?${newSearchParams}`}
                         isActive={isCurrent}
                         className={clsx(
                           isCurrent && "bg-primary font-bold text-white",
@@ -95,7 +95,7 @@ export default async function OrdersList({
 
                 {page < totalPages && (
                   <PaginationItem>
-                    <PaginationNext href={`/products-list?page=${page + 1}`} />
+                    <PaginationNext href={`/order-history?page=${page + 1}`} />
                   </PaginationItem>
                 )}
               </PaginationContent>

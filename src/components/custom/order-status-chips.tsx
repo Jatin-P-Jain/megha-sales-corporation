@@ -81,11 +81,11 @@ export default function OrderStatusChips() {
                 isSel &&
                   `${
                     value === "pending"
-                      ? "border-amber-600 bg-amber-100 text-yellow-600"
+                      ? "border-amber-600 bg-amber-100 text-yellow-600 hover:bg-amber-200/60"
                       : value === "complete"
-                        ? "border-green-700 bg-green-100 text-green-700"
+                        ? "border-green-700 bg-green-100 text-green-700 hover:bg-green-200/60"
                         : value === "packing"
-                          ? "border-sky-700 bg-sky-100 text-sky-700"
+                          ? "border-sky-700 bg-sky-100 text-sky-700 hover:bg-sky-200/60"
                           : ""
                   }`,
                 "border-1",
