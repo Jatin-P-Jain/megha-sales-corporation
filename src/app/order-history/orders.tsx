@@ -38,7 +38,7 @@ export default function Orders({
       return;
     }
     toast.success("Order Status Updated!", {
-      description: `Order status changed to ${newStatus.charAt(0).toUpperCase() + newStatus.slice(1, newStatus.length)}`,
+      description: `Order status changed to "${newStatus.charAt(0).toUpperCase() + newStatus.slice(1, newStatus.length)}"`,
     });
   };
 

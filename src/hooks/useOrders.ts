@@ -91,7 +91,7 @@ export function useOrders({
       });
     };
 
-    fetch();
+    if (userId) fetch();
 
     return () => {
       if (unsub) unsub();

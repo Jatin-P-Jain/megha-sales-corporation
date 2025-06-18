@@ -62,7 +62,7 @@ export default function OrdersList({
     return (
       <div className="text-muted-foreground flex w-full items-center justify-center gap-2">
         <Loader2Icon className="size-4 animate-spin" />
-        Fetching yout orders...
+        Fetching the orders...
       </div>
     );
   }
@@ -80,7 +80,7 @@ export default function OrdersList({
               <Link href={"/order-history"}>View all orders</Link>
             </Button>
           ) : (
-            <Pagination>
+            <Pagination className="text-muted-foreground">
               <PaginationContent className="mb-3 w-full items-center justify-center md:mb-6">
                 {page > 1 && (
                   <PaginationItem>
