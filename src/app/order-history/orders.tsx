@@ -1,12 +1,14 @@
 "use client";
 
 import OrderDetails from "@/components/custom/order-details";
+import { OrderStatusDropdown } from "@/components/custom/order-status";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatDateTime } from "@/lib/utils";
-import { Order } from "@/types/order";
-import clsx from "clsx";
+import { Order, OrderStatus } from "@/types/order";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { updateOrderStatus } from "./actions";
+import { toast } from "sonner";
 
 export default function Orders({
   orderData,
@@ -25,6 +27,21 @@ export default function Orders({
   useEffect(() => {
     setOrderFocused(requestedOrderId);
   }, [requestedOrderId]);
+
+  const handleStatusChange = async (
+    orderId: string,
+    newStatus: OrderStatus,
+  ) => {
+    const updateResponse = await updateOrderStatus(orderId, newStatus);
+    if (updateResponse?.error) {
+      toast.error("Error updating status of the order.");
+      return;
+    }
+    toast.success("Order Status Updated!", {
+      description: `Order status changed to ${newStatus.charAt(0).toUpperCase() + newStatus.slice(1, newStatus.length)}`,
+    });
+  };
+
   return (
     <div className="flex w-full flex-1 flex-grow flex-col gap-3">
       {orderData.map((order) => {
@@ -43,23 +60,13 @@ export default function Orders({
                   {id}
                 </span>
               </div>
-              <div className="text-muted-foreground flex w-full items-center justify-between text-xs md:text-sm">
-                Status:
-                <span
-                  className={clsx(
-                    "rounded-full border-1 px-4 text-sm font-semibold md:text-base",
-                    status === "pending" &&
-                      "border-amber-600 bg-amber-100 text-yellow-600",
-                    status === "packing" &&
-                      "border-sky-700 bg-sky-100 text-sky-700",
-                    status === "complete" &&
-                      "border-green-700 bg-green-100 text-green-700",
-                  )}
-                >
-                  {status.charAt(0).toUpperCase() +
-                    status.slice(1, status.length)}
-                </span>
-              </div>
+              <OrderStatusDropdown
+                isAdmin={isAdmin}
+                status={status}
+                onChange={(newStatus) => {
+                  handleStatusChange(order.id, newStatus);
+                }}
+              />
               <OrderDetails
                 orderId={id}
                 products={products}
