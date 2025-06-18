@@ -133,10 +133,10 @@ export default async function OrderHistoryPage({
         >
           <OrdersList
             requestedOrderId={requestedOrderId}
-            ordersPromise={ordersPromise}
             page={page}
             isAdmin={isAdmin}
             searchParamsValues={searchParamValues}
+            userId={isUser ? verified?.uid : undefined}
           />
         </Suspense>
       </div>

@@ -1,5 +1,6 @@
+"use client";
 import { Button } from "@/components/ui/button";
-import { Order } from "@/types/order";
+import { OrderStatus } from "@/types/order";
 import Link from "next/link";
 import Orders from "./orders";
 import { PAGE_SIZE } from "@/lib/utils";
@@ -12,20 +13,17 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import clsx from "clsx";
+import { useOrders } from "@/hooks/useOrders";
+import { Loader2Icon } from "lucide-react";
 
-export default async function OrdersList({
+export default function OrdersList({
   requestedOrderId,
-  ordersPromise,
   page,
   isAdmin,
   searchParamsValues,
+  userId,
 }: {
   requestedOrderId?: string;
-  ordersPromise: Promise<{
-    data: Order[];
-    totalPages: number;
-    totalItems?: number;
-  }>;
   page: number;
   isAdmin: boolean;
   searchParamsValues: {
@@ -33,12 +31,41 @@ export default async function OrdersList({
     status?: string;
     orderId?: string;
   };
+  userId?: string;
 }) {
   const pageSize = PAGE_SIZE;
-  const [orders] = await Promise.all([ordersPromise]);
-  const { data, totalPages, totalItems } = orders;
+  const showSingle = !!requestedOrderId;
+
+  const rawStatus = searchParamsValues.status;
+
+  const statusParam: OrderStatus[] = Array.isArray(rawStatus)
+    ? rawStatus.map((s) => s as OrderStatus)
+    : rawStatus
+      ? [rawStatus as OrderStatus]
+      : [];
+
+  const {
+    orders: data,
+    loading,
+    totalItems,
+    totalPages,
+  } = useOrders({
+    page,
+    pageSize,
+    userId: isAdmin ? undefined : userId,
+    status: statusParam,
+  });
   const start = (page - 1) * pageSize + 1;
   const end = Math.min(page * pageSize, totalItems ?? 0);
+
+  if (loading) {
+    return (
+      <div className="text-muted-foreground flex w-full items-center justify-center gap-2">
+        <Loader2Icon className="size-4 animate-spin" />
+        Fetching yout orders...
+      </div>
+    );
+  }
 
   return (
     <>
@@ -48,13 +75,13 @@ export default async function OrdersList({
             Page {page} • Showing {start}–{end} of {totalItems} results
           </p>
           <Orders orderData={data} isAdmin={isAdmin} />
-          {requestedOrderId ? (
+          {showSingle ? (
             <Button className="mx-auto w-3/4" asChild>
               <Link href={"/order-history"}>View all orders</Link>
             </Button>
           ) : (
             <Pagination>
-              <PaginationContent className="w-full items-center justify-center mb-3 md:mb-6">
+              <PaginationContent className="mb-3 w-full items-center justify-center md:mb-6">
                 {page > 1 && (
                   <PaginationItem>
                     <PaginationPrevious
