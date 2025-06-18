@@ -4,12 +4,10 @@ import { cookies } from "next/headers";
 import { auth } from "@/firebase/server";
 import { Suspense } from "react";
 import OrdersList from "./orders-list";
-import { getOrderById, getOrders, getUserOrders } from "@/data/orders";
 import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
 import OrderStatusChips from "@/components/custom/order-status-chips";
 import clsx from "clsx";
 import { OrderStatus } from "@/types/order";
-import { PAGE_SIZE } from "@/lib/utils";
 import { Loader2Icon } from "lucide-react";
 
 export default async function OrderHistoryPage({
@@ -41,29 +39,6 @@ export default async function OrderHistoryPage({
     else {
       orderStatusFilter.push(statusParam as OrderStatus);
     }
-  }
-
-  // 3) pick the right promise
-  let ordersPromise;
-  if (isAdmin && !requestedOrderId) {
-    // admin: fetch all, unfiltered
-    ordersPromise = getOrders({
-      filters: { status: orderStatusFilter },
-      pagination: { page, pageSize: PAGE_SIZE },
-    });
-  } else if (isUser) {
-    // regular user: only their orders
-    if (requestedOrderId) {
-      ordersPromise = getOrderById(requestedOrderId);
-    } else {
-      ordersPromise = getUserOrders(verified?.uid, {
-        filters: { status: orderStatusFilter },
-        pagination: { page, pageSize: PAGE_SIZE },
-      });
-    }
-  } else {
-    // not logged in at all: empty list
-    ordersPromise = Promise.resolve({ data: [], totalPages: 0, totalItems: 0 });
   }
 
   return (
