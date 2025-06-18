@@ -24,21 +24,21 @@ const statusStyles: Record<
     border: "border-amber-600",
     text: "text-yellow-600",
     bg: "bg-amber-100",
-    icon: "text-yellow-600",
+    icon: "text-yellow-600 opacity-100",
     focusVisible: "focus-visible:border-amber-600 border-2",
   },
   packing: {
     border: "border-sky-700",
     text: "text-sky-700",
     bg: "bg-sky-100",
-    icon: "text-sky-700",
+    icon: "text-sky-700 opacity-100",
     focusVisible: "focus-visible:border-sky-700 border-2",
   },
   complete: {
     border: "border-green-700",
     text: "text-green-700",
     bg: "bg-green-100",
-    icon: "text-green-700",
+    icon: "text-green-700 opacity-100",
     focusVisible: "focus-visible:border-green-700",
   },
 };
@@ -72,13 +72,14 @@ export function OrderStatusDropdown({
         >
           <SelectTrigger
             className={clsx(
-              "flex w-fit items-center gap-1 rounded-full border px-3 py-1 text-sm font-semibold md:text-base",
+              "!h-2 min-h-0 py-3 px-2 gap-1 font-semibold",
               "shadow-none ring-0 outline-none focus:shadow-none focus:ring-0 focus:ring-offset-0 focus:outline-none focus-visible:shadow-none focus-visible:ring-0 focus-visible:ring-offset-0",
               style.border,
               style.text,
               style.bg,
-              style.icon,
             )}
+            iconClassName={style.icon}
+            size="sm"
           >
             <SelectValue />
           </SelectTrigger>
@@ -93,7 +94,7 @@ export function OrderStatusDropdown({
       ) : (
         <span
           className={clsx(
-            "flex items-center justify-between gap-1 rounded-full border-1 px-2 pl-4 text-sm font-semibold md:text-base",
+            "flex items-center justify-between gap-1 rounded-full border-1 px-3 text-sm font-semibold md:text-base",
             style.border,
             style.text,
             style.bg,
