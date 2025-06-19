@@ -1,3 +1,4 @@
+import AboutBrandButton from "@/components/custom/about-brand.button";
 import BrandLogo from "@/components/custom/brand-logo";
 import PublishBrandButton from "@/components/custom/publish-brand-button";
 import { Button } from "@/components/ui/button";
@@ -157,23 +158,26 @@ const AdminBrands = async ({
                   )}
                 </div>
 
-                {brand?.status === "draft" && (
-                  <PublishBrandButton brandId={brand.id} newStatus="live" />
-                )}
+                <div className="grid grid-cols-2 items-center justify-between gap-4 w-full">
+                  <AboutBrandButton brandId={brand?.id} brandName={""} />
+                  {brand?.status === "draft" && (
+                    <PublishBrandButton brandId={brand.id} newStatus="live" />
+                  )}
 
-                {brand?.status === "live" && (
-                  <Button className="w-full gap-2" asChild>
-                    <Link
-                      href={{
-                        pathname: "/admin-dashboard/new-product",
-                        query: { brandId: brand.id },
-                      }}
-                    >
-                      <PlusCircleIcon />
-                      Add Product
-                    </Link>
-                  </Button>
-                )}
+                  {brand?.status === "live" && (
+                    <Button className="w-full gap-2" asChild>
+                      <Link
+                        href={{
+                          pathname: "/admin-dashboard/new-product",
+                          query: { brandId: brand.id },
+                        }}
+                      >
+                        <PlusCircleIcon />
+                        Add Product
+                      </Link>
+                    </Button>
+                  )}
+                </div>
               </CardFooter>
             </Card>
           );

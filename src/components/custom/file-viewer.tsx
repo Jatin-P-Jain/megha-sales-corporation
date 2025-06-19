@@ -30,15 +30,20 @@ export function FileViewer({ url, fileName, className }: FileViewerProps) {
 
     case "pdf":
       return (
-        <object
-          className={"h-full w-full aspect-[4/3]"}
-          data={url}
-          type="application/pdf"
-        >
-          <p className="text-muted-foreground bg-muted p-4 rounded flex w-full flex-col">
-            Unable to display PDF.
-          </p>
-        </object>
+        <div className="flex h-[80vh] w-[90vw] items-center justify-center">
+          <object
+            className={"aspect-[4/3] h-full w-full"}
+            data={url}
+            type="application/pdf"
+          >
+            <p className="text-muted-foreground bg-muted flex w-full flex-col rounded p-4">
+              Unable to display PDF.
+            </p>
+            <a className={className} href={url} download>
+              Download {fileName}
+            </a>
+          </object>
+        </div>
       );
 
     case "excel":
@@ -46,7 +51,7 @@ export function FileViewer({ url, fileName, className }: FileViewerProps) {
         <iframe
           className={className}
           src={`https://docs.google.com/gview?url=${encodeURIComponent(
-            url
+            url,
           )}&embedded=true`}
           width="100%"
           height="600px"
@@ -55,14 +60,16 @@ export function FileViewer({ url, fileName, className }: FileViewerProps) {
 
     case "word":
       return (
-        <iframe
-          className={className}
-          src={`https://docs.google.com/gview?url=${encodeURIComponent(
-            url
-          )}&embedded=true`}
-          width="100%"
-          height="600px"
-        />
+        <div className="h-[80vh] w-[90vw]">
+          <iframe
+            className={className}
+            src={`https://docs.google.com/gview?url=${encodeURIComponent(
+              url,
+            )}&embedded=true`}
+            width="100%"
+            height="100%"
+          />
+        </div>
       );
 
     default:

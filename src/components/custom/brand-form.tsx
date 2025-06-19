@@ -52,6 +52,7 @@ export default function BrandForm({
     partCategories: [],
     description: "",
     status: "draft",
+    brandWebsite: "",
     brandMedia: [],
     ...defaultValues,
   };
@@ -334,6 +335,28 @@ export default function BrandForm({
               )}
             />
           </div>
+
+          {/* Brand Website */}
+          <FormField
+            control={form.control}
+            name="brandWebsite"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel className="flex items-start gap-1">
+                  Brand Website
+                  <span className="text-muted-foreground text-xs">*</span>
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    disabled={isSubmitting}
+                    {...field}
+                    placeholder="Provide the brand's offical website"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
         <Button

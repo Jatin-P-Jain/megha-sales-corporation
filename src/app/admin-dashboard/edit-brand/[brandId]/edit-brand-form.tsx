@@ -30,6 +30,7 @@ export default function EditBrandForm({
   partCategories,
   totalProducts,
   description,
+  brandWebsite,
   status,
   brandMedia,
 }: Props) {
@@ -178,6 +179,7 @@ export default function EditBrandForm({
           vehicleNames,
           partCategories,
           description,
+          brandWebsite,
           status,
           brandMedia: brandMedia.map((media) => {
             return {
