@@ -93,7 +93,7 @@ export default function MultiMediaUploader({
   }
 
   return (
-    <div className="max-w-3xl w-full mx-auto py-4">
+    <div className="mx-auto w-full max-w-3xl py-4">
       <input
         className="hidden"
         ref={inputRef}
@@ -105,7 +105,7 @@ export default function MultiMediaUploader({
       />
 
       <Button
-        className="w-full mx-auto"
+        className="mx-auto w-full"
         variant={"outline"}
         type="button"
         onClick={() => {
@@ -119,57 +119,57 @@ export default function MultiMediaUploader({
       </Button>
       {mediaSizeError ? (
         <p
-          className={`flex flex-col w-full text-xs text-center text-yellow-700`}
+          className={`flex w-full flex-col text-center text-xs text-yellow-700`}
         >
           One or more files selected were larger than {MAX_SIZE_MB}MB and have
           been skipped.
         </p>
       ) : (
-        <p className={`w-full text-xs text-center text-muted-foreground`}>
+        <p className={`text-muted-foreground w-full text-center text-xs`}>
           Supported formats: PDF, Word, Excel, CSV, Images, and Videos.{" "}
           <strong>Max size: {MAX_SIZE_MB}MB.</strong>
         </p>
       )}
 
       {media.length > 0 && (
-        <div className="max-h-60 shadow-sm overflow-auto rounded mt-2">
+        <div className="mt-2 max-h-60 overflow-auto rounded shadow-sm">
           {media.map((item, index) => {
             const progress = progressMap[item.fileName || ""];
             const icon = IconForFile(item?.fileName);
 
             return (
               <div className="relative p-1 px-1" key={index}>
-                <div className="bg-gray-100 flex items-center rounded-lg overflow-hidden gap-3 p-1 px-4">
-                  <div className="size-8 relative">
+                <div className="flex items-center gap-3 overflow-hidden rounded-lg bg-gray-100 p-1 px-4">
+                  <div className="relative size-8">
                     <Image
                       src={icon}
                       alt=""
                       fill
-                      className="object-center w-full h-full"
+                      className="h-full w-full object-center"
                     />
                   </div>
-                  <div className="flex-col flex-grow">
+                  <div className="flex-grow flex-col">
                     <p className="text-sm font-medium text-ellipsis">
                       {truncateMiddle(item?.fileName, 20, 10, 10)}
                     </p>
                     {item?.file && (
                       <>
-                        <Progress className="w-full mt-2" value={progress} />
-                        <span className="text-xs text-muted-foreground">
+                        <Progress className="mt-2 w-full" value={progress} />
+                        <span className="text-muted-foreground text-xs">
                           {!progress ? "Ready to upload" : "Uploading"}
                           {` - ${progress ?? 0} %`}
                         </span>
                       </>
                     )}
                   </div>
-                  <div className="flex gap-2 md:gap-3 items-center">
+                  <div className="flex items-center gap-2 md:gap-3">
                     <button
                       type="button"
                       className="cursor-pointer"
                       onClick={(e) => {
                         e.stopPropagation();
                         setPreviewFile(
-                          urlFormatter ? urlFormatter(item) : item.url
+                          urlFormatter ? urlFormatter(item) : item.url,
                         );
                         setPreviewFileName(item?.fileName || "");
                       }}
@@ -195,26 +195,26 @@ export default function MultiMediaUploader({
 
       {previewFile && (
         <div
-          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 flex-col"
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/70"
           onClick={() => {
             setPreviewFile(null);
             setPreviewFileName("");
           }} // Close modal on background click
         >
-          <div className="flex w-[90vw] h-auto justify-end ">
+          <div className="flex h-auto w-[90vw] justify-end">
             <div
               onClick={() => {
                 setPreviewFile(null);
                 setPreviewFileName("");
               }}
-              className="bg-muted flex cursor-pointer text-muted-foreground px-1 rounded gap-1 text-sm font-bold justify-center items-center"
+              className="bg-muted text-muted-foreground flex cursor-pointer items-center justify-center gap-1 rounded px-1 text-sm font-bold"
             >
               Close
               <XIcon className="size-4" />
             </div>
           </div>
           <div
-            className="bg-white/0 p-4 rounded-lg "
+            className="rounded-lg bg-white/0 p-4"
             onClick={(e) => e.stopPropagation()} // Prevent background click from closing modal
           >
             <FileViewer url={previewFile} fileName={previewFileName} />

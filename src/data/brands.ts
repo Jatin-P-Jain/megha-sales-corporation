@@ -45,6 +45,7 @@ export const getBrandsForDropDown = async (options?: BrandOptions) => {
       partCategories: (rawBrandData?.partCategories as string[]) || [],
       totalProducts: (rawBrandData?.totalProducts as number) || 0,
       description: rawBrandData?.description as string,
+      brandWebsite: (rawBrandData?.brandWebsite as string) || "",
       status: rawBrandData?.status as Brand["status"],
       brandMedia: (rawBrandData?.brandMedia as BrandMedia[]) || [],
     };
@@ -87,6 +88,7 @@ export const getBrands = async (options?: GetBrandsOptions) => {
       partCategories: (rawBrand?.partCategories as string[]) || [],
       totalProducts: (rawBrand?.totalProducts as number) || 0,
       description: rawBrand?.description as string,
+      brandWebsite: (rawBrand?.brandWebsite as string) || "",
       status: rawBrand?.status as Brand["status"],
       brandMedia: (rawBrand?.brandMedia as BrandMedia[]) || [],
     };
@@ -111,6 +113,7 @@ export const getBrandById = async (brandId: string) => {
     partCategories: (rawBrandData?.partCategories as string[]) || [],
     totalProducts: (rawBrandData?.totalProducts as number) || 0,
     description: rawBrandData?.description as string,
+    brandWebsite: (rawBrandData?.brandWebsite as string) || "",
     status: rawBrandData?.status as Brand["status"],
     brandMedia: (rawBrandData?.brandMedia as BrandMedia[]) || [],
   };

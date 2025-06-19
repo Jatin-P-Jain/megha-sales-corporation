@@ -38,7 +38,7 @@ const PublishBrandButton = ({
 
   return (
     <Button
-      className="text-primary w-full gap-2 font-semibold"
+      className="text-primary gap-2 font-semibold"
       variant={"outline"}
       onClick={handlePublish}
     >

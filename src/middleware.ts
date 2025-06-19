@@ -114,5 +114,6 @@ export const config = {
     "/cart",
     "/checkout",
     "/order-history",
+    "/brands/:path*",
   ],
 };
