@@ -1,35 +1,26 @@
-import { Loader2Icon } from "lucide-react";
-import { useState } from "react";
+"use client";
 
-type FilePreviewProps = {
-  mediaUrl: string;
-  onClick: () => void;
-};
+import clsx from "clsx";
 
-export function PdfPreviewCard({ mediaUrl, onClick }: FilePreviewProps) {
-  const [loading, setLoading] = useState(true);
-
+export default function PdfViewer({
+  pdfUrl,
+  onClick,
+  className,
+  width,
+}: {
+  pdfUrl: string;
+  onClick?: () => void;
+  className?: string;
+  width?: string;
+}) {
   return (
-    <div
-      className="bg-muted relative aspect-[4/3] w-full cursor-pointer overflow-hidden rounded"
-      onClick={onClick}
-    >
-      {loading && (
-        <div className="bg-muted/60 absolute inset-0 z-10 flex items-center justify-center">
-          <Loader2Icon className="text-muted-foreground h-6 w-6 animate-spin" />
-        </div>
-      )}
-
-      <object
-        className="no-scrollbar pointer-events-none h-full w-full ml-2"
-        data={mediaUrl}
-        type="application/pdf"
-        onLoad={() => setLoading(false)}
-      >
-        <p className="text-muted-foreground p-4 text-sm">
-          Unable to display PDF.
-        </p>
-      </object>
+    <div className="h-full w-full" onClick={onClick}>
+      <iframe
+        src={pdfUrl}
+        width={width}
+        height="100%"
+        className={clsx(className)}
+      />
     </div>
   );
 }

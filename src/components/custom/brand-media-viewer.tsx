@@ -13,9 +13,10 @@ import WordIcon from "../../assets/icons/word-icon.svg";
 import ImageFileIcon from "../../assets/icons/image-file-icon.svg";
 import VideoFileIcon from "../../assets/icons/video-file-icon.svg";
 import FileIcon from "../../assets/icons/video-file-icon.svg";
-import { PdfPreviewCard } from "./pdf-view-card";
 import useIsMobile from "@/hooks/useIsMobile";
 import { Button } from "../ui/button";
+import ImageViewer from "./image-viewer";
+import PdfViewer from "./pdf-view-card";
 
 export function BrandMediaViewer({ brandMedia }: { brandMedia: BrandMedia[] }) {
   const isMobile = useIsMobile();
@@ -65,33 +66,32 @@ export function BrandMediaViewer({ brandMedia }: { brandMedia: BrandMedia[] }) {
                     setPreviewFileName(media?.fileName);
                   }}
                 >
-                  <CardContent className="relative h-30 overflow-hidden p-0 md:h-40">
+                  <CardContent className="no-scrollbar relative h-30 overflow-hidden p-0 md:h-40">
                     {isImage ? (
-                      <Image
-                        src={mediaUrl}
-                        alt={media.fileName}
-                        fill
-                        className="h-auto w-full object-fill"
-                      />
+                      <ImageViewer url={mediaUrl} fileName={media?.fileName} />
                     ) : isVideo ? (
-                      <video controls className="h-auto w-full">
+                      <video className="pointer-events-none h-full w-full">
                         <source src={mediaUrl} />
                       </video>
                     ) : isPDF ? (
-                      <PdfPreviewCard
-                        mediaUrl={mediaUrl}
+                      <PdfViewer
+                        pdfUrl={mediaUrl}
                         onClick={() => {
                           setPreviewFile(mediaUrl);
                         }}
+                        className={
+                          "pointer-events-none h-full w-full scale-120 border-none"
+                        }
+                        width="110%"
                       />
                     ) : isWord ? (
                       <iframe
                         src={`https://docs.google.com/gview?url=${encodeURIComponent(
                           mediaUrl,
                         )}&embedded=true`}
-                        width="100%"
-                        height="600px"
-                        className="no-scrollbar pointer-events-none"
+                        width="110%"
+                        height="110%"
+                        className="no-scrollbar pointer-events-none scale-115"
                       />
                     ) : (
                       <div className="flex flex-col">
@@ -145,14 +145,14 @@ export function BrandMediaViewer({ brandMedia }: { brandMedia: BrandMedia[] }) {
           }} // Close modal on background click
         >
           <div
-            className="flex h-fit w-fit flex-col items-center justify-center rounded-lg bg-white p-4"
+            className="m-4 mt-12 flex h-3/4 w-[90%] flex-col items-center justify-between rounded-lg bg-white p-4"
             onClick={(e) => e.stopPropagation()} // Prevent background click from closing modal
           >
             <div className="flex w-full items-center justify-between">
               <div className="text-primary flex font-semibold">
                 {previewFileName}
               </div>
-              <div className="mb-3 flex flex-row items-center justify-between gap-4">
+              <div className="mb-3 flex flex-col-reverse items-end justify-between gap-4 md:flex-row">
                 <Button variant={"default"} className="" asChild>
                   <a
                     href={`${previewFile}&response-content-disposition=attachment`}
