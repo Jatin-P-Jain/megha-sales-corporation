@@ -30,7 +30,8 @@ export async function middleware(request: NextRequest) {
   const token = cookieStore.get("firebaseAuthToken")?.value;
   const publicPaths = ["/", "/login", "/register", "/products-list"];
   if (!token) {
-    if (publicPaths.includes(pathname)) return NextResponse.next();
+    if (publicPaths.includes(pathname) || pathname.startsWith("/brands"))
+      return NextResponse.next();
     return NextResponse.redirect(new URL("/", origin));
   }
 

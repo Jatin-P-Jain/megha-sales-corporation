@@ -1,6 +1,7 @@
 "use client";
 import { getFileType } from "@/lib/utils";
-import Image from "next/image";
+import ImageViewer from "./image-viewer";
+import PdfViewer from "./pdf-view-card";
 
 type FileViewerProps = {
   url: string;
@@ -13,36 +14,15 @@ export function FileViewer({ url, fileName, className }: FileViewerProps) {
 
   switch (type) {
     case "image":
-      return (
-        <div className={className}>
-          <Image
-            src={url}
-            alt={fileName}
-            width={300}
-            height={200}
-            objectFit="contain"
-          />
-        </div>
-      );
+      return <ImageViewer url={url} fileName={fileName} />;
 
     case "video":
       return <video className={"h-[70vh]"} src={url} controls />;
 
     case "pdf":
       return (
-        <div className="flex h-[80vh] w-[90vw] items-center justify-center">
-          <object
-            className={"aspect-[4/3] h-full w-full"}
-            data={url}
-            type="application/pdf"
-          >
-            <p className="text-muted-foreground bg-muted flex w-full flex-col rounded p-4">
-              Unable to display PDF.
-            </p>
-            <a className={className} href={url} download>
-              Download {fileName}
-            </a>
-          </object>
+        <div className="flex h-full w-full items-center justify-center">
+          <PdfViewer pdfUrl={url} width="100%" />
         </div>
       );
 
