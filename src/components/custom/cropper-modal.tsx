@@ -5,6 +5,7 @@ import React, { useRef } from "react";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { Button } from "../ui/button";
 import Cropper from "react-cropper";
+import type { ReactCropperElement } from "react-cropper";
 
 type Props = {
   open: boolean;
@@ -19,10 +20,10 @@ export default function CropperModal({
   onClose,
   onCropComplete,
 }: Props) {
-  const cropperRef = useRef<HTMLImageElement>(null);
+  const cropperRef = useRef<ReactCropperElement>(null);
 
   const handleCrop = () => {
-    const cropper = (cropperRef.current as any)?.cropper;
+    const cropper = cropperRef.current?.cropper;
     if (!cropper) return;
 
     cropper.getCroppedCanvas().toBlob((blob: Blob | null) => {
