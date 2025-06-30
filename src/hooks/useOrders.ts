@@ -20,11 +20,13 @@ export function useOrders({
   pageSize = 10,
   userId,
   status,
+  orderId,
 }: {
   page?: number;
   pageSize?: number;
   userId?: string;
   status?: OrderStatus[];
+  orderId?: string;
 }) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,6 +37,23 @@ export function useOrders({
 
     const fetch = async () => {
       setLoading(true);
+      // 🔍 If orderId is provided, fetch that specific document
+      if (orderId) {
+        const { doc, getDoc } = await import("firebase/firestore");
+        const orderRef = doc(firestore, "orders", orderId);
+        const snapshot = await getDoc(orderRef);
+
+        if (snapshot.exists()) {
+          const data = snapshot.data() as Order;
+          setOrders([{ ...data, id: snapshot.id }]);
+        } else {
+          setOrders([]);
+        }
+
+        setTotalItems(snapshot.exists() ? 1 : 0);
+        setLoading(false);
+        return;
+      }
 
       const baseConstraints: QueryConstraint[] = [orderBy("updatedAt", "desc")];
 
