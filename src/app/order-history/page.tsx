@@ -6,7 +6,6 @@ import OrdersList from "./orders-list";
 import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
 import OrderStatusChips from "@/components/custom/order-status-chips";
 import clsx from "clsx";
-import { OrderStatus } from "@/types/order";
 
 export default async function OrderHistoryPage({
   searchParams,
@@ -21,23 +20,23 @@ export default async function OrderHistoryPage({
   const isUser = Boolean(verified);
 
   const searchParamValues = await searchParams;
-
-  // 2) parse pagination + optional single‐order
-  const pageRaw = parseInt(searchParamValues.page || "1");
-  const page = Number.isNaN(pageRaw) ? 1 : pageRaw;
   const requestedOrderId = searchParamValues.orderId ?? "";
-  const statusParam = searchParamValues.status ?? "";
 
-  const orderStatusFilter: OrderStatus[] = [];
-  if (statusParam) {
-    if (Array.isArray(statusParam))
-      statusParam.forEach((status) => {
-        orderStatusFilter.push(status as OrderStatus);
-      });
-    else {
-      orderStatusFilter.push(statusParam as OrderStatus);
-    }
-  }
+  // // 2) parse pagination + optional single‐order
+  // const pageRaw = parseInt(searchParamValues.page || "1");
+  // const page = Number.isNaN(pageRaw) ? 1 : pageRaw;
+  // const statusParam = searchParamValues.status ?? "";
+
+  // const orderStatusFilter: OrderStatus[] = [];
+  // if (statusParam) {
+  //   if (Array.isArray(statusParam))
+  //     statusParam.forEach((status) => {
+  //       orderStatusFilter.push(status as OrderStatus);
+  //     });
+  //   else {
+  //     orderStatusFilter.push(statusParam as OrderStatus);
+  //   }
+  // }
 
   return (
     <div className="mx-auto flex max-w-screen-lg flex-col gap-4">
@@ -97,10 +96,7 @@ export default async function OrderHistoryPage({
         }`}
       >
         <OrdersList
-          requestedOrderId={requestedOrderId}
-          page={page}
           isAdmin={isAdmin}
-          searchParamsValues={searchParamValues}
           userId={isUser ? verified?.uid : undefined}
         />
       </div>
