@@ -22,11 +22,11 @@ export default function AboutAutoPartsShop() {
 
       <Card className="px-3">
         <CardContent className="space-y-4 px-3">
-          <p className="text-sm leading-relaxed md:text-base text-justify">
-            At <strong>Megha Sales Corporation</strong>, we specialize in
-            wholesale distribution of high-quality{" "}
-            <strong>automobile spare parts</strong> for <strong>Light</strong>{" "}
-            and <strong>Heavy Commercial Vehicles</strong>. We are your one-stop
+          <p className="text-justify text-sm leading-relaxed md:text-base">
+            At <strong>Megha Sales Corporation</strong>, established in{" "}
+            <strong>2001</strong>, we specialize in wholesale distribution of
+            high-quality <strong>automobile spare parts</strong> for{" "}
+            <strong>Light</strong> and <strong>Heavy Commercial Vehicles</strong>. We are your one-stop
             destination for reliable and performance-tested components.
           </p>
           <div>
@@ -34,9 +34,12 @@ export default function AboutAutoPartsShop() {
             <ul className="list-inside list-disc space-y-1 text-sm md:text-base">
               <li>Steering and Suspension parts</li>
               <li>Braking systems</li>
-              <li>Clutch and Transmission parts</li>
-              <li>Engine and Body parts</li>
-              <li>Rubber and Plastic components</li>
+              <li>Automobile Bearings</li>
+              <li>Torque Rod Bushing and V Rods</li>
+              <li>Tools and Fastners</li>
+              <li>Gasket Maker</li>
+              <li>Automobile Cables</li>
+              <li>Bracket Assembly and Rubber Components</li>
             </ul>
           </div>
           <h2 className="mb-2 text-lg font-semibold">

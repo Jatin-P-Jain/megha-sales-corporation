@@ -98,22 +98,13 @@ export default async function OrderHistoryPage({
           isUser ? "pt-30 md:pt-35" : "pt-20"
         }`}
       >
-        <Suspense
-          fallback={
-            <div className="text-muted-foreground mx-auto flex items-center justify-center gap-2 text-sm">
-              <Loader2Icon className="size-4 animate-spin" />
-              <span>Fetching your orders...</span>
-            </div>
-          }
-        >
-          <OrdersList
-            requestedOrderId={requestedOrderId}
-            page={page}
-            isAdmin={isAdmin}
-            searchParamsValues={searchParamValues}
-            userId={isUser ? verified?.uid : undefined}
-          />
-        </Suspense>
+        <OrdersList
+          requestedOrderId={requestedOrderId}
+          page={page}
+          isAdmin={isAdmin}
+          searchParamsValues={searchParamValues}
+          userId={isUser ? verified?.uid : undefined}
+        />
       </div>
     </div>
   );
