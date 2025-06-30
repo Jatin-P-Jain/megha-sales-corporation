@@ -1,4 +1,5 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
 import { OrderStatus } from "@/types/order";
 import Link from "next/link";
@@ -15,34 +16,27 @@ import {
 import clsx from "clsx";
 import { useOrders } from "@/hooks/useOrders";
 import { Loader2Icon } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 
 export default function OrdersList({
-  requestedOrderId,
-  page,
   isAdmin,
-  searchParamsValues,
   userId,
 }: {
-  requestedOrderId?: string;
-  page: number;
   isAdmin: boolean;
-  searchParamsValues: {
-    page?: string;
-    status?: string;
-    orderId?: string;
-  };
   userId?: string;
 }) {
-  const pageSize = PAGE_SIZE;
+  const searchParams = useSearchParams();
+
+  const requestedOrderId = searchParams.get("orderId") ?? undefined;
   const showSingle = !!requestedOrderId;
 
-  const rawStatus = searchParamsValues.status;
+  const pageRaw = parseInt(searchParams.get("page") || "1", 10);
+  const page = Number.isNaN(pageRaw) ? 1 : pageRaw;
 
-  const statusParam: OrderStatus[] = Array.isArray(rawStatus)
-    ? rawStatus.map((s) => s as OrderStatus)
-    : rawStatus
-      ? [rawStatus as OrderStatus]
-      : [];
+  const rawStatus = searchParams.getAll("status");
+  const statusParam: OrderStatus[] = rawStatus as OrderStatus[];
+
+  const pageSize = PAGE_SIZE;
 
   const {
     orders: data,
@@ -54,7 +48,9 @@ export default function OrdersList({
     pageSize,
     userId: isAdmin ? undefined : userId,
     status: statusParam,
+    orderId: requestedOrderId,
   });
+
   const start = (page - 1) * pageSize + 1;
   const end = Math.min(page * pageSize, totalItems ?? 0);
 
@@ -93,14 +89,11 @@ export default function OrdersList({
                 {Array.from({ length: totalPages }).map((_, i) => {
                   const pageNum = i + 1;
                   const isCurrent = page === pageNum;
+
                   const newSearchParams = new URLSearchParams();
-                  Object.entries(searchParamsValues).forEach(([key, value]) => {
-                    if (value !== undefined) {
-                      if (Array.isArray(value)) {
-                        value.forEach((v) => newSearchParams.append(key, v));
-                      } else {
-                        newSearchParams.set(key, value);
-                      }
+                  searchParams.forEach((value, key) => {
+                    if (key !== "page" && key !== "orderId") {
+                      newSearchParams.append(key, value);
                     }
                   });
                   newSearchParams.set("page", `${pageNum}`);
