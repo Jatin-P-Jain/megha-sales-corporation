@@ -2,13 +2,11 @@ export const dynamic = "force-dynamic";
 
 import { cookies } from "next/headers";
 import { auth } from "@/firebase/server";
-import { Suspense } from "react";
 import OrdersList from "./orders-list";
 import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
 import OrderStatusChips from "@/components/custom/order-status-chips";
 import clsx from "clsx";
 import { OrderStatus } from "@/types/order";
-import { Loader2Icon } from "lucide-react";
 
 export default async function OrderHistoryPage({
   searchParams,
