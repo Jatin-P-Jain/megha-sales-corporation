@@ -53,34 +53,66 @@ export default function AboutAndContact() {
             <StoreIcon className="size-4" />
             Proprietorship :{" "}
           </p>
-          <div className="text-primary/95 flex w-full flex-col gap-1 text-sm font-semibold">
-            <p className="flex items-center justify-start gap-2">
-              <User2Icon className="size-5" />
-              <span className="text-base font-semibold">Yashwant Jain</span>
-            </p>
-            <div className="flex w-full items-center justify-between gap-4">
-              <p className="flex items-center gap-2 text-base">
-                <Phone className="size-5" />
-                <span className="">+91-9425505557</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 items-center justify-center gap-8 md:gap-16 w-full">
+            <div className="text-primary/95 flex w-full flex-col gap-1 text-sm font-semibold">
+              <p className="flex items-center justify-start gap-2">
+                <User2Icon className="size-5" />
+                <span className="text-base font-semibold">Yashwant Jain</span>
               </p>
-              <EnquiryDialog
-                trigger={
-                  <Button
-                    variant="outline"
-                    className="h-0 min-h-0 w-fit gap-2 rounded-full border-green-600 p-3 px-5 text-green-600"
-                  >
-                    <div className="relative size-4">
-                      <Image src={WhatsappIcon} alt="" fill />
-                    </div>
-                    Contact
-                  </Button>
-                }
-              />
+              <div className="flex w-full items-center justify-between gap-4">
+                <p className="flex items-center gap-2 text-base">
+                  <Phone className="size-5" />
+                  <span className="">+91-9425505557</span>
+                </p>
+                <EnquiryDialog
+                  trigger={
+                    <Button
+                      variant="outline"
+                      className="h-0 min-h-0 w-fit gap-2 rounded-full border-green-600 p-3 px-5 text-green-600"
+                    >
+                      <div className="relative size-4">
+                        <Image src={WhatsappIcon} alt="" fill />
+                      </div>
+                      Contact
+                    </Button>
+                  }
+                />
+              </div>
+              <p className="flex items-center gap-2 text-base">
+                <Mail className="size-5" />
+                <span className="">yashwantraipur@gmail.com</span>
+              </p>
             </div>
-            <p className="flex items-center gap-2 text-base">
-              <Mail className="size-5" />
-              <span className="">yashwantraipur@gmail.com</span>
-            </p>
+            {/* <Separator /> */}
+            <div className="text-primary/95 flex w-full flex-col gap-1 text-sm font-semibold">
+              <p className="flex items-center justify-start gap-2">
+                <User2Icon className="size-5" />
+                <span className="text-base font-semibold">Pratham Jain</span>
+              </p>
+              <div className="flex w-full items-center justify-between gap-4">
+                <p className="flex items-center gap-2 text-base">
+                  <Phone className="size-5" />
+                  <span className="">+91-9589143377</span>
+                </p>
+                <EnquiryDialog
+                  trigger={
+                    <Button
+                      variant="outline"
+                      className="h-0 min-h-0 w-fit gap-2 rounded-full border-green-600 p-3 px-5 text-green-600"
+                    >
+                      <div className="relative size-4">
+                        <Image src={WhatsappIcon} alt="" fill />
+                      </div>
+                      Contact
+                    </Button>
+                  }
+                />
+              </div>
+              <p className="flex items-center gap-2 text-base">
+                <Mail className="size-5" />
+                <span className="">prathamjain01@gmail.com</span>
+              </p>
+            </div>
           </div>
         </div>
         <div className="flex flex-col items-start justify-start gap-2">
