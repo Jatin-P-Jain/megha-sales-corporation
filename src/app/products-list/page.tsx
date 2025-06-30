@@ -9,6 +9,7 @@ import { ProductStatus } from "@/types/product";
 import { getAllCategories } from "@/data/categories";
 import ResponsiveProductFiltersServer from "./responsive-product-filters.server";
 import { PAGE_SIZE, unslugify } from "@/lib/utils";
+import AboutBrandButton from "@/components/custom/about-brand.button";
 
 export default async function ProductsList({
   searchParams,
@@ -82,13 +83,17 @@ export default async function ProductsList({
   return (
     <div className="mx-auto flex max-w-screen-lg flex-col gap-4">
       <div
-        className={`fixed inset-x-0 top-0 z-30 mx-auto flex h-60 w-full max-w-screen-lg flex-col items-end justify-end rounded-lg bg-white px-4 pb-1 shadow-md md:h-65 lg:h-55 ${!isAdmin && "pt-63 lg:pt-68"} ${!isUser && "!h-50 !pt-0"}`}
+        className={`fixed inset-x-0 top-0 z-30 mx-auto flex h-60 w-full max-w-screen-lg flex-col items-end justify-end rounded-lg bg-white px-4 shadow-md md:h-60 lg:h-55 ${!isAdmin && "pt-65 lg:pt-68"} ${!isUser && "!h-53 !pt-0"}`}
       >
-        <div className="mx-auto flex w-full max-w-screen-lg flex-col pt-3 md:pt-6">
+        <div className="mx-auto flex w-full max-w-screen-lg flex-col pt-8 md:pt-6">
           <EllipsisBreadCrumbs items={breadcrumbs} />
-          <h1 className="py-2 text-xl font-[600] tracking-wide text-cyan-950 md:text-2xl">
-            Product Listings
-          </h1>
+          <div className="flex w-full flex-row items-center justify-between mb-2">
+            <h1 className="py-2 text-xl font-[600] tracking-wide text-cyan-950 md:text-2xl">
+              Product Listings
+            </h1>
+            <AboutBrandButton brandId={brandId} brandName={brandName} />
+          </div>
+
           <ResponsiveProductFiltersServer
             isAdmin={isAdmin}
             isUser={isUser}
@@ -98,12 +103,12 @@ export default async function ProductsList({
         </div>
       </div>
       <div
-        className={`flex-1 overflow-y-auto px-4 pt-45 md:pt-53 lg:pt-40 ${!isAdmin && "pt-50 lg:pt-55"} ${!isUser && "!pt-35"}`}
+        className={`flex-1 overflow-y-auto px-4 pt-45 md:pt-53 lg:pt-40 ${!isAdmin && "pt-50 lg:pt-55"} ${!isUser && "!pt-38"}`}
       >
         <Suspense
           fallback={
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-              {Array.from({ length: 3 }).map((_, index) => (
+              {Array.from({ length: 5 }).map((_, index) => (
                 <ProductCardLoading key={index} />
               ))}
             </div>
@@ -113,6 +118,7 @@ export default async function ProductsList({
             productsPromise={productsPromise}
             isAdmin={isAdmin}
             page={page}
+            searchParamsValues={searchParamsValues}
           />
         </Suspense>
       </div>

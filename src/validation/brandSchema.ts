@@ -20,6 +20,11 @@ export const brandDataSchema = z.object({
     .max(500, "Description must be at most 500 characters")
     .optional(),
   status: z.enum(["draft", "live", "discontinued"]),
+  brandWebsite: z
+    .string()
+    .url("Please enter a valid URL")
+    .optional()
+    .or(z.literal("")), // allows empty string
 });
 
 export const brandLogoSchema = z.object({

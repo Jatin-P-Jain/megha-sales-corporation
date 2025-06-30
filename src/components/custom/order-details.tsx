@@ -21,6 +21,8 @@ import {
 } from "../ui/collapsible";
 import { CardContent } from "../ui/card";
 import { Button } from "../ui/button";
+import useIsMobile from "@/hooks/useIsMobile";
+import { truncateMiddle } from "@/lib/utils";
 
 export default function OrderDetails({
   orderId,
@@ -37,6 +39,7 @@ export default function OrderDetails({
 }) {
   const { amount, units } = totals;
   const isOpen = orderId === orderFocused;
+  const isMobile = useIsMobile();
 
   return (
     <div className="text-primary flex w-full flex-col items-center justify-center text-sm font-semibold transition-all duration-700 ease-in-out md:text-base">
@@ -48,8 +51,9 @@ export default function OrderDetails({
         <CardContent className="flex w-full flex-col p-0">
           <CollapsibleTrigger asChild>
             <Button
+              variant={"default"}
               className={clsx(
-                "bg-muted text-primary flex w-full justify-between border-1 font-semibold",
+                "bg-muted text-primary flex w-full justify-between border-1 font-semibold hover:bg-transparent",
                 isOpen && "rounded-none rounded-t-lg",
               )}
             >
@@ -68,12 +72,11 @@ export default function OrderDetails({
                   : "h-full opacity-100",
               )}
             >
-              {/* 1) Header table */}
               <Table className="table-fixed">
                 <TableHeader>
-                  <TableRow className="">
+                  <TableRow className="bg-muted">
                     <TableHead className="text-muted-foreground mr-4">
-                      Part Number
+                      Part Details
                     </TableHead>
                     <TableHead className="text-muted-foreground text-right">
                       Units
@@ -86,26 +89,61 @@ export default function OrderDetails({
               </Table>
 
               {/* 2) Scrollable body */}
-              <ScrollArea className="pointer-events-auto max-h-[200px] overflow-auto">
+              <ScrollArea className="max-h-[400px] min-h-[200px] overflow-auto">
                 <Table className="table-fixed">
-                  <TableBody>
+                  <TableBody className="child:border-b-on-last-row">
                     {products.map((item) => {
-                      const { price = 0, discount = 0, gst = 0 } = item ?? {};
-                      const afterDisc = price * (1 - discount / 100);
-                      const withGst = afterDisc * (1 + gst / 100);
-                      const lineTotal = Math.ceil(withGst * item.quantity);
+                      const {
+                        price = 0,
+                        discount = 0,
+                        gst = 0,
+                      } = item.productPricing ?? {};
+                      const qty = item.quantity;
+                      const unitDiscount = Math.round((discount / 100) * price);
+                      const unitPriceAfterDiscount = Math.round(
+                        price - unitDiscount,
+                      );
+                      const unitGST = Math.round(
+                        (gst / 100) * unitPriceAfterDiscount,
+                      );
+                      const unitNetPrice = Math.round(
+                        unitPriceAfterDiscount + unitGST,
+                      );
+                      const totalPrice = Math.round(unitNetPrice * qty);
                       return (
-                        <TableRow
-                          key={item.id}
-                          className="font-normal text-black"
-                        >
-                          <TableCell>{item.id}</TableCell>
-                          <TableCell className="text-right">
-                            {item.quantity}
+                        <TableRow key={item.cartItemKey} className={clsx("")}>
+                          <TableCell>
+                            <div className="flex flex-col items-start justify-start gap-1">
+                              <div className="flex w-full items-center justify-start gap-1">
+                                {isMobile
+                                  ? truncateMiddle(
+                                      item.product?.partName,
+                                      16,
+                                      3,
+                                      10,
+                                    )
+                                  : item?.product?.partName}{" "}
+                                {item.selectedSize && (
+                                  <span className="text-muted-foreground text-xs">
+                                    ({item.selectedSize})
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex w-full">
+                                <span className="text-muted-foreground text-xs">
+                                  {item?.product?.brandName}
+                                  {" - "}
+                                  {item?.product?.partNumber}
+                                </span>
+                              </div>
+                            </div>
                           </TableCell>
 
                           <TableCell className="text-right">
-                            {currencyFormatter(lineTotal)}
+                            {item.quantity}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {currencyFormatter(totalPrice)}
                           </TableCell>
                         </TableRow>
                       );
@@ -117,15 +155,13 @@ export default function OrderDetails({
 
               {/* 3) Footer table */}
               <Table className="table-fixed">
-                <TableFooter>
+                <TableFooter className="bg-muted font-semibold">
                   <TableRow>
-                    <TableHead className="text-primary font-semibold">
-                      Total
-                    </TableHead>
-                    <TableHead className="text-primary text-right font-semibold">
+                    <TableHead>Total</TableHead>
+                    <TableHead className="text-right font-semibold">
                       {units}
                     </TableHead>
-                    <TableHead className="text-primary text-right font-semibold">
+                    <TableHead className="text-right font-semibold">
                       {currencyFormatter(amount)}
                     </TableHead>
                   </TableRow>

@@ -9,13 +9,21 @@ export const createProduct = async (
     brandName: string;
     companyName: string;
     vehicleCompany: string;
-    vehicleName?: string[];
+    vehicleNames?: string[];
     partNumber: string;
     partName: string;
-    price: number;
-    discount: number;
-    gst: number;
+    price?: number;
+    discount?: number;
+    gst?: number;
     stock?: number;
+    hasSizes?: boolean;
+    samePriceForAllSizes?: boolean;
+    sizes?: {
+      size: string;
+      price?: number;
+      discount?: number;
+      gst?: number;
+    }[];
     description?: string;
     status: "draft" | "for-sale" | "discontinued" | "out-of-stock";
   },

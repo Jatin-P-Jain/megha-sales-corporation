@@ -22,6 +22,7 @@ import { UserData } from "@/types/user";
 
 import { doc, getDoc } from "firebase/firestore";
 import { mapDbUserToClientUser } from "@/lib/firebase/mapDBUserToClient";
+import useMonitorInactivity from "@/hooks/useMonitorInactivity";
 
 type AuthContextType = {
   loading: boolean;
@@ -54,6 +55,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [clientUserLoading, setClientUserLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [customClaims, setCustomClaims] = useState<ParsedToken | null>(null);
+  const [inactivityLimit, setInactivityLimit] = useState<number | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -96,6 +100,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         await createUserIfNotExists(safeUser);
         setCustomClaims(result.claims ?? null);
+        let inactivityTimeLimit;
+        if (result.claims?.admin) {
+          inactivityTimeLimit = 1 * 60 * 60 * 1000;
+        } else {
+          inactivityTimeLimit = 24 * 60 * 60 * 1000;
+        }
+        setInactivityLimit(inactivityTimeLimit);
         try {
           const snap = await getDoc(doc(firestore, "users", safeUser.uid));
           if (snap.exists()) {
@@ -118,6 +129,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
     return unsubscribe;
   }, []);
+  useMonitorInactivity(currentUser, inactivityLimit);
 
   return (
     <AuthContext.Provider

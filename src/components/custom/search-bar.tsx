@@ -77,7 +77,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
             )}
           />
           <Button type="submit" className="md:bg-transparent">
-            <SearchIcon className="size-4" />
+            <SearchIcon className="size-5" />
           </Button>
         </form>
       </Form>

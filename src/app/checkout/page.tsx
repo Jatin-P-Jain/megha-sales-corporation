@@ -1,7 +1,6 @@
 import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
 import { auth } from "@/firebase/server";
 import { cookies } from "next/headers";
-import React, { Suspense } from "react";
 import { CheckoutItems } from "./checkout-items";
 import CheckoutFooter from "@/app/checkout/checkout-footer";
 
@@ -40,17 +39,11 @@ export default async function CheckoutPage() {
         </div>
       </div>
       <div
-        className={`flex flex-1 overflow-auto scroll-auto px-4 pt-30 md:pt-38 !h-0`}
+        className={`flex h-[100vh] flex-1 overflow-auto scroll-auto px-4 pt-30 md:pt-38`}
       >
-        <Suspense
-          fallback={
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-              {/*  */}
-            </div>
-          }
-        >
+        <div className="no-scrollbar mb-25 flex h-full max-h-[430px] w-full overflow-auto">
           <CheckoutItems />
-        </Suspense>
+        </div>
       </div>
       <div
         className={`fixed inset-x-0 bottom-0 z-30 mx-auto flex h-fit w-full max-w-screen-lg flex-col items-end justify-end rounded-t-lg bg-white px-4 py-1 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]`}

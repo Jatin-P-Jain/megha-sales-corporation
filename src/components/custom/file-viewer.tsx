@@ -1,6 +1,7 @@
 "use client";
 import { getFileType } from "@/lib/utils";
-import Image from "next/image";
+import ImageViewer from "./image-viewer";
+import PdfViewer from "./pdf-view-card";
 
 type FileViewerProps = {
   url: string;
@@ -13,32 +14,16 @@ export function FileViewer({ url, fileName, className }: FileViewerProps) {
 
   switch (type) {
     case "image":
-      return (
-        <div className={className}>
-          <Image
-            src={url}
-            alt={fileName}
-            width={300}
-            height={200}
-            objectFit="contain"
-          />
-        </div>
-      );
+      return <ImageViewer url={url} fileName={fileName} />;
 
     case "video":
       return <video className={"h-[70vh]"} src={url} controls />;
 
     case "pdf":
       return (
-        <object
-          className={"h-full w-full aspect-[4/3]"}
-          data={url}
-          type="application/pdf"
-        >
-          <p className="text-muted-foreground bg-muted p-4 rounded flex w-full flex-col">
-            Unable to display PDF.
-          </p>
-        </object>
+        <div className="flex h-full w-full items-center justify-center">
+          <PdfViewer pdfUrl={url} width="100%" />
+        </div>
       );
 
     case "excel":
@@ -46,7 +31,7 @@ export function FileViewer({ url, fileName, className }: FileViewerProps) {
         <iframe
           className={className}
           src={`https://docs.google.com/gview?url=${encodeURIComponent(
-            url
+            url,
           )}&embedded=true`}
           width="100%"
           height="600px"
@@ -55,14 +40,16 @@ export function FileViewer({ url, fileName, className }: FileViewerProps) {
 
     case "word":
       return (
-        <iframe
-          className={className}
-          src={`https://docs.google.com/gview?url=${encodeURIComponent(
-            url
-          )}&embedded=true`}
-          width="100%"
-          height="600px"
-        />
+        <div className="h-[80vh] w-[90vw]">
+          <iframe
+            className={className}
+            src={`https://docs.google.com/gview?url=${encodeURIComponent(
+              url,
+            )}&embedded=true`}
+            width="100%"
+            height="100%"
+          />
+        </div>
       );
 
     default:

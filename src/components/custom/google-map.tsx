@@ -3,15 +3,17 @@
 import { useEffect, useState } from "react";
 import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
 import GetDirectionsButton from "./get-directions-button";
+import { Loader2Icon } from "lucide-react";
 
 const containerStyle = {
   width: "100%",
-  height: "400px",
+  height: "250px",
+  margin: "auto",
 };
 
-export default function MapWithAddress({ address }: { address: string }) {
+export default function GoogleMapComponent({ address }: { address: string }) {
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
-    null
+    null,
   );
 
   const { isLoaded } = useJsApiLoader({
@@ -33,15 +35,20 @@ export default function MapWithAddress({ address }: { address: string }) {
     });
   }, [isLoaded]);
 
-  if (!isLoaded) return <p>Loading Google Maps...</p>;
-  if (!coords) return <p>Looking up address...</p>;
+  if (!isLoaded || !coords)
+    return (
+      <p className="flex w-full flex-col items-center justify-center gap-2">
+        <Loader2Icon className="size-4 animate-spin" />
+        Loading Google Maps...
+      </p>
+    );
 
   return (
-    <>
+    <div className="w-full md:w-3/4">
       <GoogleMap mapContainerStyle={containerStyle} center={coords} zoom={15}>
         <Marker position={coords} />
       </GoogleMap>
       <GetDirectionsButton destination={address} />
-    </>
+    </div>
   );
 }

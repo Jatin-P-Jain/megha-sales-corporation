@@ -10,6 +10,7 @@ export default async function OrderPlacedPage({
 }) {
   const { orderId } = await params;
   const newSearchParams = new URLSearchParams();
+  newSearchParams.set("orderId", orderId);
   return (
     <div className="mx-auto flex max-w-screen-lg flex-col items-center justify-center gap-4 py-12">
       <div className="flex w-full flex-col items-center justify-center gap-4 px-8">

@@ -5,7 +5,16 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function middleware(request: NextRequest) {
   const { pathname, origin, searchParams } = request.nextUrl;
-
+  // ✅ Bypass auth for static public files
+  if (
+    pathname === "/manifest.json" ||
+    pathname === "/sw.js" ||
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/icons") ||
+    pathname === "/favicon.ico"
+  ) {
+    return NextResponse.next();
+  }
   // 0) Bypass internals & your refresh endpoint
   if (
     request.method === "POST" ||
@@ -21,7 +30,8 @@ export async function middleware(request: NextRequest) {
   const token = cookieStore.get("firebaseAuthToken")?.value;
   const publicPaths = ["/", "/login", "/register", "/products-list"];
   if (!token) {
-    if (publicPaths.includes(pathname)) return NextResponse.next();
+    if (publicPaths.includes(pathname) || pathname.startsWith("/brands"))
+      return NextResponse.next();
     return NextResponse.redirect(new URL("/", origin));
   }
 
@@ -80,8 +90,6 @@ export async function middleware(request: NextRequest) {
 
   // 7) Admin vs user guards
   if (!admin && pathname.startsWith("/admin-dashboard")) {
-    console.log("here");
-
     return NextResponse.redirect(new URL("/", origin));
   }
   if (admin && pathname === "/admin-dashboard") {
@@ -94,7 +102,6 @@ export async function middleware(request: NextRequest) {
   // 8) All clear
   return NextResponse.next();
 }
-
 export const config = {
   matcher: [
     "/admin-dashboard",
@@ -108,5 +115,6 @@ export const config = {
     "/cart",
     "/checkout",
     "/order-history",
+    "/brands/:path*",
   ],
 };

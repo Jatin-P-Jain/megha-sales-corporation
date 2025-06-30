@@ -1,20 +1,15 @@
-import { ProductStatus } from "./product";
+import { Product } from "./product";
 
 export type CartProduct = {
   id: string;
-  brandName: string;
-  brandId: string;
-  companyName: string;
-  vehicleCompany: string;
-  vehicleName?: string[];
-  partCategory: string;
-  partNumber: string;
-  partName: string;
-  price: number;
-  discount: number;
-  gst: number;
-  stock: number;
-  status: ProductStatus;
-  image?: string;
+  product: Product;
   quantity: number; // added for cart
+  selectedSize?: string; // added for cart
+  cartItemKey: string; // added for cart
+  productId?: string; // added for cart
+  productPricing: {
+    price?: number;
+    discount?: number;
+    gst?: number;
+  };
 };

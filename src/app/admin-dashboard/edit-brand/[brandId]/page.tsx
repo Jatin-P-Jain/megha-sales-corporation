@@ -46,6 +46,7 @@ export default async function EditProperty({
             partCategories={brand.partCategories}
             totalProducts={brand.totalProducts}
             description={brand.description}
+            brandWebsite={brand.brandWebsite}
             status={brand.status}
             brandMedia={brand.brandMedia}
           />

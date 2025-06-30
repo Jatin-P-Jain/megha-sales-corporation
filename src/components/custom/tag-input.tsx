@@ -5,7 +5,6 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, XCircleIcon } from "lucide-react";
-import { capitalize } from "@/lib/capitalize";
 
 interface TagInputProps {
   label: string;
@@ -27,7 +26,7 @@ export const TagInput: React.FC<TagInputProps> = ({
   const [inputValue, setInputValue] = useState("");
 
   const addTag = () => {
-    const trimmed = capitalize(inputValue.trim());
+    const trimmed = inputValue.trim().toUpperCase();
     if (trimmed && values && !values.includes(trimmed)) {
       onChange([...values, trimmed]);
     }

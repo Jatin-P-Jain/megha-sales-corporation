@@ -11,6 +11,7 @@ export type Brand = {
   partCategories: string[];
   totalProducts: number;
   description?: string;
+  brandWebsite?: string;
   status: BrandStatus;
   brandMedia: BrandMedia[];
 };

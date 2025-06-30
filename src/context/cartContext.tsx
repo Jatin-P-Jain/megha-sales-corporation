@@ -17,19 +17,34 @@ import {
   writeBatch,
   FirestoreError,
   getDoc,
+  query,
+  orderBy,
 } from "firebase/firestore";
 import { useAuth } from "./useAuth";
 import { firestore } from "@/firebase/client";
 import { CartProduct } from "@/types/cartProduct";
+import { mapProductToClientProduct, organizeCartProducts } from "@/lib/utils";
 
 export type CartItem = {
+  id: string; // Firestore document ID
   productId: string;
+  cartItemKey: string;
   productPricing: {
     price?: number;
     discount?: number;
     gst?: number;
   };
   quantity: number;
+  selectedSize?: string;
+};
+export type CartTotals = {
+  totalUnits: number;
+  totalItems: number;
+  totalAmount: number; // after discount & GST
+  totalDiscount: number; // total discount applied
+  totalGST: number; // total GST applied
+  totalNetAmount: number; // total after discount & GST
+  totalSavings: number; // total savings from discounts
 };
 
 type CartContextType = {
@@ -37,9 +52,11 @@ type CartContextType = {
   cartProducts: CartProduct[];
   loading: boolean;
   error?: FirestoreError;
+  cartTotals: CartTotals;
   addToCart: (
     productId: string,
     productPricing: { price?: number; discount?: number; gst?: number },
+    selectedSize?: string,
     qty?: number,
   ) => Promise<void>;
   removeFromCart: (productId: string) => Promise<void>;
@@ -63,6 +80,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const { currentUser } = useAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartProducts, setCartProducts] = useState<CartProduct[]>([]);
+  const [cartTotals, setCartTotals] = useState<CartTotals>({} as CartTotals);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<FirestoreError>();
 
@@ -74,14 +92,57 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return;
     }
     const itemsCol = collection(firestore, "carts", currentUser.uid, "items");
+    const orderedQuery = query(itemsCol, orderBy("createdAt", "desc"));
     const unsub = onSnapshot(
-      itemsCol,
+      orderedQuery,
       (snap) => {
-        const data = snap.docs.map((d) => ({
-          productId: d.id,
-          productPricing: d.data().productPricing || {},
-          quantity: (d.data().quantity as number) || 0,
-        }));
+        const data = snap.docs.map((d) => {
+          return {
+            id: d.id,
+            productId: d.data().productId,
+            cartItemKey: d.data().cartItemKey,
+            productPricing: d.data().productPricing || {},
+            quantity: (d.data().quantity as number) || 0,
+            selectedSize: d.data().selectedSize as string | undefined,
+          };
+        });
+        let totalUnits = 0;
+        let totalDiscount = 0;
+        let totalGST = 0;
+        let totalAmount = 0;
+        data.forEach((item) => {
+          const qty = item.quantity;
+          const {
+            price = 0,
+            discount = 0,
+            gst = 0,
+          } = item.productPricing || {};
+
+          const unitDiscount = Math.round((discount / 100) * price);
+          const unitPriceAfterDiscount = Math.round(price - unitDiscount);
+          const unitGST = Math.round((gst / 100) * unitPriceAfterDiscount);
+          const unitNetPrice = Math.round(unitPriceAfterDiscount + unitGST);
+          const totalPrice = Math.round(unitNetPrice * qty);
+          const discountAmt = Math.round(unitDiscount * qty);
+          const gstAmt = Math.round(unitGST * qty);
+          const finalAmount = totalPrice;
+
+          totalUnits += qty;
+          totalDiscount += discountAmt;
+          totalGST += gstAmt;
+          totalAmount += finalAmount;
+        });
+
+        const round = Math.round;
+        setCartTotals({
+          totalUnits: round(totalUnits),
+          totalItems: data.length,
+          totalAmount: round(totalAmount),
+          totalDiscount: round(totalDiscount),
+          totalGST: round(totalGST),
+          totalNetAmount: round(totalAmount), // or round(discountedTotal + gst) if you separate
+          totalSavings: round(totalDiscount),
+        });
         setCart(data);
         setLoading(false);
       },
@@ -103,22 +164,35 @@ export function CartProvider({ children }: { children: ReactNode }) {
     let active = true;
     (async () => {
       try {
-        const proms = cart.map(async ({ productId, quantity }) => {
-          const snap = await getDoc(doc(firestore, "products", productId));
-          const data = snap.data() || {};
-          return {
-            id: snap.id,
-            partName: data.partName as string,
-            partNumber: data.partNumber as string,
-            image: data.image as string,
-            price: data.price as number,
-            discount: data.discount as number,
-            gst: data.gst as number,
+        const proms = cart.map(
+          async ({
+            productId,
             quantity,
-          } as CartProduct;
-        });
+            selectedSize,
+            cartItemKey,
+            productPricing,
+          }) => {
+            const snap = await getDoc(doc(firestore, "products", productId));
+            const data = snap.data() || {};
+            return {
+              id: snap.id,
+              product: mapProductToClientProduct(data),
+              quantity,
+              selectedSize,
+              cartItemKey,
+              productPricing: {
+                price: productPricing?.price,
+                discount: productPricing?.discount,
+                gst: productPricing?.gst,
+              },
+            } as CartProduct;
+          },
+        );
         const results = await Promise.all(proms);
-        if (active) setCartProducts(results);
+        if (active) {
+          const organizedCartProducts = organizeCartProducts(results);
+          setCartProducts(organizedCartProducts);
+        }
       } catch (e) {
         console.error("Failed to fetch products for cart:", e);
       }
@@ -133,11 +207,29 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const addToCart = async (
     productId: string,
     productPricing: { price?: number; discount?: number; gst?: number },
+    selectedSize?: string,
     qty = 1,
   ) => {
     if (!currentUser) throw new Error("Not authenticated");
-    const ref = doc(firestore, "carts", currentUser.uid, "items", productId);
-    await setDoc(ref, { quantity: qty, productPricing }, { merge: true });
+    const key = selectedSize
+      ? `${productId}_${selectedSize.replaceAll(" ", "")}`
+      : productId;
+
+    const ref = doc(firestore, "carts", currentUser.uid, "items", key);
+    await setDoc(
+      ref,
+      {
+        productId,
+        cartItemKey:
+          productId +
+          (selectedSize ? "_" + selectedSize?.replaceAll(" ", "") : ""),
+        quantity: qty,
+        productPricing,
+        selectedSize,
+        createdAt: new Date(),
+      },
+      { merge: true },
+    );
   };
 
   const removeFromCart = async (productId: string) => {
@@ -148,7 +240,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const increment = async (productId: string) => {
     if (!currentUser) throw new Error("Not authenticated");
-    const existing = cart.find((i) => i.productId === productId);
+    const existing = cart.find((i) => i?.cartItemKey === productId);
     const newQty = existing ? existing.quantity + 1 : 1;
     const ref = doc(firestore, "carts", currentUser.uid, "items", productId);
     await setDoc(ref, { quantity: newQty }, { merge: true });
@@ -156,7 +248,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const decrement = async (productId: string) => {
     if (!currentUser) throw new Error("Not authenticated");
-    const existing = cart.find((i) => i.productId === productId);
+    const existing = cart.find((i) => i.cartItemKey === productId);
     if (!existing) return;
     const ref = doc(firestore, "carts", currentUser.uid, "items", productId);
     if (existing.quantity > 1) {
@@ -185,24 +277,30 @@ export function CartProvider({ children }: { children: ReactNode }) {
   // ← New: reset _both_ Firestore _and_ local state
   const resetCartContext = async () => {
     // 1) clear remote
-    if (currentUser) {
+    if (currentUser?.uid) {
       const batch = writeBatch(firestore);
       cart.forEach((i) => {
-        const ref = doc(
-          firestore,
-          "carts",
-          currentUser.uid,
-          "items",
-          i.productId,
-        );
-        batch.delete(ref);
+        if (i?.cartItemKey) {
+          const ref = doc(
+            firestore,
+            "carts",
+            currentUser?.uid,
+            "items",
+            i.cartItemKey,
+          );
+          batch.delete(ref);
+        }
       });
-      await batch.commit();
+      try {
+        await batch.commit();
+        setCart([]);
+        setCartProducts([]);
+      } catch (err) {
+        console.error("Failed to reset remote cart:", err);
+      } finally {
+        setLoading(false);
+      }
     }
-    // 2) clear local
-    setCart([]);
-    setCartProducts([]);
-    setLoading(false);
   };
 
   return (
@@ -210,6 +308,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       value={{
         cart,
         cartProducts,
+        cartTotals,
         loading,
         error,
         addToCart,

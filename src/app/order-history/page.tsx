@@ -2,15 +2,11 @@ export const dynamic = "force-dynamic";
 
 import { cookies } from "next/headers";
 import { auth } from "@/firebase/server";
-import { Suspense } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
 import OrdersList from "./orders-list";
-import { getOrderById, getOrders, getUserOrders } from "@/data/orders";
 import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
 import OrderStatusChips from "@/components/custom/order-status-chips";
 import clsx from "clsx";
 import { OrderStatus } from "@/types/order";
-import { PAGE_SIZE } from "@/lib/utils";
 
 export default async function OrderHistoryPage({
   searchParams,
@@ -27,7 +23,7 @@ export default async function OrderHistoryPage({
   const searchParamValues = await searchParams;
 
   // 2) parse pagination + optional single‐order
-  const pageRaw = parseInt(searchParamValues.page || "1", 10);
+  const pageRaw = parseInt(searchParamValues.page || "1");
   const page = Number.isNaN(pageRaw) ? 1 : pageRaw;
   const requestedOrderId = searchParamValues.orderId ?? "";
   const statusParam = searchParamValues.status ?? "";
@@ -41,29 +37,6 @@ export default async function OrderHistoryPage({
     else {
       orderStatusFilter.push(statusParam as OrderStatus);
     }
-  }
-
-  // 3) pick the right promise
-  let ordersPromise;
-  if (isAdmin && !requestedOrderId) {
-    // admin: fetch all, unfiltered
-    ordersPromise = getOrders({
-      filters: { status: orderStatusFilter },
-      pagination: { page, pageSize: PAGE_SIZE },
-    });
-  } else if (isUser) {
-    // regular user: only their orders
-    if (requestedOrderId) {
-      ordersPromise = getOrderById(requestedOrderId);
-    } else {
-      ordersPromise = getUserOrders(verified?.uid, {
-        filters: { status: orderStatusFilter },
-        pagination: { page, pageSize: PAGE_SIZE },
-      });
-    }
-  } else {
-    // not logged in at all: empty list
-    ordersPromise = Promise.resolve({ data: [], totalPages: 0, totalItems: 0 });
   }
 
   return (
@@ -123,22 +96,13 @@ export default async function OrderHistoryPage({
           isUser ? "pt-30 md:pt-35" : "pt-20"
         }`}
       >
-        <Suspense
-          fallback={
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="h-40 w-full rounded-lg" />
-              ))}
-            </div>
-          }
-        >
-          <OrdersList
-            requestedOrderId={requestedOrderId}
-            ordersPromise={ordersPromise}
-            page={page}
-            isAdmin={isAdmin}
-          />
-        </Suspense>
+        <OrdersList
+          requestedOrderId={requestedOrderId}
+          page={page}
+          isAdmin={isAdmin}
+          searchParamsValues={searchParamValues}
+          userId={isUser ? verified?.uid : undefined}
+        />
       </div>
     </div>
   );

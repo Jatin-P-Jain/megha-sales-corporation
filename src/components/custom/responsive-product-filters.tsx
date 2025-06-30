@@ -22,7 +22,6 @@ const ResponsiveProductFilters: React.FC<{
   if (brandId) {
     newSearchParams.set("brandId", brandId);
   }
-  console.log(newSearchParams.get("brandId"));
 
   return (
     <>

@@ -19,14 +19,45 @@ import { formatINR } from "@/lib/utils";
 
 interface PartDetailsDialogProps {
   part: CartProduct;
+  productPricing?: {
+    price?: number;
+    discount?: number;
+    gst?: number;
+  };
+  selectedSize?: string;
 }
 
-export function PartDetailsDialog({ part }: PartDetailsDialogProps) {
-  const company = part.vehicleCompany;
-  const names = Array.isArray(part.vehicleName)
-    ? part.vehicleName.join(", ")
+export function PartDetailsDialog({
+  part,
+  productPricing,
+  selectedSize,
+}: PartDetailsDialogProps) {
+  const {
+    partNumber,
+    image,
+    companyName,
+    vehicleNames,
+    brandName,
+    partName,
+    partCategory,
+    discount,
+    price,
+    gst,
+  } = part?.product || {};
+  const {
+    price: productPrice = 0,
+    discount: productDiscount = 0,
+    gst: productGst = 0,
+  } = productPricing || {};
+  const partPrice = price || productPrice;
+  const partDiscount = discount || productDiscount;
+  const partGst = gst || productGst;
+  const names = Array.isArray(vehicleNames)
+    ? part?.product.vehicleNames.join(", ")
     : "";
-  const vehicleNameProcessed = names ? `${company} - ${names}` : company;
+  const vehicleNameProcessed = names
+    ? `${companyName} - ${names}`
+    : companyName;
   return (
     <Dialog>
       {/* 1) The trigger is your link-style button */}
@@ -47,7 +78,7 @@ export function PartDetailsDialog({ part }: PartDetailsDialogProps) {
           </DialogTitle>
           <DialogDescription className="text-xs md:text-sm">
             Full information for{" "}
-            <span className="font-semibold">{part.partNumber}</span>
+            <span className="font-semibold">{partNumber}</span>
           </DialogDescription>
         </DialogHeader>
 
@@ -56,21 +87,27 @@ export function PartDetailsDialog({ part }: PartDetailsDialogProps) {
           className="relative w-full gap-2 overflow-hidden p-4 px-0 shadow-md"
         >
           <div className="mx-auto flex h-20 min-h-20 w-20 items-center justify-center">
-            <ProductImage productImage={part?.image} />
+            <ProductImage productImage={image} />
           </div>
-          <CardContent className="flex flex-col text-sm md:text-base gap-2">
+          <CardContent className="flex flex-col gap-2 text-sm md:text-base">
             <div className="text-primary flex w-full items-center justify-between font-semibold">
               <span className="text-sm font-normal">Brand :</span>
-              {part.brandName}
+              {brandName}
             </div>
             <div className="text-primary flex w-full items-center justify-between font-semibold">
               <span className="text-sm font-normal">Part Name :</span>
-              <span className="line-clamp-1">{part.partName}</span>
+              <span className="line-clamp-1">{partName}</span>
             </div>
             <div className="text-primary flex w-full items-center justify-between font-semibold">
               <span className="text-sm font-normal">Part Number :</span>
-              {part.partNumber}
+              {partNumber}
             </div>
+            {selectedSize && (
+              <div className="text-primary bg-muted flex w-full items-center justify-between font-semibold px-2 rounded-lg">
+                <span className="text-sm font-normal">Size :</span>
+                {selectedSize}
+              </div>
+            )}
 
             <div className="text-primary flex w-full items-start justify-between font-semibold">
               <span className="w-full text-sm font-normal">Vehicle Name :</span>
@@ -80,50 +117,28 @@ export function PartDetailsDialog({ part }: PartDetailsDialogProps) {
             </div>
             <div className="text-primary flex w-full items-center justify-between font-semibold">
               <span className="text-sm font-normal">Category :</span>{" "}
-              {part.partCategory}
+              {partCategory}
             </div>
           </CardContent>
           <CardFooter className="flex items-center justify-between">
             <div className="text-primary flex items-center gap-1 text-lg font-semibold">
-              <span className="text-foreground text-sm md:text-base font-normal">
+              <span className="text-foreground text-sm font-normal md:text-base">
                 Price :
               </span>
-              {formatINR(part?.price)}
+              {formatINR(partPrice)}
             </div>
-            <div className="text-primary flex items-center gap-1 text-sm md:text-base font-semibold">
+            <div className="text-primary flex items-center gap-1 text-sm font-semibold md:text-base">
               <span className="text-foreground text-sm font-normal">
                 Discount :
               </span>
-              {part?.discount}%
+              {partDiscount}%
             </div>
-            <div className="text-primary flex items-center gap-1 text-sm md:text-base font-semibold">
+            <div className="text-primary flex items-center gap-1 text-sm font-semibold md:text-base">
               <span className="text-foreground font-normal">GST :</span>
-              {part?.gst}%
+              {partGst}%
             </div>
           </CardFooter>
         </Card>
-
-        {/* <div className="flex w-full flex-col items-start justify-start gap-1 text-xs md:text-sm">
-          <div>
-            <span className="font-semibold">ID:</span> {part.id}
-          </div>
-          <div>
-            <span className="font-semibold">Name:</span> {part.partName}
-          </div>
-          <div>
-            <span className="font-semibold">Price:</span> ₹{part.price}
-          </div>
-          {part.discount != null && (
-            <div>
-              <span className="font-semibold">Discount:</span> {part.discount}%
-            </div>
-          )}
-          {part.gst != null && (
-            <div>
-              <span className="font-semibold">GST:</span> {part.gst}%
-            </div>
-          )}
-        </div> */}
 
         <DialogFooter className="flex w-full items-center justify-center gap-2 py-2">
           {/* 3) The close button */}

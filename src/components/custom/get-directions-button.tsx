@@ -19,7 +19,7 @@ export default function GetDirectionsButton({
 
           const origin = `${latitude},${longitude}`;
           const url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${encodeURIComponent(
-            destination
+            destination,
           )}&travelmode=driving`;
 
           setMapsUrl(url);
@@ -28,19 +28,24 @@ export default function GetDirectionsButton({
           console.error("Geolocation error:", error);
           // fallback: let Google use user's location by default
           const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-            destination
+            destination,
           )}&travelmode=driving`;
           setMapsUrl(url);
-        }
+        },
       );
     }
   }, [destination]);
 
   return mapsUrl ? (
-    <a href={mapsUrl} target="_blank" rel="noopener noreferrer">
+    <a
+      href={mapsUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex w-full items-center justify-center"
+    >
       <Button
-        variant={"outline"}
-        className=" !p-0 text-md shadow-none focus:outline-none focus:ring-0 border-0 text-cyan-900 "
+        variant={"link"}
+        className="text-md border-0 !p-0 text-cyan-900 shadow-none focus:ring-0 focus:outline-none"
       >
         <Send />
         Get Directions

@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -155,4 +156,8 @@
 .no-scrollbar {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;     /* Firefox */
+}
+tbody.child\:border-b-on-last-row tr:last-child {
+  border-bottom-width: 1px;
+  border-style: solid;
 }
