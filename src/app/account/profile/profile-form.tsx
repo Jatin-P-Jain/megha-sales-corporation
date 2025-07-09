@@ -59,7 +59,6 @@ export default function ProfileForm({
   const isMobile = useIsMobile();
   const auth = useAuth();
   const user = auth.currentUser;
-  const router = useRouter();
   const recaptchaVerifier = useRecaptcha();
   const [isVerified, setIsVerified] = useState(
     !!defaultValues?.phone ? true : false,
