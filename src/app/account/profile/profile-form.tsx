@@ -28,7 +28,14 @@ import {
 import clsx from "clsx";
 import { loginUserMobileSchema } from "@/validation/loginUser";
 import { useEffect, useState } from "react";
-import { CheckCircle2, Loader2, Loader2Icon, SaveIcon } from "lucide-react";
+import {
+  CheckCircle2,
+  ChevronsLeftIcon,
+  ChevronsUpIcon,
+  Loader2,
+  Loader2Icon,
+  SaveIcon,
+} from "lucide-react";
 import { useMobileOtp } from "@/hooks/useMobileOtp";
 import OTPInput from "@/components/custom/otp-input";
 import { useRecaptcha } from "@/hooks/useRecaptcha";
@@ -40,6 +47,7 @@ import GoogleIcon from "@/components/custom/google-icon.svg";
 import Image from "next/image";
 import { GoogleAuthProvider, linkWithPopup } from "firebase/auth";
 import { setToken } from "@/context/actions";
+import useIsMobile from "@/hooks/useIsMobile";
 
 export default function ProfileForm({
   defaultValues,
@@ -48,6 +56,7 @@ export default function ProfileForm({
   defaultValues?: z.infer<typeof userProfileDataSchema>;
   verifiedToken: DecodedIdToken | null;
 }) {
+  const isMobile = useIsMobile();
   const auth = useAuth();
   const user = auth.currentUser;
   const router = useRouter();
@@ -140,7 +149,7 @@ export default function ProfileForm({
       toast.success("Success!", {
         description: "Your profile has been saved successfully!",
       });
-      router.push("/");
+      window.location.assign("/");
     } catch (err: unknown) {
       if (err instanceof Error) {
         toast.error(err.message || "Failed to update profile");
@@ -210,58 +219,64 @@ export default function ProfileForm({
                 }}
               />
               <div className="flex flex-col">
-                {isPhoneAuthProvider && !defaultValues?.email && (
-                  <>
-                    <Button
-                      type="button"
-                      className="mx-auto w-[80%] cursor-pointer rounded-full text-[14px] shadow-md"
-                      variant={"outline"}
-                      onClick={handleLinkGoogle}
-                    >
-                      {isAccountLinking ? (
-                        <>
-                          <Loader2Icon className="size-4 animate-spin" />
-                          Linking Google Account
-                        </>
-                      ) : (
-                        <>
-                          <Image
-                            src={GoogleIcon}
-                            alt=""
-                            className="relative h-8 max-h-6 w-8 max-w-6"
-                          />
-                          Link Google Account
-                        </>
-                      )}
-                    </Button>
-                    <span className="mt-2 flex w-full justify-center text-[14px] text-zinc-500">
-                      or
-                    </span>
-                  </>
-                )}
                 <FormField
                   control={form.control}
                   name="email"
                   render={({ field }) => {
                     return (
-                      <FormItem>
-                        <FormLabel className="flex items-start gap-1">
+                      <FormItem className="">
+                        <FormLabel className="flex w-1/4 items-start gap-1">
                           Your email
                           <span className="text-muted-foreground text-xs">
                             *
                           </span>
                         </FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="Email"
-                            readOnly={!!defaultValues?.email}
-                            className={clsx(
-                              defaultValues?.email && "font-semibold",
-                            )}
-                          />
-                        </FormControl>
-                        <FormMessage />
+                        <div className="flex w-full flex-col-reverse items-center justify-center md:flex-row-reverse">
+                          {isPhoneAuthProvider && !defaultValues?.email && (
+                            <>
+                              <Button
+                                type="button"
+                                className="mx-auto w-full cursor-pointer rounded-full text-[14px] shadow-md md:w-fit"
+                                variant={"outline"}
+                                onClick={handleLinkGoogle}
+                              >
+                                {isAccountLinking ? (
+                                  <>
+                                    <Loader2Icon className="size-4 animate-spin" />
+                                    Linking Google Account
+                                  </>
+                                ) : (
+                                  <>
+                                    <Image
+                                      src={GoogleIcon}
+                                      alt=""
+                                      className="relative h-8 max-h-6 w-8 max-w-6"
+                                    />
+                                    Link Google Account
+                                  </>
+                                )}
+                              </Button>
+                              <span className="m-2 flex justify-center text-[14px] text-zinc-500 md:mx-4">
+                                {!isMobile ? (
+                                  <ChevronsLeftIcon className="size-4" />
+                                ) : (
+                                  <ChevronsUpIcon className="size-4" />
+                                )}
+                              </span>
+                            </>
+                          )}
+                          <FormControl className="w-full">
+                            <Input
+                              {...field}
+                              placeholder="Linked Google email will appear here"
+                              readOnly={true}
+                              className={clsx(
+                                defaultValues?.email && "w-full font-semibold",
+                              )}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </div>
                       </FormItem>
                     );
                   }}

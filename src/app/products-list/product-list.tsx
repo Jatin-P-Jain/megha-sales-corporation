@@ -62,35 +62,66 @@ export default async function ProductList({
                 </PaginationItem>
               )}
 
-              {Array.from({ length: totalPages }).map((_, i) => {
-                const pageNum = i + 1;
-                const isCurrent = page === pageNum;
-                const newSearchParams = new URLSearchParams();
-                Object.entries(searchParamsValues).forEach(([key, value]) => {
-                  if (value !== undefined) {
-                    if (Array.isArray(value)) {
-                      value.forEach((v) => newSearchParams.append(key, v));
-                    } else {
-                      newSearchParams.set(key, value);
+              {(() => {
+                const pageLinks = [];
+                const newSearchParamsFor = (p: number) => {
+                  const sp = new URLSearchParams();
+                  Object.entries(searchParamsValues).forEach(([key, value]) => {
+                    if (value !== undefined) {
+                      if (Array.isArray(value)) {
+                        value.forEach((v) => sp.append(key, v));
+                      } else {
+                        sp.set(key, value);
+                      }
                     }
-                  }
-                });
-                newSearchParams.set("page", `${pageNum}`);
+                  });
+                  sp.set("page", `${p}`);
+                  return `/products-list?${sp}`;
+                };
 
-                return (
-                  <PaginationItem key={pageNum}>
-                    <PaginationLink
-                      href={`/products-list?${newSearchParams}`}
-                      isActive={isCurrent}
-                      className={clsx(
-                        isCurrent && "bg-primary font-bold text-white",
-                      )}
-                    >
-                      {pageNum}
-                    </PaginationLink>
-                  </PaginationItem>
-                );
-              })}
+                const visiblePages = new Set<number>();
+
+                // Always show first, current±1, and last page
+                visiblePages.add(1);
+                visiblePages.add(totalPages);
+                visiblePages.add(page);
+                if (page > 1) visiblePages.add(page - 1);
+                if (page < totalPages) visiblePages.add(page + 1);
+
+                let prevPage: number | null = null;
+
+                for (let i = 1; i <= totalPages; i++) {
+                  if (!visiblePages.has(i)) continue;
+
+                  if (prevPage !== null && i - prevPage > 1) {
+                    pageLinks.push(
+                      <PaginationItem key={`ellipsis-${i}`}>
+                        <span className="text-muted-foreground px-2">...</span>
+                      </PaginationItem>,
+                    );
+                  }
+
+                  const isCurrent = page === i;
+
+                  pageLinks.push(
+                    <PaginationItem key={i}>
+                      <PaginationLink
+                        href={newSearchParamsFor(i)}
+                        isActive={isCurrent}
+                        className={clsx(
+                          isCurrent && "bg-primary font-bold text-white",
+                        )}
+                      >
+                        {i}
+                      </PaginationLink>
+                    </PaginationItem>,
+                  );
+
+                  prevPage = i;
+                }
+
+                return pageLinks;
+              })()}
 
               {page < totalPages && (
                 <PaginationItem>
