@@ -1,14 +1,13 @@
 import { cookies } from "next/headers";
 import { auth } from "@/firebase/server";
 import { Suspense } from "react";
-import { getProducts } from "@/data/products";
 import ProductList from "./product-list";
 import ProductCardLoading from "./property-card-loading";
 import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
 import { ProductStatus } from "@/types/product";
 import { getAllCategories } from "@/data/categories";
 import ResponsiveProductFiltersServer from "./responsive-product-filters.server";
-import { PAGE_SIZE, unslugify } from "@/lib/utils";
+import { unslugify } from "@/lib/utils";
 import AboutBrandButton from "@/components/custom/about-brand.button";
 
 export default async function ProductsList({
@@ -28,17 +27,9 @@ export default async function ProductsList({
   const isUser = verifiedToken ? true : false;
 
   const searchParamsValues = await searchParams;
-  const parsedPage = parseInt(searchParamsValues.page);
-  const page = isNaN(parsedPage) ? 1 : parsedPage;
   const brandId = searchParamsValues?.brandId ?? "";
   const brandName = unslugify(brandId);
   const statusParam = searchParamsValues.status ?? "";
-  const categoryParam = searchParamsValues.category ?? "";
-  const categoryFilters = Array.isArray(categoryParam)
-    ? categoryParam
-    : categoryParam
-      ? [categoryParam]
-      : [];
 
   const productsFilters: ProductStatus[] = [];
   if (statusParam) {
@@ -50,15 +41,6 @@ export default async function ProductsList({
       productsFilters.push(statusParam as ProductStatus);
     }
   } else if (!isAdmin) productsFilters.push("for-sale");
-
-  const productsPromise = getProducts({
-    filters: {
-      brandId: brandId,
-      status: productsFilters,
-      partCategory: categoryFilters,
-    },
-    pagination: { page: page, pageSize: PAGE_SIZE },
-  });
 
   const categoriesPromise = getAllCategories();
 
@@ -87,7 +69,7 @@ export default async function ProductsList({
       >
         <div className="mx-auto flex w-full max-w-screen-lg flex-col pt-8 md:pt-6">
           <EllipsisBreadCrumbs items={breadcrumbs} />
-          <div className="flex w-full flex-row items-center justify-between mb-2">
+          <div className="mb-2 flex w-full flex-row items-center justify-between">
             <h1 className="py-2 text-xl font-[600] tracking-wide text-cyan-950 md:text-2xl">
               Product Listings
             </h1>
@@ -115,9 +97,7 @@ export default async function ProductsList({
           }
         >
           <ProductList
-            productsPromise={productsPromise}
             isAdmin={isAdmin}
-            page={page}
             searchParamsValues={searchParamsValues}
           />
         </Suspense>
