@@ -34,46 +34,54 @@ export const getProducts = async (options?: GetPropertiesOptions) => {
   }
 
   const totals = await getTotalPages(productsQuery, pageSize);
-
   const { totalPages, totalItems } = totals;
 
-  const productsSnapshot = await productsQuery
-    .limit(pageSize)
-    .offset((page - 1) * pageSize)
-    .get();
+  // 🔁 Only use startAfter if page > 1
+  if (page > 1) {
+    const skipSnapshot = await productsQuery
+      .limit((page - 1) * pageSize)
+      .get();
 
-  const productsData = productsSnapshot.docs.map((productItem) => {
-    const rawProductData = productItem.data();
+    const lastVisible = skipSnapshot.docs.at(-1);
+    if (lastVisible) {
+      productsQuery = productsQuery.startAfter(lastVisible);
+    }
+  }
+
+  const productsSnapshot = await productsQuery.limit(pageSize).get();
+
+  const productsData = productsSnapshot.docs.map((doc) => {
+    const data = doc.data();
     const product: Product = {
-      id: productItem.id,
-      brandName: rawProductData.brandName as string,
-      brandId: rawProductData.brandId as string,
-      companyName: rawProductData.companyName as string,
-      vehicleCompany: rawProductData.vehicleCompany as string,
-      vehicleNames: rawProductData.vehicleNames as string[],
-      partCategory: rawProductData.partCategory as string,
-      partNumber: rawProductData.partNumber as string,
-      partName: rawProductData.partName as string,
-      price: rawProductData.price as number,
-      discount: rawProductData.discount as number,
-      gst: rawProductData.gst as number,
-      stock: rawProductData.stock as number,
-      status: rawProductData.status as ProductStatus,
-      hasSizes: rawProductData.hasSizes as boolean,
-      samePriceForAllSizes: rawProductData.samePriceForAllSizes as boolean,
-      sizes: rawProductData.sizes as {
-        size: string;
-        price?: number;
-        discount?: number;
-        gst?: number;
-      }[],
-      image: rawProductData.image as string | undefined,
+      id: doc.id,
+      brandName: data.brandName,
+      brandId: data.brandId,
+      companyName: data.companyName,
+      vehicleCompany: data.vehicleCompany,
+      vehicleNames: data.vehicleNames,
+      partCategory: data.partCategory,
+      partNumber: data.partNumber,
+      partName: data.partName,
+      price: data.price,
+      discount: data.discount,
+      gst: data.gst,
+      stock: data.stock,
+      status: data.status,
+      hasSizes: data.hasSizes,
+      samePriceForAllSizes: data.samePriceForAllSizes,
+      sizes: data.sizes,
+      image: data.image,
     };
     return product;
   });
 
-  return { data: productsData, totalPages: totalPages, totalItems: totalItems };
+  return {
+    data: productsData,
+    totalPages,
+    totalItems,
+  };
 };
+
 
 export const getProductById = async (productId: string) => {
   const productSnapshot = await fireStore

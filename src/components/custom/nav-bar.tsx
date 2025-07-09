@@ -22,12 +22,12 @@ export default function NavBar({ children }: NavBarProps) {
         <nav className="fixed top-0 right-0 left-0 z-50 flex flex-wrap items-center justify-between bg-cyan-950 p-3 px-4 text-white shadow-md md:px-6 lg:px-10">
           <Link
             href="/"
-            className="flex items-center justify-end gap-2 text-lg tracking-wider uppercase md:gap-4 md:text-2xl"
+            className="flex items-center justify-end gap-1 text-lg tracking-wider uppercase md:gap-4 md:text-2xl"
           >
-            <div className="relative h-12 w-10">
+            <div className="relative h-8 w-8 md:h-10 md:w-10">
               <Image src={JinendraLogo} alt="" fill className="object-center" />
             </div>
-            <div className="relative h-10 w-10 md:h-14 md:w-14">
+            <div className="relative h-8 w-8 md:h-10 md:w-10">
               <Image src={BrandLogo} alt="" fill className="object-center" />
             </div>
             <div className="flex flex-col text-sm md:text-lg md:tracking-[2px]">
@@ -37,7 +37,7 @@ export default function NavBar({ children }: NavBarProps) {
               </span>
             </div>
           </Link>
-          <ul className="flex items-center justify-between gap-1 md:mt-0 md:gap-4">
+          <ul className="flex items-center justify-between gap-0 md:mt-0 md:gap-4">
             <li className="">
               <ContactUsLink />
             </li>

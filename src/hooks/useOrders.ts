@@ -109,8 +109,12 @@ export function useOrders({
         setLoading(false);
       });
     };
-
-    fetch();
+    try {
+      fetch();
+    } catch (error: unknown) {
+      console.log("Error useOrders -- ", error);
+      setLoading(false);
+    }
 
     return () => {
       if (unsub) unsub();
