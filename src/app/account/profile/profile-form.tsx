@@ -17,7 +17,6 @@ import {
   userProfileDataSchema,
   userProfileSchema,
 } from "@/validation/profileSchema";
-import { useRouter } from "next/navigation";
 import {
   Select,
   SelectContent,
