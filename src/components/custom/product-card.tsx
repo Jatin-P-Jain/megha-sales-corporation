@@ -75,9 +75,9 @@ export default function ProductCard({
   return (
     <Card
       key={product?.id}
-      className="relative gap-0 overflow-hidden p-4 px-0 shadow-md"
+      className="relative gap-1 overflow-hidden p-4 px-0 shadow-md md:gap-2"
     >
-      <CardContent className="flex flex-col text-sm md:grid md:grid-cols-[3fr_1fr] md:text-base">
+      <CardContent className="flex flex-col text-sm md:grid md:grid-cols-[3fr_1fr] md:text-base gap-4">
         <div className="flex w-full flex-col md:gap-2">
           <div className="text-primary flex w-full items-center justify-between font-semibold">
             <span className="text-sm font-normal">Brand :</span>
@@ -130,7 +130,7 @@ export default function ProductCard({
           </div>
         )}
       </CardContent>
-      <CardFooter className="grid grid-cols-[3fr_1fr] items-end justify-center gap-0">
+      <CardFooter className="grid grid-cols-[3fr_1fr] items-end justify-center gap-4">
         <div className="flex w-full flex-col items-start justify-start md:flex-row md:justify-between">
           <div className="text-primary flex items-center gap-2 text-lg font-semibold">
             <span className="text-foreground text-base font-normal">

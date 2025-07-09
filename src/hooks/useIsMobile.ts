@@ -5,7 +5,7 @@ const useIsMobile = (breakpoint = 768) => {
   const [isMobile, setIsMobile] = useState(true);
 
   useEffect(() => {
-    const checkSize = () => setIsMobile(window.innerWidth <= breakpoint);
+    const checkSize = () => setIsMobile(window.innerWidth < breakpoint);
     checkSize();
     window.addEventListener("resize", checkSize);
     return () => window.removeEventListener("resize", checkSize);

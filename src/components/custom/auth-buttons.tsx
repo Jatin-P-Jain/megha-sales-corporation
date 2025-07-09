@@ -50,7 +50,7 @@ export default function AuthButtons() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild className="">
             <button className="relative flex flex-col items-center">
-              <Avatar className="h-8 w-8 ring-1">
+              <Avatar className="h-6 w-6 md:h-8 md:w-8 ring-1">
                 {clientUser.photoUrl ? (
                   <Image
                     src={clientUser.photoUrl}
@@ -66,7 +66,7 @@ export default function AuthButtons() {
                 )}
               </Avatar>
               {isAdmin && (
-                <div className="bottom-0 rounded-sm bg-green-100 px-2 text-[10px] font-semibold text-green-700">
+                <div className="bottom-0 rounded-sm bg-green-100 px-1 text-[8px] font-semibold text-green-700">
                   Admin
                 </div>
               )}
