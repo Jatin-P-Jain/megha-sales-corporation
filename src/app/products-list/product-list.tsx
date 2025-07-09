@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/pagination";
 import { usePaginatedFirestore } from "@/hooks/usePaginatedFireStore";
 import { PAGE_SIZE } from "@/lib/utils";
+import { Product } from "@/types/product";
 import clsx from "clsx";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
@@ -131,7 +132,7 @@ export default function ProductList({
       {data.length > 0 && (
         <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col justify-between gap-4 py-2">
           <div className="flex w-full flex-1 flex-grow flex-col gap-5">
-            {data.map((product: any, index: number) => (
+            {data.map((product: Product, index: number) => (
               <ProductCard key={index} product={product} isAdmin={isAdmin} />
             ))}
           </div>
