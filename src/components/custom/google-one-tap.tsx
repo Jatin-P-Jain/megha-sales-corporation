@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { auth, firestore } from "@/firebase/client";
 import {
   GoogleAuthProvider,
@@ -12,8 +11,6 @@ import { doc, getDoc } from "firebase/firestore";
 import { markOneTapAsFinished } from "@/hooks/useOneTapReady";
 
 export default function GoogleOneTap() {
-  const router = useRouter();
-
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -22,7 +19,7 @@ export default function GoogleOneTap() {
 
       window.google.accounts.id.initialize({
         client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
-        callback: async (response: any) => {
+        callback: async (response) => {
           console.log("🟡 Google One Tap callback triggered");
           try {
             const credential = GoogleAuthProvider.credential(
