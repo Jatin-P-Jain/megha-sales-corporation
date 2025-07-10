@@ -28,11 +28,17 @@ export async function middleware(request: NextRequest) {
   // 1) Grab the ID token or treat as logged-out
   const cookieStore = await cookies();
   const token = cookieStore.get("firebaseAuthToken")?.value;
-  const publicPaths = ["/", "/login", "/register", "/products-list"];
   if (!token) {
-    if (publicPaths.includes(pathname) || pathname.startsWith("/brands"))
-      return NextResponse.next();
-    return NextResponse.redirect(new URL("/", origin));
+    const publicPaths = ["/", "/login", "/register", "/products-list"];
+    const isPublic =
+      publicPaths.includes(pathname) || pathname.startsWith("/brands");
+
+    if (isPublic) return NextResponse.next();
+
+    // ❌ Not public → go home
+    const res = NextResponse.redirect(new URL("/", origin));
+    res.cookies.delete("firebaseAuthToken");
+    return res;
   }
 
   // 2) Block /login & /register when already logged in
@@ -104,6 +110,7 @@ export async function middleware(request: NextRequest) {
 }
 export const config = {
   matcher: [
+    "/",
     "/admin-dashboard",
     "/admin-dashboard/:path*",
     "/login",

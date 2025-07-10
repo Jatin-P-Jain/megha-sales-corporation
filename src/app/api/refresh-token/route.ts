@@ -11,7 +11,7 @@ export const GET = async (request: NextRequest) => {
   const refreshToken = cookieStore.get("firebaseAuthRefreshToken")?.value;
 
   if (!refreshToken) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.redirect(new URL("/", request.url));
   }
   try {
     const response = await fetch(
@@ -23,7 +23,7 @@ export const GET = async (request: NextRequest) => {
           grant_type: "refresh_token",
           refresh_token: refreshToken,
         }),
-      }
+      },
     );
     const jsonResponse = await response.json();
     const newToken = jsonResponse.id_token;

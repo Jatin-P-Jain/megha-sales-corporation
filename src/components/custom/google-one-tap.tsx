@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect } from "react";
-import { auth, firestore } from "@/firebase/client";
+import { auth } from "@/firebase/client";
 import {
   GoogleAuthProvider,
   signInWithCredential,
   getIdTokenResult,
 } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
 import { markOneTapAsFinished } from "@/hooks/useOneTapReady";
+import { setToken } from "@/context/actions";
 
 export default function GoogleOneTap() {
   useEffect(() => {
@@ -32,26 +32,7 @@ export default function GoogleOneTap() {
 
             // Get ID token claims
             const tokenResult = await getIdTokenResult(user, true);
-            const claims = tokenResult.claims;
-
-            // You can also check Firestore for extra profile fields if needed
-            const userDoc = await getDoc(doc(firestore, "users", user.uid));
-            const userData = userDoc.exists() ? userDoc.data() : null;
-
-            const phone = user.phoneNumber?.slice(3); // remove +91 or +xx
-            const role = claims?.admin ? "admin" : userData?.role;
-
-            console.log("📱 Phone:", phone, "| 🧑‍💼 Role:", role);
-
-            if (!phone || !role) {
-              console.log(
-                "⛔ Incomplete profile — redirecting to /account/profile",
-              );
-              window.location.assign("/account/profile");
-            } else {
-              console.log("✅ Profile complete — redirecting to /");
-              window.location.assign("/");
-            }
+            setToken(tokenResult.token, user.refreshToken);
           } catch (err) {
             console.error("❌ Firebase sign-in error:", err);
           }
