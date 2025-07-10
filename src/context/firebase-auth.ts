@@ -9,7 +9,7 @@ import {
   User,
 } from "firebase/auth";
 import { auth } from "@/firebase/client";
-import { setToken } from "./actions";
+import { removeToken, setToken } from "./actions";
 
 export const loginWithGoogle = async (): Promise<User | undefined> => {
   const provider = new GoogleAuthProvider();
@@ -52,4 +52,5 @@ export const verifyOTP = async (
 
 export const logoutUser = async () => {
   await auth.signOut();
+  await removeToken();
 };
