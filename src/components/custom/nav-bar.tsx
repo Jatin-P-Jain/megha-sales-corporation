@@ -10,6 +10,7 @@ import AuthButtons from "./auth-buttons";
 import { AuthProvider } from "@/context/useAuth";
 import { CartProvider } from "@/context/cartContext";
 import SearchBar from "./search-bar";
+import GoogleOneTapWrapper from "@/app/(auth)/google-one-tap-wrapper";
 
 type NavBarProps = {
   children: ReactNode;
@@ -18,6 +19,7 @@ type NavBarProps = {
 export default function NavBar({ children }: NavBarProps) {
   return (
     <AuthProvider>
+      <GoogleOneTapWrapper />
       <CartProvider>
         <nav className="fixed top-0 right-0 left-0 z-50 flex flex-wrap items-center justify-between bg-cyan-950 p-3 px-4 text-white shadow-md md:px-6 lg:px-10">
           <Link

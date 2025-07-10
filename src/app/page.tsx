@@ -13,12 +13,22 @@ export default async function Home({
 }) {
   const cookieStore = await cookies();
   const token = cookieStore.get("firebaseAuthToken")?.value;
-  let verifiedToken: { admin?: boolean; exp?: number } | null = null;
+  let verifiedToken: {
+    admin?: boolean;
+    exp?: number;
+    profileComplete?: boolean;
+  } | null = null;
 
   if (token) {
     try {
       // If the token is expired or invalid, this throws
       verifiedToken = await auth.verifyIdToken(token);
+      console.log("🟢 Home Verified token:", verifiedToken);
+      const isProfileComplete = verifiedToken?.profileComplete;
+      if (!isProfileComplete) {
+        // Redirect to profile completion page
+        return redirect("/account/profile");
+      }
     } catch (err: unknown) {
       // If it’s specifically “token expired,” send them to refresh (or login)
       if ((err as { code?: string }).code === "auth/id-token-expired") {
@@ -28,7 +38,7 @@ export default async function Home({
         );
       }
       // Any other verification error → force them to log in
-      return redirect("/login");
+      return redirect("/");
     }
   }
   const isAdmin = verifiedToken?.admin;

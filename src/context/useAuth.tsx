@@ -55,9 +55,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [clientUserLoading, setClientUserLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [customClaims, setCustomClaims] = useState<ParsedToken | null>(null);
-  const [inactivityLimit, setInactivityLimit] = useState<number | null>(
-    null,
-  );
+  const [inactivityLimit, setInactivityLimit] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
