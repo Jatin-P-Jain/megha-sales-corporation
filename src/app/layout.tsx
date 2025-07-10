@@ -6,6 +6,7 @@ import { Poppins } from "next/font/google";
 import NavBar from "@/components/custom/nav-bar";
 import { ServiceWorkerRegister } from "./service-worker-register";
 import InstallPWAButton from "@/components/custom/install-pwa-button";
+import Script from "next/script";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -54,6 +55,10 @@ export default async function RootLayout({
           content="Megha Sales Corporation"
         />
         <link rel="manifest" href="/site.webmanifest" />
+        <Script
+          src="https://accounts.google.com/gsi/client"
+          strategy="afterInteractive"
+        />
       </head>
       <body
         className={`${poppins.className} max-h-screen min-h-[100dvh] antialiased`}
