@@ -93,7 +93,7 @@ export default function SearchPartNumber({
             Search product by part number
           </DialogTitle>
           <DialogDescription> 
-            Enter the exact part number of the product you'd like to find.
+            Enter the exact part number of the product you would like to find.
           </DialogDescription>
         </DialogHeader>
 
