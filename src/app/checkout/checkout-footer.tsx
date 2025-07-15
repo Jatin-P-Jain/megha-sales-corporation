@@ -70,8 +70,8 @@ export default function CheckoutFooter() {
       body: JSON.stringify({
         templateKey: "admin_order_recieved_v1",
         customerName: auth.clientUser?.displayName,
-        customerPhone: auth.clientUser?.phone,
         orderId: orderResponse.orderId,
+        customerPhone: auth.clientUser?.phone,
       }),
     });
 

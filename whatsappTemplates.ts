@@ -20,8 +20,8 @@ export const whatsappTemplates: Record<
     language: { code: "en_US" },
     bodyParamsCount: 4,
     hasButton: true,
-    resolveParams: ({ adminName, customerName, customerPhone, orderId }) => ({
-      bodyParams: [adminName, customerName, customerPhone, orderId],
+    resolveParams: ({ adminName, orderId, customerName, customerPhone }) => ({
+      bodyParams: [adminName, orderId, customerName, customerPhone],
       buttonParams: [orderId],
     }),
   },
