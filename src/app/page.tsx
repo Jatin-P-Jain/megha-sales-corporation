@@ -23,7 +23,6 @@ export default async function Home({
     try {
       // If the token is expired or invalid, this throws
       verifiedToken = await auth.verifyIdToken(token);
-      console.log("🟢 Home Verified token:", verifiedToken);
       const isProfileComplete = verifiedToken?.profileComplete;
       if (!isProfileComplete) {
         // Redirect to profile completion page
