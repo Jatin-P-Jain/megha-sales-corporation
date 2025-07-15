@@ -152,11 +152,23 @@ export default function ProductList({
                 const pageLinks = [];
                 const visiblePages = new Set<number>();
 
-                visiblePages.add(1);
-                visiblePages.add(totalPages);
-                visiblePages.add(currentPage);
-                if (currentPage > 1) visiblePages.add(currentPage - 1);
-                if (currentPage < totalPages) visiblePages.add(currentPage + 1);
+                if (totalPages <= 7) {
+                  // Show all pages if total pages are 7 or fewer
+                  for (let i = 1; i <= totalPages; i++) {
+                    visiblePages.add(i);
+                  }
+                } else {
+                  // Always show first and last page
+                  visiblePages.add(1);
+                  visiblePages.add(totalPages);
+
+                  // Show current page and two pages before & after
+                  for (let i = currentPage - 2; i <= currentPage + 2; i++) {
+                    if (i > 1 && i < totalPages) {
+                      visiblePages.add(i);
+                    }
+                  }
+                }
 
                 let prev: number | null = null;
                 for (let i = 1; i <= totalPages; i++) {
