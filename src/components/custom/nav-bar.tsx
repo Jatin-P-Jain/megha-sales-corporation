@@ -9,7 +9,6 @@ import ContactUsLink from "./contact-us-link";
 import AuthButtons from "./auth-buttons";
 import { AuthProvider } from "@/context/useAuth";
 import { CartProvider } from "@/context/cartContext";
-import SearchBar from "./search-bar";
 import GoogleOneTapWrapper from "@/app/(auth)/google-one-tap-wrapper";
 
 type NavBarProps = {
@@ -32,20 +31,20 @@ export default function NavBar({ children }: NavBarProps) {
             <div className="relative h-8 w-8 md:h-10 md:w-10">
               <Image src={BrandLogo} alt="" fill className="object-center" />
             </div>
-            <div className="flex flex-col text-sm md:text-lg md:tracking-[2px] ml-1">
+            <div className="ml-1 flex flex-col text-sm md:text-lg md:tracking-[2px]">
               <span className="mt-1 font-semibold md:mt-2">Megha Sales</span>
               <span className="flex items-center justify-center text-xs tracking-[2px] md:text-sm md:tracking-[4px]">
                 Corporation
               </span>
             </div>
           </Link>
-          <ul className="flex items-center justify-between gap-0 md:mt-0 md:gap-4">
+          <ul className="flex items-center justify-between gap-4 md:mt-0">
             <li className="">
               <ContactUsLink />
             </li>
-            <li className="">
+            {/* <li className="">
               <SearchBar onSearch={() => {}} />
-            </li>
+            </li> */}
             <li className="flex w-fit items-center justify-center">
               <AuthButtons />
             </li>

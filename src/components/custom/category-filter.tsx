@@ -57,7 +57,7 @@ export default function CategoryMultiSelect({
   // label text
   const label = selected.length
     ? selected.join(", ")
-    : "Select Part Categories";
+    : "Part Categories";
 
   return (
     <Popover>
