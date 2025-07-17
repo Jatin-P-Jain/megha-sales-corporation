@@ -12,7 +12,7 @@ const BrandLogo: React.FC<BrandLogoProps> = ({ brandLogo }: BrandLogoProps) => {
   const [loading, setLoading] = useState(true);
 
   return (
-    <div className="relative flex h-full w-full items-center justify-center">
+    <div className="relative flex h-full w-full items-center justify-center overflow-hidden">
       {loading && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/50">
           <Loader2 className="text-primary h-6 w-6 animate-spin" />
@@ -22,8 +22,9 @@ const BrandLogo: React.FC<BrandLogoProps> = ({ brandLogo }: BrandLogoProps) => {
         <Image
           src={imageUrlFormatter(brandLogo)}
           alt="img"
-          fill
-          className="object-contain"
+          width={100}
+          height={100}
+          className="h-full w-full object-contain"
           onLoad={() => {
             setLoading(false);
           }}

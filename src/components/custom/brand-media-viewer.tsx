@@ -116,12 +116,13 @@ export function BrandMediaViewer({ brandMedia }: { brandMedia: BrandMedia[] }) {
                     )}
                   </CardContent>
                   <CardFooter className="flex items-center justify-start gap-2 p-2">
-                    <div className="relative size-8">
+                    <div className="relative">
                       <Image
                         src={icon}
                         alt=""
-                        fill
-                        className="h-full w-full object-center"
+                        width={28}
+                        height={28}
+                        className="object-center"
                       />
                     </div>
                     <span className="text-primary text-xs">
