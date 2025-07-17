@@ -58,7 +58,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [clientUserLoading, setClientUserLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [customClaims, setCustomClaims] = useState<ParsedToken | null>(null);
-  const [inactivityLimit, setInactivityLimit] = useState<number | null>(null);
+  const [inactivityLimit, setInactivityLimit] = useState<number | undefined>(
+    undefined,
+  );
   const [loading, setLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -122,11 +124,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         await createUserIfNotExists(safeUser);
         setCustomClaims(result.claims ?? null);
-        let inactivityTimeLimit;
+        let inactivityTimeLimit: number | undefined;
         if (result.claims?.admin) {
-          inactivityTimeLimit = 1 * 60 * 60 * 1000;
+          inactivityTimeLimit = parseInt(
+            process.env.NEXT_PUBLIC_ADMIN_INACTIVITY_LIMIT || "0",
+          );
         } else {
-          inactivityTimeLimit = 24 * 60 * 60 * 1000;
+          inactivityTimeLimit = parseInt(
+            process.env.NEXT_PUBLIC_USER_INACTIVITY_LIMIT || "0",
+          );
         }
         setInactivityLimit(inactivityTimeLimit);
         try {
