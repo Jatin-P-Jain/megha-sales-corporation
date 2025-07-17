@@ -114,7 +114,8 @@ export default function ImageUploader({
               <Image
                 src={urlFormatter ? urlFormatter(image) : image?.url}
                 alt="Logo"
-                fill
+                width={220}
+                height={220}
                 className="object-contain"
                 onLoad={() => setIsImageLoading(false)}
               />

@@ -34,8 +34,10 @@ const ImageViewer: React.FC<ImageViewerProps> = ({
         <Image
           src={url}
           alt={fileName}
-          fill
-          className="object-contain"
+          
+          width={200}
+          height={200}
+          className="h-full w-full object-contain"
           sizes=""
           onLoad={() => setLoading(false)}
         />

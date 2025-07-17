@@ -163,7 +163,7 @@ export default function ProfileForm({
     <>
       <div className="relative">
         {auth.loading && (
-          <div className="absolute top-0 flex h-full w-full items-center justify-center gap-2 bg-zinc-400/10">
+          <div className="absolute top-0 z-30 flex h-full w-full items-center justify-center gap-2 bg-zinc-400/10">
             <div className="flex h-1/8 w-3/4 items-center justify-center gap-2 rounded-lg border-1 bg-white">
               <Loader2 className="animate-spin" />
               Fetching your profile...
@@ -248,7 +248,8 @@ export default function ProfileForm({
                                     <Image
                                       src={GoogleIcon}
                                       alt=""
-                                      className="relative h-8 max-h-6 w-8 max-w-6"
+                                      width={25}
+                                      height={25}
                                     />
                                     Link Google Account
                                   </>
