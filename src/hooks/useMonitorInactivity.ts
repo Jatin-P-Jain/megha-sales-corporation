@@ -8,7 +8,7 @@ import { User } from "firebase/auth";
 const LAST_ACTIVITY_KEY = "lastActivity";
 const CHECK_INTERVAL_MS = 60 * 1000; // check every 1 minute
 
-const log = (...args: any[]) => {
+const log = (...args: string[]) => {
   console.log(`[${new Date().toISOString()}]`, ...args);
 };
 
