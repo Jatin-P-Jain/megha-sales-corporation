@@ -1,10 +1,9 @@
 "use client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardFooter } from "../ui/card";
-import useIsMobile from "@/hooks/useIsMobile";
 
 export default function ProductCardSkeleton() {
-  const isMobile = useIsMobile();
+  
   return (
     <Card className="relative gap-1 overflow-hidden p-4 px-0 shadow-md md:gap-2">
       <CardContent className="flex flex-col gap-4 text-sm md:grid md:grid-cols-[3fr_1fr] md:text-base">
