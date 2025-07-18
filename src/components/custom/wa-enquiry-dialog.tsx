@@ -71,7 +71,7 @@ export function EnquiryDialog({ trigger }: EnquiryDialogProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          templateKey: "customer_enquiry_received",
+          templateKey: "customer_inquiry_recieved",
           customerName: name,
           customerPhone: phone,
           customerMessage: message,
