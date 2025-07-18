@@ -25,9 +25,9 @@ export const whatsappTemplates: Record<
       buttonParams: [orderId],
     }),
   },
-  customer_enquiry_received: {
-    name: "customer_enquiry_received",
-    language: { code: "en_US" },
+  customer_inquiry_recieved: {
+    name: "customer_inquiry_recieved",
+    language: { code: "en" },
     bodyParamsCount: 5,
     hasButton: false,
     resolveParams: ({
