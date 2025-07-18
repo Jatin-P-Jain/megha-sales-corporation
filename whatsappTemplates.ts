@@ -25,8 +25,8 @@ export const whatsappTemplates: Record<
       buttonParams: [orderId],
     }),
   },
-  admin_query_raised: {
-    name: "admin_query_raised",
+  customer_enquiry_received: {
+    name: "customer_enquiry_received",
     language: { code: "en_US" },
     bodyParamsCount: 5,
     hasButton: false,
