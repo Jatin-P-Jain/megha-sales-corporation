@@ -1,6 +1,7 @@
 "use client";
 
 import ProductCard from "@/components/custom/product-card";
+import ProductCardSkeleton from "@/components/custom/product-card-skeleton";
 import {
   Pagination,
   PaginationContent,
@@ -14,7 +15,7 @@ import { PAGE_SIZE } from "@/lib/utils";
 import { Product } from "@/types/product";
 import clsx from "clsx";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function ProductList({
   isAdmin,
@@ -91,6 +92,15 @@ export default function ProductList({
     ],
   });
 
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+
+  // after loading becomes false
+  useEffect(() => {
+    if (!loading) {
+      setHasLoadedOnce(true);
+    }
+  }, [loading]);
+
   // ⏮ Reset to page 1 if filters change
   useEffect(() => {
     if (previousFiltersRef.current !== filterKey) {
@@ -117,18 +127,29 @@ export default function ProductList({
   const end = Math.min(currentPage * PAGE_SIZE, totalItems);
   const totalPages = Math.max(Math.ceil(totalItems / PAGE_SIZE), 1);
 
+  if (loading || !hasLoadedOnce) {
+  return (
+    <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col gap-4 px-4 py-6">
+      {[...Array(6)].map((_, i) => (
+        <ProductCardSkeleton key={i} />
+      ))}
+    </div>
+  );
+}
+
+  if (!loading && hasLoadedOnce && data.length === 0) {
+    return (
+      <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 items-center justify-center">
+        <p className="text-muted-foreground">No products found.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="relative mx-auto flex max-w-screen-lg flex-col">
       <p className="text-muted-foreground sticky top-0 z-10 w-full px-4 py-1 text-center text-sm">
         Page {currentPage} • Showing {start}–{end} of {totalItems} results
       </p>
-
-      {loading && data.length === 0 && (
-        <div className="text-muted-foreground text-center text-sm">
-          Loading...
-        </div>
-      )}
-
       {data.length > 0 && (
         <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col justify-between gap-4 py-2">
           <div className="flex w-full flex-1 flex-grow flex-col gap-5">
@@ -214,12 +235,6 @@ export default function ProductList({
               )}
             </PaginationContent>
           </Pagination>
-        </div>
-      )}
-
-      {!loading && data.length === 0 && (
-        <div className="text-center font-medium text-cyan-900">
-          No Products!
         </div>
       )}
     </div>

@@ -1,8 +1,6 @@
 import { cookies } from "next/headers";
 import { auth } from "@/firebase/server";
-import { Suspense } from "react";
 import ProductList from "./product-list";
-import ProductCardLoading from "./property-card-loading";
 import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
 import { ProductStatus } from "@/types/product";
 import { getAllCategories } from "@/data/categories";
@@ -96,20 +94,10 @@ export default async function ProductsList({
       <div
         className={`flex-1 overflow-y-auto px-4 pt-45 md:pt-53 lg:pt-40 ${!isAdmin && "pt-50 lg:pt-55"} ${!isUser && "!pt-38"} pb-20`}
       >
-        <Suspense
-          fallback={
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-              {Array.from({ length: 5 }).map((_, index) => (
-                <ProductCardLoading key={index} />
-              ))}
-            </div>
-          }
-        >
-          <ProductList
-            isAdmin={isAdmin}
-            searchParamsValues={searchParamsValues}
-          />
-        </Suspense>
+        <ProductList
+          isAdmin={isAdmin}
+          searchParamsValues={searchParamsValues}
+        />
       </div>
       <div className="fixed inset-x-0 bottom-7 z-30 mx-auto flex w-full max-w-screen-lg justify-end px-6">
         {isAdmin ? (
