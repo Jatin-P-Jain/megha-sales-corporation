@@ -53,7 +53,7 @@ const OTPInput: FC<OTPInputProps> = ({ length = 6, value, onChange }) => {
           type="tel"
           inputMode="numeric"
           maxLength={1}
-          className="min-w-0 flex-1 text-center text-lg md:text-xl"
+          className="min-w-0 flex-1 text-center text-lg md:text-xl shadow-md"
           ref={(el) => {
             inputsRef.current[i] = el ?? null;
           }}

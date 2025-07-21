@@ -26,6 +26,7 @@ import useMonitorInactivity from "@/hooks/useMonitorInactivity";
 import { getFcmToken } from "@/firebase/firebase-messaging";
 import { getDeviceMetadata } from "@/lib/utils";
 import { saveFcmToken } from "@/firebase/saveFcmToken";
+import { consumeIgnoreNextAuthNull } from "@/lib/ignoreAuthNullFlag";
 
 type AuthContextType = {
   loading: boolean;
@@ -101,57 +102,66 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
-      setCurrentUser(user ?? null);
-      setLoading(false);
-      if (user) {
-        const result = await user.getIdTokenResult(true);
-        const firebaseAuth = result.claims.firebase
-          ? {
-              identities: result.claims.firebase.identities ?? {},
-              sign_in_provider: result.claims.firebase.sign_in_provider ?? "",
-            }
-          : undefined;
-        const safeUser: UserData = {
-          uid: user.uid,
-          email: user.email ?? null,
-          phone: user.phoneNumber?.slice(3) ?? null,
-          displayName: user.displayName ?? null,
-          role: result?.claims?.admin ? "admin" : null,
-          photoUrl: user.photoURL,
-          firmName: "",
-          firebaseAuth,
-        };
+      if (!user) {
+        if (consumeIgnoreNextAuthNull()) {
+          console.log(
+            "⚠️ Ignoring transient null auth state after OTP failure.",
+          );
+          return;
+        }
 
-        await createUserIfNotExists(safeUser);
-        setCustomClaims(result.claims ?? null);
-        let inactivityTimeLimit: number | undefined;
-        if (result.claims?.admin) {
-          inactivityTimeLimit = parseInt(
-            process.env.NEXT_PUBLIC_ADMIN_INACTIVITY_LIMIT || "0",
-          );
-        } else {
-          inactivityTimeLimit = parseInt(
-            process.env.NEXT_PUBLIC_USER_INACTIVITY_LIMIT || "0",
-          );
-        }
-        setInactivityLimit(inactivityTimeLimit);
-        try {
-          const snap = await getDoc(doc(firestore, "users", safeUser.uid));
-          if (snap.exists()) {
-            setClientUser(mapDbUserToClientUser(snap.data()));
-          }
-        } catch (e) {
-          console.error("refreshClientUser failed", e);
-          await logoutUser();
-          await removeToken();
-          setCurrentUser(null);
-          setClientUser(null);
-        } finally {
-          setClientUserLoading(false);
-        }
-      } else {
         await removeToken();
         setClientUser(null);
+        setClientUserLoading(false);
+        setCurrentUser(null);
+        return;
+      }
+      setCurrentUser(user ?? null);
+      setLoading(false);
+
+      const result = await user.getIdTokenResult(true);
+      const firebaseAuth = result.claims.firebase
+        ? {
+            identities: result.claims.firebase.identities ?? {},
+            sign_in_provider: result.claims.firebase.sign_in_provider ?? "",
+          }
+        : undefined;
+      const safeUser: UserData = {
+        uid: user.uid,
+        email: user.email ?? null,
+        phone: user.phoneNumber?.slice(3) ?? null,
+        displayName: user.displayName ?? null,
+        role: result?.claims?.admin ? "admin" : null,
+        photoUrl: user.photoURL,
+        firmName: "",
+        firebaseAuth,
+      };
+
+      await createUserIfNotExists(safeUser);
+      setCustomClaims(result.claims ?? null);
+      let inactivityTimeLimit: number | undefined;
+      if (result.claims?.admin) {
+        inactivityTimeLimit = parseInt(
+          process.env.NEXT_PUBLIC_ADMIN_INACTIVITY_LIMIT || "0",
+        );
+      } else {
+        inactivityTimeLimit = parseInt(
+          process.env.NEXT_PUBLIC_USER_INACTIVITY_LIMIT || "0",
+        );
+      }
+      setInactivityLimit(inactivityTimeLimit);
+      try {
+        const snap = await getDoc(doc(firestore, "users", safeUser.uid));
+        if (snap.exists()) {
+          setClientUser(mapDbUserToClientUser(snap.data()));
+        }
+      } catch (e) {
+        console.error("refreshClientUser failed", e);
+        await logoutUser();
+        await removeToken();
+        setCurrentUser(null);
+        setClientUser(null);
+      } finally {
         setClientUserLoading(false);
       }
     });

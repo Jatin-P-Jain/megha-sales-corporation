@@ -10,6 +10,7 @@ import {
 } from "firebase/auth";
 import { auth } from "@/firebase/client";
 import { removeToken, setToken } from "./actions";
+import { setIgnoreNextAuthNull } from "@/lib/ignoreAuthNullFlag";
 
 export const loginWithGoogle = async (): Promise<User | undefined> => {
   const provider = new GoogleAuthProvider();
@@ -43,11 +44,17 @@ export const verifyOTP = async (
   otp: string,
   confirmationResult: ConfirmationResult,
 ): Promise<User | undefined> => {
-  const result = await confirmationResult.confirm(otp);
-  const user = result.user;
-  const token = await user.getIdToken(true);
-  await setToken(token, user.refreshToken);
-  return user;
+  try {
+    const result = await confirmationResult.confirm(otp);
+    const user = result.user;
+    const token = await user.getIdToken(true);
+    await setToken(token, user.refreshToken);
+    return user;
+  } catch (err) {
+    setIgnoreNextAuthNull(true); // 🛡️ Prevent onAuthStateChanged from reacting to null
+    console.error("OTP verification failed", err);
+    // throw err;
+  }
 };
 
 export const logoutUser = async () => {
