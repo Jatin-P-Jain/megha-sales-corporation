@@ -29,6 +29,11 @@ export function useMobileOtp({
   const [confirmationResult, setConfirmationResult] =
     useState<ConfirmationResult>();
 
+  const resetOtp = () => {
+    setOtpSent(false);
+    setOtpReset(true); // if needed
+  };
+
   const sendOtp = async (mobile: string, isResent: boolean = false) => {
     try {
       if (!appVerifier) {
@@ -75,25 +80,14 @@ export function useMobileOtp({
           }
         }
       } else {
-        try {
-          const user = await auth?.verifyOTP(otp, confirmationResult);
-          if (!user) {
-            toast.error("OTP verification failed. Please try again.");
-            return;
-          }
-        } catch (error: unknown) {
-          handleFirebaseAuthError(error);
-          return;
-        }
+        await auth?.verifyOTP(otp, confirmationResult);
       }
       onSuccess?.();
+      setOtpSent(false); // ✅ Only clear on successful verification
+      setOtpReset(true); // optional
     } catch (e) {
-      console.error(e);
-      toast.error("Verification failed.");
-      throw e;
+      handleFirebaseAuthError(e);
     } finally {
-      setOtpSent(false);
-      setOtpReset(true);
       setIsVerifying(false);
     }
   };
@@ -106,5 +100,6 @@ export function useMobileOtp({
     isVerifying,
     sendOtp,
     verifyOtp,
+    resetOtp,
   };
 }
