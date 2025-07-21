@@ -23,7 +23,6 @@ import { UserData } from "@/types/user";
 import { doc, getDoc } from "firebase/firestore";
 import { mapDbUserToClientUser } from "@/lib/firebase/mapDBUserToClient";
 import useMonitorInactivity from "@/hooks/useMonitorInactivity";
-import { consumeIgnoreNextAuthNull } from "@/lib/ignoreAuthNullFlag";
 
 type AuthContextType = {
   loading: boolean;
@@ -79,13 +78,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (!user) {
-        if (consumeIgnoreNextAuthNull()) {
-          console.log(
-            "⚠️ Ignoring transient null auth state after OTP failure.",
-          );
-          return;
-        }
-
         await removeToken();
         setClientUser(null);
         setClientUserLoading(false);

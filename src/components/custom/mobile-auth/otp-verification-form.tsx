@@ -15,7 +15,6 @@ import { z } from "zod";
 import { mobileOtpSchema } from "@/validation/loginUser";
 import OTPInput from "../otp-input";
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { RecaptchaVerifier } from "firebase/auth";
 import { useMobileOtp } from "@/hooks/useMobileOtp";
 import { toast } from "sonner";
@@ -26,12 +25,14 @@ export function OtpVerificationForm({
   recaptchaVerifier,
   onSuccess,
   onSubmit,
+  onEdit,
 }: {
   mobileNumber: string;
   isVerifying: boolean;
   recaptchaVerifier: RecaptchaVerifier | null;
   onSuccess?: () => void;
   onSubmit: (otp: string) => void;
+  onEdit: () => void;
 }) {
   const [timer, setTimer] = useState(30); // countdown
   const [canResend, setCanResend] = useState(false);
@@ -72,11 +73,11 @@ export function OtpVerificationForm({
     if (hasResentOnce || sendingOtp) return;
     try {
       setResendStatus("sending");
-      await sendOtp(mobileNumber);
+      await sendOtp(mobileNumber, true);
       setResendStatus("done");
       setHasResentOnce(true);
       toast.success("OTP resent successfully");
-
+      form.reset(); // Reset form after resend
       // Optionally reset the timer on resend
       setTimer(30);
       setCanResend(false);
@@ -92,10 +93,8 @@ export function OtpVerificationForm({
         <p className="text-muted-foreground text-sm">
           OTP sent to <strong>+91-{mobileNumber}</strong>
         </p>
-        <Button variant="link" asChild className="text-primary px-1">
-          <Link href="/login" className="flex items-center gap-1 text-sm">
-            <PencilIcon className="h-3 w-3" /> Edit
-          </Link>
+        <Button variant="link" className="text-primary px-1" onClick={onEdit}>
+          <PencilIcon className="h-3 w-3" /> Edit
         </Button>
       </div>
 
