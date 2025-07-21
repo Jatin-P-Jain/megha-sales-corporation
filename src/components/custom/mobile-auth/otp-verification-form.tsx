@@ -18,6 +18,7 @@ import { useEffect, useState } from "react";
 import { RecaptchaVerifier } from "firebase/auth";
 import { useMobileOtp } from "@/hooks/useMobileOtp";
 import { toast } from "sonner";
+import { formatTime } from "@/lib/utils";
 
 export function OtpVerificationForm({
   mobileNumber,
@@ -34,6 +35,21 @@ export function OtpVerificationForm({
   onSubmit: (otp: string) => void;
   onEdit: () => void;
 }) {
+  const [expiryTimer, setExpiryTimer] = useState(300); // 5 min = 300s
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setExpiryTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
   const [timer, setTimer] = useState(30); // countdown
   const [canResend, setCanResend] = useState(false);
   const [hasResentOnce, setHasResentOnce] = useState(false);
@@ -77,6 +93,7 @@ export function OtpVerificationForm({
       setResendStatus("done");
       setHasResentOnce(true);
       toast.success("OTP resent successfully");
+      setExpiryTimer(300); // Reset expiry timer to 5 minutes
       form.reset(); // Reset form after resend
       // Optionally reset the timer on resend
       setTimer(30);
@@ -91,7 +108,7 @@ export function OtpVerificationForm({
     <Form {...form}>
       <div className="mb-2 flex items-center gap-1">
         <p className="text-muted-foreground text-sm">
-          OTP sent to <strong>+91-{mobileNumber}</strong>
+          OTP sent to <span className="font-semibold">+91-{mobileNumber}</span>
         </p>
         <Button variant="link" className="text-primary px-1" onClick={onEdit}>
           <PencilIcon className="h-3 w-3" /> Edit
@@ -121,17 +138,18 @@ export function OtpVerificationForm({
             </FormItem>
           )}
         />
-
+        <p className="text-muted-foreground text-xs">
+          Your OTP will expire in <span className="font-semibold">{formatTime(expiryTimer)}</span> seconds.
+        </p>
         <div className="grid grid-cols-[1fr_2fr] items-center justify-between gap-4">
           <div className="text-muted-foreground text-sm">
-            {resendStatus === "done" ? (
-              <span className="text-green-600">OTP resent successfully ✅</span>
-            ) : canResend && !hasResentOnce ? (
+            {canResend || hasResentOnce ? (
               <Button
                 type="button"
                 variant="outline"
                 className="text-primary w-full"
                 onClick={handleResend}
+                disabled={resendStatus === "done" || resendStatus === "sending"}
               >
                 {resendStatus === "sending" ? (
                   <>
