@@ -31,7 +31,7 @@ const ResponsiveProductFilters: React.FC<{
             </div>
             <div
               className={clsx(
-                "grid w-full min-w-0 grid-cols-[4fr_1fr_1fr] gap-2 pb-3",
+                "grid w-full min-w-0 grid-cols-[4fr_1fr_1fr] gap-1 pb-3",
                 !isUser && "!grid-cols-1",
                 !isAdmin && "grid-cols-[1fr_8fr]",
               )}
@@ -46,7 +46,7 @@ const ResponsiveProductFilters: React.FC<{
           </div>
         ) : (
           <>
-            <div className="flex flex-col gap-2 pb-4">
+            <div className="flex flex-col gap-1 pb-4">
               <div className="grid grid-cols-[8fr_1fr] gap-4">
                 <CategoryFilter categories={categories} />
                 <MoreFilters />
