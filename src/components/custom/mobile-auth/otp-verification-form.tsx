@@ -99,6 +99,7 @@ export function OtpVerificationForm({
       setTimer(30);
       setCanResend(false);
     } catch (err) {
+      console.error("Error resending OTP:", err);
       toast.error("Failed to resend OTP");
       setResendStatus("idle");
     }
@@ -139,7 +140,9 @@ export function OtpVerificationForm({
           )}
         />
         <p className="text-muted-foreground text-xs">
-          Your OTP will expire in <span className="font-semibold">{formatTime(expiryTimer)}</span> seconds.
+          Your OTP will expire in{" "}
+          <span className="font-semibold">{formatTime(expiryTimer)}</span>{" "}
+          seconds.
         </p>
         <div className="grid grid-cols-[1fr_2fr] items-center justify-between gap-4">
           <div className="text-muted-foreground text-sm">

@@ -47,7 +47,9 @@ export function useMobileOtp({
       setTimeout(() => {
         setConfirmationResult(confirmation);
       }, 0);
-      !isResent && toast.success("OTP sent successfully");
+      if (!isResent) {
+        toast.success("OTP sent successfully");
+      }
     } catch (e) {
       console.error(e);
       toast.error("Failed to send OTP");
