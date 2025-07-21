@@ -180,3 +180,11 @@ export const mapProductToClientProduct = (data: DocumentData) => {
   };
   return product;
 };
+
+export const formatTime = (secs: number) => {
+  const min = Math.floor(secs / 60)
+    .toString()
+    .padStart(2, "0");
+  const sec = (secs % 60).toString().padStart(2, "0");
+  return `${min}:${sec}`;
+};
