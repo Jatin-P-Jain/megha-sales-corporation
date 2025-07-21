@@ -16,7 +16,7 @@ import {
   CommandItem,
 } from "@/components/ui/command";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ChevronDown, Loader2Icon } from "lucide-react";
+import { ChevronDown, CircleXIcon, Loader2Icon } from "lucide-react";
 import clsx from "clsx";
 
 export default function CategoryMultiSelect({
@@ -55,32 +55,56 @@ export default function CategoryMultiSelect({
   }, [isPending]);
 
   // label text
-  const label = selected.length
-    ? selected.join(", ")
-    : "Part Categories";
+  const label = selected.length ? selected.join(", ") : "Part Categories";
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          className="flex w-full min-w-0 items-center justify-between gap-2"
-          ref={triggerRef}
+      <PopoverTrigger asChild className="">
+        <div
+          className={
+            clsx(
+              "grid grid-cols-1 items-center justify-between gap-2",
+              selected.length > 0 && "grid-cols-[12fr_1fr]"
+            )
+          }
         >
-          {/* truncate here */}
-          <span
-            className={clsx(
-              "min-w-0 flex-1 truncate",
-              selected.length == 0 && "text-muted-foreground",
-            )}
+          <Button
+            variant="outline"
+            className="flex w-full min-w-0 items-center justify-between gap-2"
+            ref={triggerRef}
           >
-            {label}
-          </span>
-          {isPending && pendingKey !== null && (
-            <Loader2Icon className="h-4 w-4 animate-spin" />
+            {/* truncate here */}
+            <span
+              className={clsx(
+                "min-w-0 flex-1 truncate",
+                selected.length == 0 && "text-muted-foreground",
+              )}
+            >
+              {label}
+            </span>
+            {isPending && pendingKey !== null && (
+              <Loader2Icon className="h-4 w-4 animate-spin" />
+            )}
+            <ChevronDown className="text-muted-foreground" />
+          </Button>
+          {selected.length > 0 && (
+            <Button
+              variant="outline"
+              className=""
+              onClick={() => {
+                // clear all categories
+                const qp = new URLSearchParams(Array.from(params.entries()));
+                qp.delete("category");
+                qp.set("page", "1");
+                startTransition(() => {
+                  router.push(`/products-list?${qp}`, { scroll: false });
+                });
+              }}
+            >
+              <CircleXIcon className="text-muted-foreground size-5" />
+            </Button>
           )}
-          <ChevronDown className="text-muted-foreground" />
-        </Button>
+        </div>
       </PopoverTrigger>
 
       {/* fixed width popover */}
