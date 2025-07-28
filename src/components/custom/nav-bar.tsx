@@ -23,12 +23,12 @@ export default function NavBar({ children }: NavBarProps) {
         <nav className="fixed top-0 right-0 left-0 z-50 flex flex-wrap items-center justify-between bg-cyan-950 p-3 px-4 text-white shadow-md md:px-6 lg:px-10">
           <Link
             href="/"
-            className="flex items-center justify-end gap-1 text-lg tracking-wider uppercase md:gap-2 md:text-2xl"
+            className="flex items-center justify-end gap-2 text-lg tracking-wider uppercase md:gap-4 md:text-2xl"
           >
-            <div className="relative h-8 w-6 md:h-10 md:w-8">
+            <div className="relative h-10 w-7 md:h-12 md:w-9">
               <Image src={JinendraLogo} alt="" width={100} height={100} className="object-center" />
             </div>
-            <div className="relative h-8 w-8 md:h-10 md:w-10">
+            <div className="relative h-10 w-8 md:h-12 md:w-10">
               <Image src={BrandLogo} alt="" width={100} height={100} className="object-center" />
             </div>
             <div className="ml-1 flex flex-col text-sm md:text-lg md:tracking-[2px]">
