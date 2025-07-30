@@ -82,11 +82,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setClientUser(null);
         setClientUserLoading(false);
         setCurrentUser(null);
+        setLoading(false);
         return;
       }
       setCurrentUser(user ?? null);
       setLoading(false);
-
       const result = await user.getIdTokenResult(true);
       const firebaseAuth = result.claims.firebase
         ? {
