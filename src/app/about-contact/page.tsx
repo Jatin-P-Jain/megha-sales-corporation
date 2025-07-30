@@ -23,24 +23,15 @@ import AboutAutoPartsShop from "@/components/custom/about-us";
 export default function AboutAndContact() {
   return (
     <div className="container mx-auto flex max-w-4xl flex-col overflow-auto p-4">
-      <div className="flex w-full items-center justify-between space-y-2">
-        <div className="relative size-15">
-          <Image alt="" src={JainLogo} fill />
-          <Image alt="" src={JainLogo} fill />
-          <Image alt="" src={JainLogo} fill />
-          <Image alt="" src={JainLogo} fill />
+      <div className="flex w-full items-center justify-between space-y-1">
+        <div className="relative">
+          <Image alt="" src={JainLogo} width={30} height={30}/>
         </div>
-        <div className="relative size-15 w-full">
-          <Image alt="" src={BhagwanSlok} fill />
-          <Image alt="" src={BhagwanSlok} fill />
-          <Image alt="" src={BhagwanSlok} fill />
-          <Image alt="" src={BhagwanSlok} fill />
+        <div className="relative">
+          <Image alt="" src={BhagwanSlok} width={120} height={120}/>
         </div>
-        <div className="relative size-15">
-          <Image alt="" src={JainLogo} fill />
-          <Image alt="" src={JainLogo} fill />
-          <Image alt="" src={JainLogo} fill />
-          <Image alt="" src={JainLogo} fill />
+        <div className="relative">
+          <Image alt="" src={JainLogo} width={30} height={30}/>
         </div>
       </div>
       {/* <h2 className="text-primary mb-4 text-center text-2xl md:text-3xl font-semibold">
@@ -53,7 +44,7 @@ export default function AboutAndContact() {
             <StoreIcon className="size-4" />
             Proprietorship :{" "}
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 items-center justify-center gap-8 md:gap-16 w-full">
+          <div className="grid w-full grid-cols-1 items-center justify-center gap-8 md:grid-cols-2 md:gap-16">
             <div className="text-primary/95 flex w-full flex-col gap-1 text-sm font-semibold">
               <p className="flex items-center justify-start gap-2">
                 <User2Icon className="size-5" />
@@ -70,8 +61,8 @@ export default function AboutAndContact() {
                       variant="outline"
                       className="h-0 min-h-0 w-fit gap-2 rounded-full border-green-600 p-3 px-5 text-green-600"
                     >
-                      <div className="relative size-4">
-                        <Image src={WhatsappIcon} alt="" fill />
+                      <div className="relative">
+                        <Image src={WhatsappIcon} alt="" width={15} height={15} />
                       </div>
                       Contact
                     </Button>
@@ -100,8 +91,8 @@ export default function AboutAndContact() {
                       variant="outline"
                       className="h-0 min-h-0 w-fit gap-2 rounded-full border-green-600 p-3 px-5 text-green-600"
                     >
-                      <div className="relative size-4">
-                        <Image src={WhatsappIcon} alt="" fill />
+                      <div className="relative">
+                        <Image src={WhatsappIcon} alt="" width={15} height={15} />
                       </div>
                       Contact
                     </Button>
@@ -149,9 +140,9 @@ export default function AboutAndContact() {
                   variant="outline"
                   className="w-full gap-4 border-green-600 text-green-600"
                 >
-                  <div className="relative size-5">
-                    <Image src={WhatsappIcon} alt="" fill />
-                  </div>
+                  <div className="relative">
+                        <Image src={WhatsappIcon} alt="" width={20} height={20} />
+                      </div>
                   Enquire on WhatsApp
                 </Button>
               }

@@ -30,7 +30,7 @@ const generateOrderId = async (): Promise<string> => {
   const sequence = pad(newCount);
   const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
 
-  const envPrefix = process.env.NODE_ENV === "development" ? "D-" : "";
+  const envPrefix = process.env.VERCEL_ENV === "production" ? "" : "D-";
 
   return `${envPrefix}MSC-${datePart}-${timePart}-${sequence}-${randomPart}`;
 };

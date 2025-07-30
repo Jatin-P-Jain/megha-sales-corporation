@@ -144,7 +144,8 @@ export default function MultiMediaUploader({
                     <Image
                       src={icon}
                       alt=""
-                      fill
+                      width={28}
+                      height={28}
                       className="h-full w-full object-center"
                     />
                   </div>

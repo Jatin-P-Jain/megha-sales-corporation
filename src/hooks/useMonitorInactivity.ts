@@ -5,17 +5,28 @@ import { logoutUser } from "@/context/firebase-auth";
 import { removeToken } from "@/context/actions";
 import { User } from "firebase/auth";
 
+const LAST_ACTIVITY_KEY = "lastActivity";
+const CHECK_INTERVAL_MS = 60 * 1000; // check every 1 minute
+
+const log = (...args: string[]) => {
+  console.log(`[${new Date().toISOString()}]`, ...args);
+};
+
 const useMonitorInactivity = (
   currentUser: User | null,
-  INACTIVITY_LIMIT: number | null,
+  INACTIVITY_LIMIT: number | undefined,
 ) => {
   useEffect(() => {
-    if (!currentUser) return;
+    if (!currentUser || !INACTIVITY_LIMIT) return;
 
-    const LAST_ACTIVITY_KEY = "lastActivity";
+    // log("⏳ Inactivity monitor initialized", {
+    //   user: currentUser.uid,
+    //   limitInSeconds: INACTIVITY_LIMIT / 1000,
+    // });
 
     const updateLastActivity = () => {
       localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
+      // log("✅ Activity recorded");
     };
 
     const checkInactivity = async () => {
@@ -23,28 +34,62 @@ const useMonitorInactivity = (
       const now = Date.now();
       const diff = now - last;
 
-      if (INACTIVITY_LIMIT && diff >= INACTIVITY_LIMIT) {
-        await logoutUser();
-        await removeToken();
-        localStorage.removeItem(LAST_ACTIVITY_KEY);
-        window.location.href = "/login?sessionExpired=1";
+      // log("🔍 Checking inactivity:", {
+      //   lastActivity: new Date(last).toLocaleString(),
+      //   now: new Date(now).toLocaleString(),
+      //   diffInSeconds: diff / 1000,
+      // });
+
+      if (diff >= INACTIVITY_LIMIT) {
+        log("⛔ User is inactive. Logging out...");
+        try {
+          await logoutUser();
+          await removeToken();
+          localStorage.removeItem(LAST_ACTIVITY_KEY);
+          window.location.href = "/login?sessionExpired=1";
+        } catch (err) {
+          console.error("Logout failed due to inactivity:", err);
+        }
       }
     };
 
-    updateLastActivity(); // set immediately on mount
+    // Run once on mount to catch inactive session on reload/resume
+    updateLastActivity();
+    checkInactivity();
 
-    const events = ["mousemove", "keydown", "click", "scroll", "touchstart"];
-    events.forEach((e) =>
-      window.addEventListener(e, updateLastActivity, { passive: true }),
+    // Watch activity events
+    const activityEvents = [
+      "mousemove",
+      "keydown",
+      "click",
+      "scroll",
+      "touchstart",
+    ];
+    activityEvents.forEach((event) =>
+      window.addEventListener(event, updateLastActivity, { passive: true }),
     );
 
-    const interval = setInterval(checkInactivity, 60 * 1000); // check every 1 minute
+    // Check periodically
+    const interval = setInterval(checkInactivity, CHECK_INTERVAL_MS);
 
-    return () => {
-      events.forEach((e) => window.removeEventListener(e, updateLastActivity));
-      clearInterval(interval);
+    // Check again when tab becomes visible
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        checkInactivity();
+      }
     };
-  }, [currentUser]);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    // Cleanup
+    return () => {
+      activityEvents.forEach((event) =>
+        window.removeEventListener(event, updateLastActivity),
+      );
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      clearInterval(interval);
+      log("🧹 Inactivity monitor cleaned up");
+    };
+  }, [currentUser, INACTIVITY_LIMIT]);
 };
 
 export default useMonitorInactivity;

@@ -13,11 +13,12 @@ export default function ContactUsLink() {
       className="w-full text-sm tracking-wider whitespace-nowrap uppercase hover:underline md:text-base"
     >
       {isMobile ? (
-        <div className="relative size-5">
+        <div className="relative">
           <Image
             src={AboutUsContactIcon}
             alt=""
-            fill
+            width={22}
+            height={22}
             className="object-center"
           />
         </div>
@@ -27,7 +28,8 @@ export default function ContactUsLink() {
             <Image
               src={AboutUsContactIcon}
               alt=""
-              fill
+              width={22}
+              height={22}
               className="object-center"
             />
           </div>

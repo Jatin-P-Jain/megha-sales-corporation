@@ -57,13 +57,13 @@ export default function GoogleLoginButton({
     >
       {signingIn ? (
         <>
-          <Image src={GoogleLoadingIcon} alt="" className="relative size-16" />
+          <Image src={GoogleLoadingIcon} alt="" className="relative" width={50} height={50}/>
           {isLogin ? "Logging In with Google" : "Continue with Google"}
         </>
       ) : (
         <>
           <>
-            <Image src={GoogleIcon} alt="" className="relative size-8" />
+            <Image src={GoogleIcon} alt="" className="relative" width={30} height={30} />
             {isLogin ? "Login with Google" : "Continue with Google"}
           </>
         </>

@@ -20,14 +20,14 @@ export const whatsappTemplates: Record<
     language: { code: "en_US" },
     bodyParamsCount: 4,
     hasButton: true,
-    resolveParams: ({ adminName, customerName, customerPhone, orderId }) => ({
-      bodyParams: [adminName, customerName, customerPhone, orderId],
+    resolveParams: ({ adminName, orderId, customerName, customerPhone }) => ({
+      bodyParams: [adminName, orderId, customerName, customerPhone],
       buttonParams: [orderId],
     }),
   },
-  admin_query_raised: {
-    name: "admin_query_raised",
-    language: { code: "en_US" },
+  customer_inquiry_recieved: {
+    name: "customer_inquiry_recieved",
+    language: { code: "en" },
     bodyParamsCount: 5,
     hasButton: false,
     resolveParams: ({

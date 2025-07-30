@@ -21,7 +21,7 @@ export function useMobileOtp({
   isProfile?: boolean;
 }) {
   const auth = useAuth();
-
+  const [mobileNumber, setMobileNumber] = useState("");
   const [otpReset, setOtpReset] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [sendingOtp, setSendingOtp] = useState(false);
@@ -29,7 +29,12 @@ export function useMobileOtp({
   const [confirmationResult, setConfirmationResult] =
     useState<ConfirmationResult>();
 
-  const sendOtp = async (mobile: string) => {
+  const resetOtp = () => {
+    setOtpSent(false);
+    setOtpReset(true); // if needed
+  };
+
+  const sendOtp = async (mobile: string, isResent: boolean = false) => {
     try {
       if (!appVerifier) {
         toast.error("Recaptcha not ready. Please try again in a moment.");
@@ -37,11 +42,14 @@ export function useMobileOtp({
       }
       setSendingOtp(true);
       const confirmation = await auth?.handleSendOTP(mobile, appVerifier);
+      setMobileNumber(mobile);
       setOtpSent(true);
       setTimeout(() => {
         setConfirmationResult(confirmation);
       }, 0);
-      toast.success("OTP sent successfully");
+      if (!isResent) {
+        toast.success("OTP sent successfully");
+      }
     } catch (e) {
       console.error(e);
       toast.error("Failed to send OTP");
@@ -77,24 +85,23 @@ export function useMobileOtp({
         await auth?.verifyOTP(otp, confirmationResult);
       }
       onSuccess?.();
+      setOtpSent(false); // ✅ Only clear on successful verification
+      setOtpReset(true); // optional
     } catch (e) {
-      console.error(e);
-      toast.error("Invalid OTP or verification failed.");
-
-      throw e;
+      handleFirebaseAuthError(e);
     } finally {
-      setOtpSent(false);
-      setOtpReset(true);
       setIsVerifying(false);
     }
   };
 
   return {
+    mobileNumber,
     otpReset,
     otpSent,
     sendingOtp,
     isVerifying,
     sendOtp,
     verifyOtp,
+    resetOtp,
   };
 }

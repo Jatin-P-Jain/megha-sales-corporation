@@ -55,8 +55,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [clientUserLoading, setClientUserLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [customClaims, setCustomClaims] = useState<ParsedToken | null>(null);
-  const [inactivityLimit, setInactivityLimit] = useState<number | null>(
-    null,
+  const [inactivityLimit, setInactivityLimit] = useState<number | undefined>(
+    undefined,
   );
   const [loading, setLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -77,53 +77,59 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
-      setCurrentUser(user ?? null);
-      setLoading(false);
-      if (user) {
-        const result = await user.getIdTokenResult(true);
-        const firebaseAuth = result.claims.firebase
-          ? {
-              identities: result.claims.firebase.identities ?? {},
-              sign_in_provider: result.claims.firebase.sign_in_provider ?? "",
-            }
-          : undefined;
-        const safeUser: UserData = {
-          uid: user.uid,
-          email: user.email ?? null,
-          phone: user.phoneNumber?.slice(3) ?? null,
-          displayName: user.displayName ?? null,
-          role: result?.claims?.admin ? "admin" : null,
-          photoUrl: user.photoURL,
-          firmName: "",
-          firebaseAuth,
-        };
-
-        await createUserIfNotExists(safeUser);
-        setCustomClaims(result.claims ?? null);
-        let inactivityTimeLimit;
-        if (result.claims?.admin) {
-          inactivityTimeLimit = 1 * 60 * 60 * 1000;
-        } else {
-          inactivityTimeLimit = 24 * 60 * 60 * 1000;
-        }
-        setInactivityLimit(inactivityTimeLimit);
-        try {
-          const snap = await getDoc(doc(firestore, "users", safeUser.uid));
-          if (snap.exists()) {
-            setClientUser(mapDbUserToClientUser(snap.data()));
-          }
-        } catch (e) {
-          console.error("refreshClientUser failed", e);
-          await logoutUser();
-          await removeToken();
-          setCurrentUser(null);
-          setClientUser(null);
-        } finally {
-          setClientUserLoading(false);
-        }
-      } else {
+      if (!user) {
         await removeToken();
         setClientUser(null);
+        setClientUserLoading(false);
+        setCurrentUser(null);
+        return;
+      }
+      setCurrentUser(user ?? null);
+      setLoading(false);
+
+      const result = await user.getIdTokenResult(true);
+      const firebaseAuth = result.claims.firebase
+        ? {
+            identities: result.claims.firebase.identities ?? {},
+            sign_in_provider: result.claims.firebase.sign_in_provider ?? "",
+          }
+        : undefined;
+      const safeUser: UserData = {
+        uid: user.uid,
+        email: user.email ?? null,
+        phone: user.phoneNumber?.slice(3) ?? null,
+        displayName: user.displayName ?? null,
+        role: result?.claims?.admin ? "admin" : null,
+        photoUrl: user.photoURL,
+        firmName: "",
+        firebaseAuth,
+      };
+
+      await createUserIfNotExists(safeUser);
+      setCustomClaims(result.claims ?? null);
+      let inactivityTimeLimit: number | undefined;
+      if (result.claims?.admin) {
+        inactivityTimeLimit = parseInt(
+          process.env.NEXT_PUBLIC_ADMIN_INACTIVITY_LIMIT || "0",
+        );
+      } else {
+        inactivityTimeLimit = parseInt(
+          process.env.NEXT_PUBLIC_USER_INACTIVITY_LIMIT || "0",
+        );
+      }
+      setInactivityLimit(inactivityTimeLimit);
+      try {
+        const snap = await getDoc(doc(firestore, "users", safeUser.uid));
+        if (snap.exists()) {
+          setClientUser(mapDbUserToClientUser(snap.data()));
+        }
+      } catch (e) {
+        console.error("refreshClientUser failed", e);
+        await logoutUser();
+        await removeToken();
+        setCurrentUser(null);
+        setClientUser(null);
+      } finally {
         setClientUserLoading(false);
       }
     });

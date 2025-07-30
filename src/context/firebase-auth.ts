@@ -9,7 +9,7 @@ import {
   User,
 } from "firebase/auth";
 import { auth } from "@/firebase/client";
-import { setToken } from "./actions";
+import { removeToken, setToken } from "./actions";
 
 export const loginWithGoogle = async (): Promise<User | undefined> => {
   const provider = new GoogleAuthProvider();
@@ -43,13 +43,24 @@ export const verifyOTP = async (
   otp: string,
   confirmationResult: ConfirmationResult,
 ): Promise<User | undefined> => {
-  const result = await confirmationResult.confirm(otp);
-  const user = result.user;
-  const token = await user.getIdToken(true);
-  await setToken(token, user.refreshToken);
-  return user;
+  try {
+    const result = await confirmationResult.confirm(otp);
+    if (result) {
+      console.log("OTP verification successful", result);
+      const user = result.user;
+      const token = await user.getIdToken(true);
+      await setToken(token, user.refreshToken);
+      return user;
+    } else {
+      console.log("OTP verification failed: No result returned");
+    }
+  } catch (err) {
+    console.log("OTP verification failed", err);
+    throw err;
+  }
 };
 
 export const logoutUser = async () => {
   await auth.signOut();
+  await removeToken();
 };

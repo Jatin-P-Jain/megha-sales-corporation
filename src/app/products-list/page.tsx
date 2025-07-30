@@ -1,15 +1,16 @@
 import { cookies } from "next/headers";
 import { auth } from "@/firebase/server";
-import { Suspense } from "react";
-import { getProducts } from "@/data/products";
 import ProductList from "./product-list";
-import ProductCardLoading from "./property-card-loading";
 import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
 import { ProductStatus } from "@/types/product";
 import { getAllCategories } from "@/data/categories";
 import ResponsiveProductFiltersServer from "./responsive-product-filters.server";
-import { PAGE_SIZE, unslugify } from "@/lib/utils";
+import { unslugify } from "@/lib/utils";
 import AboutBrandButton from "@/components/custom/about-brand.button";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { PlusCircleIcon } from "lucide-react";
+import SearchButtonWrapper from "./search-button-wrapper";
 
 export default async function ProductsList({
   searchParams,
@@ -28,17 +29,14 @@ export default async function ProductsList({
   const isUser = verifiedToken ? true : false;
 
   const searchParamsValues = await searchParams;
-  const parsedPage = parseInt(searchParamsValues.page);
-  const page = isNaN(parsedPage) ? 1 : parsedPage;
   const brandId = searchParamsValues?.brandId ?? "";
   const brandName = unslugify(brandId);
   const statusParam = searchParamsValues.status ?? "";
-  const categoryParam = searchParamsValues.category ?? "";
-  const categoryFilters = Array.isArray(categoryParam)
-    ? categoryParam
-    : categoryParam
-      ? [categoryParam]
-      : [];
+
+  const newSearchParams = new URLSearchParams();
+  if (brandId) {
+    newSearchParams.set("brandId", brandId);
+  }
 
   const productsFilters: ProductStatus[] = [];
   if (statusParam) {
@@ -50,15 +48,6 @@ export default async function ProductsList({
       productsFilters.push(statusParam as ProductStatus);
     }
   } else if (!isAdmin) productsFilters.push("for-sale");
-
-  const productsPromise = getProducts({
-    filters: {
-      brandId: brandId,
-      status: productsFilters,
-      partCategory: categoryFilters,
-    },
-    pagination: { page: page, pageSize: PAGE_SIZE },
-  });
 
   const categoriesPromise = getAllCategories();
 
@@ -87,7 +76,7 @@ export default async function ProductsList({
       >
         <div className="mx-auto flex w-full max-w-screen-lg flex-col pt-8 md:pt-6">
           <EllipsisBreadCrumbs items={breadcrumbs} />
-          <div className="flex w-full flex-row items-center justify-between mb-2">
+          <div className="mb-2 flex w-full flex-row items-center justify-between">
             <h1 className="py-2 text-xl font-[600] tracking-wide text-cyan-950 md:text-2xl">
               Product Listings
             </h1>
@@ -103,24 +92,30 @@ export default async function ProductsList({
         </div>
       </div>
       <div
-        className={`flex-1 overflow-y-auto px-4 pt-45 md:pt-53 lg:pt-40 ${!isAdmin && "pt-50 lg:pt-55"} ${!isUser && "!pt-38"}`}
+        className={`flex-1 overflow-y-auto px-4 pt-45 md:pt-53 lg:pt-40 ${!isAdmin && "pt-50 lg:pt-55"} ${!isUser && "!pt-38"} pb-20`}
       >
-        <Suspense
-          fallback={
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-              {Array.from({ length: 5 }).map((_, index) => (
-                <ProductCardLoading key={index} />
-              ))}
-            </div>
-          }
-        >
-          <ProductList
-            productsPromise={productsPromise}
-            isAdmin={isAdmin}
-            page={page}
-            searchParamsValues={searchParamsValues}
-          />
-        </Suspense>
+        <ProductList
+          isAdmin={isAdmin}
+          searchParamsValues={searchParamsValues}
+        />
+      </div>
+      <div className="fixed inset-x-0 bottom-7 z-30 mx-auto flex w-full max-w-screen-lg justify-end px-6">
+        {isAdmin ? (
+          <Button
+            className="ring-muted w-fit min-w-0 p-5 shadow-2xl ring-6"
+            asChild
+          >
+            <Link
+              href={`/admin-dashboard/new-product?${newSearchParams}`}
+              className="min-w-0"
+            >
+              <PlusCircleIcon className="size-6" />
+              Add New Product
+            </Link>
+          </Button>
+        ) : (
+          <SearchButtonWrapper />
+        )}
       </div>
     </div>
   );
