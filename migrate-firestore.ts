@@ -43,6 +43,42 @@ async function migrateAll() {
   console.log("🎉 All migrations complete.");
 }
 
-migrateAll().catch((err) => {
-  console.error("❌ Migration failed:", err);
-});
+// migrateAll().catch((err) => {
+//   console.error("❌ Migration failed:", err);
+// });
+
+
+async function replaceHyphensInProducts() {
+  const productsCol = sourceDb.collection("products");
+  const snapshot = await productsCol.get();
+
+  let updatedCount = 0;
+
+  for (const doc of snapshot.docs) {
+    const docId = doc.id;
+    if (docId.includes("-")) {
+      const newDocId = docId.replace(/-/g, "");
+      let data = doc.data();
+
+      // Remove hyphens in id and part_number fields if present
+      if (typeof data.id === "string") {
+        data.id = data.id.replace(/-/g, "");
+      }
+      if (typeof data.partNumber === "string") {
+        data.partNumber = data.partNumber.replace(/ /g, "");
+      }
+
+      // Write to new doc and delete the old one
+      await productsCol.doc(newDocId).set(data);
+      await doc.ref.delete();
+
+      console.log(`Migrated doc: ${docId} ➔ ${newDocId}`);
+      updatedCount++;
+    }
+  }
+
+  console.log(`✅ All done. ${updatedCount} products updated.`);
+}
+
+// Usage
+replaceHyphensInProducts().catch(console.error);
