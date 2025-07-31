@@ -5,10 +5,11 @@ import { InfoIcon } from "lucide-react";
 export default async function Login({
   searchParams,
 }: {
-  searchParams: Promise<{ sessionExpired: number }>;
+  searchParams: Promise<{ sessionExpired: number; deepLink?: number }>;
 }) {
   const searchParamsValue = await searchParams;
   const sessionExpired = searchParamsValue.sessionExpired;
+  const deepLink = searchParamsValue.deepLink;
   return (
     <Card>
       <CardHeader>
@@ -19,6 +20,12 @@ export default async function Login({
           <div className="mx-auto mb-4 flex w-fit items-center justify-center gap-2 rounded-lg bg-amber-100 p-2 text-center text-sm text-amber-700 italic">
             <InfoIcon className="size-8 md:size-4" />
             Your session has expired due to inactivity. Please log in again.
+          </div>
+        )}
+        {deepLink && (
+          <div className="mx-auto mb-4 flex w-fit items-center justify-center gap-2 rounded-lg bg-amber-100 p-2 text-center text-sm text-amber-700 italic">
+            <InfoIcon className="size-8 md:size-4" />
+            Please log in to view the order details.
           </div>
         )}
         <LoginForm />

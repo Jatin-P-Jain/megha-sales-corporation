@@ -34,16 +34,21 @@ export async function middleware(request: NextRequest) {
       publicPaths.includes(pathname) || pathname.startsWith("/brands");
 
     if (isPublic) return NextResponse.next();
-
-    // ❌ Not public → go home
-    const res = NextResponse.redirect(new URL("/", origin));
+    // ADD THIS:
+    const redirectUrl = new URL("/login", origin);
+    redirectUrl.searchParams.set("deepLink", "1");
+    redirectUrl.searchParams.set("redirect", pathname + request.nextUrl.search);
+    const res = NextResponse.redirect(redirectUrl);
     res.cookies.delete("firebaseAuthToken");
     return res;
   }
 
   // 2) Block /login & /register when already logged in
-  if (pathname === "/login" || pathname === "/register") {
-    return NextResponse.redirect(new URL("/", origin));
+  if ((pathname === "/login" || pathname === "/register") && token) {
+    const hasRedirect = searchParams.get("redirect");
+    if (!hasRedirect) {
+      return NextResponse.redirect(new URL("/", origin));
+    } // else allow to render login, so client can redirect to correct page
   }
 
   // 3) Decode your token
