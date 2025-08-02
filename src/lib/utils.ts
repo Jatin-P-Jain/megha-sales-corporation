@@ -163,6 +163,7 @@ export const mapProductToClientProduct = (data: DocumentData) => {
     partCategory: rawProductData.partCategory as string,
     partNumber: rawProductData.partNumber as string,
     partName: rawProductData.partName as string,
+    additionalDetails: rawProductData.additionalDetails as string,
     price: rawProductData.price as number,
     discount: rawProductData.discount as number,
     gst: rawProductData.gst as number,
