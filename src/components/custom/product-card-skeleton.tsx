@@ -3,7 +3,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardFooter } from "../ui/card";
 
 export default function ProductCardSkeleton() {
-  
   return (
     <Card className="relative gap-1 overflow-hidden p-4 px-0 shadow-md md:gap-2">
       <CardContent className="flex flex-col gap-4 text-sm md:grid md:grid-cols-[3fr_1fr] md:text-base">
@@ -30,6 +29,10 @@ export default function ProductCardSkeleton() {
             <span className="text-sm font-normal">Category :</span>
             <Skeleton className="h-4 w-1/2" />
           </div>
+          <div className="text-primary flex w-full items-center justify-between font-semibold">
+            <span className="text-sm font-normal">Additional Details :</span>
+            <Skeleton className="h-4 w-1/2" />
+          </div>
 
           <div className="text-primary mb-1 flex h-full w-full flex-col items-start justify-between gap-1 font-semibold md:mb-2 md:flex-row md:items-center">
             <span className="text-sm font-normal">Select Size:</span>
@@ -44,22 +47,20 @@ export default function ProductCardSkeleton() {
       </CardContent>
       <CardFooter className="grid grid-cols-[3fr_1fr] items-end justify-center gap-4">
         <div className="flex w-full flex-col items-start justify-start md:flex-row md:justify-between">
-          <div className="text-primary flex items-center gap-2 text-lg font-semibold w-full justify-start">
+          <div className="text-primary flex w-full items-center justify-start gap-2 text-lg font-semibold">
             <span className="text-foreground text-base font-normal">
               Price :
             </span>
             <Skeleton className="h-4 w-1/2" />
           </div>
-          <div className="text-primary flex items-center gap-2 text-lg font-semibold w-full">
+          <div className="text-primary flex w-full items-center gap-2 text-lg font-semibold">
             <span className="text-foreground text-sm font-normal">
               Discount :
             </span>
             <Skeleton className="h-4 w-1/2" />
           </div>
-          <div className="text-primary flex items-center gap-2 text-lg font-semibold w-full">
-            <span className="text-foreground text-sm font-normal">
-              GST :
-            </span>
+          <div className="text-primary flex w-full items-center gap-2 text-lg font-semibold">
+            <span className="text-foreground text-sm font-normal">GST :</span>
             <Skeleton className="h-4 w-1/2" />
           </div>
         </div>

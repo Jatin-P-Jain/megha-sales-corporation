@@ -27,5 +27,6 @@ export type Product = {
   sizes?: ProductSize[];
   samePriceForAllSizes?: boolean;
   status: ProductStatus;
+  additionalDetails: string;
   image?: string;
 };

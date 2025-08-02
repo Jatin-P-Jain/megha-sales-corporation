@@ -38,9 +38,7 @@ export const getProducts = async (options?: GetPropertiesOptions) => {
 
   // 🔁 Only use startAfter if page > 1
   if (page > 1) {
-    const skipSnapshot = await productsQuery
-      .limit((page - 1) * pageSize)
-      .get();
+    const skipSnapshot = await productsQuery.limit((page - 1) * pageSize).get();
 
     const lastVisible = skipSnapshot.docs.at(-1);
     if (lastVisible) {
@@ -66,6 +64,7 @@ export const getProducts = async (options?: GetPropertiesOptions) => {
       discount: data.discount,
       gst: data.gst,
       stock: data.stock,
+      additionalDetails: data.additionalDetails,
       status: data.status,
       hasSizes: data.hasSizes,
       samePriceForAllSizes: data.samePriceForAllSizes,
@@ -81,7 +80,6 @@ export const getProducts = async (options?: GetPropertiesOptions) => {
     totalItems,
   };
 };
-
 
 export const getProductById = async (productId: string) => {
   const productSnapshot = await fireStore
@@ -104,6 +102,7 @@ export const getProductById = async (productId: string) => {
     price: rawProductData.price as number,
     discount: rawProductData.discount as number,
     gst: rawProductData.gst as number,
+    additionalDetails: rawProductData.additionalDetails as string,
     stock: rawProductData.stock as number,
     hasSizes: rawProductData.hasSizes as boolean,
     samePriceForAllSizes: rawProductData.samePriceForAllSizes as boolean,
