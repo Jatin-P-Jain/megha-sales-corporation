@@ -124,7 +124,11 @@ export default function OrdersList({
         </div>
       )}
       {data.length === 0 && (
-        <div className="text-center font-medium text-cyan-900">No Orders!</div>
+        <div className="text-center font-medium text-cyan-900">
+          {requestedOrderId
+            ? `No Order found with Order ID: ${requestedOrderId}`
+            : "No Orders!"}
+        </div>
       )}
     </>
   );

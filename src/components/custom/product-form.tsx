@@ -69,6 +69,7 @@ export default function ProductForm({
     hasSizes: false,
     samePriceForAllSizes: false,
     sizes: [],
+    additionalDetails: "",
     ...defaultValues,
   };
 
@@ -618,7 +619,7 @@ export default function ProductForm({
             )}
           />
 
-          {/* Stock */}
+          {/* Stock
           <FormField
             control={form.control}
             name="stock"
@@ -643,6 +644,33 @@ export default function ProductForm({
                       const value = e.target.value;
                       if (value === "" || isNaN(Number(value))) {
                         field.onChange(0);
+                      }
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          /> */}
+
+          <FormField
+            control={form.control}
+            name="additionalDetails"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-start gap-1">
+                  Additional Details
+                </FormLabel>
+                <FormControl>
+                  <textarea
+                    {...field}
+                    rows={4}
+                    disabled={isSubmitting}
+                    className="w-full resize-y rounded-md border-1 shadow px-2 py-1 text-sm"
+                    onKeyDown={(e) => {
+                      // Prevent form submission on Enter
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.stopPropagation();
                       }
                     }}
                   />

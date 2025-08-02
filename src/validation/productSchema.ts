@@ -21,6 +21,7 @@ export const productDataSchema = z
 
     stock: z.coerce.number().optional(),
     status: z.enum(["draft", "for-sale", "discontinued", "out-of-stock"]),
+    additionalDetails: z.string(),
     hasSizes: z.boolean().default(false),
     samePriceForAllSizes: z.boolean().default(true),
     sizes: z

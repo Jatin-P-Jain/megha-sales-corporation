@@ -77,7 +77,7 @@ export default function ProductCard({
       key={product?.id}
       className="relative gap-1 overflow-hidden p-4 px-0 shadow-md md:gap-2"
     >
-      <CardContent className="flex flex-col text-sm md:grid md:grid-cols-[3fr_1fr] md:text-base gap-4">
+      <CardContent className="flex flex-col gap-4 text-sm md:grid md:grid-cols-[3fr_1fr] md:text-base">
         <div className="flex w-full flex-col md:gap-2">
           <div className="text-primary flex w-full items-center justify-between font-semibold">
             <span className="text-sm font-normal">Brand :</span>
@@ -85,8 +85,9 @@ export default function ProductCard({
           </div>
           <div className="text-primary flex w-full items-center justify-between font-semibold">
             <span className="text-sm font-normal">Part Name :</span>
-            <span className="line-clamp-1">{product.partName}</span>
+            <span className="">{product.partName}</span>
           </div>
+
           <div className="text-primary flex w-full items-center justify-between font-semibold">
             <span className="text-sm font-normal">Part Number :</span>
             {product.partNumber}
@@ -94,13 +95,21 @@ export default function ProductCard({
           <div className="text-primary flex w-full items-center justify-between font-semibold">
             <span className="w-full text-sm font-normal">Vehicle Name :</span>
             <div className="flex w-full items-end justify-end">
-              <span className="line-clamp-1">{vehicleNameProcessed}</span>
+              <span className="">{vehicleNameProcessed}</span>
             </div>
           </div>
           <div className="text-primary flex w-full items-center justify-between font-semibold">
             <span className="text-sm font-normal">Category :</span>
             {product.partCategory}
           </div>
+          {product?.additionalDetails && (
+            <div className="text-primary flex w-full items-start justify-between font-semibold">
+              <span className="text-sm font-normal">Addtional Details :</span>
+              <span className="text-right whitespace-pre-line">
+                {product.additionalDetails}
+              </span>
+            </div>
+          )}
           {isMobile && (
             <div className="flex h-27 min-h-27 w-full items-center justify-center md:min-h-30 md:w-full">
               <ProductImage productImage={product?.image} />
