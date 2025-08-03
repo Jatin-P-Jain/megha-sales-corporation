@@ -83,7 +83,7 @@ export default function DeleteAccountButton({
           <AlertDialogDescription asChild>
             <div className="text-sm text-slate-800">
               This action cannot be undone. This will permanently delete your
-              account and all it's associated data.
+              account and all it&apos;s associated data.
               {!isPasswordProvider ? (
                 <div className="text-red-700">
                   <Label className="mt-4 mb-1">Important :</Label>
