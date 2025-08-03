@@ -25,6 +25,7 @@ import {
 import { Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { deleteUserCart, deleteUserData } from "./actions";
 
 export default function DeleteAccountButton({
   isPasswordProvider,
@@ -49,6 +50,8 @@ export default function DeleteAccountButton({
       } else {
         await reauthenticateWithPopup(user, new GoogleAuthProvider());
       }
+      await deleteUserCart({ userId: user.uid });
+      await deleteUserData({ userId: user.uid });
       await deleteUser(user);
       toast.success("Account deleted successfully");
     } catch (e: unknown) {
@@ -71,7 +74,7 @@ export default function DeleteAccountButton({
       <AlertDialogTrigger asChild>
         <Button variant={"destructive"} className="mt-4 cursor-pointer">
           <Trash2Icon />
-          Delete my account
+          Delete account
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -80,9 +83,9 @@ export default function DeleteAccountButton({
           <AlertDialogDescription asChild>
             <div className="text-sm text-slate-800">
               This action cannot be undone. This will permanently delete your
-              account and all associated data.
+              account and all it&apos;s associated data.
               {!isPasswordProvider ? (
-                <div className="text-red-800">
+                <div className="text-red-700">
                   <Label className="mt-4 mb-1">Important :</Label>
                   <Label>
                     For security reasons, you must{" "}
@@ -115,7 +118,7 @@ export default function DeleteAccountButton({
               isDeleting
                 ? "Deleting..."
                 : !isPasswordProvider
-                  ? "Sign In and Delete Account"
+                  ? "Re-Authenticate & Delete Account"
                   : "Delete my account"
             }`}</Button>
           </AlertDialogAction>
