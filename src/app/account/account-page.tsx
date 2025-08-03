@@ -18,7 +18,7 @@ import { storage } from "@/firebase/client";
 import { toast } from "sonner";
 import { updateUser } from "./actions";
 import imageUrlFormatter from "@/lib/image-urlFormatter";
-import { Loader2Icon } from "lucide-react";
+import { CopyIcon, Loader2Icon } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 export default function AccountPage({
@@ -160,8 +160,15 @@ export default function AccountPage({
             <span className="text-muted-foreground text-center text-xs">
               Your Unique Identification Number (UID) in our system :
             </span>
-            <span className="text-primary text-sm font-semibold">
+            <span className="text-primary flex gap-2 text-sm font-semibold justify-center items-center">
               {clientUser.uid}
+              <CopyIcon
+              className="text-primary size-4 cursor-pointer"
+              onClick={() => {
+                navigator.clipboard.writeText(clientUser.uid);
+                toast.success("UID copied to clipboard!");
+              }}
+              />
             </span>
           </div>
         </CardHeader>
@@ -194,12 +201,19 @@ export default function AccountPage({
               </span>
             </li>
           </ul>
-          <div className="bg-muted text-muted-foreground flex flex-col items-center justify-center rounded-md p-2 text-sm">
-            You have user access under role:
-            <span className="text-primary text-lg font-semibold first-letter:uppercase">
-              {clientUser.role}
-            </span>
-          </div>
+          {clientUser?.role === "admin" ? (
+            <div className="rounded-md bg-green-100 p-2 px-4 text-center text-sm text-green-700">
+              You are an <span className="font-semibold">Admin</span> - manage
+              everything!
+            </div>
+          ) : (
+            <div className="bg-muted text-muted-foreground flex flex-col items-center justify-center rounded-md p-2 text-sm">
+              You have user access under role:
+              <span className="text-primary text-lg font-semibold first-letter:uppercase">
+                {clientUser.role}
+              </span>
+            </div>
+          )}
         </CardContent>
 
         {isPasswordProvider && (
