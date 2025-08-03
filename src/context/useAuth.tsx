@@ -30,6 +30,7 @@ import { saveFcmToken } from "@/firebase/saveFcmToken";
 type AuthContextType = {
   loading: boolean;
   clientUser: UserData | null;
+  setClientUser: React.Dispatch<React.SetStateAction<UserData | null>>;
   refreshClientUser: () => Promise<void>;
   clientUserLoading: boolean;
   isLoggingOut: boolean;
@@ -166,6 +167,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       value={{
         loading,
         clientUser,
+        setClientUser,
         clientUserLoading,
         refreshClientUser,
         isLoggingOut,

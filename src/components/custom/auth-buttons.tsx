@@ -50,14 +50,14 @@ export default function AuthButtons() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild className="">
             <button className="relative flex flex-col items-center">
-              <Avatar className="h-6 w-6 md:h-8 md:w-8 ring-1">
+              <Avatar className="h-6 w-6 bg-white ring-1 md:h-8 md:w-8">
                 {clientUser.photoUrl ? (
                   <Image
                     src={clientUser.photoUrl}
                     alt="avatar"
-                    width={36}
-                    height={36}
-                    className="rounded-full"
+                    width={100}
+                    height={100}
+                    className="rounded-full object-center"
                   />
                 ) : (
                   <AvatarFallback className="bg-cyan-800">
