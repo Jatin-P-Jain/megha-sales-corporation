@@ -1,3 +1,3 @@
 export default function Layout({ children }: { children: React.ReactNode }) {
-  return <div className="max-w-screen-lg mx-auto px-4 py-10">{children}</div>;
+  return <div className="mx-auto max-w-screen-lg p-4 py-2 md:py-8">{children}</div>;
 }

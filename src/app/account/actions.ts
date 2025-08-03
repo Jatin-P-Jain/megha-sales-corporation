@@ -1,21 +1,21 @@
 "use server";
+import { fireStore } from "@/firebase/server";
+import imageUrlFormatter from "@/lib/image-urlFormatter";
 
-import { auth, fireStore } from "@/firebase/server";
-import { cookies } from "next/headers";
-
-export async function deleteUserFavourites() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("firebaseAuthToken")?.value;
-  if (!token) {
-    return;
-  }
+export const updateUser = async ({
+  userId,
+  photoUrl,
+}: {
+  userId: string;
+  photoUrl: string;
+}) => {
+  if (!userId) return;
   try {
-    const decodedToken = await auth.verifyIdToken(token);
-    if (!decodedToken) {
-      return;
-    }
-    await fireStore.collection("favourites").doc(decodedToken.uid).delete();
-  } catch (e) {
-    console.error({ e });
+    const userRef = fireStore.collection("users").doc(userId);
+    console.log({ userRef });
+    const imageUrl = imageUrlFormatter(photoUrl);
+    userRef.update({ photoUrl: imageUrl });
+  } catch (error) {
+    console.log("Error while updating the user -- ", { error });
   }
-}
+};
