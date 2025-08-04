@@ -91,7 +91,7 @@ export default function HelpDialog({
         <DialogHeader>
           <DialogTitle>Need Help?</DialogTitle>
           <DialogDescription>
-            Fill in the form below and we'll get back to you soon.
+            Describe your concern below and we will get back to you soon.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
