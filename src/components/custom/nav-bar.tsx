@@ -26,10 +26,22 @@ export default function NavBar({ children }: NavBarProps) {
             className="flex items-center justify-end gap-2 text-lg tracking-wider uppercase md:gap-4 md:text-2xl"
           >
             <div className="relative h-10 w-7 md:h-12 md:w-9">
-              <Image src={JinendraLogo} alt="" width={100} height={100} className="object-center" />
+              <Image
+                src={JinendraLogo}
+                alt=""
+                width={100}
+                height={100}
+                className="object-center"
+              />
             </div>
             <div className="relative h-10 w-8 md:h-12 md:w-10">
-              <Image src={BrandLogo} alt="" width={100} height={100} className="object-center" />
+              <Image
+                src={BrandLogo}
+                alt=""
+                width={100}
+                height={100}
+                className="object-center"
+              />
             </div>
             <div className="ml-1 flex flex-col text-sm md:text-lg md:tracking-[2px]">
               <span className="mt-1 font-semibold md:mt-2">Megha Sales</span>
@@ -42,9 +54,7 @@ export default function NavBar({ children }: NavBarProps) {
             <li className="">
               <ContactUsLink />
             </li>
-            {/* <li className="">
-              <SearchBar onSearch={() => {}} />
-            </li> */}
+            <span className="h-6 w-px bg-white/50" />
             <li className="flex w-fit items-center justify-center">
               <AuthButtons />
             </li>

@@ -5,6 +5,7 @@ import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import { X } from "lucide-react";
 import { useOneTapReady } from "@/hooks/useOneTapReady";
+import { usePwaPrompt } from "@/hooks/usePwaPrompt";
 
 // Type definition for BeforeInstallPromptEvent
 interface BeforeInstallPromptEvent extends Event {
@@ -17,6 +18,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export default function InstallPWAButton() {
+  const { isPwa } = usePwaPrompt();
   const oneTapReady = useOneTapReady();
 
   const [deferredPrompt, setDeferredPrompt] =
@@ -24,10 +26,11 @@ export default function InstallPWAButton() {
   const [showCard, setShowCard] = useState(false);
 
   useEffect(() => {
-    if (!oneTapReady) {
-      console.log("⏳ Waiting for One Tap to finish...");
-      return;
-    }
+    // if (!oneTapReady) {
+    //   console.log("⏳ Waiting for One Tap to finish...");
+    //   return;
+    // }
+    if (isPwa) return;
     // Only show if user hasn't dismissed or installed before
     const alreadyHandled = localStorage.getItem("pwa-install-dismissed");
 
