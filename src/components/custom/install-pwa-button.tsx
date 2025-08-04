@@ -1,13 +1,11 @@
-"use client";
 
+"use client"
 import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import { X } from "lucide-react";
-import { useOneTapReady } from "@/hooks/useOneTapReady";
 import { usePwaPrompt } from "@/hooks/usePwaPrompt";
 
-// Type definition for BeforeInstallPromptEvent
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
   readonly userChoice: Promise<{
@@ -19,24 +17,21 @@ interface BeforeInstallPromptEvent extends Event {
 
 export default function InstallPWAButton() {
   const { isPwa } = usePwaPrompt();
-  const oneTapReady = useOneTapReady();
-
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
   const [showCard, setShowCard] = useState(false);
 
   useEffect(() => {
-    // if (!oneTapReady) {
-    //   console.log("⏳ Waiting for One Tap to finish...");
-    //   return;
-    // }
-    if (isPwa) return;
-    // Only show if user hasn't dismissed or installed before
+    if (typeof window === "undefined" || isPwa) return;
+
     const alreadyHandled = localStorage.getItem("pwa-install-dismissed");
 
     if (alreadyHandled) return;
 
     const handler = (e: unknown) => {
+      if (localStorage.getItem("pwa-install-dismissed") === "true") {
+        return; // double safety
+      }
       const event = e as BeforeInstallPromptEvent;
       event.preventDefault();
       setDeferredPrompt(event);
@@ -47,22 +42,13 @@ export default function InstallPWAButton() {
     window.addEventListener("beforeinstallprompt", handler);
 
     return () => window.removeEventListener("beforeinstallprompt", handler);
-  }, [oneTapReady]);
+  }, [isPwa]);
 
   const handleInstallClick = () => {
     if (!deferredPrompt) return;
-
     deferredPrompt.prompt();
-
     deferredPrompt.userChoice.then((choiceResult) => {
       localStorage.setItem("pwa-install-dismissed", "true");
-
-      if (choiceResult.outcome === "accepted") {
-        console.log("User accepted the PWA install");
-      } else {
-        console.log("User dismissed the PWA install");
-      }
-
       setDeferredPrompt(null);
       handleCancelClick();
     });

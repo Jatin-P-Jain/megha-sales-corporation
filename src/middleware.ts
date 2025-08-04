@@ -32,9 +32,9 @@ export async function middleware(request: NextRequest) {
     const publicPaths = ["/", "/login", "/register", "/products-list"];
     const isPublic =
       publicPaths.includes(pathname) || pathname.startsWith("/brands");
-    const isAccountPage = pathname.startsWith("/account/profile");
+    // const isAccountPage = pathname.startsWith("/account/profile");
 
-    if (isPublic || isAccountPage) return NextResponse.next();
+    if (isPublic) return NextResponse.next();
     // ADD THIS:
     const redirectUrl = new URL("/login", origin);
     redirectUrl.searchParams.set("deepLink", "1");
