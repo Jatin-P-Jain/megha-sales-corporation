@@ -47,7 +47,7 @@ export default function InstallPWAButton() {
   const handleInstallClick = () => {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
-    deferredPrompt.userChoice.then((choiceResult) => {
+    deferredPrompt.userChoice.then(() => {
       localStorage.setItem("pwa-install-dismissed", "true");
       setDeferredPrompt(null);
       handleCancelClick();
