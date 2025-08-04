@@ -7,6 +7,7 @@ import NavBar from "@/components/custom/nav-bar";
 import { ServiceWorkerRegister } from "./service-worker-register";
 import InstallPWAButton from "@/components/custom/install-pwa-button";
 import Script from "next/script";
+import NewVersionBanner from "@/components/custom/new-version-banner";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -65,6 +66,7 @@ export default async function RootLayout({
       >
         <ServiceWorkerRegister />
         <InstallPWAButton />
+        <NewVersionBanner />
         <NavBar>{children}</NavBar>
         <div id="recaptcha-container" className="opacity-0" />
         <Analytics />
