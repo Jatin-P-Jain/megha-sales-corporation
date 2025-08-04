@@ -50,7 +50,7 @@ export default function NetworkBanner() {
   return (
     <div
       className={clsx(
-        "fixed top-20 z-50 w-full p-2 text-center text-sm text-white md:text-base",
+        "fixed top-15 z-50 w-full p-2 text-center text-sm text-white md:top-20 md:text-base",
         isOffline ? "bg-red-600" : isSlowConnection ? "bg-amber-500" : "",
       )}
     >
