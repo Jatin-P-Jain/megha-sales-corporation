@@ -15,21 +15,28 @@ import { Avatar, AvatarFallback } from "../ui/avatar";
 import Image from "next/image";
 import {
   ClipboardList,
-  HeartIcon,
+  DownloadIcon,
   Loader2Icon,
+  LogInIcon,
   LogOutIcon,
-  MenuIcon,
+  MessageCircleQuestionIcon,
   NotebookTextIcon,
   ShieldUserIcon,
   ShoppingCartIcon,
   UserRound,
 } from "lucide-react";
+import { usePwaPrompt } from "@/hooks/usePwaPrompt";
+import { useState } from "react";
+import HelpDialog from "./help-dialog";
 
 export default function AuthButtons() {
+  const { deferredPrompt, promptToInstall, isPwa } = usePwaPrompt();
   const auth = useAuth();
   const { clientUser, clientUserLoading, logout, currentUser, isLoggingOut } =
     auth;
   const isMobile = useIsMobile();
+
+  const [helpOpen, setHelpOpen] = useState(false);
 
   // Determine admin once
   const isAdmin = clientUser?.role === "admin";
@@ -73,7 +80,11 @@ export default function AuthButtons() {
             </button>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent align="end" sideOffset={4}>
+          <DropdownMenuContent
+            align="end"
+            sideOffset={4}
+            className="w-50 md:w-80"
+          >
             <DropdownMenuLabel className="flex flex-col items-start space-y-1 px-4 py-2">
               <span className="font-medium">{clientUser.displayName}</span>
               <span className="text-muted-foreground text-xs">
@@ -145,16 +156,27 @@ export default function AuthButtons() {
                     <ClipboardList className="text-secondary-foreground" />
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link
-                    href="/account/saved-items"
-                    className="flex items-center justify-between"
-                  >
-                    Saved for Later{" "}
-                    <HeartIcon className="text-secondary-foreground" />
-                  </Link>
-                </DropdownMenuItem>
               </>
+            )}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="flex items-center justify-between"
+              onClick={() => setTimeout(() => setHelpOpen(true), 0)}
+            >
+              Need help?
+              <MessageCircleQuestionIcon className="text-secondary-foreground" />
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="flex items-center justify-between"
+              onClick={promptToInstall}
+              disabled={isPwa || !deferredPrompt}
+            >
+              Install app <DownloadIcon className="text-secondary-foreground" />
+            </DropdownMenuItem>
+            {isPwa && (
+              <span className="text-muted-foreground px-2 text-xs">
+                Already using the app.
+              </span>
             )}
 
             <DropdownMenuSeparator />
@@ -170,7 +192,11 @@ export default function AuthButtons() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-
+        <HelpDialog
+          open={helpOpen}
+          onOpenChange={setHelpOpen}
+          user={clientUser}
+        />
         {isLoggingOut && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/30">
             <div className="bg-primary flex flex-col items-center rounded-lg p-4">
@@ -186,33 +212,42 @@ export default function AuthButtons() {
   // 3) Logged-out state
   if (isMobile) {
     return (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button>
-            <MenuIcon className="h-5 w-5" />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" sideOffset={4}>
-          <DropdownMenuItem asChild>
-            <Link href="/login">Login</Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link href="/register">Signup</Link>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <Link
+        href="/login"
+        className="flex items-center justify-center gap-1 hover:underline"
+      >
+        Login <LogInIcon className="size-4" />
+      </Link>
+      // <DropdownMenu>
+      //   <DropdownMenuTrigger asChild>
+      //     <button>
+      //       <MenuIcon className="h-5 w-5" />
+      //     </button>
+      //   </DropdownMenuTrigger>
+      //   <DropdownMenuContent align="end" sideOffset={4}>
+      //     <DropdownMenuItem asChild>
+      //       <Link href="/login">Login</Link>
+      //     </DropdownMenuItem>
+      //     <DropdownMenuItem asChild>
+      //       <Link href="/register">Signup</Link>
+      //     </DropdownMenuItem>
+      //   </DropdownMenuContent>
+      // </DropdownMenu>
     );
   }
 
   return (
-    <div className="flex items-center gap-4">
-      <Link href="/login" className="uppercase hover:underline">
-        Login
+    <div className="">
+      <Link
+        href="/login"
+        className="flex items-center justify-center gap-1 hover:underline"
+      >
+        Login <LogInIcon className="size-4" />
       </Link>
-      <span className="h-6 w-px bg-white/50" />
-      <Link href="/register" className="uppercase hover:underline">
+
+      {/* <Link href="/register" className="uppercase hover:underline">
         Signup
-      </Link>
+      </Link> */}
     </div>
   );
 }

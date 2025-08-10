@@ -25,7 +25,7 @@ export default async function Login({
         {deepLink && (
           <div className="mx-auto mb-4 flex w-fit items-center justify-center gap-2 rounded-lg bg-amber-100 p-2 text-center text-sm text-amber-700 italic">
             <InfoIcon className="size-8 md:size-4" />
-            Please log in to view the order details.
+            Please log in to continue to the page.
           </div>
         )}
         <LoginForm />
