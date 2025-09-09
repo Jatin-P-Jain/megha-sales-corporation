@@ -12,12 +12,9 @@ export const productDataSchema = z
     partNumber: z.string().min(2, "Part Number must be at least 2 characters"),
     partName: z.string().min(2, "Part Name must be at least 2 characters"),
 
-    price: z.coerce
-      .number()
-      .positive("Price must be greater than zero")
-      .optional(),
-    discount: z.coerce.number().min(0).max(100).optional(),
-    gst: z.coerce.number().min(0).max(100).optional(),
+    price: z.coerce.number().min(0, "Price must be at least zero").optional(),
+    discount: z.coerce.number().min(0, "Discount must be at least zero").max(100).optional(),
+    gst: z.coerce.number().min(0, "GST must be at least zero").max(100).optional(),
 
     stock: z.coerce.number().optional(),
     status: z.enum(["draft", "for-sale", "discontinued", "out-of-stock"]),
@@ -28,9 +25,9 @@ export const productDataSchema = z
       .array(
         z.object({
           size: z.string().min(1, "Size is required"),
-          price: z.coerce.number().positive().optional(),
-          discount: z.coerce.number().min(0).max(100).optional(),
-          gst: z.coerce.number().min(0).max(100).optional(),
+          price: z.coerce.number().min(0, "Price must be at least zero").optional(),
+          discount: z.coerce.number().min(0, "Discount must be at least zero").max(100).optional(),
+          gst: z.coerce.number().min(0, "GST must be at least zero").max(100).optional(),
         }),
       )
       .optional()

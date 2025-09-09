@@ -77,7 +77,7 @@ export default function ProductForm({
     resolver: zodResolver(productSchema),
     defaultValues: combineDefaultValues,
   });
-  const { isSubmitting } = form.formState;
+  const { isSubmitting, isValid } = form.formState;
 
   useEffect(() => {
     if (brand) {
@@ -711,7 +711,7 @@ export default function ProductForm({
         <Button
           type="submit"
           className="mx-auto mt-4 flex w-full max-w-md gap-2"
-          disabled={isSubmitting || !brand}
+          disabled={isSubmitting || !brand || !isValid}
         >
           {submitButtonLabel}
         </Button>
