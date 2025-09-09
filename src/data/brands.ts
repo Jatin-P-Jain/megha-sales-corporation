@@ -78,7 +78,7 @@ export const getBrands = async (options?: GetBrandsOptions) => {
   const brands = brandsSnapshot.docs.map((doc) => {
     const rawBrand = doc.data();
     const brand: Brand = {
-      id: doc.id,
+      id: rawBrand.id,
       brandName: rawBrand?.brandName as string,
       brandLogo: rawBrand?.brandLogo as string,
       companies: (rawBrand?.companies as string[]) || [],
@@ -103,7 +103,7 @@ export const getBrandById = async (brandId: string) => {
 
   // build a pure‐JS object matching your Brand type
   const brand: Brand = {
-    id: brandSnapshot.id,
+    id: rawBrandData.id,
     brandName: rawBrandData?.brandName as string,
     brandLogo: rawBrandData?.brandLogo as string,
     companies: (rawBrandData?.companies as string[]) || [],
