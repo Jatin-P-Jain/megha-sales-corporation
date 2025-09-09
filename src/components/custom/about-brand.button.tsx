@@ -22,10 +22,10 @@ const AboutBrandButton: React.FC<AboutBrandButtonProps> = ({
       asChild
     >
       <Link href={`/brands/${brandId}`}>
-        <InfoIcon className="size-5" /> Brand Info {" "}
+        <InfoIcon className="size-5" /> Brand Info {" - "}
         {!isMobile && (
           <>
-            - <span className="text-base font-semibold">{brandName}</span>
+            <span className="text-base font-semibold">{brandName}</span>
           </>
         )}
       </Link>
