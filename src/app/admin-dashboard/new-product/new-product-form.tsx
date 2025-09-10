@@ -38,7 +38,10 @@ export default function NewProductForm({ brand }: { brand?: Brand | Brand[] }) {
       return;
     }
     const { image, ...rest } = data;
-    const saveResponse = await createProduct(rest, token);
+    const saveResponse = await createProduct(
+      { brandId: brandSelected?.id ?? "", ...rest },
+      token,
+    );
     if (!!saveResponse.error || !saveResponse.productId) {
       toast.error("Error!", { description: saveResponse.error });
       setIsLoading(false);
