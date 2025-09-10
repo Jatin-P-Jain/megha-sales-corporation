@@ -237,7 +237,7 @@ export default function ProductCard({
                 } rounded-t-none`}
               >
                 <Link
-                  href={`/admin-dashboard/edit-product/${slugify(product?.brandName)}/${product?.id}`}
+                  href={`/admin-dashboard/edit-product/${product?.brandId}/${product?.id}`}
                 >
                   <PencilIcon />
                   Edit Product
