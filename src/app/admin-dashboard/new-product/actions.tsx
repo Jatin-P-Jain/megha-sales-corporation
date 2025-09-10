@@ -1,7 +1,7 @@
 "use server";
 
 import { auth, fireStore } from "@/firebase/server";
-import { slugify, slugifyPartNumber } from "@/lib/utils";
+import { slugifyPartNumber } from "@/lib/utils";
 import { productDataSchema } from "@/validation/productSchema";
 
 export const createProduct = async (
