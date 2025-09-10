@@ -4,7 +4,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { PencilIcon } from "lucide-react";
-import { formatINR, slugify } from "@/lib/utils";
+import { formatINR } from "@/lib/utils";
 import { Product, ProductSize } from "@/types/product";
 import ProductImage from "./product-image";
 import CartControls from "./cart-controls";
@@ -237,7 +237,7 @@ export default function ProductCard({
                 } rounded-t-none`}
               >
                 <Link
-                  href={`/admin-dashboard/edit-product/${slugify(product?.brandName)}/${product?.id}`}
+                  href={`/admin-dashboard/edit-product/${product?.brandId}/${product?.id}`}
                 >
                   <PencilIcon />
                   Edit Product
