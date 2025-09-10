@@ -6,7 +6,7 @@ import { productDataSchema } from "@/validation/productSchema";
 
 export const createProduct = async (
   data: {
-    brandId: string;
+    brandId?: string;
     brandName: string;
     companyName: string;
     vehicleCompany: string;
