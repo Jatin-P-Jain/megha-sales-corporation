@@ -117,18 +117,22 @@ export default function ProductCard({
           )}
 
           {product.sizes && product.sizes.length > 0 && (
-            <div className="text-primary mb-1 flex h-full w-full flex-col items-start justify-between gap-1 font-semibold md:mb-2 md:flex-row md:items-center">
+            <div className="text-primary mb-1 flex h-full w-full flex-col justify-between gap-1 font-semibold md:mb-2 md:flex-row">
               <span className="text-sm font-normal">Select Size:</span>
               {isLoading ? (
                 <Skeleton className="flex h-6 w-full" />
               ) : (
-                <SizeChips
-                  productId={
-                    !!selectedSize ? product.id + selectedSize.size : product.id
-                  }
-                  sizes={product.sizes}
-                  onSelectSize={(selected) => setSelectedSize(selected)}
-                />
+                <div className=" md:max-w-150">
+                  <SizeChips
+                    productId={
+                      !!selectedSize
+                        ? product.id + selectedSize.size
+                        : product.id
+                    }
+                    sizes={product.sizes}
+                    onSelectSize={(selected) => setSelectedSize(selected)}
+                  />
+                </div>
               )}
             </div>
           )}
