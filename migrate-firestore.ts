@@ -1,6 +1,6 @@
 //RUN:: npx tsx migrate-firestore.ts
 
-import admin from "firebase-admin";
+import admin, { firestore } from "firebase-admin";
 
 // 🔁 Initialize source (DEV)
 const sourceApp = admin.initializeApp(
@@ -95,7 +95,7 @@ async function changeFieldInProducts() {
     // Replace with your real condition logic
     console.log(`Current brandName for doc ${doc.id}: ${data?.brandName}`);
 
-    const shouldUpdate = data?.brandName === "ASK ";
+    const shouldUpdate = data?.brandId === "ask";
 
     console.log(`Checking doc ${doc.id}, shouldUpdate: ${shouldUpdate}`);
 
@@ -103,7 +103,6 @@ async function changeFieldInProducts() {
       // Example update: set featured flag and normalize partNumber
       const updates: FirebaseFirestore.UpdateData<{ [field: string]: any }> = {
         brandId: "ask-fras-le",
-        brandName: "ASK"
       };
 
       batch.update(doc.ref, updates);
@@ -126,7 +125,105 @@ async function changeFieldInProducts() {
 
   console.log(`✅ All done. ${updatedCount} products updated.`);
 }
+export async function archiveProducts() {
+  const db = sourceDb as FirebaseFirestore.Firestore; // ensure admin initialized
+  const srcCol = db.collection("products");
+  const dstCol = db.collection("archive").doc("products").collection("items"); // Archive/products/items
+
+  const qSnap = await srcCol.where("brandId", "==", "mansarovar").get();
+
+  const MAX = 450; // stay under 500 ops per batch
+  let batch = db.batch();
+  let ops = 0;
+  let moved = 0;
+
+  for (const doc of qSnap.docs) {
+    const data = doc.data();
+
+    // 1) write copy in Archive/Product using same id
+    const dstRef = dstCol.doc(doc.id);
+    batch.set(dstRef, {
+      ...data,
+      archivedAt: firestore.FieldValue.serverTimestamp(),
+    });
+
+    // 2) delete original
+    batch.delete(doc.ref);
+
+    ops += 2; // two writes per doc
+    moved++;
+
+    if (ops >= MAX) {
+      await batch.commit();
+      batch = db.batch();
+      ops = 0;
+    }
+  }
+
+  if (ops > 0) {
+    await batch.commit();
+  }
+
+  console.log(
+    `✅ Moved ${moved} product(s) to Archive/Product and deleted originals.`,
+  );
+}
+export async function moveProducts() {
+  const db = sourceDb as FirebaseFirestore.Firestore; // ensure admin initialized
+  const srcCol = db.collection("archive").doc("products").collection("items"); // Archive/products/items
+  const dstCol = db.collection("products");
+  const productIdsToMove = [
+    "221",
+    "225",
+    "225HD",
+    "206",
+    "205",
+    "204",
+    "203",
+    "201",
+    "111",
+    "510",
+  ]; // Example IDs to move
+  const qSnap = await srcCol.where("id", "in", productIdsToMove).get();
+
+  const MAX = 450; // stay under 500 ops per batch
+  let batch = db.batch();
+  let ops = 0;
+  let moved = 0;
+
+  for (const doc of qSnap.docs) {
+    const data = doc.data();
+
+    // 1) write copy in Archive/Product using same id
+    const dstRef = dstCol.doc(doc.id);
+    batch.set(dstRef, {
+      ...data,
+    });
+
+    // 2) delete original
+    batch.delete(doc.ref);
+
+    ops += 2; // two writes per doc
+    moved++;
+
+    if (ops >= MAX) {
+      await batch.commit();
+      batch = db.batch();
+      ops = 0;
+    }
+  }
+
+  if (ops > 0) {
+    await batch.commit();
+  }
+
+  console.log(
+    `✅ Moved ${moved} product(s) to Archive/Product and deleted originals.`,
+  );
+}
 
 // Usage
 // replaceHyphensInProducts().catch(console.error);
-changeFieldInProducts().catch(console.error);
+// changeFieldInProducts().catch(console.error);
+// archiveProducts().catch(console.error);
+// moveProducts().catch(console.error);

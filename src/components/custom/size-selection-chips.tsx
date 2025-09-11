@@ -42,6 +42,12 @@ export default function SizeChips({
     setHasMounted(true);
   }, []);
   useEffect(() => {
+    if (sizes.length === 1 && !selectedSize) {
+      setSelectedSize(sizes[0].size);
+      onSelectSize(sizes[0]);
+    }
+  }, [sizes, selectedSize, onSelectSize]);
+  useEffect(() => {
     const existingItem = cart.find((item) => {
       return item.productId === productId;
     });
@@ -87,7 +93,7 @@ export default function SizeChips({
   }
 
   return (
-    <div className="no-scrollbar flex w-full items-center justify-start gap-2 overflow-auto md:w-fit">
+    <div className="no-scrollbar flex w-full flex-wrap justify-end gap-1">
       {sizes.map(({ size }, index) => {
         const isSel = selectedSize === size;
         return (
