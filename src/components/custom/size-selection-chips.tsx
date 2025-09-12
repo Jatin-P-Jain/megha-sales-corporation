@@ -66,16 +66,6 @@ export default function SizeChips({
     }
   }, [isPending]);
 
-  useEffect(() => {
-    if (selectedSize && chipRefs.current[selectedSize]) {
-      chipRefs.current[selectedSize]?.scrollIntoView({
-        behavior: "smooth",
-        inline: "center",
-        block: "nearest",
-      });
-    }
-  }, [selectedSize]);
-
   function handleSizeClick(sizeValue: string) {
     const sizeObj = sizes.find((s) => s.size === sizeValue);
     if (!sizeObj) return;

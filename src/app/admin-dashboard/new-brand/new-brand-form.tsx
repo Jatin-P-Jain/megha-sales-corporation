@@ -97,7 +97,7 @@ export default function NewBrandForm() {
     );
     setIsLoading(false);
     toast.success("Success", { description: "Brand Created" });
-    router.push("/admin-dashboard");
+    router.back();
   };
   return (
     <BrandForm
