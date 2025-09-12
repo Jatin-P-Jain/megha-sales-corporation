@@ -148,7 +148,7 @@ export default function EditBrandForm({
     );
     setIsLoading(false);
     toast.success("Success!", { description: "Brand Updated" });
-    router.push("/admin-dashboard");
+    router.back();
   };
   return (
     <div className="relative">
