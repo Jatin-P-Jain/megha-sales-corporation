@@ -172,18 +172,7 @@ export async function moveProducts() {
   const db = sourceDb as FirebaseFirestore.Firestore; // ensure admin initialized
   const srcCol = db.collection("archive").doc("products").collection("items"); // Archive/products/items
   const dstCol = db.collection("products");
-  const productIdsToMove = [
-    "221",
-    "225",
-    "225HD",
-    "206",
-    "205",
-    "204",
-    "203",
-    "201",
-    "111",
-    "510",
-  ]; // Example IDs to move
+  const productIdsToMove = ["M-904-I", "M-905-I", "M-907-I","MH-906","MH-908","MH-910"]; // Example IDs to move
   const qSnap = await srcCol.where("id", "in", productIdsToMove).get();
 
   const MAX = 450; // stay under 500 ops per batch
