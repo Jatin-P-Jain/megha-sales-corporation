@@ -114,14 +114,9 @@ export default function SearchPartNumber({
               </div>
               <div className="flex max-h-100 flex-col gap-3 overflow-auto p-1 md:max-h-150">
                 {result.map((product) => {
-                  console.log("Product from Algolia:", product);
                   return (
-                    <div className="flex-1">
-                      <ProductCard
-                        key={product.id}
-                        product={product}
-                        isAdmin={isAdmin}
-                      />
+                    <div className="flex-1" key={product.id}>
+                      <ProductCard product={product} isAdmin={isAdmin} />
                     </div>
                   );
                 })}
