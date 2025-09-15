@@ -146,7 +146,7 @@ export default function EditProductForm({
       );
       setIsLoading(false);
       toast.success("Success!", { description: "Product Updated" });
-      router.push("/products-list");
+      router.back();
     } else {
       // ✅ Just update normally
       const updateResponse = await updateProduct(

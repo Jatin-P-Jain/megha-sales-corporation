@@ -90,7 +90,7 @@ export default function NewProductForm({ brand }: { brand?: Brand | Brand[] }) {
     );
     setIsLoading(false);
     toast.success("Success", { description: "Product Created" });
-    router.push("/admin-dashboard");
+    router.back();
   };
   return (
     <div>
