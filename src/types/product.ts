@@ -30,3 +30,7 @@ export type Product = {
   additionalDetails: string;
   image?: string;
 };
+export type ProductHit = {
+  objectID: string; 
+  lastModified: string; 
+} & Product;
