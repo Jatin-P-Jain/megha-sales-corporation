@@ -81,7 +81,12 @@ export default function ProductCard({
         <div className="flex w-full flex-col md:gap-2">
           <div className="text-primary flex w-full items-center justify-between font-semibold">
             <span className="text-sm font-normal">Brand :</span>
-            {product.brandName}
+            <Link
+              href={`/brands/${product.brandId}`}
+              className="cursor-pointer underline"
+            >
+              {product.brandName}
+            </Link>
           </div>
           <div className="text-primary flex w-full items-center justify-between font-semibold">
             <span className="text-sm font-normal">Part Name :</span>
@@ -93,7 +98,7 @@ export default function ProductCard({
             {product.partNumber}
           </div>
           <div className="text-primary flex w-full items-center justify-between font-semibold">
-            <span className="w-full text-sm font-normal">Vehicle Name :</span>
+            <span className="w-full text-sm font-normal">Applications :</span>
             <div className="flex w-full items-end justify-end">
               <span className="">{vehicleNameProcessed}</span>
             </div>
@@ -122,7 +127,7 @@ export default function ProductCard({
               {isLoading ? (
                 <Skeleton className="flex h-6 w-full" />
               ) : (
-                <div className=" md:max-w-150">
+                <div className="md:max-w-150">
                   <SizeChips
                     productId={
                       !!selectedSize
