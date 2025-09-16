@@ -10,7 +10,11 @@ import {
 import { markOneTapAsFinished } from "@/hooks/useOneTapReady";
 import { setToken } from "@/context/actions";
 
-export default function GoogleOneTap() {
+export default function GoogleOneTap({
+  setSigningIn,
+}: {
+  setSigningIn: (signingIn: boolean) => void;
+}) {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -22,6 +26,7 @@ export default function GoogleOneTap() {
         callback: async (response) => {
           console.log("🟡 Google One Tap callback triggered");
           try {
+            setSigningIn(true);
             const credential = GoogleAuthProvider.credential(
               response.credential,
             );
@@ -33,8 +38,10 @@ export default function GoogleOneTap() {
             // Get ID token claims
             const tokenResult = await getIdTokenResult(user, true);
             setToken(tokenResult.token, user.refreshToken);
+            setSigningIn(false);
           } catch (err) {
             console.error("❌ Firebase sign-in error:", err);
+            setSigningIn(false);
           }
         },
         cancel_on_tap_outside: false,
