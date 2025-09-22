@@ -142,7 +142,7 @@ export default function SearchPartNumber({
             {result ? (
               <>
                 <RotateCcwIcon className="mr-1 h-4 w-4" />
-                Search Again
+                Search Another Product
               </>
             ) : (
               <>
