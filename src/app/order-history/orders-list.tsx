@@ -16,7 +16,7 @@ import {
 import clsx from "clsx";
 import { useOrders } from "@/hooks/useOrders";
 import { Loader2Icon } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function OrdersList({
   isAdmin,
@@ -25,6 +25,7 @@ export default function OrdersList({
   isAdmin: boolean;
   userId?: string;
 }) {
+  const router = useRouter();
   const searchParams = useSearchParams();
 
   const requestedOrderId = searchParams.get("orderId") ?? undefined;
@@ -72,8 +73,13 @@ export default function OrdersList({
           </p>
           <Orders orderData={data} isAdmin={isAdmin} />
           {showSingle ? (
-            <Button className="mx-auto w-3/4" asChild>
-              <Link href={"/order-history"}>View all orders</Link>
+            <Button
+              className="mx-auto w-3/4"
+              onClick={() => {
+                router.push("/order-history");
+              }}
+            >
+              View all orders
             </Button>
           ) : (
             <Pagination className="text-muted-foreground">
