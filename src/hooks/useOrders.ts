@@ -1,15 +1,7 @@
 "use client";
 import {
-  collection,
-  query,
-  where,
-  orderBy,
-  limit,
-  startAfter,
-  getDocs,
-  onSnapshot,
-  getCountFromServer,
-  QueryConstraint,
+  collection, query, where, orderBy, limit, startAfter,
+  getDocs, onSnapshot, getCountFromServer, QueryConstraint
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { firestore } from "@/firebase/client";
@@ -32,96 +24,78 @@ export function useOrders({
   const [loading, setLoading] = useState(true);
   const [totalItems, setTotalItems] = useState<number>(0);
 
-  useEffect(() => {
-    let unsub: () => void;
+  // Keep a stable dependency for status
+  const statusKey = JSON.stringify([...(status ?? [])].sort());
 
-    const fetch = async () => {
+  useEffect(() => {
+    let unsub: undefined | (() => void);
+    let cancelled = false;
+
+    const run = async () => {
       setLoading(true);
-      // 🔍 If orderId is provided, fetch that specific document
+      setOrders([]); // prevent stale single-order state while switching
+
+      // Single order fetch
       if (orderId) {
         const { doc, getDoc } = await import("firebase/firestore");
-        const orderRef = doc(firestore, "orders", orderId);
-        const snapshot = await getDoc(orderRef);
+        const ref = doc(firestore, "orders", orderId);
+        const snap = await getDoc(ref);
+        if (cancelled) return;
 
-        if (snapshot.exists()) {
-          const data = snapshot.data() as Order;
-          setOrders([{ ...data, id: snapshot.id }]);
+        if (snap.exists()) {
+          const data = snap.data() as Order;
+          setOrders([{ ...data, id: snap.id }]);
+          setTotalItems(1);
         } else {
           setOrders([]);
+          setTotalItems(0);
         }
-
-        setTotalItems(snapshot.exists() ? 1 : 0);
         setLoading(false);
         return;
       }
 
+      // List query + pagination
       const baseConstraints: QueryConstraint[] = [orderBy("updatedAt", "desc")];
+      if (userId) baseConstraints.push(where("user.id", "==", userId));
+      if (status && status.length > 0) baseConstraints.push(where("status", "in", status));
 
-      if (userId) {
-        baseConstraints.push(where("user.id", "==", userId));
-      }
+      const baseQuery = query(collection(firestore, "orders"), ...baseConstraints);
 
-      if (status && status.length > 0) {
-        baseConstraints.push(where("status", "in", status));
-      }
-
-      const baseQuery = query(
-        collection(firestore, "orders"),
-        ...baseConstraints,
-      );
-
-      // ✅ Get total count
       const countSnap = await getCountFromServer(baseQuery);
+      if (cancelled) return;
       setTotalItems(countSnap.data().count);
 
-      // 🔁 Pagination startAfter
+      const constraints = [...baseConstraints];
       if (page > 1) {
-        const skipQuery = query(
-          collection(firestore, "orders"),
-          ...baseConstraints,
-          limit((page - 1) * pageSize),
-        );
-        const skippedSnapshot = await getDocs(skipQuery);
-        const lastVisible = skippedSnapshot.docs.at(-1);
+        const skipQuery = query(collection(firestore, "orders"), ...constraints, limit((page - 1) * pageSize));
+        const skipped = await getDocs(skipQuery);
+        const lastVisible = skipped.docs.at(-1);
         if (!lastVisible) {
           setOrders([]);
           setLoading(false);
           return;
         }
-        baseConstraints.push(startAfter(lastVisible));
+        constraints.push(startAfter(lastVisible));
       }
 
-      const paginatedQuery = query(
-        collection(firestore, "orders"),
-        ...baseConstraints,
-        limit(pageSize),
-      );
-
-      unsub = onSnapshot(paginatedQuery, (snapshot) => {
-        const docs = snapshot.docs.map((doc) => {
-          const data = doc.data() as Order;
-          return {
-            ...data,
-            id: doc.id,
-          };
-        });
+      const pageQuery = query(collection(firestore, "orders"), ...constraints, limit(pageSize));
+      unsub = onSnapshot(pageQuery, (snapshot) => {
+        if (cancelled) return;
+        const docs = snapshot.docs.map((d) => ({ ...(d.data() as Order), id: d.id }));
         setOrders(docs);
         setLoading(false);
       });
     };
-    try {
-      fetch();
-    } catch (error: unknown) {
-      console.log("Error useOrders -- ", error);
-      setLoading(false);
-    }
+
+    run().catch(() => setLoading(false));
 
     return () => {
+      cancelled = true;
       if (unsub) unsub();
     };
-  }, [page, pageSize, userId, status?.join(",")]);
+    // IMPORTANT: include orderId and a stable key for status
+  }, [page, pageSize, userId, statusKey, orderId]);
 
   const totalPages = Math.ceil(totalItems / pageSize);
-
   return { orders, loading, totalItems, totalPages };
 }
