@@ -68,7 +68,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
                 <FormControl>
                   <Input
                     className="border-0 placeholder:text-xs focus-visible:shadow-none focus-visible:ring-0 md:placeholder:text-white/70"
-                    placeholder="Search Part Number / Name / Brand…"
+                    placeholder="Search Part Number or Name"
                     {...field}
                   />
                 </FormControl>
