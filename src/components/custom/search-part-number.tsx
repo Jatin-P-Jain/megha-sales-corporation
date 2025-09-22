@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { SearchIcon, RotateCcwIcon } from "lucide-react";
+import { SearchIcon, RotateCcwIcon, Loader } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -30,6 +30,7 @@ export default function SearchPartNumber({
 }) {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchedPhrase, setSearchedPhrase] = useState("");
   const [result, setResult] = useState<Product[] | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -49,6 +50,7 @@ export default function SearchPartNumber({
     setLoading(true);
     setResult(null);
     setNotFound(false);
+    setSearchedPhrase(searchQuery);
 
     try {
       const results = await searchProducts(searchQuery.trim());
@@ -76,9 +78,9 @@ export default function SearchPartNumber({
       <DialogTrigger asChild>
         <Button
           variant={variant}
-          className={clsx(buttonClassName, "h-full shadow-md")}
+          className={clsx(buttonClassName, "h-full w-full shadow-lg")}
         >
-          <SearchIcon /> {showText && <> Search Part Number</>}
+          <SearchIcon /> {showText && <> Search Product</>}
         </Button>
       </DialogTrigger>
 
@@ -103,14 +105,17 @@ export default function SearchPartNumber({
           </p> */}
 
           {loading && (
-            <p className="text-muted-foreground text-sm">Searching...</p>
+            <div className="flex flex-col items-center justify-center gap-2">
+              <Loader className="text-primary mx-auto h-4 w-4 animate-spin" />
+              <p className="text-muted-foreground text-xs">Searching...</p>
+            </div>
           )}
 
           {result && (
             <>
               <div className="text-center text-xs text-green-700 md:text-sm">
                 ✅ Found <strong>{result.length} product(s)</strong> for your
-                search: <strong>{searchQuery}</strong>
+                search: <strong>{searchedPhrase}</strong>
               </div>
               <div className="flex max-h-100 flex-col gap-3 overflow-auto p-1 md:max-h-150">
                 {result.map((product) => {
@@ -127,7 +132,7 @@ export default function SearchPartNumber({
           {notFound && (
             <p className="text-sm text-red-500">
               ❌ No product found for your search:{" "}
-              <strong>{searchQuery}</strong>
+              <strong>{searchedPhrase}</strong>
             </p>
           )}
         </div>
@@ -137,7 +142,7 @@ export default function SearchPartNumber({
             {result ? (
               <>
                 <RotateCcwIcon className="mr-1 h-4 w-4" />
-                Search Again
+                Search Another Product
               </>
             ) : (
               <>
