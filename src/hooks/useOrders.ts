@@ -65,7 +65,7 @@ export function useOrders({
       if (cancelled) return;
       setTotalItems(countSnap.data().count);
 
-      let constraints = [...baseConstraints];
+      const constraints = [...baseConstraints];
       if (page > 1) {
         const skipQuery = query(collection(firestore, "orders"), ...constraints, limit((page - 1) * pageSize));
         const skipped = await getDocs(skipQuery);
