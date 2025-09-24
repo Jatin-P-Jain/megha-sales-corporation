@@ -15,7 +15,7 @@ export async function middleware(request: NextRequest) {
   ) {
     return NextResponse.next();
   }
-  // 0) Bypass internals & your refresh endpoint
+  // Bypass internals & your refresh endpoint
   if (
     request.method === "POST" ||
     pathname.startsWith("/_next") ||
@@ -32,15 +32,16 @@ export async function middleware(request: NextRequest) {
     const publicPaths = ["/", "/login", "/register", "/products-list"];
     const isPublic =
       publicPaths.includes(pathname) || pathname.startsWith("/brands");
-    // const isAccountPage = pathname.startsWith("/account/profile");
 
     if (isPublic) return NextResponse.next();
-    // ADD THIS:
+
+    // Clear any remaining cookies and redirect to login
     const redirectUrl = new URL("/login", origin);
     redirectUrl.searchParams.set("deepLink", "1");
     redirectUrl.searchParams.set("redirect", pathname + request.nextUrl.search);
     const res = NextResponse.redirect(redirectUrl);
     res.cookies.delete("firebaseAuthToken");
+    res.cookies.delete("firebaseAuthRefreshToken"); // Also clear refresh token
     return res;
   }
 
@@ -49,17 +50,31 @@ export async function middleware(request: NextRequest) {
     const hasRedirect = searchParams.get("redirect");
     if (!hasRedirect) {
       return NextResponse.redirect(new URL("/", origin));
-    } // else allow to render login, so client can redirect to correct page
+    }
   }
 
   // 3) Decode your token
-  const { profileComplete, admin, exp } = decodeJwt(token) as {
-    profileComplete?: boolean;
-    admin?: boolean;
-    exp?: number;
-  };
+  let profileComplete, admin, exp;
+  try {
+    const decoded = decodeJwt(token) as {
+      profileComplete?: boolean;
+      admin?: boolean;
+      exp?: number;
+    };
+    profileComplete = decoded.profileComplete;
+    admin = decoded.admin;
+    exp = decoded.exp;
+  } catch (error) {
+    console.error("Failed to decode JWT:", error);
+    // Token is invalid, treat as logged out
+    const redirectUrl = new URL("/login", origin);
+    const res = NextResponse.redirect(redirectUrl);
+    res.cookies.delete("firebaseAuthToken");
+    res.cookies.delete("firebaseAuthRefreshToken");
+    return res;
+  }
 
-  // 4) If your token’s about to expire, refresh it (once)
+  // 4) If your token's about to expire, refresh it
   if (exp && (exp - 5 * 60) * 1000 < Date.now()) {
     const redirectTo = encodeURIComponent(pathname + request.nextUrl.search);
     return NextResponse.redirect(
@@ -67,12 +82,16 @@ export async function middleware(request: NextRequest) {
     );
   }
 
-  // 5) Profile‐complete dance
+  // 5) Profile‐complete dance - FIXED LOGIC
   if (!profileComplete) {
     const didRefreshOnce = searchParams.get("refreshed") === "1";
 
+    // If user is on /account/profile and profile is not complete, allow them to stay
+    if (pathname === "/account/profile") {
+      return NextResponse.next();
+    }
+
     if (!didRefreshOnce) {
-      // First pass → force a token‐refresh, tag with ?refreshed=1
       const url = new URL(request.url);
       url.searchParams.set("refreshed", "1");
       return NextResponse.redirect(
@@ -86,18 +105,13 @@ export async function middleware(request: NextRequest) {
     }
 
     // Second pass → still no profileComplete? Lock them onto /account/profile
-    if (pathname !== "/account/profile") {
-      return NextResponse.redirect(new URL("/account/profile", origin));
-    }
-
-    // If they *are* on /account/profile, allow render
-    return NextResponse.next();
+    return NextResponse.redirect(new URL("/account/profile", origin));
   }
 
-  // 6) If they’ve now completed the profile but are stuck on /account/profile, bounce on
+  // 6) If they've completed the profile but are on /account/profile, only redirect if they're not intentionally there
   if (profileComplete && pathname === "/account/profile") {
-    const back = "/";
-    return NextResponse.redirect(new URL(back, origin));
+    // Don't auto-redirect away from profile page - let them stay if they want
+    return NextResponse.next();
   }
 
   // 7) Admin vs user guards
