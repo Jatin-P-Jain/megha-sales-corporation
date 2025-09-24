@@ -185,7 +185,6 @@ export default function AuthButtons() {
               className="flex items-center justify-between"
               onClick={() => {
                 logout();
-                window.location.assign("/");
               }}
             >
               Logout <LogOutIcon className="text-secondary-foreground" />
