@@ -153,6 +153,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setIsLoggingOut(true);
           try {
             await logoutUser();
+            window.location.href = "/";
           } catch (err) {
             console.error("Logout failed", err);
             setIsLoggingOut(false);
