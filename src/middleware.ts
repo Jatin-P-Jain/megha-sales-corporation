@@ -65,6 +65,7 @@ export async function middleware(request: NextRequest) {
     admin = decoded.admin;
     exp = decoded.exp;
   } catch (error) {
+    console.error("Failed to decode JWT:", error);
     // Token is invalid, treat as logged out
     const redirectUrl = new URL("/login", origin);
     const res = NextResponse.redirect(redirectUrl);
