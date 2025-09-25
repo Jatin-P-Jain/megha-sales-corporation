@@ -33,8 +33,6 @@ export default function GoogleOneTap({
             const result = await signInWithCredential(auth, credential);
             const user = result.user;
 
-            console.log("✅ Firebase user:", user);
-
             // Get ID token claims
             const tokenResult = await getIdTokenResult(user, true);
             setToken(tokenResult.token, user.refreshToken);

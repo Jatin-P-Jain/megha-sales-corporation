@@ -5,6 +5,7 @@ import { Loader2Icon } from "lucide-react";
 import BrandsGrid from "./brands-grid";
 import { Brand } from "@/types/brand";
 import Link from "next/link";
+import { PushHandler } from "@/lib/firebase/push-handler";
 
 const HomePage = ({
   brandsPromise,
@@ -24,6 +25,7 @@ const HomePage = ({
 
   return (
     <>
+      <PushHandler />
       {currentUser && clientUserLoading ? (
         <div className="bg-muted text-muted-foreground mx-auto flex min-h-30 w-1/2 flex-col items-center justify-center gap-4 rounded-lg p-4">
           <Loader2Icon className="size-5 animate-spin" />

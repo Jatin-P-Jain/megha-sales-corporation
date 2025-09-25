@@ -1,5 +1,5 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp, getApps } from "firebase/app";
+import { initializeApp, getApps, FirebaseApp } from "firebase/app";
 import { getAuth, Auth, RecaptchaVerifier } from "firebase/auth";
 import { getStorage, FirebaseStorage } from "firebase/storage";
 import { Firestore, getFirestore } from "firebase/firestore";
@@ -19,16 +19,17 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const currentApps = getApps();
+let app: FirebaseApp;
 let auth: Auth;
 let storage: FirebaseStorage;
 let firestore: Firestore;
 if (!currentApps.length) {
-  const app = initializeApp(firebaseConfig);
+  app = initializeApp(firebaseConfig);
   auth = getAuth(app);
   storage = getStorage(app);
   firestore = getFirestore(app);
 } else {
-  const app = currentApps[0];
+  app = currentApps[0];
   auth = getAuth(app);
   storage = getStorage(app);
   firestore = getFirestore(app);
@@ -37,4 +38,4 @@ if (!currentApps.length) {
 //   connectAuthEmulator(auth, "http://localhost:9099", { disableWarnings: true });
 // }
 
-export { auth, storage, firestore, RecaptchaVerifier };
+export { app, auth, storage, firestore, RecaptchaVerifier };
