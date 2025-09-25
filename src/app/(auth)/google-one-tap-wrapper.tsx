@@ -1,7 +1,7 @@
 "use client";
 
 import GoogleOneTap from "@/components/custom/google-one-tap";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/context/useAuth";
 import { Loader2Icon } from "lucide-react";
 import { useState } from "react";
@@ -23,9 +23,12 @@ export default function GoogleOneTapWrapper() {
           className="text-primary flex flex-col items-center justify-center gap-4"
           noCloseButton
         >
+          <DialogTitle className="m-0 p-0 text-lg font-medium">
+            Signing you in...
+          </DialogTitle>
           <Loader2Icon className="z-100 flex size-10 animate-spin" />
           <span className="text-sm">
-            Hold on a moment — logging in to the account.
+            Hold on a moment — signing in to the account.
           </span>
         </DialogContent>
       </Dialog>

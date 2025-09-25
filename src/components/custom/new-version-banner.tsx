@@ -4,7 +4,7 @@ import { Button } from "../ui/button";
 import { RefreshCcwIcon } from "lucide-react";
 
 export default function NewVersionBanner() {
-  const DEPLOY_VERSION = "20250804-v1.0.7";
+  const DEPLOY_VERSION = "20250804-v1.0.8";
   const [showBanner, setShowBanner] = useState(false);
 
   useEffect(() => {
