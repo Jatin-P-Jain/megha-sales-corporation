@@ -16,50 +16,101 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// Handle background messages
-messaging.onBackgroundMessage(function (payload) {
-  console.log("[Service Worker] Background message received", payload);
+// // Handle background messages
+// messaging.onBackgroundMessage(function (payload) {
+//   console.log("[Service Worker] Background message received", payload);
   
-  const notificationTitle = payload.notification?.title || payload.data?.title || 'New Message';
-  const notificationOptions = {
-    body: payload.notification?.body || payload.data?.body || 'You have a new message',
-    icon: "/icons/icon-192x192.png",
-    badge: "/icons/icon-192x192.png",
-    tag: 'notification-tag',
-    requireInteraction: true,
-    data: payload.data || {},
-    actions: payload.data?.actions ? JSON.parse(payload.data.actions) : [],
-  };
+//   const notificationTitle = payload.notification?.title || payload.data?.title || 'New Message';
+//   const notificationOptions = {
+//     body: payload.notification?.body || payload.data?.body || 'You have a new message',
+//     icon: "/icons/icon-192x192.png",
+//     badge: "/icons/icon-192x192.png",
+//     tag: 'notification-tag',
+//     requireInteraction: true,
+//     // Store all data for click handling
+//     data: {
+//       url: payload.data?.url || payload.fcm_options?.link || '/',
+//       clickAction: payload.data?.click_action,
+//       ...payload.data // Include all custom data
+//     },
+//     actions: payload.data?.actions ? JSON.parse(payload.data.actions) : [],
+//   };
 
-  self.registration.showNotification(notificationTitle, notificationOptions);
-});
+//   self.registration.showNotification(notificationTitle, notificationOptions);
+// });
 
-// Handle notification click events
+// Handle notification click events with deep linking
 self.addEventListener('notificationclick', function(event) {
   console.log('[Service Worker] Notification click received.');
+  console.log('[Service Worker] Event action:', event.action);
+  console.log('[Service Worker] Notification data:', event.notification.data);
   
+  // Close the notification
   event.notification.close();
   
-  // Handle different actions if any
+  // Get the URL to open
+  let urlToOpen = '/'; // Default fallback
+  
+  // Handle action button clicks vs main notification click
   if (event.action) {
     console.log('[Service Worker] Notification action clicked:', event.action);
+    // Handle specific action buttons
+    switch (event.action) {
+      case 'view':
+        urlToOpen = event.notification.data?.url || '/';
+        break;
+      case 'dismiss':
+        console.log('[Service Worker] Notification dismissed');
+        return; // Don't open anything, just return
+      default:
+        urlToOpen = event.notification.data?.url || '/';
+        break;
+    }
+  } else {
+    // Main notification body was clicked (not an action button)
+    urlToOpen = event.notification.data?.url || '/';
   }
   
-  // Focus or open the app when notification is clicked
+  console.log('[Service Worker] Opening URL:', urlToOpen);
+  
+  // Handle the navigation
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
-      // If a window is already open, focus it
+    clients.matchAll({ 
+      type: 'window', 
+      includeUncontrolled: true 
+    }).then(function(clientList) {
+      
+      // Convert relative URLs to absolute URLs
+      const targetUrl = urlToOpen.startsWith('http') 
+        ? urlToOpen 
+        : new URL(urlToOpen, self.location.origin).href;
+      
+      console.log('[Service Worker] Target URL:', targetUrl);
+      
+      // Check if there's already a window/tab open with the target URL
       for (const client of clientList) {
-        if (client.url.includes(self.location.origin) && 'focus' in client) {
+        if (client.url === targetUrl && 'focus' in client) {
+          console.log('[Service Worker] Found matching client, focusing');
           return client.focus();
         }
       }
       
-      // If no window is open, open a new one
-      if (clients.openWindow) {
-        const urlToOpen = event.notification.data?.url || '/';
-        return clients.openWindow(urlToOpen);
+      // Check if there's a window from the same origin that can be navigated
+      for (const client of clientList) {
+        if (client.url.startsWith(self.location.origin) && 'navigate' in client) {
+          console.log('[Service Worker] Navigating existing client to:', targetUrl);
+          client.navigate(targetUrl);
+          return client.focus();
+        }
       }
+      
+      // No suitable existing window found, open a new one
+      if (clients.openWindow) {
+        console.log('[Service Worker] Opening new window:', targetUrl);
+        return clients.openWindow(targetUrl);
+      }
+    }).catch(function(error) {
+      console.error('[Service Worker] Error handling notification click:', error);
     })
   );
 });
@@ -90,47 +141,43 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   // Add your caching logic here if needed
-  // Example: Cache important resources
-  /*
-  if (event.request.url.includes('/api/')) {
-    // Handle API requests
-    return;
-  }
-  
-  if (event.request.destination === 'image') {
-    // Cache images
-    event.respondWith(
-      caches.match(event.request).then(function(response) {
-        return response || fetch(event.request);
-      })
-    );
-  }
-  */
 });
 
 // Handle push events (alternative to onBackgroundMessage for more control)
 self.addEventListener('push', function(event) {
   console.log('[Service Worker] Push received.');
-  
-  if (event.data) {
-    const data = event.data.json();
-    console.log('[Service Worker] Push data:', data);
-    
-    const title = data.notification?.title || data.data?.title || 'New Message';
-    const options = {
-      body: data.notification?.body || data.data?.body || 'You have a new message',
-      icon: "/icons/icon-192x192.png",
-      badge: "/icons/icon-192x192.png",
-      tag: data.data?.tag || 'default-tag',
-      requireInteraction: true,
-      data: data.data || {},
-    };
-    
-    event.waitUntil(
-      self.registration.showNotification(title, options)
-    );
+
+  if (!event.data) {
+    console.warn('[Service Worker] No event.data');
+    return;
   }
+
+  const payload = event.data.json();
+  const data = payload.data || {};
+  const title = data.title || 'New Message';
+
+  // Build a clean options object
+  const options = {
+    body:    data.body,
+    icon:    '/icons/icon-192x192.png',
+    badge:   '/icons/icon-192x192.png',
+    tag:     data.category || 'default-tag',
+    requireInteraction: true,
+    data:    {
+      url:         data.url,
+      clickAction: data.click_action,
+      order_id:    data.order_id,
+      status:      data.status,
+      // ...any other custom data
+    },
+    // Remove ANY unknown keys like fcm_options or notification.*
+  };
+
+  console.log('[Service Worker] Showing notification:', title, options);
+  event.waitUntil(self.registration.showNotification(title, options));
+  console.log('[Service Worker] Push event handled, notification shown.');
 });
+
 
 // Handle message events from the main thread
 self.addEventListener('message', function(event) {
