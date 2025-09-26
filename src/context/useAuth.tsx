@@ -20,7 +20,6 @@ import { UserData } from "@/types/user";
 import { doc, getDoc } from "firebase/firestore";
 import { mapDbUserToClientUser } from "@/lib/firebase/mapDBUserToClient";
 import useMonitorInactivity from "@/hooks/useMonitorInactivity";
-import { getFcmToken } from "@/firebase/firebase-messaging";
 import { getDeviceMetadata } from "@/lib/utils";
 import { saveFcmToken } from "@/firebase/saveFcmToken";
 import { getMessaging, getToken } from "firebase/messaging";
