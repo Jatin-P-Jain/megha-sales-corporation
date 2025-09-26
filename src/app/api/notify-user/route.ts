@@ -1,10 +1,9 @@
 import { fireStore, messaging } from "@/firebase/server";
-import { MulticastMessage } from "firebase-admin/messaging";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const { uid, title, body, url, clickAction, customData } = await req.json();
+    const { uid, title, body } = await req.json();
 
     if (!uid || !title || !body) {
       return NextResponse.json(
@@ -27,35 +26,21 @@ export async function POST(req: Request) {
       );
     }
 
-    const message: MulticastMessage = {
+    // 2. Construct message with both notification and data
+    const message = {
+      notification: {
+        title,
+        body,
+      },
       data: {
         title,
         body,
-        url,
-        click_action: clickAction || "",
-        order_id: customData.order_id,
-        status: customData.status,
-        tracking_number: customData.tracking_number,
-        category: customData.category,
-        timestamp: Date.now().toString(),
       },
-      // webpush: {
-      //   fcmOptions: {
-      //     link: url, // ← use camelCase
-      //   },
-      //   notification: {
-      //     // optional WebPush notification options
-      //     icon: "/icons/icon-192x192.png",
-      //     badge: "/icons/icon-192x192.png",
-      //     requireInteraction: true,
-      //     tag: "notification-tag",
-      //   },
-      // },
       tokens,
     };
 
+    // 3. Send multicast notification
     const response = await messaging.sendEachForMulticast(message);
-    console.log("✅ FCM notification sent:", response);
 
     // 4. Delete failed tokens
     const failedTokens = response.responses
