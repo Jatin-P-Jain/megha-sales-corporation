@@ -1,7 +1,34 @@
-import { NextResponse } from "next/server";
+// scripts/generate-sw.ts
+import fs from "fs";
+import dotenv from "dotenv";
+import path from "path";
 
-export async function GET() {
-  const swContent = `
+const envFile = `.env.${process.env.NODE_ENV || "development"}.local`;
+const envPath = path.resolve(process.cwd(), envFile);
+
+dotenv.config({ path: envPath });
+
+// Access environment variables
+const {
+  NEXT_PUBLIC_FIREBASE_API_KEY,
+  NEXT_PUBLIC_PROJECT_ID,
+  NEXT_PUBLIC_MESSAGING_SENDER_ID,
+  NEXT_PUBLIC_APP_ID,
+} = process.env;
+
+if (
+  !NEXT_PUBLIC_FIREBASE_API_KEY ||
+  !NEXT_PUBLIC_PROJECT_ID ||
+  !NEXT_PUBLIC_MESSAGING_SENDER_ID ||
+  !NEXT_PUBLIC_APP_ID
+) {
+  console.error(
+    "Missing required environment variables for service worker generation.",
+  );
+  process.exit(1);
+}
+
+const swContent = `
 // Use the correct Firebase version and imports
 importScripts("https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js");
@@ -142,14 +169,6 @@ self.addEventListener('message', function(event) {
 });
 `;
 
-  return new NextResponse(swContent, {
-    status: 200,
-    headers: {
-      "Content-Type": "application/javascript",
-      "Service-Worker-Allowed": "/",
-      "Cache-Control": "no-cache, no-store, must-revalidate",
-      Pragma: "no-cache",
-      Expires: "0",
-    },
-  });
-}
+const outPath = path.resolve(process.cwd(), "public/firebase-messaging-sw.js");
+fs.writeFileSync(outPath, swContent.trimStart());
+console.log(`✅ Service worker generated at ${outPath}`);
