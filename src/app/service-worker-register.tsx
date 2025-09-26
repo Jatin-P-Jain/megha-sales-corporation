@@ -19,7 +19,7 @@ export const ServiceWorkerRegister = () => {
 
           // Register the new service worker
           const registration = await navigator.serviceWorker.register(
-            "/api/firebase-messaging-sw",
+            "/firebase-messaging-sw.js",
             {
               scope: "/",
               updateViaCache: "none", // Always fetch fresh SW

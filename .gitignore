@@ -40,3 +40,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 serviceAccount*.json
+
+firebase-messaging-sw.js
+/public/firebase-messaging-sw.js
