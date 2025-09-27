@@ -61,35 +61,35 @@ messaging.onBackgroundMessage(function (payload) {
   self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
-// Handle notification click events
+// Handle notification click events  
 self.addEventListener('notificationclick', function(event) {
   console.log('[Service Worker] Notification click received.');
+  console.log('Notification data:', event.notification.data); // Debug log
   
   event.notification.close();
   
-  // Handle different actions if any
-  if (event.action) {
-    console.log('[Service Worker] Notification action clicked:', event.action);
-  }
+  // Get URL from notification data
+  const urlToOpen = event.notification.data?.url || '/';
+  console.log('Opening URL:', urlToOpen); // Debug log
   
-  // Focus or open the app when notification is clicked
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
-      // If a window is already open, focus it
+      // If a window is already open, focus it and navigate
       for (const client of clientList) {
         if (client.url.includes(self.location.origin) && 'focus' in client) {
-          return client.focus();
+          client.focus();
+          return client.navigate ? client.navigate(urlToOpen) : client.postMessage({type: 'NAVIGATE', url: urlToOpen});
         }
       }
       
-      // If no window is open, open a new one
+      // Open new window with specific URL
       if (clients.openWindow) {
-        const urlToOpen = event.notification.data?.url || '/';
         return clients.openWindow(urlToOpen);
       }
     })
   );
 });
+
 
 // PWA Service Worker events
 self.addEventListener("install", (event) => {
