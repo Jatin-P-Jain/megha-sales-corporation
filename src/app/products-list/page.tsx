@@ -72,7 +72,7 @@ export default async function ProductsList({
   return (
     <div className="mx-auto flex max-w-screen-lg flex-col gap-4">
       <div
-        className={`fixed inset-x-0 top-0 z-30 mx-auto flex h-60 w-full max-w-screen-lg flex-col items-end justify-end rounded-lg bg-white px-4 shadow-md md:h-60 lg:h-55 ${!isAdmin && "pt-65 lg:pt-68"} ${!isUser && "!h-53 !pt-0"}`}
+        className={`fixed inset-x-0 top-0 z-30 mx-auto flex h-60 w-full max-w-screen-lg flex-col items-end justify-end rounded-lg bg-white px-4 shadow-md md:h-60 lg:h-60 ${!isAdmin && "pt-65 lg:pt-70"} ${!isUser && "!h-53 !pt-0"}`}
       >
         <div className="mx-auto flex w-full max-w-screen-lg flex-col pt-8 md:pt-6">
           <EllipsisBreadCrumbs items={breadcrumbs} />
@@ -80,7 +80,9 @@ export default async function ProductsList({
             <h1 className="py-2 text-xl font-[600] tracking-wide text-cyan-950 md:text-2xl">
               Product Listings
             </h1>
-            <AboutBrandButton brandId={brandId} brandName={brandName} />
+            {brandId && (
+              <AboutBrandButton brandId={brandId} brandName={brandName} />
+            )}
           </div>
 
           <ResponsiveProductFiltersServer

@@ -51,6 +51,7 @@ export async function POST(req: Request) {
         },
       },
       data: {
+        uid,
         title,
         body,
         url: url || "BROKEN_URL",
