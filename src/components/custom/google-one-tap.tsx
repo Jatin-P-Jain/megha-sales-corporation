@@ -46,7 +46,7 @@ export default function GoogleOneTap({
         auto_select: false,
       });
 
-      window.google.accounts.id.prompt((notification) => {
+      window.google.accounts.id.prompt(() => {
         // console.log("🔍 One Tap state:", {
         //   displayed: notification.isDisplayed(),
         //   skipped: notification.isSkippedMoment(),
