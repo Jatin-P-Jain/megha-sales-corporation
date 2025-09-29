@@ -8,7 +8,7 @@ import { useAuth } from "@/context/useAuth";
 
 export const PushHandler = () => {
   const auth = useAuth();
-  const { currentUser } = auth;
+
   useEffect(() => {
     const setup = async () => {
       const supported = await isSupported();
@@ -27,9 +27,9 @@ export const PushHandler = () => {
         const body =
           payload.notification?.body ?? payload.data?.body ?? "No body";
 
-        {
-          payload?.data?.uid === auth.clientUser?.uid &&
-            toast.success(title, { description: body });
+        if (payload?.data?.uid === auth.clientUser?.uid) {
+          // Show toast only if the message is intended for the current user
+          toast.success(title, { description: body });
         }
       });
     };
