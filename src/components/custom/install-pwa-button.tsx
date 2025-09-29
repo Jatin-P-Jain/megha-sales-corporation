@@ -36,7 +36,7 @@ export default function InstallPWAButton() {
       event.preventDefault();
       setDeferredPrompt(event);
       setShowCard(true);
-      console.log("✅ beforeinstallprompt event captured");
+      // console.log("✅ beforeinstallprompt event captured");
     };
 
     window.addEventListener("beforeinstallprompt", handler);

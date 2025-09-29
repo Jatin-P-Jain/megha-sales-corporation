@@ -69,9 +69,9 @@ const ResponsiveProductFilters: React.FC<{
           <div className="flex flex-col gap-3 pb-2">
             <div className="grid grid-cols-[8fr_3fr_1fr] gap-4">
               <div className="w-full">
-                <CategoryFilter categories={categories} />
+                <SearchPartNumber buttonClassName="text-primary font-semibold" />
               </div>
-              <SearchPartNumber buttonClassName="text-primary font-semibold" />
+              <CategoryFilter categories={categories} />
               <MoreFilters />
             </div>
             {isUser ? <CartOverview isUser /> : <></>}

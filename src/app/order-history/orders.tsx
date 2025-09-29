@@ -3,12 +3,25 @@
 import OrderDetails from "@/components/custom/order-details";
 import { OrderStatusDropdown } from "@/components/custom/order-status";
 import { Card, CardContent } from "@/components/ui/card";
-import { formatDateTime } from "@/lib/utils";
+import { formatDateTime, getBaseUrl } from "@/lib/utils";
 import { Order, OrderStatus } from "@/types/order";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { updateOrderStatus } from "./actions";
 import { toast } from "sonner";
+
+const getStatusMessage = (orderId: string, status: string) => {
+  const messages = {
+    pending: `Your order #${orderId} is pending with us. We'll start processing it soon!`,
+    packing: `Your order #${orderId} is being packed! Please wait for the next update.`,
+    complete: `Your order #${orderId} has been delivered and marked complete in our system.`,
+  };
+
+  return (
+    messages[status.toLowerCase() as keyof typeof messages] ||
+    `Your order #${orderId} status has been updated to ${status}.`
+  );
+};
 
 export default function Orders({
   orderData,
@@ -28,17 +41,29 @@ export default function Orders({
     setOrderFocused(requestedOrderId);
   }, [requestedOrderId]);
 
-  const handleStatusChange = async (
-    orderId: string,
-    newStatus: OrderStatus,
-  ) => {
-    const updateResponse = await updateOrderStatus(orderId, newStatus);
+  const handleStatusChange = async (order: Order, newStatus: OrderStatus) => {
+    const updateResponse = await updateOrderStatus(order.id, newStatus);
     if (updateResponse?.error) {
       toast.error("Error updating status of the order.");
       return;
     }
-    toast.success("Order Status Updated!", {
-      description: `Order status changed to "${newStatus.charAt(0).toUpperCase() + newStatus.slice(1, newStatus.length)}"`,
+    if (isAdmin) {
+      toast.success("Order Status Updated!", {
+        description: `Order status changed to "${newStatus.charAt(0).toUpperCase() + newStatus.slice(1, newStatus.length)}"`,
+      });
+    }
+
+    await fetch("/api/notify-user", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        uid: order.user?.id,
+        title: "🛒 Order Update",
+        body: getStatusMessage(order.id, newStatus),
+        url: `${getBaseUrl()}/order-history/${order.id}`,
+        clickAction: "view_order",
+        status: newStatus,
+      }),
     });
   };
 
@@ -64,7 +89,7 @@ export default function Orders({
                 isAdmin={isAdmin}
                 status={status}
                 onChange={(newStatus) => {
-                  handleStatusChange(order.id, newStatus);
+                  handleStatusChange(order, newStatus);
                 }}
               />
               <OrderDetails

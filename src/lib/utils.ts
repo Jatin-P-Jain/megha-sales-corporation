@@ -217,3 +217,20 @@ export const getDeviceMetadata = () => {
 
   return { os, browser, platform };
 };
+
+export function getBaseUrl(): string {
+  // For server-side (API routes)
+  if (typeof window === "undefined") {
+    // Check deployment environment
+    if (process.env.VERCEL_URL) {
+      return `https://${process.env.VERCEL_URL}`;
+    }
+    // Fallback based on NODE_ENV
+    return process.env.NODE_ENV === "production"
+      ? "https://meghasalescorporation.in"
+      : "https://dev.meghasalescorporation.in";
+  }
+
+  // For client-side
+  return window.location.origin;
+}

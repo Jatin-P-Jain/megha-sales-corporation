@@ -24,7 +24,7 @@ export default function GoogleOneTap({
       window.google.accounts.id.initialize({
         client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
         callback: async (response) => {
-          console.log("🟡 Google One Tap callback triggered");
+          // console.log("🟡 Google One Tap callback triggered");
           try {
             setSigningIn(true);
             const credential = GoogleAuthProvider.credential(
@@ -46,12 +46,12 @@ export default function GoogleOneTap({
         auto_select: false,
       });
 
-      window.google.accounts.id.prompt((notification) => {
-        console.log("🔍 One Tap state:", {
-          displayed: notification.isDisplayed(),
-          skipped: notification.isSkippedMoment(),
-          dismissed: notification.isDismissedMoment(),
-        });
+      window.google.accounts.id.prompt(() => {
+        // console.log("🔍 One Tap state:", {
+        //   displayed: notification.isDisplayed(),
+        //   skipped: notification.isSkippedMoment(),
+        //   dismissed: notification.isDismissedMoment(),
+        // });
 
         // ✅ Allow PWA logic to proceed
         markOneTapAsFinished();

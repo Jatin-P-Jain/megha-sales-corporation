@@ -46,7 +46,7 @@ export const verifyOTP = async (
   try {
     const result = await confirmationResult.confirm(otp);
     if (result) {
-      console.log("OTP verification successful", result);
+      // console.log("OTP verification successful", result);
       const user = result.user;
       const token = await user.getIdToken(true);
       await setToken(token, user.refreshToken);

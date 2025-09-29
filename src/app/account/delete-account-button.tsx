@@ -36,7 +36,7 @@ export default function DeleteAccountButton({
   const [isDeleting, setIsDeleting] = useState(false);
   const [password, setPassword] = useState("");
   const deleteHandler = async () => {
-    console.log({ isPasswordProvider });
+    // console.log({ isPasswordProvider });
 
     try {
       setIsDeleting(true);
