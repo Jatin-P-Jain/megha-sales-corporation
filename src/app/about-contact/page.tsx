@@ -19,19 +19,20 @@ import JainLogo from "@/assets/icons/jain-logo.svg";
 import GoogleMapComponent from "@/components/custom/google-map";
 import { EnquiryDialog } from "@/components/custom/wa-enquiry-dialog";
 import AboutAutoPartsShop from "@/components/custom/about-us";
+import Link from "next/link";
 
 export default function AboutAndContact() {
   return (
     <div className="container mx-auto flex max-w-4xl flex-col overflow-auto p-4">
       <div className="flex w-full items-center justify-between space-y-1">
         <div className="relative">
-          <Image alt="" src={JainLogo} width={30} height={30}/>
+          <Image alt="" src={JainLogo} width={30} height={30} />
         </div>
         <div className="relative">
-          <Image alt="" src={BhagwanSlok} width={120} height={120}/>
+          <Image alt="" src={BhagwanSlok} width={120} height={120} />
         </div>
         <div className="relative">
-          <Image alt="" src={JainLogo} width={30} height={30}/>
+          <Image alt="" src={JainLogo} width={30} height={30} />
         </div>
       </div>
       {/* <h2 className="text-primary mb-4 text-center text-2xl md:text-3xl font-semibold">
@@ -62,7 +63,12 @@ export default function AboutAndContact() {
                       className="h-0 min-h-0 w-fit gap-2 rounded-full border-green-600 p-3 px-5 text-green-600"
                     >
                       <div className="relative">
-                        <Image src={WhatsappIcon} alt="" width={15} height={15} />
+                        <Image
+                          src={WhatsappIcon}
+                          alt=""
+                          width={15}
+                          height={15}
+                        />
                       </div>
                       Contact
                     </Button>
@@ -92,7 +98,12 @@ export default function AboutAndContact() {
                       className="h-0 min-h-0 w-fit gap-2 rounded-full border-green-600 p-3 px-5 text-green-600"
                     >
                       <div className="relative">
-                        <Image src={WhatsappIcon} alt="" width={15} height={15} />
+                        <Image
+                          src={WhatsappIcon}
+                          alt=""
+                          width={15}
+                          height={15}
+                        />
                       </div>
                       Contact
                     </Button>
@@ -141,37 +152,33 @@ export default function AboutAndContact() {
                   className="w-full gap-4 border-green-600 text-green-600"
                 >
                   <div className="relative">
-                        <Image src={WhatsappIcon} alt="" width={20} height={20} />
-                      </div>
+                    <Image src={WhatsappIcon} alt="" width={20} height={20} />
+                  </div>
                   Enquire on WhatsApp
                 </Button>
               }
             />
           </div>
-
-          {/* {showForm && (
-            <form className="space-y-4">
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium">
-                  Name
-                </label>
-                <Input id="name" name="name" type="text" required />
+          <Separator className="my-4" />
+          <div className="text-primary flex w-full items-center justify-center gap-2 text-center text-xs">
+            <span className="text-lg">✨</span>{" "}
+            <div className="flex flex-col items-center gap-1 md:flex-row">
+              Thoughtfully designed and developed with passion and ❤️ by{" "}
+              <div className="flex items-center gap-1">
+                <Link
+                  href="https://www.jatinprakash.online"
+                  className="underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <span className="text-[14px] font-semibold">
+                    Jatin Prakash Jain
+                  </span>
+                </Link>
               </div>
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium">
-                  Email
-                </label>
-                <Input id="email" name="email" type="email" required />
-              </div>
-              <div>
-                <label htmlFor="message" className="block text-sm font-medium">
-                  Message
-                </label>
-                <Textarea id="message" name="message" rows={4} required />
-              </div>
-              <Button type="submit">Send</Button>
-            </form>
-          )} */}
+            </div>
+            <span className="text-lg">✨</span>
+          </div>
         </CardContent>
       </Card>
     </div>
