@@ -9,6 +9,7 @@ import { useAuth } from "@/context/useAuth";
 import { toast } from "sonner";
 import { OrderData } from "@/types/order";
 import { redirect } from "next/navigation";
+import { getBaseUrl } from "@/lib/utils";
 
 export default function CheckoutFooter() {
   const auth = useAuth();
@@ -74,8 +75,20 @@ export default function CheckoutFooter() {
         customerPhone: auth.clientUser?.phone,
       }),
     });
+    await fetch("/api/notify-user", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        uid: auth.clientUser?.uid,
+        title: "🛒 Order Update",
+        body: `Your order #${orderResponse.orderId} has been placed!`,
+        url: `${getBaseUrl()}/order-history/${orderResponse.orderId}`,
+        clickAction: "view_order",
+        status: "created",
+      }),
+    });
 
-    toast.success("Order Placed!");
+    // toast.success("Order Placed!");
     setIsOrderPlacing(false);
     resetCartContext();
     redirect(`/order-placed/${orderResponse.orderId}`);

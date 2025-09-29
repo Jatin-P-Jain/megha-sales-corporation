@@ -45,7 +45,7 @@ const messaging = firebase.messaging();
 
 // Handle background messages
 messaging.onBackgroundMessage(function (payload) {
-  console.log("[Service Worker] Background message received", payload);
+  // console.log("[Service Worker] Background message received", payload);
   
   const notificationTitle = payload.notification?.title || payload.data?.title || 'New Message';
   const notificationOptions = {
@@ -63,14 +63,14 @@ messaging.onBackgroundMessage(function (payload) {
 
 // Handle notification click events  
 self.addEventListener('notificationclick', function(event) {
-  console.log('[Service Worker] Notification click received.');
-  console.log('Notification data:', event.notification.data); // Debug log
+  // console.log('[Service Worker] Notification click received.');
+  // console.log('Notification data:', event.notification.data); // Debug log
   
   event.notification.close();
   
   // Get URL from notification data
   const urlToOpen = event.notification.data?.url || '/';
-  console.log('Opening URL:', urlToOpen); // Debug log
+  // console.log('Opening URL:', urlToOpen); // Debug log
   
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {

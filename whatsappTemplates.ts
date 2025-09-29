@@ -84,8 +84,6 @@ export const createWhatsAppPayloadFromInput = ({
     },
   };
 
-  console.log(JSON.stringify(payload));
-
   if (template.hasButton && buttonParams?.length) {
     payload.template.components.push({
       type: "button",
