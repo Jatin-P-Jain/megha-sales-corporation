@@ -47,10 +47,11 @@ export default function Orders({
       toast.error("Error updating status of the order.");
       return;
     }
-    isAdmin &&
+    if (isAdmin) {
       toast.success("Order Status Updated!", {
         description: `Order status changed to "${newStatus.charAt(0).toUpperCase() + newStatus.slice(1, newStatus.length)}"`,
       });
+    }
 
     await fetch("/api/notify-user", {
       method: "POST",
