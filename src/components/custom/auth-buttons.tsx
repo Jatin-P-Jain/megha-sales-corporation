@@ -23,6 +23,7 @@ import {
   NotebookTextIcon,
   ShieldUserIcon,
   ShoppingCartIcon,
+  TagsIcon,
   UserRound,
 } from "lucide-react";
 import { usePwaPrompt } from "@/hooks/usePwaPrompt";
@@ -133,6 +134,15 @@ export default function AuthButtons() {
                   >
                     Admin Dashboard
                     <ShieldUserIcon className="text-secondary-foreground" />
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild disabled>
+                  <Link
+                    href="/change-pricing"
+                    className="flex items-center justify-between"
+                  >
+                    Change Pricing Structure <br></br>(Coming Soon)
+                    <TagsIcon className="text-secondary-foreground" />
                   </Link>
                 </DropdownMenuItem>
               </>

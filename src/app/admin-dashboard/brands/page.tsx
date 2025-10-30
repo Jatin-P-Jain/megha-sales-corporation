@@ -1,4 +1,3 @@
-import AboutBrandButton from "@/components/custom/about-brand.button";
 import BrandLogo from "@/components/custom/brand-logo";
 import PublishBrandButton from "@/components/custom/publish-brand-button";
 import { Button } from "@/components/ui/button";
@@ -11,7 +10,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getBrands, VEHICLE_CATEGORIES } from "@/data/brands";
-import { PencilIcon, PlusCircleIcon, WrenchIcon } from "lucide-react";
+import {
+  InfoIcon,
+  LayoutListIcon,
+  PencilIcon,
+  PlusCircleIcon,
+  WrenchIcon,
+} from "lucide-react";
 import Link from "next/link";
 
 const AdminBrands = async ({
@@ -27,9 +32,16 @@ const AdminBrands = async ({
   return (
     <div>
       <div className="flex w-full items-center justify-between">
-        <h1 className="text-2xl font-bold">Brands</h1>
+        <div className="flex flex-col">
+          <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+          <h1 className="itatic text-muted-foreground text-sm font-medium">
+            All your brands at one place!
+          </h1>
+        </div>
         <Button variant={"link"} asChild className="p-0">
-          <Link href={"/products-list"}>Show All Products</Link>
+          <Link href={"/products-list"} className="">
+            <LayoutListIcon className="size-4" /> All Products
+          </Link>
         </Button>
       </div>
       <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -48,8 +60,14 @@ const AdminBrands = async ({
           return (
             <Card key={brand.id} className="gap-2 p-4 shadow-md">
               <CardHeader className="flex w-full items-center justify-between p-0 text-xl font-bold">
-                <CardTitle className="px- text-primary text-xl font-semibold">
-                  {brand.brandName}
+                <CardTitle className="px- text-primary text-xl font-semibold underline">
+                  <Link
+                    href={`/brands/${brand.id}`}
+                    className="flex items-center gap-1"
+                  >
+                    {brand.brandName}{" "}
+                    <InfoIcon className="size-5 text-amber-600" />
+                  </Link>
                 </CardTitle>
                 <div className="flex items-center justify-center gap-1">
                   <div
@@ -158,8 +176,7 @@ const AdminBrands = async ({
                   )}
                 </div>
 
-                <div className="grid grid-cols-2 items-center justify-between gap-4 w-full">
-                  <AboutBrandButton brandId={brand?.id} brandName={""} />
+                <div className="flex w-full items-center justify-between gap-4">
                   {brand?.status === "draft" && (
                     <PublishBrandButton brandId={brand.id} newStatus="live" />
                   )}

@@ -93,19 +93,20 @@ async function changeFieldInProducts() {
 
     // Example condition: only update if status === "for-sale"
     // Replace with your real condition logic
-    console.log(`Current brandName for doc ${doc.id}: ${data?.brandName}`);
 
-    const shouldUpdate = data?.brandId === "ask";
+    const shouldUpdate = data?.brandId === "accurub" && (data?.partCategory === "V-Rod" || data?.partCategory === "Torque Rod") && data?.partNumber === "Assembly" && data?.gst === 28;
 
-    console.log(`Checking doc ${doc.id}, shouldUpdate: ${shouldUpdate}`);
+    console.log(
+      `Part Number ${data?.partNumber} shouldUpdate: ${shouldUpdate}`,
+    );
 
     if (shouldUpdate) {
       // Example update: set featured flag and normalize partNumber
-      const updates: FirebaseFirestore.UpdateData<{ [field: string]: any }> = {
-        brandId: "ask-fras-le",
-      };
+      // const updates: FirebaseFirestore.UpdateData<{ [field: string]: any }> = {
+      //   gst: 18,
+      // };
 
-      batch.update(doc.ref, updates);
+      // batch.update(doc.ref, updates);
       updatedCount++;
       ops++;
 
@@ -172,7 +173,14 @@ export async function moveProducts() {
   const db = sourceDb as FirebaseFirestore.Firestore; // ensure admin initialized
   const srcCol = db.collection("archive").doc("products").collection("items"); // Archive/products/items
   const dstCol = db.collection("products");
-  const productIdsToMove = ["M-904-I", "M-905-I", "M-907-I","MH-906","MH-908","MH-910"]; // Example IDs to move
+  const productIdsToMove = [
+    "M-904-I",
+    "M-905-I",
+    "M-907-I",
+    "MH-906",
+    "MH-908",
+    "MH-910",
+  ]; // Example IDs to move
   const qSnap = await srcCol.where("id", "in", productIdsToMove).get();
 
   const MAX = 450; // stay under 500 ops per batch

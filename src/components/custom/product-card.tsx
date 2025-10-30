@@ -3,7 +3,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { PencilIcon } from "lucide-react";
+import { PencilIcon, TagIcon } from "lucide-react";
 import { formatINR } from "@/lib/utils";
 import { Product, ProductSize } from "@/types/product";
 import ProductImage from "./product-image";
@@ -149,8 +149,9 @@ export default function ProductCard({
         )}
       </CardContent>
       <CardFooter className="grid grid-cols-[3fr_1fr] items-end justify-center gap-4">
-        <div className="flex w-full flex-col items-start justify-start md:flex-row md:justify-between">
+        <div className="bg-primary/10 flex md:w-full flex-col items-start justify-start md:flex-row md:items-center md:justify-between rounded-sm px-4 md:px-8 w-fit p-1">
           <div className="text-primary flex items-center gap-2 text-lg font-semibold">
+            <TagIcon className="size-4"/>
             <span className="text-foreground text-base font-normal">
               Price :
             </span>
