@@ -63,15 +63,23 @@ export default function ProductList({
             },
           ]
         : []),
-      ...(searchParamsValues.status
+      ...(Array.isArray(searchParamsValues.status)
         ? [
             {
               field: "status",
               op: "in" as const,
-              value: [searchParamsValues.status],
+              value: searchParamsValues.status,
             },
           ]
-        : []),
+        : searchParamsValues.status
+          ? [
+              {
+                field: "status",
+                op: "in" as const,
+                value: [searchParamsValues.status],
+              },
+            ]
+          : []),
       ...(Array.isArray(searchParamsValues.category)
         ? [
             {
@@ -128,14 +136,14 @@ export default function ProductList({
   const totalPages = Math.max(Math.ceil(totalItems / PAGE_SIZE), 1);
 
   if (loading || !hasLoadedOnce) {
-  return (
-    <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col gap-4 px-4 py-6">
-      {[...Array(6)].map((_, i) => (
-        <ProductCardSkeleton key={i} />
-      ))}
-    </div>
-  );
-}
+    return (
+      <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col gap-4 px-4 py-6">
+        {[...Array(6)].map((_, i) => (
+          <ProductCardSkeleton key={i} />
+        ))}
+      </div>
+    );
+  }
 
   if (!loading && hasLoadedOnce && data.length === 0) {
     return (

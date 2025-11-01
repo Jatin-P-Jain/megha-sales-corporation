@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { PlusCircleIcon } from "lucide-react";
 import SearchButtonWrapper from "./search-button-wrapper";
+import SearchPartNumber from "@/components/custom/search-part-number";
+import ActionButtonsWrapper from "./action-buttons-wrapper";
 
 export default async function ProductsList({
   searchParams,
@@ -48,7 +50,7 @@ export default async function ProductsList({
     }
   } else if (!isAdmin) productsFilters.push("for-sale");
 
-  const categoriesPromise = getAllCategories();
+  const categoriesPromise = getAllCategories(brandId);
 
   const breadcrumbs = [
     {
@@ -99,18 +101,7 @@ export default async function ProductsList({
       </div>
       <div className="fixed inset-x-0 bottom-7 z-30 mx-auto flex w-full max-w-screen-lg justify-end px-6">
         {isAdmin ? (
-          <Button
-            className="ring-muted w-fit min-w-0 p-5 shadow-2xl ring-6"
-            asChild
-          >
-            <Link
-              href={`/admin-dashboard/new-product?${newSearchParams}`}
-              className="min-w-0"
-            >
-              <PlusCircleIcon className="size-6" />
-              Add New Product
-            </Link>
-          </Button>
+          <ActionButtonsWrapper newSearchParams={newSearchParams} />
         ) : (
           <SearchButtonWrapper />
         )}

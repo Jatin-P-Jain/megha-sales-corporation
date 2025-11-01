@@ -8,27 +8,20 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from "@/components/ui/popover";
-import {
-  Command,
-  CommandInput,
-  CommandEmpty,
-  CommandGroup,
-  CommandItem,
-} from "@/components/ui/command";
+import { Command, CommandGroup, CommandItem } from "@/components/ui/command";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ChevronDown, CircleXIcon, Loader2Icon } from "lucide-react";
+import { ChevronDown, Loader2Icon } from "lucide-react";
 import clsx from "clsx";
+import { PRODUCT_STATUS } from "@/data/product-status";
 import { Badge } from "../ui/badge";
 
-type CategorySelectProps = {
-  categories: string[];
+type StatusSelectProps = {
   handleFiltersApplied?: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export default function CategoryMultiSelect({
-  categories,
+export default function StatusSelect({
   handleFiltersApplied,
-}: CategorySelectProps) {
+}: StatusSelectProps) {
   const router = useRouter();
   const params = useSearchParams();
   const [isPending, startTransition] = useTransition();
@@ -36,17 +29,18 @@ export default function CategoryMultiSelect({
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   // read selected
-  const selected = params.getAll("category");
+  const selected = params.getAll("status");
 
   // toggle handler
-  function toggle(cat: string) {
-    setPendingKey(cat);
+  function toggle(status: string) {
+    setPendingKey(status);
     const qp = new URLSearchParams(Array.from(params.entries()));
-    qp.delete("category");
-    const next = selected.includes(cat)
-      ? selected.filter((c) => c !== cat)
-      : [...selected, cat];
-    next.forEach((c) => qp.append("category", c));
+    qp.delete("status");
+    const next = selected.includes(status)
+      ? selected.filter((s) => s !== status)
+      : [...selected, status];
+    next.forEach((s) => qp.append("status", s));
+
     if (next.length > 0 && handleFiltersApplied) {
       handleFiltersApplied(true);
     } else {
@@ -64,11 +58,15 @@ export default function CategoryMultiSelect({
     if (!isPending) setPendingKey(null);
   }, [isPending]);
 
+  const valueToLabel = Object.fromEntries(
+    PRODUCT_STATUS.map((o) => [o.value, o.label] as const),
+  );
+
   return (
     <Popover>
       <div
         className={clsx(
-          "flex items-center justify-start rounded-md border-1 border-dashed ",
+          "flex items-center justify-start rounded-md border-1 border-dashed " ,
           selected.length > 0 && "pr-2",
         )}
       >
@@ -76,27 +74,25 @@ export default function CategoryMultiSelect({
           <Button
             variant="ghost"
             className={clsx(
-              "min-w-0 items-center justify-between gap-1 rounded-none hover:bg-transparent shrink-0",
+              "min-w-0 items-center justify-between gap-1 rounded-none hover:bg-transparent",
               selected.length > 0 && "border-r-1",
             )}
             ref={triggerRef}
           >
             {/* truncate here */}
-            <span className={clsx("", selected.length == 0 && "")}>
-              Category
-            </span>
+            <span className={clsx("", selected.length == 0 && "")}>Status</span>
             {isPending && pendingKey !== null && (
               <Loader2Icon className="h-4 w-4 animate-spin" />
             )}
             <ChevronDown className="" />
           </Button>
         </PopoverTrigger>
-        <div className="no-scrollbar flex overflow-auto">
+        <div className="no-scrollbar flex overflow-x-auto">
           {selected.length > 0 &&
             selected.map((s,i) => {
               return (
                 <Badge key={i} className="bg-primary-foreground text-primary border-primary ml-2 flex h-fit border-1 py-1 text-[8px] md:text-xs">
-                  {s}
+                  {valueToLabel[s] ?? s}
                 </Badge>
               );
             })}
@@ -117,19 +113,17 @@ export default function CategoryMultiSelect({
       >
         <Command>
           {/* full-width input */}
-          <CommandInput className="w-full" placeholder="Search categories..." />
-          <CommandEmpty>No categories found.</CommandEmpty>
           <CommandGroup className="max-h-35 overflow-auto">
-            {categories.map((cat) => {
-              const isSel = selected.includes(cat);
-              const thisPending = pendingKey === cat && isPending;
+            {PRODUCT_STATUS.map(({ label, value }) => {
+              const isSel = selected.includes(value);
+              const thisPending = pendingKey === value && isPending;
               return (
                 <CommandItem
-                  key={cat}
-                  onSelect={() => toggle(cat)}
+                  key={value}
+                  onSelect={() => toggle(value)}
                   className="flex items-center justify-between"
                 >
-                  <span>{cat}</span>
+                  <span>{label}</span>
                   {thisPending ? (
                     <Loader2Icon className="h-4 w-4 animate-spin" />
                   ) : (

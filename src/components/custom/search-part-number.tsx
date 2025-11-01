@@ -78,7 +78,7 @@ export default function SearchPartNumber({
       <DialogTrigger asChild>
         <Button
           variant={variant}
-          className={clsx(buttonClassName, "h-full w-full shadow-lg")}
+          className={clsx(buttonClassName, " w-full shadow-lg")}
         >
           <SearchIcon /> {showText && <> Search Product</>}
         </Button>

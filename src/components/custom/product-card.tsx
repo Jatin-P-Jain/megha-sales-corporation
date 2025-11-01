@@ -221,6 +221,7 @@ export default function ProductCard({
                           : ""
                 } py-1font-semibold flex w-full items-center justify-center gap-1 rounded-t-lg border-1 px-1 pt-1 text-xs font-semibold`}
               >
+                <span className="text-xs font-normal text-muted-foreground">Status : </span>
                 {product.status === "draft"
                   ? "DRAFT"
                   : product.status === "for-sale"

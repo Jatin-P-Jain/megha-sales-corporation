@@ -13,13 +13,17 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 
-export default function MoreFilters() {
+export default function MoreFilters({
+  showText = true,
+}: {
+  showText?: boolean;
+}) {
   return (
     <Dialog>
       {/* 1) This wraps your button and makes it the trigger */}
       <DialogTrigger asChild>
-        <Button variant="outline" className="h-full w-full">
-          <FunnelPlusIcon />
+        <Button variant="outline" className="text-muted-foreground">
+          <FunnelPlusIcon /> {showText && "More Filters"}
         </Button>
       </DialogTrigger>
 
