@@ -38,7 +38,7 @@ const ResponsiveProductFilters: React.FC<{
                 <span className="text-muted-foreground w-full text-xs">
                   Filters :
                 </span>
-                <div className="min-w-0 shrink-0">
+                <div className="w-fit max-w-[100%] min-w-0 shrink-0">
                   <StatusSelect
                     handleFiltersApplied={setStatusFiltersApplied}
                   />
@@ -63,58 +63,38 @@ const ResponsiveProductFilters: React.FC<{
         (isAdmin ? (
           <div
             className={clsx(
-              "flex w-full items-center justify-between gap-2 overflow-hidden pb-4",
+              "pb-4 inline-grid w-fit max-w-full grid-cols-[max-content_fit-content(40ch)_fit-content(40ch)_max-content] items-center gap-2",
+              (statusFiltersApplied || categoryFiltersApplied) &&
+                "grid-cols-[max-content_fit-content(40ch)_fit-content(40ch)_max-content_max-content]",
             )}
           >
-            <div className="flex items-center justify-start gap-2">
-              <div className="text-muted-foreground text-xs shrink-0 flex-wrap">
-                Quick Filters :
-              </div>
-              <div
-                className={clsx(
-                  "min-w-0 shrink-0",
-                  statusFiltersApplied &&
-                    categoryFiltersApplied &&
-                    "max-w-[25%]",
-                  statusFiltersApplied &&
-                    !categoryFiltersApplied &&
-                    "",
-                )}
-              >
-                <StatusSelect handleFiltersApplied={setStatusFiltersApplied} />
-              </div>
-              <div
-                className={clsx(
-                  "min-w-0 shrink-0",
-                  statusFiltersApplied &&
-                    categoryFiltersApplied &&
-                    "max-w-[25%]",
-                  !statusFiltersApplied &&
-                    categoryFiltersApplied &&
-                    "max-w-[50%]",
-                )}
-              >
-                <CategoryFilter
-                  categories={categories}
-                  handleFiltersApplied={setCategoryFiltersApplied}
-                />
-              </div>
-              {(statusFiltersApplied || categoryFiltersApplied) && (
-                <Button
-                  variant={"secondary"}
-                  size={"icon"}
-                  className=""
-                  onClick={() => {
-                    setCategoryFiltersApplied(false);
-                    setStatusFiltersApplied(false);
-                    router.push(`/products-list?brandId=${brandId}&page=1`);
-                  }}
-                >
-                  <XCircle />
-                </Button>
-              )}
-              <MoreFilters />
+            <div className="text-muted-foreground shrink-0 text-xs">
+              Quick Filters :
             </div>
+            <div className={clsx("w-fit max-w-[100%] min-w-0 shrink-0")}>
+              <StatusSelect handleFiltersApplied={setStatusFiltersApplied} />
+            </div>
+            <div className={clsx("w-fit max-w-[100%] min-w-0 shrink-0")}>
+              <CategoryFilter
+                categories={categories}
+                handleFiltersApplied={setCategoryFiltersApplied}
+              />
+            </div>
+            {(statusFiltersApplied || categoryFiltersApplied) && (
+              <Button
+                variant={"secondary"}
+                size={"icon"}
+                className=""
+                onClick={() => {
+                  setCategoryFiltersApplied(false);
+                  setStatusFiltersApplied(false);
+                  router.push(`/products-list?brandId=${brandId}&page=1`);
+                }}
+              >
+                <XCircle />
+              </Button>
+            )}
+            <MoreFilters />
           </div>
         ) : (
           <div className="flex flex-col gap-3 pb-2">
