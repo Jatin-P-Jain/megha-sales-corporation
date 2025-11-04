@@ -82,7 +82,7 @@ export default function CategoryMultiSelect({
             ref={triggerRef}
           >
             {/* truncate here */}
-            <span className={clsx("", selected.length == 0 && "")}>
+            <span className={clsx("text-xs md:text-sm", selected.length == 0 && "")}>
               Category
             </span>
             {isPending && pendingKey !== null && (

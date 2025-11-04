@@ -9,7 +9,7 @@ import CartOverview from "./cart-overview";
 import SearchPartNumber from "./search-part-number";
 import StatusSelect from "./status-filter";
 import { Button } from "../ui/button";
-import { XCircle } from "lucide-react";
+import { ArrowDown, XCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const ResponsiveProductFilters: React.FC<{
@@ -50,10 +50,21 @@ const ResponsiveProductFilters: React.FC<{
           </div>
         ) : (
           <>
-            <div className="flex flex-col gap-1 pb-4">
-              <div className="grid grid-cols-[8fr_1fr] gap-4">
-                <CategoryFilter categories={categories} />
-                <MoreFilters />
+            <div className="flex flex-col gap-1 pb-2">
+              <div className="grid w-full grid-cols-[fit-content(3ch)_fit-content(30ch)_max-content_fit-content(5ch)] items-center gap-2">
+                <span className="text-muted-foreground text-xs text-wrap">
+                  Filter by :
+                </span>
+                <div className="w-fit max-w-[100%] min-w-0 shrink-0">
+                  <CategoryFilter categories={categories} />
+                </div>
+                <MoreFilters showText={false} />
+                <div className="flex w-full flex-col items-center justify-center rounded-md border-1 px-2 text-xs shadow-sm text-nowrap">
+                  Sort by :{" "}
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold">⬆️ A - Z</span>
+                  </div>
+                </div>
               </div>
               {isUser ? <CartOverview isUser /> : <></>}
             </div>
@@ -63,7 +74,7 @@ const ResponsiveProductFilters: React.FC<{
         (isAdmin ? (
           <div
             className={clsx(
-              "pb-4 inline-grid w-fit max-w-full grid-cols-[max-content_fit-content(40ch)_fit-content(40ch)_max-content] items-center gap-2",
+              "inline-grid w-fit max-w-full grid-cols-[max-content_fit-content(40ch)_fit-content(40ch)_max-content] items-center gap-2 pb-4",
               (statusFiltersApplied || categoryFiltersApplied) &&
                 "grid-cols-[max-content_fit-content(40ch)_fit-content(40ch)_max-content_max-content]",
             )}
@@ -97,13 +108,20 @@ const ResponsiveProductFilters: React.FC<{
             <MoreFilters />
           </div>
         ) : (
-          <div className="flex flex-col gap-3 pb-2">
-            <div className="grid grid-cols-[8fr_3fr_1fr] gap-4">
-              <div className="w-full">
-                <SearchPartNumber buttonClassName="text-primary font-semibold" />
+          <div className="flex flex-col gap-2 pb-2">
+            <div className="grid w-full grid-cols-[minmax(min-content,1fr)_max-content_fit-content(40ch)_max-content_max-content] items-center justify-start gap-4">
+              <div className="flex w-full max-w-full min-w-0 flex-grow">
+                <SearchPartNumber buttonClassName="text-primary font-medium w-full" />
               </div>
-              <CategoryFilter categories={categories} />
+              <span className="text-muted-foreground text-xs">Filter by :</span>
+              <div className="w-fit max-w-[100%] min-w-0 shrink-0">
+                <CategoryFilter categories={categories} />
+              </div>
               <MoreFilters />
+              <div className="flex items-center justify-center text-sm">
+                Sort by : <span className="ml-2 font-semibold">⬆️ A - Z</span>
+                <ArrowDown className="size-3" />
+              </div>
             </div>
             {isUser ? <CartOverview isUser /> : <></>}
           </div>
