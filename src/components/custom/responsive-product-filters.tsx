@@ -11,6 +11,7 @@ import StatusSelect from "./status-filter";
 import { Button } from "../ui/button";
 import { ArrowDown, XCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { Separator } from "../ui/separator";
 
 const ResponsiveProductFilters: React.FC<{
   isAdmin: boolean;
@@ -43,7 +44,11 @@ const ResponsiveProductFilters: React.FC<{
                     handleFiltersApplied={setStatusFiltersApplied}
                   />
                 </div>
-                <MoreFilters showText={false} />
+
+                <div className="flex gap-4 justify-center items-center h-full">
+                <Separator orientation="vertical" className="bg-muted h-full"/>
+                <MoreFilters showText={false}/>
+              </div>
               </div>
               <SearchPartNumber buttonClassName="text-primary font-semibold" />
             </div>
@@ -58,8 +63,14 @@ const ResponsiveProductFilters: React.FC<{
                 <div className="w-fit max-w-[100%] min-w-0 shrink-0">
                   <CategoryFilter categories={categories} />
                 </div>
-                <MoreFilters showText={false} />
-                <div className="flex w-full flex-col items-center justify-center rounded-md border-1 px-2 text-xs shadow-sm text-nowrap">
+                <div className="flex h-full items-center justify-center gap-2">
+                  <Separator
+                    orientation="vertical"
+                    className="bg-muted h-full"
+                  />
+                  <MoreFilters showText={false} />
+                </div>
+                <div className="flex w-full flex-col items-center justify-center rounded-md border-1 px-2 text-xs text-nowrap shadow-sm">
                   Sort by :{" "}
                   <div className="flex items-center justify-between">
                     <span className="font-semibold">⬆️ A - Z</span>
@@ -105,7 +116,10 @@ const ResponsiveProductFilters: React.FC<{
                 <XCircle />
               </Button>
             )}
-            <MoreFilters />
+            <div className="flex h-full items-center justify-center gap-4">
+              <Separator orientation="vertical" className="bg-muted h-full" />
+              <MoreFilters />
+            </div>
           </div>
         ) : (
           <div className="flex flex-col gap-2 pb-2">
@@ -117,7 +131,10 @@ const ResponsiveProductFilters: React.FC<{
               <div className="w-fit max-w-[100%] min-w-0 shrink-0">
                 <CategoryFilter categories={categories} />
               </div>
-              <MoreFilters />
+              <div className="flex h-full items-center justify-center gap-4">
+                <Separator orientation="vertical" className="bg-muted h-full" />
+                <MoreFilters />
+              </div>
               <div className="flex items-center justify-center text-sm">
                 Sort by : <span className="ml-2 font-semibold">⬆️ A - Z</span>
                 <ArrowDown className="size-3" />
