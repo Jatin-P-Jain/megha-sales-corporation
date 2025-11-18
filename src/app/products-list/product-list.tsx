@@ -17,29 +17,106 @@ import clsx from "clsx";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-export default function ProductList({
-  isAdmin,
-  searchParamsValues,
-}: {
-  isAdmin: boolean;
-  searchParamsValues: {
-    brandId: string;
-    status: string;
-    category: string | string[];
-  };
-}) {
+export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-
   const previousFiltersRef = useRef<string>("");
 
+  const brandIdValue = searchParams.get("brandId") || "";
+  const statusValue = searchParams.get("status") || "";
+  const categoryValue = searchParams.get("category") || "";
+  const priceValue = searchParams.get("price") || undefined;
+  const discountValue = searchParams.get("discount") || undefined;
+  const [minPriceValue, maxPriceValue] = priceValue
+    ? priceValue.split(",")
+    : [undefined, undefined];
+  const [minDiscountValue, maxDiscountValue] = discountValue
+    ? discountValue.split(",")
+    : [undefined, undefined];
   // Only include actual filters (exclude page param)
   const filtersOnly = {
-    brandId: searchParamsValues.brandId,
-    status: searchParamsValues.status,
-    category: searchParamsValues.category,
+    brandId: brandIdValue,
+    status: statusValue,
+    category: categoryValue,
   };
   const filterKey = JSON.stringify(filtersOnly);
+
+  // Convert comma-separated strings to arrays
+  const brandIds = brandIdValue ? brandIdValue.split(",") : [];
+  const statuses = statusValue ? statusValue.split(",") : [];
+  const categories = categoryValue ? categoryValue.split(",") : [];
+  const minPrice = minPriceValue ? parseInt(minPriceValue) : undefined;
+  const maxPrice = maxPriceValue ? parseInt(maxPriceValue) : undefined;
+  const minDiscount = minDiscountValue ? parseInt(minDiscountValue) : undefined;
+  const maxDiscount = maxDiscountValue ? parseInt(maxDiscountValue) : undefined;
+
+  // Construct filters
+  const filters = [
+    ...(brandIds.length > 0
+      ? [
+          {
+            field: "brandId",
+            op: "in" as const,
+            value: brandIds,
+          },
+        ]
+      : []),
+    ...(statuses.length > 0
+      ? [
+          {
+            field: "status",
+            op: "in" as const,
+            value: statuses,
+          },
+        ]
+      : []),
+    ...(categories.length > 0
+      ? [
+          {
+            field: "partCategory",
+            op: "in" as const,
+            value: categories,
+          },
+        ]
+      : []),
+    // Add price range filters
+    ...(minPrice !== undefined
+      ? [
+          {
+            field: "price",
+            op: ">=" as const,
+            value: minPrice,
+          },
+        ]
+      : []),
+    ...(maxPrice !== undefined
+      ? [
+          {
+            field: "price",
+            op: "<=" as const,
+            value: maxPrice,
+          },
+        ]
+      : []),
+    ...(minDiscount !== undefined
+      ? [
+          {
+            field: "discount",
+            op: ">=" as const,
+            value: minDiscount,
+          },
+        ]
+      : []),
+    ...(maxDiscount !== undefined
+      ? [
+          {
+            field: "discount",
+            op: "<=" as const,
+            value: maxDiscount,
+          },
+        ]
+      : []),
+  ];
 
   const {
     data,
@@ -53,51 +130,7 @@ export default function ProductList({
     collectionPath: "products",
     pageSize: PAGE_SIZE,
     orderByField: "updated",
-    filters: [
-      ...(searchParamsValues.brandId
-        ? [
-            {
-              field: "brandId",
-              op: "==" as const,
-              value: searchParamsValues.brandId,
-            },
-          ]
-        : []),
-      ...(Array.isArray(searchParamsValues.status)
-        ? [
-            {
-              field: "status",
-              op: "in" as const,
-              value: searchParamsValues.status,
-            },
-          ]
-        : searchParamsValues.status
-          ? [
-              {
-                field: "status",
-                op: "in" as const,
-                value: [searchParamsValues.status],
-              },
-            ]
-          : []),
-      ...(Array.isArray(searchParamsValues.category)
-        ? [
-            {
-              field: "partCategory",
-              op: "in" as const,
-              value: searchParamsValues.category,
-            },
-          ]
-        : searchParamsValues.category
-          ? [
-              {
-                field: "partCategory",
-                op: "in" as const,
-                value: [searchParamsValues.category],
-              },
-            ]
-          : []),
-    ],
+    filters: filters,
   });
 
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);

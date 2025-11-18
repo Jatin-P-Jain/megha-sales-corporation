@@ -234,3 +234,7 @@ export function getBaseUrl(): string {
   // For client-side
   return window.location.origin;
 }
+
+export function INR(value: number) {
+  return `₹${value.toLocaleString("en-IN")}`;
+}

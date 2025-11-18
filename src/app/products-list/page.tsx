@@ -3,12 +3,8 @@ import { auth } from "@/firebase/server";
 import ProductList from "./product-list";
 import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
 import { ProductStatus } from "@/types/product";
-import { getAllCategories } from "@/data/categories";
 import ResponsiveProductFiltersServer from "./responsive-product-filters.server";
 import { unslugify } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { PlusCircleIcon } from "lucide-react";
 import SearchButtonWrapper from "./search-button-wrapper";
 import SearchPartNumber from "@/components/custom/search-part-number";
 import ActionButtonsWrapper from "./action-buttons-wrapper";
@@ -30,13 +26,29 @@ export default async function ProductsList({
   const isUser = verifiedToken ? true : false;
 
   const searchParamsValues = await searchParams;
-  const brandId = searchParamsValues?.brandId ?? "";
-  const brandName = unslugify(brandId);
-  const statusParam = searchParamsValues.status ?? "";
+  const brandFilterValue = searchParamsValues?.brandId ?? "";
+
+  // Split and filter empty strings
+  const brandIds = brandFilterValue.split(",").filter((v) => v);
+
+  let brandName: string;
+  let brandId: string;
+
+  if (brandIds.length === 0) {
+    brandName = "All";
+    brandId = "";
+  } else if (brandIds.length === 1) {
+    brandName = unslugify(brandIds[0]);
+    brandId = brandIds[0];
+  } else {
+    brandName = "Filtered";
+    brandId = brandFilterValue;
+  }
+  const statusParam = searchParamsValues.status ?? "*";
 
   const newSearchParams = new URLSearchParams();
-  if (brandId) {
-    newSearchParams.set("brandId", brandId);
+  if (brandFilterValue) {
+    newSearchParams.set("brandId", brandFilterValue);
   }
 
   const productsFilters: ProductStatus[] = [];
@@ -50,21 +62,19 @@ export default async function ProductsList({
     }
   } else if (!isAdmin) productsFilters.push("for-sale");
 
-  const categoriesPromise = getAllCategories(brandId);
-
   const breadcrumbs = [
     {
       href: isAdmin ? "/admin-dashboard/brands" : "/",
       label: isAdmin ? "All Brands" : "Home",
     },
-    ...(brandId
-      ? [
+    ...(brandName == "Filtered" || brandName == "All"
+      ? []
+      : [
           {
             href: `/brands/${brandId}`,
             label: brandName ?? brandId,
           },
-        ]
-      : []),
+        ]),
     {
       label: "Product Listings",
     },
@@ -73,7 +83,7 @@ export default async function ProductsList({
   return (
     <div className="mx-auto flex max-w-screen-lg flex-col gap-4">
       <div
-        className={`fixed inset-x-0 top-0 z-30 mx-auto flex w-full max-w-screen-lg flex-col items-end justify-end rounded-lg bg-white px-4 shadow-md ${!isAdmin ? " h-60 pt-60 md:pt-67" : " h-55 pt-0"} ${!isUser && "!h-53 !pt-0"}`}
+        className={`fixed inset-x-0 top-0 z-30 mx-auto flex w-full max-w-screen-lg flex-col items-end justify-end rounded-lg bg-white px-4 shadow-md ${!isAdmin ? "h-60 pt-60 md:pt-67" : "h-55 pt-0"} ${!isUser && "!h-53 !pt-0"}`}
       >
         <div className="mx-auto flex w-full max-w-screen-lg flex-col pt-8 md:pt-6">
           <EllipsisBreadCrumbs items={breadcrumbs} />
@@ -86,17 +96,15 @@ export default async function ProductsList({
           <ResponsiveProductFiltersServer
             isAdmin={isAdmin}
             isUser={isUser}
-            categoriesPromise={categoriesPromise}
             brandId={brandId}
           />
         </div>
       </div>
       <div
-        className={`flex-1 overflow-y-auto px-4 ${!isAdmin ? "pt-43 md:pt-52" : "pt-40"} ${!isUser && "!pt-38"} pb-20`}
+        className={`flex-1 overflow-auto px-4 ${!isAdmin ? "pt-43 md:pt-52" : "pt-40"} ${!isUser && "!pt-38"} pb-20`}
       >
         <ProductList
           isAdmin={isAdmin}
-          searchParamsValues={searchParamsValues}
         />
       </div>
       <div className="fixed inset-x-0 bottom-7 z-30 mx-auto flex w-full max-w-screen-lg justify-end px-6">

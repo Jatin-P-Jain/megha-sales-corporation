@@ -19,7 +19,11 @@ import { Product } from "@/types/product";
 type UsePaginatedFirestoreOptions = {
   collectionPath: string;
   pageSize?: number;
-  filters?: { field: string; op: "==" | "in"; value: string | string[] }[];
+  filters?: {
+    field: string;
+    op: "==" | "in" | ">=" | "<=";
+    value: string | string[] | number;
+  }[];
   orderByField?: string;
 };
 

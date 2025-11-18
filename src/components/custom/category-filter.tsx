@@ -16,18 +16,16 @@ import {
   CommandItem,
 } from "@/components/ui/command";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ChevronDown, CircleXIcon, Loader2Icon } from "lucide-react";
+import { ChevronDown, Loader2Icon } from "lucide-react";
 import clsx from "clsx";
 import { Badge } from "../ui/badge";
 
 type CategorySelectProps = {
   categories: string[];
-  handleFiltersApplied?: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export default function CategoryMultiSelect({
   categories,
-  handleFiltersApplied,
 }: CategorySelectProps) {
   const router = useRouter();
   const params = useSearchParams();
@@ -36,26 +34,24 @@ export default function CategoryMultiSelect({
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   // read selected
-  const selected = params.getAll("category");
-
+  const selected = params.get("category") || "";
+  const currentSelections = selected.split(",").filter((c) => c);
   // toggle handler
   function toggle(cat: string) {
     setPendingKey(cat);
     const qp = new URLSearchParams(Array.from(params.entries()));
+    const next = currentSelections.includes(cat)
+      ? currentSelections.filter((c) => c !== cat)
+      : [...currentSelections, cat];
+
     qp.delete("category");
-    const next = selected.includes(cat)
-      ? selected.filter((c) => c !== cat)
-      : [...selected, cat];
-    next.forEach((c) => qp.append("category", c));
-    if (next.length > 0 && handleFiltersApplied) {
-      handleFiltersApplied(true);
-    } else {
-      handleFiltersApplied && handleFiltersApplied(false);
+    if (next.length > 0) {
+      qp.set("category", next.join(","));
     }
     qp.set("page", "1");
 
     startTransition(() => {
-      router.push(`/products-list?${qp}`, { scroll: false });
+      router.push(`/products-list?${qp.toString()}`, { scroll: false });
     });
   }
 
@@ -68,7 +64,7 @@ export default function CategoryMultiSelect({
     <Popover>
       <div
         className={clsx(
-          "flex items-center justify-start rounded-md border-1 border-dashed ",
+          "flex items-center justify-start rounded-md border-1 border-dashed",
           selected.length > 0 && "pr-2",
         )}
       >
@@ -76,13 +72,15 @@ export default function CategoryMultiSelect({
           <Button
             variant="ghost"
             className={clsx(
-              "min-w-0 items-center justify-between gap-1 rounded-none hover:bg-transparent shrink-0",
+              "min-w-0 shrink-0 items-center justify-between gap-1 rounded-none hover:bg-transparent",
               selected.length > 0 && "border-r-1",
             )}
             ref={triggerRef}
           >
             {/* truncate here */}
-            <span className={clsx("text-xs md:text-sm", selected.length == 0 && "")}>
+            <span
+              className={clsx("text-xs md:text-sm", selected.length == 0 && "")}
+            >
               Category
             </span>
             {isPending && pendingKey !== null && (
@@ -92,10 +90,13 @@ export default function CategoryMultiSelect({
           </Button>
         </PopoverTrigger>
         <div className="no-scrollbar flex overflow-auto">
-          {selected.length > 0 &&
-            selected.map((s,i) => {
+          {currentSelections.length > 0 &&
+            currentSelections.map((s, i) => {
               return (
-                <Badge key={i} className="bg-primary-foreground text-primary border-primary ml-2 flex h-fit border-1 py-1 text-[8px] md:text-xs">
+                <Badge
+                  key={i}
+                  className="bg-primary-foreground text-primary border-primary ml-2 flex h-fit border-1 py-1 text-[8px] md:text-xs"
+                >
                   {s}
                 </Badge>
               );
@@ -120,7 +121,7 @@ export default function CategoryMultiSelect({
           <CommandInput className="w-full" placeholder="Search categories..." />
           <CommandEmpty>No categories found.</CommandEmpty>
           <CommandGroup className="max-h-35 overflow-auto">
-            {categories.map((cat) => {
+            {categories?.map((cat) => {
               const isSel = selected.includes(cat);
               const thisPending = pendingKey === cat && isPending;
               return (

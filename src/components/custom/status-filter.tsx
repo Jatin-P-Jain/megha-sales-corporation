@@ -15,13 +15,7 @@ import clsx from "clsx";
 import { PRODUCT_STATUS } from "@/data/product-status";
 import { Badge } from "../ui/badge";
 
-type StatusSelectProps = {
-  handleFiltersApplied?: React.Dispatch<React.SetStateAction<boolean>>;
-};
-
-export default function StatusSelect({
-  handleFiltersApplied,
-}: StatusSelectProps) {
+export default function StatusSelect() {
   const router = useRouter();
   const params = useSearchParams();
   const [isPending, startTransition] = useTransition();
@@ -29,23 +23,22 @@ export default function StatusSelect({
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   // read selected
-  const selected = params.getAll("status");
+  const selected = params.get("status") || "";
+  const currentSelections = selected.split(",").filter((s) => s);
 
   // toggle handler
   function toggle(status: string) {
     setPendingKey(status);
     const qp = new URLSearchParams(Array.from(params.entries()));
-    qp.delete("status");
-    const next = selected.includes(status)
-      ? selected.filter((s) => s !== status)
-      : [...selected, status];
-    next.forEach((s) => qp.append("status", s));
+    const next = currentSelections.includes(status)
+      ? currentSelections.filter((s) => s !== status)
+      : [...currentSelections, status];
 
-    if (next.length > 0 && handleFiltersApplied) {
-      handleFiltersApplied(true);
-    } else {
-      handleFiltersApplied && handleFiltersApplied(false);
+    qp.delete("status");
+    if (next.length > 0) {
+      qp.set("status", next.join(","));
     }
+
     qp.set("page", "1");
 
     startTransition(() => {
@@ -66,7 +59,7 @@ export default function StatusSelect({
     <Popover>
       <div
         className={clsx(
-          "flex items-center justify-start rounded-md border-1 border-dashed " ,
+          "flex items-center justify-start rounded-md border-1 border-dashed",
           selected.length > 0 && "pr-2",
         )}
       >
@@ -88,10 +81,13 @@ export default function StatusSelect({
           </Button>
         </PopoverTrigger>
         <div className="no-scrollbar flex overflow-x-auto">
-          {selected.length > 0 &&
-            selected.map((s,i) => {
+          {currentSelections.length > 0 &&
+            currentSelections.map((s, i) => {
               return (
-                <Badge key={i} className="bg-primary-foreground text-primary border-primary ml-2 flex h-fit border-1 py-1 text-[8px] md:text-xs">
+                <Badge
+                  key={i}
+                  className="bg-primary-foreground text-primary border-primary ml-2 flex h-fit border-1 py-1 text-[8px] md:text-xs"
+                >
                   {valueToLabel[s] ?? s}
                 </Badge>
               );
