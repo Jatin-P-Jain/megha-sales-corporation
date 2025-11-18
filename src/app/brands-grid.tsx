@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 type Props = {
-  brandsPromise: Promise<{ data: Brand[]; totalPages: number }>;
+  brandsPromise: Promise<{ data: Brand[]; totalPages?: number }>;
 };
 
 export default function BrandsGrid({ brandsPromise }: Props) {
