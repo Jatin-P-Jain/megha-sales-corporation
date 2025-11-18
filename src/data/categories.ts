@@ -13,10 +13,10 @@ export async function getAllCategories(brandId?: string): Promise<string[]> {
   } else {
     // Fetch categories from all brands
     const brandsSnapshot = await fireStore.collection("brands").get();
-    brandsSnapshot.forEach((doc: any) => {
+    brandsSnapshot.forEach((doc) => {
       const data = doc.data();
       if (Array.isArray(data?.partCategories)) {
-        data.partCategories.forEach((c: string) => set.add(c));
+        data.partCategories.forEach((c) => set.add(c));
       }
     });
   }

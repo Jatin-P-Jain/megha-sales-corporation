@@ -6,7 +6,6 @@ import { ProductStatus } from "@/types/product";
 import ResponsiveProductFiltersServer from "./responsive-product-filters.server";
 import { unslugify } from "@/lib/utils";
 import SearchButtonWrapper from "./search-button-wrapper";
-import SearchPartNumber from "@/components/custom/search-part-number";
 import ActionButtonsWrapper from "./action-buttons-wrapper";
 
 export default async function ProductsList({

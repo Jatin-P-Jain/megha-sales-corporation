@@ -182,8 +182,9 @@ export default function MoreFilters({
         <div className="flex h-full flex-col gap-2 overflow-auto">
           {brandOptions.length === 0 && otherOptions.length === 0 && (
             <div className="text-xs">
-              No {filterType.label} with name "
-              <span className="font-semibold">{searchTerm}"</span>
+              No {filterType.label} with name &quot;
+              <span className="font-semibold">{searchTerm}</span>
+              &quot; found.
             </div>
           )}
           {filterType.key === "brand"
