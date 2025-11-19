@@ -55,7 +55,7 @@ export function SortBySelect({
 }) {
   return (
     <div className="flex w-full items-center justify-center gap-2 text-xs">
-      <span className="whitespace-nowrap">Sort by:</span>
+      <span className="whitespace-nowrap hidden md:block">Sort by:</span>
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger className="text-xs font-semibold">
           <SelectValue />

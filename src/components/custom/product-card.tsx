@@ -149,61 +149,59 @@ export default function ProductCard({
         )}
       </CardContent>
       <CardFooter className="grid grid-cols-[3fr_1fr] items-end justify-center gap-4">
-        <div className="bg-primary/10 flex md:w-full flex-col items-start justify-start md:flex-row md:items-center md:justify-between rounded-sm px-4 md:px-8 w-fit p-1">
-          <div className="text-primary flex items-center gap-2 text-lg font-semibold">
-            <TagIcon className="size-4"/>
-            <span className="text-foreground text-base font-normal">
-              Price :
-            </span>
-            {product?.hasSizes &&
-            !product.samePriceForAllSizes &&
-            !selectedSize ? (
-              <span className="text-muted-foreground text-[10px] font-normal italic">
-                Select a size
-              </span>
-            ) : (
-              <span className="font-semibold">
-                {formatINR(selectedSize?.price ?? product?.price)}
-              </span>
-            )}
+        <div className="bg-primary/10 flex w-fit items-center justify-between gap-2 rounded-sm p-1 px-2 text-xs md:w-full md:flex-row md:items-center md:justify-between md:px-8">
+          <TagIcon className="text-primary size-4" />
+          <div className="flex flex-col">
+            <div className="text-primary flex items-center gap-2 font-semibold">
+              <span className="text-foreground font-normal">Price :</span>
+              {product?.hasSizes &&
+              !product.samePriceForAllSizes &&
+              !selectedSize ? (
+                <span className="text-muted-foreground text-[8px] font-normal italic">
+                  Select a size
+                </span>
+              ) : (
+                <span className="font-semibold">
+                  {formatINR(selectedSize?.price ?? product?.price)}
+                </span>
+              )}
+            </div>
+            <div className="text-primary flex items-center gap-2 font-semibold">
+              <span className="text-foreground font-normal">Discount :</span>
+              {product?.hasSizes &&
+              !product.samePriceForAllSizes &&
+              !selectedSize ? (
+                <span className="text-muted-foreground text-[8px] font-normal italic">
+                  Select a size
+                </span>
+              ) : (
+                <span className="font-semibold">
+                  {selectedSize?.discount ?? product?.discount}%
+                </span>
+              )}
+            </div>
+            <div className="text-primary flex items-center gap-2 font-semibold">
+              <span className="text-foreground font-normal">GST :</span>
+              {product?.hasSizes &&
+              !product.samePriceForAllSizes &&
+              !selectedSize ? (
+                <span className="text-muted-foreground text-[8px] font-normal italic">
+                  Select a size
+                </span>
+              ) : (
+                <span className="font-semibold">
+                  {selectedSize?.gst ?? product?.gst}%
+                </span>
+              )}
+            </div>
+            {product.hasSizes &&
+              !product?.samePriceForAllSizes &&
+              !selectedSize && (
+                <span className="text-muted-foreground italic text-[8px]">
+                  Pricing varies by size.
+                </span>
+              )}
           </div>
-          <div className="text-primary flex items-center gap-2 text-sm font-semibold">
-            <span className="text-foreground text-sm font-normal">
-              Discount :
-            </span>
-            {product?.hasSizes &&
-            !product.samePriceForAllSizes &&
-            !selectedSize ? (
-              <span className="text-muted-foreground text-[10px] font-normal italic">
-                Select a size
-              </span>
-            ) : (
-              <span className="font-semibold">
-                {selectedSize?.discount ?? product?.discount}%
-              </span>
-            )}
-          </div>
-          <div className="text-primary flex items-center gap-2 text-sm font-semibold">
-            <span className="text-foreground font-normal">GST :</span>
-            {product?.hasSizes &&
-            !product.samePriceForAllSizes &&
-            !selectedSize ? (
-              <span className="text-muted-foreground text-[10px] font-normal italic">
-                Select a size
-              </span>
-            ) : (
-              <span className="font-semibold">
-                {selectedSize?.gst ?? product?.gst}%
-              </span>
-            )}
-          </div>
-          {product.hasSizes &&
-            !product?.samePriceForAllSizes &&
-            !selectedSize && (
-              <span className="text-muted-foreground text-[10px] italic">
-                Pricing varies by size.
-              </span>
-            )}
         </div>
         <div className="flex w-full items-center justify-end gap-2">
           {isAdmin ? (
@@ -221,7 +219,9 @@ export default function ProductCard({
                           : ""
                 } py-1font-semibold flex w-full items-center justify-center gap-1 rounded-t-lg border-1 px-1 pt-1 text-xs font-semibold`}
               >
-                <span className="text-xs font-normal text-muted-foreground">Status : </span>
+                <span className="text-muted-foreground text-xs font-normal">
+                  Status :{" "}
+                </span>
                 {product.status === "draft"
                   ? "DRAFT"
                   : product.status === "for-sale"
