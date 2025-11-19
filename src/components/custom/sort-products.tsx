@@ -3,7 +3,6 @@ import {
   SelectTrigger,
   SelectContent,
   SelectItem,
-  SelectValue,
 } from "@/components/ui/select";
 import useIsMobile from "@/hooks/useIsMobile";
 import clsx from "clsx";
