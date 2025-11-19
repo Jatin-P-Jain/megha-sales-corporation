@@ -25,6 +25,7 @@ type UsePaginatedFirestoreOptions = {
     value: string | string[] | number;
   }[];
   orderByField?: string;
+  orderDirection?: "asc" | "desc";
 };
 
 export const usePaginatedFirestore = ({
@@ -32,6 +33,7 @@ export const usePaginatedFirestore = ({
   pageSize = 10,
   filters = [],
   orderByField = "updated",
+  orderDirection = "desc",
 }: UsePaginatedFirestoreOptions) => {
   const [data, setData] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
@@ -50,7 +52,7 @@ export const usePaginatedFirestore = ({
 
     try {
       let q = query(collection(firestore, collectionPath));
-      q = query(q, orderBy(orderByField, "desc"));
+      q = query(q, orderBy(orderByField, orderDirection));
 
       filters.forEach((f) => {
         q = query(q, where(f.field, f.op, f.value));
@@ -93,7 +95,7 @@ export const usePaginatedFirestore = ({
   };
 
   useEffect(() => {
-    const queryKey = JSON.stringify({ collectionPath, filters, orderByField });
+    const queryKey = JSON.stringify({ collectionPath, filters, orderByField, orderDirection });
     if (prevQueryKey.current !== queryKey) {
       prevQueryKey.current = queryKey;
       resetPagination();
@@ -116,7 +118,7 @@ export const usePaginatedFirestore = ({
       fetchCount();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [collectionPath, JSON.stringify(filters), orderByField]);
+  }, [collectionPath, JSON.stringify(filters), orderByField, orderDirection]);
 
   return {
     data,

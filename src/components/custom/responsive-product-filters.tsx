@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import clsx from "clsx";
 import useIsMobile from "@/hooks/useIsMobile";
 import CategoryFilter from "./category-filter";
@@ -8,10 +8,11 @@ import CartOverview from "./cart-overview";
 import SearchPartNumber from "./search-part-number";
 import StatusSelect from "./status-filter";
 import { Button } from "../ui/button";
-import { ArrowDown, XCircle } from "lucide-react";
+import { XCircle } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Separator } from "../ui/separator";
 import { FilterOptions } from "@/types/filterOptions";
+import { SortBySelect } from "./sort-products";
 
 const ResponsiveProductFilters: React.FC<{
   isAdmin: boolean;
@@ -43,6 +44,7 @@ const ResponsiveProductFilters: React.FC<{
   const vehicleCompanyValue = searchParams.get("vehicleCompany") || "";
   const priceValue = searchParams.get("price") || "";
   const discountValue = searchParams.get("discount") || "";
+  const sortValue = searchParams.get("sort") || "";
 
   const isFilterApplied =
     brandIdValue.split(",").filter((b) => b).length > 1 ||
@@ -53,6 +55,13 @@ const ResponsiveProductFilters: React.FC<{
     discountValue
       ? true
       : false;
+
+  const params = new URLSearchParams(Array.from(searchParams.entries()));
+  const applySorting = (newValue: string) => {
+    params.set("sort", newValue);
+    params.set("page", "1");
+    router.push(`/products-list?${params.toString()}`);
+  };
 
   return (
     <>
@@ -90,12 +99,7 @@ const ResponsiveProductFilters: React.FC<{
                     <XCircle />
                   </Button>
                 )}
-                <div className="flex w-full flex-col items-center justify-center rounded-md border-1 px-2 text-xs text-nowrap shadow-sm">
-                  Sort by :{" "}
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold">⬆️ A - Z</span>
-                  </div>
-                </div>
+                <SortBySelect value={sortValue} onChange={applySorting} />
               </div>
               <SearchPartNumber buttonClassName="text-primary font-semibold" />
             </div>
@@ -132,12 +136,7 @@ const ResponsiveProductFilters: React.FC<{
                     <XCircle />
                   </Button>
                 )}
-                <div className="flex w-full flex-col items-center justify-center rounded-md border-1 px-2 text-xs text-nowrap shadow-sm">
-                  Sort by :{" "}
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold">⬆️ A - Z</span>
-                  </div>
-                </div>
+                <SortBySelect value={sortValue} onChange={applySorting} />
               </div>
               {isUser ? <CartOverview isUser /> : <></>}
             </div>
@@ -215,10 +214,7 @@ const ResponsiveProductFilters: React.FC<{
                   <XCircle /> Clear
                 </Button>
               )}
-              <div className="flex items-center justify-center text-sm">
-                Sort by : <span className="ml-2 font-semibold">⬆️ A - Z</span>
-                <ArrowDown className="size-3" />
-              </div>
+              <SortBySelect value={sortValue} onChange={applySorting} />
             </div>
             {isUser ? <CartOverview isUser /> : <></>}
           </div>

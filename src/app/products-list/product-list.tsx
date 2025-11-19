@@ -27,13 +27,20 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
   const categoryValue = searchParams.get("category") || "";
   const priceValue = searchParams.get("price") || undefined;
   const discountValue = searchParams.get("discount") || undefined;
+  const sortValue = searchParams.get("sort") || undefined;
+
   const [minPriceValue, maxPriceValue] = priceValue
     ? priceValue.split(",")
     : [undefined, undefined];
   const [minDiscountValue, maxDiscountValue] = discountValue
     ? discountValue.split(",")
     : [undefined, undefined];
-  // Only include actual filters (exclude page param)
+
+  const [orderBy, orderDir] = (() => {
+    if (!sortValue) return ["updated", "desc"] as [string, "asc" | "desc"];
+    const [field, dir] = sortValue.split("-");
+    return [field, dir] as [string, "asc" | "desc"];
+  })();
   const filtersOnly = {
     brandId: brandIdValue,
     status: statusValue,
@@ -129,7 +136,8 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
   } = usePaginatedFirestore({
     collectionPath: "products",
     pageSize: PAGE_SIZE,
-    orderByField: "updated",
+    orderByField: orderBy,
+    orderDirection: orderDir,
     filters: filters,
   });
 
