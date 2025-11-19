@@ -5,7 +5,9 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowDown, ArrowUp } from "lucide-react";
+import useIsMobile from "@/hooks/useIsMobile";
+import clsx from "clsx";
+import { ArrowDown, ArrowUp, ArrowUpDownIcon } from "lucide-react";
 // Put your sort options here
 const SORT_OPTIONS = [
   {
@@ -53,12 +55,43 @@ export function SortBySelect({
   value: string;
   onChange: (newValue: string) => void;
 }) {
+  const isMobile = useIsMobile();
+  const selectedOption = SORT_OPTIONS.find((opt) => opt.value === value);
   return (
     <div className="flex w-full items-center justify-center gap-2 text-xs">
-      <span className="whitespace-nowrap hidden md:block">Sort by:</span>
       <Select value={value} onValueChange={onChange}>
-        <SelectTrigger className="text-xs font-semibold">
-          <SelectValue />
+        <SelectTrigger
+          className={clsx(
+            "text-xs font-semibold",
+            selectedOption && "border-primary border-2",
+          )}
+        >
+          {!selectedOption ? (
+            <span className="text-muted-foreground flex items-center gap-1">
+              <ArrowUpDownIcon className="size-4" /> Sort By
+            </span>
+          ) : (
+            <div className="flex w-full gap-2">
+              <span className="text-muted-foreground flex items-center gap-1">
+                <ArrowUpDownIcon className="text-primary size-4" />{" "}
+                {!isMobile && ":"}
+              </span>
+
+              {!isMobile && (
+                <span className="flex items-center gap-1 font-semibold">
+                  {selectedOption.label.split(": ")[0]}:
+                  <span className="flex items-center gap-1 font-semibold">
+                    {selectedOption.label.split(": ")[1]}
+                    {selectedOption.dir === "asc" ? (
+                      <ArrowUp className="h-4 w-4" />
+                    ) : (
+                      <ArrowDown className="h-4 w-4" />
+                    )}
+                  </span>
+                </span>
+              )}
+            </div>
+          )}
         </SelectTrigger>
         <SelectContent align="end">
           {SORT_OPTIONS.map((opt) => (

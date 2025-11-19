@@ -149,15 +149,15 @@ export default function ProductCard({
         )}
       </CardContent>
       <CardFooter className="grid grid-cols-[3fr_1fr] items-end justify-center gap-4">
-        <div className="bg-primary/10 flex w-fit items-center justify-between gap-2 rounded-sm p-1 px-2 text-xs md:w-full md:flex-row md:items-center md:justify-between md:px-8">
+        <div className="bg-primary/10 flex w-fit items-center justify-between gap-2 rounded-sm p-1 px-2 text-xs md:w-full md:flex-row md:items-center md:justify-between md:px-8 md:text-base">
           <TagIcon className="text-primary size-4" />
-          <div className="flex flex-col">
-            <div className="text-primary flex items-center gap-2 font-semibold">
+          <div className="flex w-full flex-col justify-between md:flex-row items-center">
+            <div className="text-primary flex gap-2 font-semibold justify-between items-center w-full md:w-fit">
               <span className="text-foreground font-normal">Price :</span>
               {product?.hasSizes &&
               !product.samePriceForAllSizes &&
               !selectedSize ? (
-                <span className="text-muted-foreground text-[8px] font-normal italic">
+                <span className="text-muted-foreground text-[8px] font-normal italic md:text-xs">
                   Select a size
                 </span>
               ) : (
@@ -166,12 +166,12 @@ export default function ProductCard({
                 </span>
               )}
             </div>
-            <div className="text-primary flex items-center gap-2 font-semibold">
+            <div className="text-primary flex items-center gap-2 font-semibold md:text-sm justify-between w-full md:w-fit">
               <span className="text-foreground font-normal">Discount :</span>
               {product?.hasSizes &&
               !product.samePriceForAllSizes &&
               !selectedSize ? (
-                <span className="text-muted-foreground text-[8px] font-normal italic">
+                <span className="text-muted-foreground text-[8px] font-normal italic md:text-xs">
                   Select a size
                 </span>
               ) : (
@@ -180,12 +180,12 @@ export default function ProductCard({
                 </span>
               )}
             </div>
-            <div className="text-primary flex items-center gap-2 font-semibold">
+            <div className="text-primary flex items-center gap-2 font-semibold md:text-sm justify-between w-full md:w-fit">
               <span className="text-foreground font-normal">GST :</span>
               {product?.hasSizes &&
               !product.samePriceForAllSizes &&
               !selectedSize ? (
-                <span className="text-muted-foreground text-[8px] font-normal italic">
+                <span className="text-muted-foreground text-[8px] font-normal italic md:text-xs">
                   Select a size
                 </span>
               ) : (
@@ -197,7 +197,7 @@ export default function ProductCard({
             {product.hasSizes &&
               !product?.samePriceForAllSizes &&
               !selectedSize && (
-                <span className="text-muted-foreground italic text-[8px]">
+                <span className="text-muted-foreground text-[8px] italic md:text-xs">
                   Pricing varies by size.
                 </span>
               )}

@@ -60,6 +60,22 @@ export default function MoreFilters({
   // selections.brand, selections.vehicleCompany, ...
   const [selections, setSelections] = useState<Record<string, string[]>>({});
 
+  useEffect(() => {
+    if (!open) {
+      const newSelections: Record<string, string[]> = {};
+      FILTERS.forEach(({ key, applyKey }) => {
+        const paramValue = searchParams.get(applyKey);
+        if (paramValue) {
+          newSelections[key] = paramValue.split(",");
+        } else {
+          newSelections[key] = [];
+        }
+      });
+      setSelections(newSelections);
+      setSelected(FILTERS[0]);
+    }
+  }, [open, searchParams || ""]);
+
   // When URL params change, update initial checkboxes
   useEffect(() => {
     const newSelections: Record<string, string[]> = {};
@@ -244,7 +260,7 @@ export default function MoreFilters({
           variant="outline"
           className={clsx(
             "text-muted-foreground relative",
-            filterActive && "border-primary text-primary",
+            filterActive && "border-primary text-primary border-2",
           )}
         >
           <FunnelPlusIcon /> {showText && "Filters"}{" "}
