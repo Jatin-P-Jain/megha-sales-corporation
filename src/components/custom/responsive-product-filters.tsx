@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import clsx from "clsx";
 import useIsMobile from "@/hooks/useIsMobile";
 import CategoryFilter from "./category-filter";

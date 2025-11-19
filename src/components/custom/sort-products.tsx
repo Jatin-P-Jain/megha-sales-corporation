@@ -5,11 +5,7 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
-import { Arrow } from "@radix-ui/react-dropdown-menu";
 import { ArrowDown, ArrowUp } from "lucide-react";
-
-import { useSearchParams } from "next/navigation";
-
 // Put your sort options here
 const SORT_OPTIONS = [
   {
