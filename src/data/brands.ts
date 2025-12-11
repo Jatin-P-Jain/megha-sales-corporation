@@ -10,7 +10,9 @@ type BrandOptions = {
 };
 type GetBrandsOptions = {
   filters?: {
-    status: BrandStatus[] | null;
+    status?: BrandStatus[] | null;
+    getAll?: boolean;
+    brandId?: string;
   };
   pagination?: {
     pageSize?: number;
@@ -58,7 +60,7 @@ export const getBrands = async (options?: GetBrandsOptions) => {
   const page = options?.pagination?.page || 1;
   const pageSize = options?.pagination?.pageSize || 10;
 
-  const { status } = options?.filters || {};
+  const { status, brandId } = options?.filters || {};
 
   let brandsQuery = fireStore
     .collection("brands")
@@ -66,15 +68,26 @@ export const getBrands = async (options?: GetBrandsOptions) => {
   if (status && status.length > 0) {
     brandsQuery = brandsQuery.where("status", "in", status);
   }
+  if (brandId) {
+    brandsQuery = brandsQuery.where("id", "==", brandId);
+  }
 
-  const brandTotal = await getTotalPages(brandsQuery, pageSize);
-  const { totalPages: brandTotalPages, totalItems } = brandTotal;
+  let brandsSnapshot;
+  let brandTotalPages;
+  let totalItems;
 
-  const brandsSnapshot = await brandsQuery
-    .limit(pageSize)
-    .offset((page - 1) * pageSize)
-    .get();
+  if (pageSize) {
+    const brandTotal = await getTotalPages(brandsQuery, pageSize);
+    brandTotalPages = brandTotal?.totalPages;
+    totalItems = brandTotal?.totalItems;
 
+    brandsSnapshot = await brandsQuery
+      .limit(pageSize)
+      .offset((page - 1) * pageSize)
+      .get();
+  } else {
+    brandsSnapshot = await brandsQuery.get();
+  }
   const brands = brandsSnapshot.docs.map((doc) => {
     const rawBrand = doc.data();
     const brand: Brand = {
@@ -94,8 +107,11 @@ export const getBrands = async (options?: GetBrandsOptions) => {
     };
     return brand;
   });
-
-  return { data: brands, totalPages: brandTotalPages, totalItems: totalItems };
+  return {
+    data: brands,
+    totalPages: brandTotalPages,
+    totalItems: totalItems,
+  };
 };
 export const getBrandById = async (brandId: string) => {
   const brandSnapshot = await fireStore.collection("brands").doc(brandId).get();

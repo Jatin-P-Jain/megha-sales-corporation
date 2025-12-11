@@ -94,7 +94,8 @@ async function changeFieldInProducts() {
     // Example condition: only update if status === "for-sale"
     // Replace with your real condition logic
 
-    const shouldUpdate = data?.brandId === "accurub" && (data?.partCategory === "V-Rod" || data?.partCategory === "Torque Rod") && data?.partNumber === "Assembly" && data?.gst === 28;
+    // const shouldUpdate = data?.brandId === "accurub" && (data?.partCategory === "V-Rod" || data?.partCategory === "Torque Rod") && data?.partNumber === "Assembly" && data?.gst === 28;
+    const shouldUpdate = data?.brandId === "accurub";
 
     console.log(
       `Part Number ${data?.partNumber} shouldUpdate: ${shouldUpdate}`,
@@ -102,11 +103,11 @@ async function changeFieldInProducts() {
 
     if (shouldUpdate) {
       // Example update: set featured flag and normalize partNumber
-      // const updates: FirebaseFirestore.UpdateData<{ [field: string]: any }> = {
-      //   gst: 18,
-      // };
-
-      // batch.update(doc.ref, updates);
+      const updates: FirebaseFirestore.UpdateData<{ [field: string]: any }> = {
+        image: "",
+      };
+      batch.update(doc.ref, updates);
+      
       updatedCount++;
       ops++;
 
@@ -221,6 +222,6 @@ export async function moveProducts() {
 
 // Usage
 // replaceHyphensInProducts().catch(console.error);
-// changeFieldInProducts().catch(console.error);
+changeFieldInProducts().catch(console.error);
 // archiveProducts().catch(console.error);
 // moveProducts().catch(console.error);

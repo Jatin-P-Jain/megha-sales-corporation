@@ -6,13 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import clsx from "clsx";
 import { CircleXIcon, Loader2Icon } from "lucide-react";
 import { useTransition, useState, useEffect } from "react";
-
-export const STATUSES: { label: string; value: string }[] = [
-  { label: "For Sale", value: "for-sale" },
-  { label: "Draft", value: "draft" },
-  { label: "Out of Stock", value: "out-of-stock" },
-  { label: "Discontinued", value: "discontinued" },
-];
+import { PRODUCT_STATUS } from "@/data/product-status";
 
 export default function StatusChips() {
   const router = useRouter();
@@ -73,7 +67,7 @@ export default function StatusChips() {
       )}
     >
       <Card className="no-scrollbar flex flex-row items-center justify-start gap-1 overflow-x-auto border-0 p-0 shadow-none">
-        {STATUSES.map(({ label, value }) => {
+        {PRODUCT_STATUS.map(({ label, value }) => {
           const isSel = selected.includes(value);
           const isThisPending = isPending && pendingStatus === value;
           return (
