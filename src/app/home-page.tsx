@@ -12,8 +12,8 @@ const HomePage = ({
 }: {
   brandsPromise: Promise<{
     data: Brand[];
-    totalPages: number;
-    totalItems: number;
+    totalPages?: number;
+    totalItems?: number;
   }>;
 }) => {
   const auth = useAuth();
