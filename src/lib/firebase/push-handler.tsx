@@ -11,6 +11,11 @@ export const PushHandler = () => {
 
   useEffect(() => {
     const setup = async () => {
+      console.log("sw:", "serviceWorker" in navigator);
+      console.log("pushManager:", "PushManager" in window);
+      console.log("notifications:", "Notification" in window);
+      console.log("notification permission:", Notification.permission);
+      console.log("indexedDB:", "indexedDB" in window);
       const supported = await isSupported();
       if (!supported) {
         console.warn("🚫 Messaging not supported");
