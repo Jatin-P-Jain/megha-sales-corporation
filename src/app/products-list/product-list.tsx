@@ -25,6 +25,7 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
   const brandIdValue = searchParams.get("brandId") || "";
   const statusValue = searchParams.get("status") || "";
   const categoryValue = searchParams.get("category") || "";
+  const vehicleCompanyValue = searchParams.get("vehicleCompany") || "";
   const priceValue = searchParams.get("price") || undefined;
   const discountValue = searchParams.get("discount") || undefined;
   const sortValue = searchParams.get("sort") || undefined;
@@ -45,6 +46,7 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
     brandId: brandIdValue,
     status: statusValue,
     category: categoryValue,
+    vehicleCompany: vehicleCompanyValue,
   };
   const filterKey = JSON.stringify(filtersOnly);
 
@@ -52,6 +54,9 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
   const brandIds = brandIdValue ? brandIdValue.split(",") : [];
   const statuses = statusValue ? statusValue.split(",") : [];
   const categories = categoryValue ? categoryValue.split(",") : [];
+  const vehicleCompanies = vehicleCompanyValue
+    ? vehicleCompanyValue.split(",")
+    : [];
   const minPrice = minPriceValue ? parseInt(minPriceValue) : undefined;
   const maxPrice = maxPriceValue ? parseInt(maxPriceValue) : undefined;
   const minDiscount = minDiscountValue ? parseInt(minDiscountValue) : undefined;
@@ -83,6 +88,15 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
             field: "partCategory",
             op: "in" as const,
             value: categories,
+          },
+        ]
+      : []),
+    ...(vehicleCompanies.length > 0
+      ? [
+          {
+            field: "vehicleCompany",
+            op: "in" as const,
+            value: vehicleCompanies,
           },
         ]
       : []),
