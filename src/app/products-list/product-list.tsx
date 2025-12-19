@@ -148,7 +148,6 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
     currentPage,
     loadPage,
     totalItems,
-    resetPagination,
   } = usePaginatedFirestore({
     collectionPath: "products",
     pageSize: PAGE_SIZE,
@@ -175,17 +174,14 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
       const sp = new URLSearchParams(searchParams.toString());
       sp.set("page", "1");
       router.replace(`/products-list?${sp.toString()}`);
-
-      // Reset pagination state
-      resetPagination();
     }
-  }, [filterKey, resetPagination, router, searchParams]);
+  }, [filterKey, router, searchParams]);
 
   const handlePageChange = (page: number) => {
     const sp = new URLSearchParams(searchParams.toString());
     sp.set("page", `${page}`);
-    loadPage(page);
     router.replace(`/products-list?${sp.toString()}`);
+    loadPage(page);
   };
 
   const start = (currentPage - 1) * PAGE_SIZE + 1;
@@ -277,6 +273,7 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
                         isActive={isCurrent}
                         className={clsx(
                           isCurrent && "bg-primary font-bold text-white",
+                          "cursor-pointer",
                         )}
                       >
                         {i}

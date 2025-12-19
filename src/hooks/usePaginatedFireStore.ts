@@ -46,40 +46,50 @@ export const usePaginatedFirestore = ({
   ]);
   const prevQueryKey = useRef("");
 
-  const loadPage = async (page: number) => {
-    if (!hasMore && page > currentPage) return;
+  const loadPage = async (targetPage: number) => {
+    if (!hasMore && targetPage > currentPage) return;
     setLoading(true);
-
     try {
-      let q = query(collection(firestore, collectionPath));
-      q = query(q, orderBy(orderByField, orderDirection));
-
-      filters.forEach((f) => {
-        q = query(q, where(f.field, f.op, f.value));
-      });
-
-      const cursor = cursors.current[page - 1];
-      if (cursor) {
-        q = query(q, startAfter(cursor));
+      // Find nearest previous page with a cursor
+      let basePage = 1;
+      for (let i = targetPage - 1; i >= 1; i--) {
+        if (cursors.current[i]) {
+          basePage = i + 1; // we already have cursor for page i, so basePage is i+1
+          break;
+        }
       }
 
-      q = query(q, limit(pageSize));
-      const snapshot = await getDocs(q);
-      const docs = snapshot.docs.map(
-        (doc) => ({ id: doc.id, ...doc.data() }) as Product,
-      );
-      console.log("snapshot.docs.length -- ", snapshot.docs.length);
+      // If basePage is not targetPage, we need to step through pages to build cursors
+      for (let page = basePage; page <= targetPage; page++) {
+        let q = query(collection(firestore, collectionPath));
+        q = query(q, orderBy(orderByField, orderDirection));
+        filters.forEach((f) => {
+          q = query(q, where(f.field, f.op, f.value));
+        });
 
-      if (snapshot.docs.length < pageSize) {
-        setHasMore(false);
-      }
+        const cursor = cursors.current[page - 1];
+        console.log({ cursors: cursors.current });
 
-      if (!cursors.current[page]) {
+        if (cursor) {
+          q = query(q, startAfter(cursor));
+        }
+
+        q = query(q, limit(pageSize));
+        const snapshot = await getDocs(q);
+        const docs = snapshot.docs.map(
+          (doc) => ({ id: doc.id, ...doc.data() }) as Product,
+        );
+
+        // Save cursor for this page
         cursors.current[page] = snapshot.docs.at(-1) ?? null;
-      }
 
-      setData(docs);
-      setCurrentPage(page);
+        // When this is the final target page, update UI state
+        if (page === targetPage) {
+          setHasMore(snapshot.docs.length === pageSize);
+          setData(docs);
+          setCurrentPage(page);
+        }
+      }
     } catch (err) {
       console.error("Pagination fetch error:", err);
     } finally {
@@ -92,7 +102,6 @@ export const usePaginatedFirestore = ({
     setData([]);
     setCurrentPage(1);
     setHasMore(true);
-    loadPage(1);
   };
 
   useEffect(() => {
@@ -105,6 +114,7 @@ export const usePaginatedFirestore = ({
     if (prevQueryKey.current !== queryKey) {
       prevQueryKey.current = queryKey;
       resetPagination();
+      loadPage(1);
 
       // Fetch total item count
       const fetchCount = async () => {
