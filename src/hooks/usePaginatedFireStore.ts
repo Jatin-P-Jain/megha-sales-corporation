@@ -68,6 +68,7 @@ export const usePaginatedFirestore = ({
       const docs = snapshot.docs.map(
         (doc) => ({ id: doc.id, ...doc.data() }) as Product,
       );
+      console.log("snapshot.docs.length -- ", snapshot.docs.length);
 
       if (snapshot.docs.length < pageSize) {
         setHasMore(false);
@@ -95,7 +96,12 @@ export const usePaginatedFirestore = ({
   };
 
   useEffect(() => {
-    const queryKey = JSON.stringify({ collectionPath, filters, orderByField, orderDirection });
+    const queryKey = JSON.stringify({
+      collectionPath,
+      filters,
+      orderByField,
+      orderDirection,
+    });
     if (prevQueryKey.current !== queryKey) {
       prevQueryKey.current = queryKey;
       resetPagination();

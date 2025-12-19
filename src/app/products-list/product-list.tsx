@@ -182,8 +182,8 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
   const handlePageChange = (page: number) => {
     const sp = new URLSearchParams(searchParams.toString());
     sp.set("page", `${page}`);
-    router.replace(`/products-list?${sp.toString()}`);
     loadPage(page);
+    router.replace(`/products-list?${sp.toString()}`);
   };
 
   const start = (currentPage - 1) * PAGE_SIZE + 1;
