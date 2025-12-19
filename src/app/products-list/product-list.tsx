@@ -11,13 +11,15 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { usePaginatedFirestore } from "@/hooks/usePaginatedFireStore";
-import { PAGE_SIZE } from "@/lib/utils";
 import { Product } from "@/types/product";
 import clsx from "clsx";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
+  const PAGE_SIZE = process.env.NEXT_PUBLIC_PAGE_SIZE
+    ? parseInt(process.env.NEXT_PUBLIC_PAGE_SIZE)
+    : 10;
   const router = useRouter();
   const searchParams = useSearchParams();
   const previousFiltersRef = useRef<string>("");
@@ -146,7 +148,6 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
     currentPage,
     loadPage,
     totalItems,
-    resetPagination,
   } = usePaginatedFirestore({
     collectionPath: "products",
     pageSize: PAGE_SIZE,
@@ -173,11 +174,8 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
       const sp = new URLSearchParams(searchParams.toString());
       sp.set("page", "1");
       router.replace(`/products-list?${sp.toString()}`);
-
-      // Reset pagination state
-      resetPagination();
     }
-  }, [filterKey, resetPagination, router, searchParams]);
+  }, [filterKey, router, searchParams]);
 
   const handlePageChange = (page: number) => {
     const sp = new URLSearchParams(searchParams.toString());
@@ -275,6 +273,7 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
                         isActive={isCurrent}
                         className={clsx(
                           isCurrent && "bg-primary font-bold text-white",
+                          "cursor-pointer",
                         )}
                       >
                         {i}
