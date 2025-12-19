@@ -11,13 +11,15 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { usePaginatedFirestore } from "@/hooks/usePaginatedFireStore";
-import { PAGE_SIZE } from "@/lib/utils";
 import { Product } from "@/types/product";
 import clsx from "clsx";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
+  const PAGE_SIZE = process.env.NEXT_PUBLIC_PAGE_SIZE
+    ? parseInt(process.env.NEXT_PUBLIC_PAGE_SIZE)
+    : 10;
   const router = useRouter();
   const searchParams = useSearchParams();
   const previousFiltersRef = useRef<string>("");
