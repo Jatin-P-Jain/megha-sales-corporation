@@ -482,12 +482,81 @@ export async function createMap() {
     "1757593283151-u-cropped_1757593282052.jpg",
     "1757658697887-u-cropped_1757658693813.jpg",
   ];
+  const accurubFileNames = [
+    "1763783273253-u-cropped_1763783270545.jpg",
+    "1763794360911-u-cropped_1763794357287.jpg",
+    "1763795260319-u-cropped_1763795223305.jpg",
+    "1763795632527-u-cropped_1763795630686.jpg",
+    "1763796439956-u-cropped_1763796435835.jpg",
+    "1763796538425-u-cropped_1763796534902.jpg",
+    "1763797288660-u-cropped_1763797285641.jpg",
+    "1764061822872-u-cropped_1764061818105.jpg",
+    "1764065340029-u-cropped_1764065336429.jpg",
+    "1764065712691-u-cropped_1764065701476.jpg",
+    "1764065818933-u-cropped_1764065815909.jpg",
+    "1764065922011-u-cropped_1764065913576.jpg",
+    "1764066041307-u-cropped_1764066034170.jpg",
+    "1764066175009-u-cropped_1764066171719.jpg",
+    "1764066451797-u-cropped_1764066437163.jpg",
+    "1764066548211-u-cropped_1764066545182.jpg",
+    "1764066778027-u-cropped_1764066774526.jpg",
+    "1764066918914-u-cropped_1764066916296.jpg",
+    "1764067109494-u-cropped_1764067100396.jpg",
+    "1764067207532-u-cropped_1764067199831.jpg",
+    "1764074306283-u-cropped_1764074304329.jpg",
+    "1764074364862-u-cropped_1764074360209.jpg",
+    "1764074489194-u-cropped_1764074476705.jpg",
+    "1764144758415-u-cropped_1764144751473.jpg",
+    "1764322841181-u-cropped_1764322837192.jpg",
+    "1764322984750-u-cropped_1764322981370.jpg",
+    "1764324966361-u-cropped_1764324959094.jpg",
+    "1764325076371-u-cropped_1764325072621.jpg",
+    "1764325167573-u-cropped_1764325164699.jpg",
+    "1764327044855-u-cropped_1764327039139.jpg",
+    "1764327221997-u-cropped_1764327203891.jpg",
+    "1764327351005-u-cropped_1764327342518.jpg",
+    "1764327482242-u-cropped_1764327479524.jpg",
+    "1764397836216-u-cropped_1764397827347.jpg",
+    "1764398214066-u-cropped_1764398210015.jpg",
+    "1764398326217-u-cropped_1764398315296.jpg",
+    "1764398461953-u-cropped_1764398458987.jpg",
+    "1764398860706-u-cropped_1764398857312.jpg",
+    "1764398981012-u-cropped_1764398978097.jpg",
+    "1764399186391-u-cropped_1764399181184.jpg",
+    "1764399315620-u-cropped_1764399309966.jpg",
+    "1764399484438-u-cropped_1764399479329.jpg",
+    "1764399927028-u-cropped_1764399921186.jpg",
+    "1764400322812-u-cropped_1764400316871.jpg",
+    "1764400493020-u-cropped_1764400485838.jpg",
+    "1764400859049-u-cropped_1764400851100.jpg",
+    "1764402667485-u-cropped_1764402664577.jpg",
+    "1764403121261-u-cropped_1764403112056.jpg",
+    "1764415475157-u-cropped_1764415467339.jpg",
+    "1764416610342-u-cropped_1764416604987.jpg",
+    "1764416787519-u-cropped_1764416783732.jpg",
+    "1764417272524-u-cropped_1764417244029.jpg",
+    "1764417510579-u-cropped_1764417503921.jpg",
+    "1764417636100-u-cropped_1764417633431.jpg",
+    "1764418138540-u-cropped_1764418133395.jpg",
+    "1764418330918-u-cropped_1764418324421.jpg",
+    "1764419999107-u-cropped_1764419996004.jpg",
+    "1764420182552-u-cropped_1764420177413.jpg",
+    "1764420469536-u-cropped_1764420466139.jpg",
+    "1764420620885-u-cropped_1764420612642.jpg",
+    "1764420745714-u-cropped_1764420742975.jpg",
+    "1764582866594-u-cropped_1764582863334.jpg",
+    "1764582915673-u-cropped_1764582911947.jpg",
+    "1764582981514-u-cropped_1764582978340.jpg",
+    "1764583044974-u-cropped_1764583036960.jpg",
+    "1764583102350-u-cropped_1764583098867.jpg",
+    "1764583176542-u-cropped_1764583161476.jpg",
+  ];
 
   const productsCol = sourceDb.collection("products");
   const snapshot = await productsCol.get();
 
   // Create Set for O(1) filename lookups
-  const filenameSet = new Set(askFileNames);
+  const filenameSet = new Set(accurubFileNames);
 
   const fileProductMap: { filename: string; partNumber: string }[] = [];
 
@@ -511,7 +580,7 @@ export async function createMap() {
   }
 
   console.log(
-    `🎉 Found ${fileProductMap.length} matches out of ${askFileNames.length} files`,
+    `🎉 Found ${fileProductMap.length} matches out of ${accurubFileNames.length} files`,
   );
   console.log("Map:", fileProductMap);
 
@@ -1427,10 +1496,280 @@ async function changeFieldInProductsFromMap() {
       partNumber: "AFF/XL/YORK/12(OS-1)",
     },
   ];
+  const accurubMap = [
+    {
+      filename: "1764327351005-u-cropped_1764327342518.jpg",
+      partNumber: "120.1100.01",
+    },
+    {
+      filename: "1764327482242-u-cropped_1764327479524.jpg",
+      partNumber: "120.1100.02",
+    },
+    {
+      filename: "1764402667485-u-cropped_1764402664577.jpg",
+      partNumber: "120.1200.04",
+    },
+    {
+      filename: "1764400859049-u-cropped_1764400851100.jpg",
+      partNumber: "120.1200.08",
+    },
+    {
+      filename: "1764400493020-u-cropped_1764400485838.jpg",
+      partNumber: "120.1200.09",
+    },
+    {
+      filename: "1764400322812-u-cropped_1764400316871.jpg",
+      partNumber: "120.1200.10",
+    },
+    {
+      filename: "1764399186391-u-cropped_1764399181184.jpg",
+      partNumber: "120.1200.11",
+    },
+    {
+      filename: "1764399315620-u-cropped_1764399309966.jpg",
+      partNumber: "120.1200.12",
+    },
+    {
+      filename: "1764399484438-u-cropped_1764399479329.jpg",
+      partNumber: "120.1200.13",
+    },
+    {
+      filename: "1764399927028-u-cropped_1764399921186.jpg",
+      partNumber: "120.1200.14",
+    },
+    {
+      filename: "1764398981012-u-cropped_1764398978097.jpg",
+      partNumber: "120.1200.15",
+    },
+    {
+      filename: "1764398860706-u-cropped_1764398857312.jpg",
+      partNumber: "120.1200.16",
+    },
+    {
+      filename: "1764398461953-u-cropped_1764398458987.jpg",
+      partNumber: "120.1200.17",
+    },
+    {
+      filename: "1764398326217-u-cropped_1764398315296.jpg",
+      partNumber: "120.1200.60",
+    },
+    {
+      filename: "1764398214066-u-cropped_1764398210015.jpg",
+      partNumber: "120.1200.61",
+    },
+    {
+      filename: "1764397836216-u-cropped_1764397827347.jpg",
+      partNumber: "120.1200.62",
+    },
+    {
+      filename: "1764327221997-u-cropped_1764327203891.jpg",
+      partNumber: "120.1300.01",
+    },
+    {
+      filename: "1764327044855-u-cropped_1764327039139.jpg",
+      partNumber: "120.1400.01",
+    },
+    {
+      filename: "1764325076371-u-cropped_1764325072621.jpg",
+      partNumber: "120.1700.01",
+    },
+    {
+      filename: "1764325167573-u-cropped_1764325164699.jpg",
+      partNumber: "120.1700.02",
+    },
+    {
+      filename: "1764066548211-u-cropped_1764066545182.jpg",
+      partNumber: "120.1700.026",
+    },
+    {
+      filename: "1764324966361-u-cropped_1764324959094.jpg",
+      partNumber: "120.1700.03",
+    },
+    {
+      filename: "1764322984750-u-cropped_1764322981370.jpg",
+      partNumber: "120.1700.04",
+    },
+    {
+      filename: "1764066918914-u-cropped_1764066916296.jpg",
+      partNumber: "120.1700.06",
+    },
+    {
+      filename: "1764322841181-u-cropped_1764322837192.jpg",
+      partNumber: "120.1700.07",
+    },
+    {
+      filename: "1764144758415-u-cropped_1764144751473.jpg",
+      partNumber: "120.1700.09",
+    },
+    {
+      filename: "1764067207532-u-cropped_1764067199831.jpg",
+      partNumber: "120.1700.15",
+    },
+    {
+      filename: "1764067109494-u-cropped_1764067100396.jpg",
+      partNumber: "120.1700.16",
+    },
+    {
+      filename: "1764066778027-u-cropped_1764066774526.jpg",
+      partNumber: "120.1700.17",
+    },
+    {
+      filename: "1764066451797-u-cropped_1764066437163.jpg",
+      partNumber: "120.1700.27",
+    },
+    {
+      filename: "1763794360911-u-cropped_1763794357287.jpg",
+      partNumber: "120.207.02",
+    },
+    {
+      filename: "1763783273253-u-cropped_1763783270545.jpg",
+      partNumber: "120.207.03",
+    },
+    {
+      filename: "1764061822872-u-cropped_1764061818105.jpg",
+      partNumber: "120.207.05",
+    },
+    {
+      filename: "1764415475157-u-cropped_1764415467339.jpg",
+      partNumber: "120.207.145",
+    },
+    {
+      filename: "1764583176542-u-cropped_1764583161476.jpg",
+      partNumber: "120.207.32",
+    },
+    {
+      filename: "1764583102350-u-cropped_1764583098867.jpg",
+      partNumber: "120.207.33",
+    },
+    {
+      filename: "1764583044974-u-cropped_1764583036960.jpg",
+      partNumber: "120.207.34",
+    },
+    {
+      filename: "1764582981514-u-cropped_1764582978340.jpg",
+      partNumber: "120.207.41",
+    },
+    {
+      filename: "1764582915673-u-cropped_1764582911947.jpg",
+      partNumber: "120.207.42",
+    },
+    {
+      filename: "1764582866594-u-cropped_1764582863334.jpg",
+      partNumber: "120.207.44",
+    },
+    {
+      filename: "1764420745714-u-cropped_1764420742975.jpg",
+      partNumber: "120.207.45",
+    },
+    {
+      filename: "1764420620885-u-cropped_1764420612642.jpg",
+      partNumber: "120.207.46",
+    },
+    {
+      filename: "1764420469536-u-cropped_1764420466139.jpg",
+      partNumber: "120.207.50",
+    },
+    {
+      filename: "1764420182552-u-cropped_1764420177413.jpg",
+      partNumber: "120.207.51",
+    },
+    {
+      filename: "1764419999107-u-cropped_1764419996004.jpg",
+      partNumber: "120.207.52",
+    },
+    {
+      filename: "1764418330918-u-cropped_1764418324421.jpg",
+      partNumber: "120.207.54",
+    },
+    {
+      filename: "1764418138540-u-cropped_1764418133395.jpg",
+      partNumber: "120.207.55",
+    },
+    {
+      filename: "1764417636100-u-cropped_1764417633431.jpg",
+      partNumber: "120.207.56",
+    },
+    {
+      filename: "1764417510579-u-cropped_1764417503921.jpg",
+      partNumber: "120.207.57",
+    },
+    {
+      filename: "1764417272524-u-cropped_1764417244029.jpg",
+      partNumber: "120.207.60",
+    },
+    {
+      filename: "1764416787519-u-cropped_1764416783732.jpg",
+      partNumber: "120.207.61",
+    },
+    {
+      filename: "1763797288660-u-cropped_1763797285641.jpg",
+      partNumber: "120.2800.02",
+    },
+    {
+      filename: "1764066041307-u-cropped_1764066034170.jpg",
+      partNumber: "120.2800.03",
+    },
+    {
+      filename: "1764065922011-u-cropped_1764065913576.jpg",
+      partNumber: "120.301.09",
+    },
+    {
+      filename: "1764066175009-u-cropped_1764066171719.jpg",
+      partNumber: "120.400.01",
+    },
+    {
+      filename: "1764065340029-u-cropped_1764065336429.jpg",
+      partNumber: "120.400.02",
+    },
+    {
+      filename: "1764403121261-u-cropped_1764403112056.jpg",
+      partNumber: "120.400.04",
+    },
+    {
+      filename: "1764065712691-u-cropped_1764065701476.jpg",
+      partNumber: "120.400.05",
+    },
+    {
+      filename: "1764065818933-u-cropped_1764065815909.jpg",
+      partNumber: "120.400.06",
+    },
+    {
+      filename: "1763795260319-u-cropped_1763795223305.jpg",
+      partNumber: "120.400.08",
+    },
+    {
+      filename: "1764074364862-u-cropped_1764074360209.jpg",
+      partNumber: "120.700.02",
+    },
+    {
+      filename: "1764416610342-u-cropped_1764416604987.jpg",
+      partNumber: "120.7000.27",
+    },
+    {
+      filename: "1764074306283-u-cropped_1764074304329.jpg",
+      partNumber: "120.700.04",
+    },
+    {
+      filename: "1763796439956-u-cropped_1763796435835.jpg",
+      partNumber: "120.700.06",
+    },
+    {
+      filename: "1763796538425-u-cropped_1763796534902.jpg",
+      partNumber: "120.700.07",
+    },
+    {
+      filename: "1764074489194-u-cropped_1764074476705.jpg",
+      partNumber: "120.700.08",
+    },
+    {
+      filename: "1763795632527-u-cropped_1763795630686.jpg",
+      partNumber: "120.700.09",
+    },
+  ];
 
   // Build lookup: partNumber -> filename
   const productToFilename = new Map<string, string>();
-  for (const { filename, partNumber } of askMap) {
+  for (const { filename, partNumber } of accurubMap) {
     productToFilename.set(partNumber, filename);
   }
 
@@ -1441,7 +1780,7 @@ async function changeFieldInProductsFromMap() {
 
     // Only brandName + partNumber present in BrandMap
     const shouldUpdate =
-      brandId === "ask" &&
+      brandId === "accurub" &&
       typeof partNumber === "string" &&
       productToFilename.has(partNumber);
 
@@ -1450,7 +1789,7 @@ async function changeFieldInProductsFromMap() {
     if (!shouldUpdate) continue;
 
     const filename = productToFilename.get(partNumber)!;
-    const newPath = `products/ask/${partNumber}/${filename}`;
+    const newPath = `products/accurub/${partNumber}/${filename}`;
 
     const updates: FirebaseFirestore.UpdateData<{ [field: string]: any }> = {
       image: newPath,
@@ -1479,8 +1818,8 @@ async function changeFieldInProductsFromMap() {
 // Usage
 // renameBrandDoc().catch(console.error);
 // replaceHyphensInProducts().catch(console.error);
-changeFieldInProducts().catch(console.error);
+// changeFieldInProducts().catch(console.error);
 // archiveProducts().catch(console.error);
 // moveProducts().catch(console.error);
 // createMap().catch(console.error);
-// changeFieldInProductsFromMap().catch(console.error);
+changeFieldInProductsFromMap().catch(console.error);
