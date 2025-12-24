@@ -84,7 +84,7 @@ export default function SearchPartNumber({
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="h-fit w-full px-6 shadow-2xl sm:max-w-3xl md:max-w-2xl lg:max-w-4xl">
+      <DialogContent className="h-fit max-h-[75vh] w-full px-6 shadow-2xl sm:max-w-3xl md:max-w-2xl lg:max-w-4xl">
         <DialogHeader>
           <DialogTitle className="mt-2">Search product</DialogTitle>
           <DialogDescription className="text-xs md:text-sm">

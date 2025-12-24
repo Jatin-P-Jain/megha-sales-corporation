@@ -59,16 +59,6 @@ export default function EditProductForm({
       return;
     }
     const { image: newImage, ...rest } = data;
-
-    // const updateResponse = await updateProduct(
-    //   { ...rest, id, brandId, image },
-    //   token,
-    // );
-    // if (!!updateResponse?.error) {
-    //   toast.error("Error", { description: updateResponse.message });
-    //   setIsLoading(false);
-    //   return;
-    // }
     const storageTasks: (UploadTask | Promise<void>)[] = [];
 
     let logoPath = image; // default to whatever was there
@@ -82,7 +72,7 @@ export default function EditProductForm({
 
         if (newImage.file) {
           const filename = `${Date.now()}-u-${newImage.file.name}`;
-          const path = `products/${slugify(brandName)}/${filename}`;
+          const path = `products/${slugify(brandName)}/${id}/${filename}`;
           logoPath = path; // store the raw storage path
           const storageRef = ref(storage, path);
           const task = uploadBytesResumable(storageRef, newImage.file);

@@ -1,6 +1,56 @@
 // RUN:: npx tsx migrate-firestore-storage.ts
 
+import { log } from "console";
 import admin from "firebase-admin";
+
+import fs from "fs";
+
+// const raw = fs.readFileSync("paste.txt", "utf8");
+// export function slugifyPartNumber(partNumber: string) {
+//   return partNumber
+//     .trim()
+//     .toUpperCase()
+//     .replace(/[^\w\s-]/g, "") // remove punctuation
+//     .replace(/\s+/g, "-"); // spaces → hyphens
+// }
+
+// // 1) All lines trimmed
+// export const allLines = raw
+//   .split("\n")
+//   .map((l) => l.trim())
+//   .filter((l) => l.length > 0);
+
+// const filePathByKey = new Map<string, string>();
+
+// for (const line of allLines) {
+//   const [, partNumber] = line.split("/");
+//   if (!partNumber) continue;
+
+//   const normalized = partNumber.replace(/-/g, "");
+//   const slugified = slugifyPartNumber(partNumber);
+
+//   // direct partNumber
+//   if (!filePathByKey.has(partNumber)) {
+//     filePathByKey.set(partNumber, line);
+//   }
+//   // normalized (no hyphens)
+//   if (!filePathByKey.has(normalized)) {
+//     filePathByKey.set(normalized, line);
+//   }
+//   // slugified
+//   if (!filePathByKey.has(slugified)) {
+//     filePathByKey.set(slugified, line);
+//   }
+// }
+
+// 2) Unique partNumbers
+// export const ids = allLines.map((line) => {
+//   const [, id] = line.split("/");
+//   return id;
+// });
+
+// console.log("allLines length:", allLines.length);
+// console.log("partNumbers length:", ids.length);
 
 const TechnixMap = [
   {
@@ -903,6 +953,276 @@ const askMap = [
     partNumber: "AFF/XL/YORK/12(OS-1)",
   },
 ];
+const accurubMap = [
+  {
+    filename: "1764327351005-u-cropped_1764327342518.jpg",
+    partNumber: "120.1100.01",
+  },
+  {
+    filename: "1764327482242-u-cropped_1764327479524.jpg",
+    partNumber: "120.1100.02",
+  },
+  {
+    filename: "1764402667485-u-cropped_1764402664577.jpg",
+    partNumber: "120.1200.04",
+  },
+  {
+    filename: "1764400859049-u-cropped_1764400851100.jpg",
+    partNumber: "120.1200.08",
+  },
+  {
+    filename: "1764400493020-u-cropped_1764400485838.jpg",
+    partNumber: "120.1200.09",
+  },
+  {
+    filename: "1764400322812-u-cropped_1764400316871.jpg",
+    partNumber: "120.1200.10",
+  },
+  {
+    filename: "1764399186391-u-cropped_1764399181184.jpg",
+    partNumber: "120.1200.11",
+  },
+  {
+    filename: "1764399315620-u-cropped_1764399309966.jpg",
+    partNumber: "120.1200.12",
+  },
+  {
+    filename: "1764399484438-u-cropped_1764399479329.jpg",
+    partNumber: "120.1200.13",
+  },
+  {
+    filename: "1764399927028-u-cropped_1764399921186.jpg",
+    partNumber: "120.1200.14",
+  },
+  {
+    filename: "1764398981012-u-cropped_1764398978097.jpg",
+    partNumber: "120.1200.15",
+  },
+  {
+    filename: "1764398860706-u-cropped_1764398857312.jpg",
+    partNumber: "120.1200.16",
+  },
+  {
+    filename: "1764398461953-u-cropped_1764398458987.jpg",
+    partNumber: "120.1200.17",
+  },
+  {
+    filename: "1764398326217-u-cropped_1764398315296.jpg",
+    partNumber: "120.1200.60",
+  },
+  {
+    filename: "1764398214066-u-cropped_1764398210015.jpg",
+    partNumber: "120.1200.61",
+  },
+  {
+    filename: "1764397836216-u-cropped_1764397827347.jpg",
+    partNumber: "120.1200.62",
+  },
+  {
+    filename: "1764327221997-u-cropped_1764327203891.jpg",
+    partNumber: "120.1300.01",
+  },
+  {
+    filename: "1764327044855-u-cropped_1764327039139.jpg",
+    partNumber: "120.1400.01",
+  },
+  {
+    filename: "1764325076371-u-cropped_1764325072621.jpg",
+    partNumber: "120.1700.01",
+  },
+  {
+    filename: "1764325167573-u-cropped_1764325164699.jpg",
+    partNumber: "120.1700.02",
+  },
+  {
+    filename: "1764066548211-u-cropped_1764066545182.jpg",
+    partNumber: "120.1700.026",
+  },
+  {
+    filename: "1764324966361-u-cropped_1764324959094.jpg",
+    partNumber: "120.1700.03",
+  },
+  {
+    filename: "1764322984750-u-cropped_1764322981370.jpg",
+    partNumber: "120.1700.04",
+  },
+  {
+    filename: "1764066918914-u-cropped_1764066916296.jpg",
+    partNumber: "120.1700.06",
+  },
+  {
+    filename: "1764322841181-u-cropped_1764322837192.jpg",
+    partNumber: "120.1700.07",
+  },
+  {
+    filename: "1764144758415-u-cropped_1764144751473.jpg",
+    partNumber: "120.1700.09",
+  },
+  {
+    filename: "1764067207532-u-cropped_1764067199831.jpg",
+    partNumber: "120.1700.15",
+  },
+  {
+    filename: "1764067109494-u-cropped_1764067100396.jpg",
+    partNumber: "120.1700.16",
+  },
+  {
+    filename: "1764066778027-u-cropped_1764066774526.jpg",
+    partNumber: "120.1700.17",
+  },
+  {
+    filename: "1764066451797-u-cropped_1764066437163.jpg",
+    partNumber: "120.1700.27",
+  },
+  {
+    filename: "1763794360911-u-cropped_1763794357287.jpg",
+    partNumber: "120.207.02",
+  },
+  {
+    filename: "1763783273253-u-cropped_1763783270545.jpg",
+    partNumber: "120.207.03",
+  },
+  {
+    filename: "1764061822872-u-cropped_1764061818105.jpg",
+    partNumber: "120.207.05",
+  },
+  {
+    filename: "1764415475157-u-cropped_1764415467339.jpg",
+    partNumber: "120.207.145",
+  },
+  {
+    filename: "1764583176542-u-cropped_1764583161476.jpg",
+    partNumber: "120.207.32",
+  },
+  {
+    filename: "1764583102350-u-cropped_1764583098867.jpg",
+    partNumber: "120.207.33",
+  },
+  {
+    filename: "1764583044974-u-cropped_1764583036960.jpg",
+    partNumber: "120.207.34",
+  },
+  {
+    filename: "1764582981514-u-cropped_1764582978340.jpg",
+    partNumber: "120.207.41",
+  },
+  {
+    filename: "1764582915673-u-cropped_1764582911947.jpg",
+    partNumber: "120.207.42",
+  },
+  {
+    filename: "1764582866594-u-cropped_1764582863334.jpg",
+    partNumber: "120.207.44",
+  },
+  {
+    filename: "1764420745714-u-cropped_1764420742975.jpg",
+    partNumber: "120.207.45",
+  },
+  {
+    filename: "1764420620885-u-cropped_1764420612642.jpg",
+    partNumber: "120.207.46",
+  },
+  {
+    filename: "1764420469536-u-cropped_1764420466139.jpg",
+    partNumber: "120.207.50",
+  },
+  {
+    filename: "1764420182552-u-cropped_1764420177413.jpg",
+    partNumber: "120.207.51",
+  },
+  {
+    filename: "1764419999107-u-cropped_1764419996004.jpg",
+    partNumber: "120.207.52",
+  },
+  {
+    filename: "1764418330918-u-cropped_1764418324421.jpg",
+    partNumber: "120.207.54",
+  },
+  {
+    filename: "1764418138540-u-cropped_1764418133395.jpg",
+    partNumber: "120.207.55",
+  },
+  {
+    filename: "1764417636100-u-cropped_1764417633431.jpg",
+    partNumber: "120.207.56",
+  },
+  {
+    filename: "1764417510579-u-cropped_1764417503921.jpg",
+    partNumber: "120.207.57",
+  },
+  {
+    filename: "1764417272524-u-cropped_1764417244029.jpg",
+    partNumber: "120.207.60",
+  },
+  {
+    filename: "1764416787519-u-cropped_1764416783732.jpg",
+    partNumber: "120.207.61",
+  },
+  {
+    filename: "1763797288660-u-cropped_1763797285641.jpg",
+    partNumber: "120.2800.02",
+  },
+  {
+    filename: "1764066041307-u-cropped_1764066034170.jpg",
+    partNumber: "120.2800.03",
+  },
+  {
+    filename: "1764065922011-u-cropped_1764065913576.jpg",
+    partNumber: "120.301.09",
+  },
+  {
+    filename: "1764066175009-u-cropped_1764066171719.jpg",
+    partNumber: "120.400.01",
+  },
+  {
+    filename: "1764065340029-u-cropped_1764065336429.jpg",
+    partNumber: "120.400.02",
+  },
+  {
+    filename: "1764403121261-u-cropped_1764403112056.jpg",
+    partNumber: "120.400.04",
+  },
+  {
+    filename: "1764065712691-u-cropped_1764065701476.jpg",
+    partNumber: "120.400.05",
+  },
+  {
+    filename: "1764065818933-u-cropped_1764065815909.jpg",
+    partNumber: "120.400.06",
+  },
+  {
+    filename: "1763795260319-u-cropped_1763795223305.jpg",
+    partNumber: "120.400.08",
+  },
+  {
+    filename: "1764074364862-u-cropped_1764074360209.jpg",
+    partNumber: "120.700.02",
+  },
+  {
+    filename: "1764416610342-u-cropped_1764416604987.jpg",
+    partNumber: "120.7000.27",
+  },
+  {
+    filename: "1764074306283-u-cropped_1764074304329.jpg",
+    partNumber: "120.700.04",
+  },
+  {
+    filename: "1763796439956-u-cropped_1763796435835.jpg",
+    partNumber: "120.700.06",
+  },
+  {
+    filename: "1763796538425-u-cropped_1763796534902.jpg",
+    partNumber: "120.700.07",
+  },
+  {
+    filename: "1764074489194-u-cropped_1764074476705.jpg",
+    partNumber: "120.700.08",
+  },
+  {
+    filename: "1763795632527-u-cropped_1763795630686.jpg",
+    partNumber: "120.700.09",
+  },
+];
 
 async function main() {
   const sourceApp = admin.initializeApp(
@@ -911,54 +1231,380 @@ async function main() {
     },
     "prodApp",
   );
-
+  const sourceDb = sourceApp.firestore();
   const bucket = sourceApp
     .storage()
     .bucket("megha-sales-corporation.firebasestorage.app"); // no "gs://" prefix [web:24]
 
   console.log("✅ Source Firebase Storage initialized.");
 
+  const brandPartImages: string[] = [];
   async function listFiles(prefix: string) {
     const [files] = await bucket.getFiles({ prefix });
     files.forEach((file) => {
       console.log(file.name);
+      if (file.name.split("/")[2])
+        brandPartImages.push(file.name.split("/")[2]);
     });
     console.log(`Total files with prefix "${prefix}": ${files.length}`);
+    console.log("Part Numbers:", brandPartImages);
+    console.log("Part Numbers Length:", brandPartImages.length);
   }
 
-  async function moveFiles() {
-    // DRY RUN toggle
-    const DRY_RUN = false;
-    let count = 0;
+  const autokoiPartNumbersImageNotOk = [
+    "KFMF13900",
+    "KFOF12010",
+    "KFTF11008",
+    "KHMF2052",
+    "KHMF2099",
+    "KHSF5037",
+    "KHSF5048",
+    "KMMF3137",
+    "KMMF3144",
+    "KMMF3145",
+    "KMMF3152",
+    "KMMF3158",
+    "KMMF3159",
+    "KMSF1011",
+    "KMSF1012",
+    "KMSF1013",
+    "KMSF1014",
+    "KMSF1015",
+    "KMSF1016",
+    "KMSF1017",
+    "KMSF1018",
+    "KMSF1019",
+    "KMSF1021",
+    "KMSF1023",
+    "KMSF1024",
+    "KMSF1025",
+    "KMSF1026",
+    "KMSF1027",
+    "KMSF1028",
+    "KMSF1029",
+    "KMSF1030",
+    "KMSF1031",
+    "KMSF1032",
+    "KMSF1033",
+    "KMSF1035",
+    "KMSF1036",
+    "KMSF1037",
+    "KMSF1039",
+    "KMSF1040",
+    "KMSF1041",
+    "KMSF1042",
+    "KMSF1066",
+    "KMSF1071",
+    "KMSF1080",
+    "KMSF1087",
+    "KMSF1109",
+    "KMSF1110",
+    "KMSF1125",
+    "KMSF1127",
+    "KMSF1133",
+    "KMSF1135",
+    "KMSF1138",
+    "KRPF14203",
+    "KRPF14228",
+    "KRPF14243",
+    "KRPF14427",
+    "KRPF14486",
+    "KRPF14493",
+    "KRPF14606",
+    "KRPF14607",
+    "KRPF14610",
+    "KRPF14613",
+    "KRPF14616",
+    "KTAF10032",
+    "KTAF10077",
+    "KTAF10110",
+    "KTMF4026",
+    "KTMF4048",
+    "KTMF4049",
+    "KTMF4050",
+    "KTMF4058",
+  ];
+  const accurubPartNumbersImageNotOk = [
+    "120.1200.85",
+    "120.1200.86",
+    "120.1200.87",
+    "120.207.01",
+    "120.207.04",
+    "120.207.06",
+    "120.207.11",
+    "120.207.12",
+    "120.207.16",
+    "120.207.161",
+    "120.207.23",
+    "120.207.24",
+    "120.207.25",
+    "120.207.31",
+  ];
+  const askPartNumbersImageNotOk = [
+    "AFF/XL/AL/SM/BS6/HLP-8(OS-1)",
+    "AFF/XL/AL/SM/BS6/HLP-8(STD)",
+    "AFF/XL/AL/STAG/2(OS-1)",
+    "AFF/XL/AL/STAG/2(STD)",
+    "AFF/XL/AL/TP/ALS 3&4(OS-1)",
+    "AFF/XL/AL/TP/ALS 3&4(STD)",
+    "AFF/XL/AL/TP/SM/HLP-6(OS-1)",
+    "AFF/XL/AL/TP/SM/HLP-6(STD)",
+    "AFF/XL/AL/TP/SM/HLP-7(OS-1)",
+    "AFF/XL/AL/TP/SM/HLP-7(OS-2)",
+    "AFF/XL/AL/TP/SM/HLP-7(STD)",
+    "AFF/XL/AL/TP/SM/HLP-8(OS-1)",
+    "AFF/XL/AL/TP/SM/HLP-8(STD)",
+    "AFF/XL/AMW/1(OS-1)",
+    "AFF/XL/AMW/1(STD)",
+    "AFF/XL/BB/ECH/MM-25T(OS-1)",
+    "AFF/XL/BB/ECH/MM-25T(STD)",
+    "AFF/XL/EM/1(OS-1)",
+    "AFF/XL/EM/1(STD)",
+    "AFF/XL/FUWA/16(OS-1)",
+    "AFF/XL/FUWA/16(STD)",
+    "AFF/XL/JOST(OS-1)",
+    "AFF/XL/JOST(STD)",
+    "AFF/XL/MAN/RR/10(STD)",
+    "AFF/XL/MAN/RR/8(STD)",
+    "AFF/XL/SW/MZ/1(OS-1)",
+    "AFF/XL/SW/MZ/1(STD)",
+    "AFF/XL/SW/MZ/2(OS-1)",
+    "AFF/XL/SW/MZ/2(STD)",
+    "AFF/XL/YK/4551/16(OS-1)",
+    "AFF/XL/YK/4551/16(STD)",
+    "AFF/XL/YORK/12(STD)",
+  ];
 
-    for (const { filename, partNumber } of askMap) {
-      const oldPath = `products/ask-fras-le/${filename}`;
-      // const oldPath = `product/technix/${productId}/${filename}`;
-      // const oldPath = `products/orbit/${productId}/${filename}`;
-      const newPath = `products/ask/${partNumber}/${filename}`;
+  // 1) Normalizer: keep only letters and digits
+  function normalizeCode(value: string): string {
+    return value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+  }
 
-      const file = bucket.file(oldPath);
+  // 2) Build a fast lookup for the "not OK" list
+  const notOkSet = new Set(askPartNumbersImageNotOk.map(normalizeCode));
 
-      // Check if file exists
-      const [exists] = await file.exists();
-      if (!exists) {
-        console.warn(`⚠️ File not found: ${oldPath}`);
-        continue;
+  // 3) After listFiles() has populated autokoiPartImages
+  function findMatches() {
+    const matched: string[] = [];
+    const unmatched: string[] = [];
+
+    for (const imgPart of brandPartImages) {
+      const norm = normalizeCode(imgPart); // e.g. "KMSF 1011" -> "KMSF1011"
+      if (notOkSet.has(norm)) {
+        matched.push(imgPart);
+      } else {
+        unmatched.push(imgPart);
       }
-
-      console.log(`↪️  ${oldPath}  -->  ${newPath}`);
-
-      if (!DRY_RUN) {
-        await file.move(newPath); // moves and deletes original [web:24]
-        console.log(`✅ Moved to ${newPath}`);
-      }
-      count++;
     }
 
-    console.log(`🎉 Done processing Autokoi files. ${count} files moved.`);
+    // console.log("Matched partImages:", matched);
+    // console.log("Matched count:", matched.length);
+    // console.log("Unmatched partImages:", unmatched);
+    // console.log("Unmatched count:", unmatched.length);
+
+    return { matched, unmatched };
   }
-  await moveFiles();
-  // await listFiles("products");
+
+  // async function buildPartToBrandData() {
+  //   const snap = await sourceDb.collection("products").get();
+
+  //   const partToBrand: {
+  //     id: string;
+  //     partNumber: string;
+  //     brandId: string;
+  //     fileName: string | null;
+  //     filePath: string | null;
+  //   }[] = [];
+  //   const matchedIds = new Set<string>();
+
+  //   // // Build normalized lookup for storage ids (no hyphens)
+  //   const normalizedIdMap = new Map<string, string>(); // normalized -> original
+  //   for (const storageId of ids) {
+  //     const normalized = storageId.replace(/-/g, "");
+  //     normalizedIdMap.set(normalized, storageId);
+  //   }
+
+  //   snap.forEach((doc) => {
+  //     const data = doc.data() as {
+  //       id?: string;
+  //       partNumber?: string;
+  //       brandId?: string;
+  //     };
+
+  //     if (!data.id || !data.brandId || !data.partNumber) return;
+  //     const pnRaw = data.partNumber;
+  //     const pnNorm = pnRaw.replace(/-/g, "");
+  //     const pnSlug = slugifyPartNumber(pnRaw);
+  //     const filePath =
+  //       filePathByKey.get(pnRaw) ??
+  //       filePathByKey.get(pnNorm) ??
+  //       filePathByKey.get(pnSlug) ??
+  //       null;
+
+  //     const fileName = filePath ? (filePath.split("/").pop() ?? null) : null;
+
+  //     // 1) Direct match with storage id
+  //     if (ids.includes(data.id)) {
+  //       partToBrand.push({
+  //         id: data.id,
+  //         partNumber: data.partNumber,
+  //         brandId: data.brandId,
+  //         fileName: fileName,
+  //         filePath: filePath,
+  //       });
+  //       matchedIds.add(data.id);
+  //       return;
+  //     }
+
+  //     // 2) Try normalized (no hyphens) – if you want this, normalize data.id:
+
+  //     const storageId = normalizedIdMap.get(data.id);
+
+  //     if (storageId) {
+  //       partToBrand.push({
+  //         id: storageId,
+  //         partNumber: data.partNumber,
+  //         brandId: data.brandId,
+  //         fileName: fileName,
+  //         filePath: filePath,
+  //       });
+  //       matchedIds.add(storageId);
+  //     }
+  //   });
+
+  //   const unmatchedIds = ids.filter((id) => !matchedIds.has(id));
+
+  //   console.log("partToBrandData size:", partToBrand.length);
+  //   console.log("partToBrandData:", partToBrand);
+  //   console.log("unmatchedIds size:", unmatchedIds.length);
+  //   console.log("unmatchedIds:", unmatchedIds);
+
+  //   return { partToBrand, unmatchedIds };
+  // }
+  // async function moveFiles() {
+  //   // DRY RUN toggle
+  //   const DRY_RUN = false;
+  //   let count = 0;
+
+  //   const partToBrandMap = await buildPartToBrandData();
+  //   const partToBrandMapPART_1 = partToBrandMap.partToBrand.slice(0, 300);
+  //   const partToBrandMapPART_2 = partToBrandMap.partToBrand.slice(300, 600);
+  //   const partToBrandMapPART_3 = partToBrandMap.partToBrand.slice(600, 900);
+  //   const partToBrandMapPART_4 = partToBrandMap.partToBrand.slice(900);
+
+  //   const parts = [
+  //     partToBrandMapPART_1,
+  //     partToBrandMapPART_2,
+  //     partToBrandMapPART_3,
+  //     partToBrandMapPART_4,
+  //   ];
+
+  //   for (const [index, part] of parts.entries()) {
+  //     for (const { id, filePath, partNumber, fileName, brandId } of part) {
+  //       const oldPath = `${filePath}`;
+  //       // const oldPath = `product/technix/${productId}/${filename}`;
+  //       // const oldPath = `products/orbit/${productId}/${filename}`;
+  //       const newPath = `products/${brandId}/${partNumber}/${fileName}`;
+
+  //       const file = bucket.file(oldPath);
+
+  //       // Check if file exists
+  //       const [exists] = await file.exists();
+  //       if (!exists) {
+  //         console.warn(`⚠️ File not found: ${oldPath} - ${partNumber}`);
+  //         continue;
+  //       }
+
+  //       console.log(`↪️  ${oldPath}  -->  ${newPath}`);
+
+  //       if (!DRY_RUN) {
+  //         await file.move(newPath); // moves and deletes original [web:24]
+  //         console.log(`✅ Moved to ${newPath}`);
+  //       }
+  //       count++;
+  //     }
+  //     console.log(
+  //       `=================== 🎉 Done processing part ${index + 1}. ${count} files moved. ==================`,
+  //     );
+  //   }
+  // }
+  // async function moveSomeFiles() {
+  //   // DRY RUN toggle
+  //   const DRY_RUN = false;
+  //   let count = 0;
+
+  //   for (const { partNumber, filename, brandId } of [
+  //     {
+  //       brandId: "mansarovar",
+  //       filename: "1757931444280-cropped_1757931437212.jpg",
+  //       partNumber: "1018-F",
+  //     },
+  //     {
+  //       brandId: "mansarovar",
+  //       filename: "1757675330008-cropped_1757675302133.jpg",
+  //       partNumber: "630",
+  //     },
+  //     {
+  //       brandId: "mansarovar",
+  //       filename: "1757666644351-cropped_1757666633303.jpg",
+  //       partNumber: "712",
+  //     },
+  //     {
+  //       brandId: "mansarovar",
+  //       filename: "1757674372516-cropped_1757674361829.jpg",
+  //       partNumber: "713",
+  //     },
+  //     {
+  //       brandId: "mansarovar",
+  //       filename: "1757930988067-cropped_1757930980001.jpg",
+  //       partNumber: "808-F",
+  //     },
+  //     {
+  //       brandId: "mansarovar",
+  //       filename: "1757931354140-cropped_1757931346377.jpg",
+  //       partNumber: "812-F",
+  //     },
+  //   ]) {
+  //     const oldPath = `products/${partNumber}/${filename}`;
+  //     // const oldPath = `product/technix/${productId}/${filename}`;
+  //     // const oldPath = `products/orbit/${productId}/${filename}`;
+  //     const newPath = `products/${brandId}/${partNumber}/${filename}`;
+
+  //     const file = bucket.file(oldPath);
+
+  //     // Check if file exists
+  //     const [exists] = await file.exists();
+  //     if (!exists) {
+  //       console.warn(`⚠️ File not found: ${oldPath} - ${partNumber}`);
+  //       continue;
+  //     }
+
+  //     console.log(`↪️  ${oldPath}  -->  ${newPath}`);
+
+  //     if (!DRY_RUN) {
+  //       await file.move(newPath); // moves and deletes original [web:24]
+  //       console.log(`✅ Moved to ${newPath}`);
+  //     }
+  //     count++;
+  //   }
+  //   console.log(
+  //     `=================== 🎉 Done processing. ${count} files moved. ==================`,
+  //   );
+  // }
+  // await moveSomeFiles();
+  await listFiles("products/ask");
+  const { matched, unmatched } = findMatches();
+  console.log("Matched partImages:", matched);
+  console.log("Matched count:", matched.length);
+  console.log("Unmatched partImages:", unmatched);
+  console.log("Unmatched count:", unmatched.length);
+  // console.log(
+  //   "=================== Starting file move ===================",
+  // );
+  // await moveFiles();
+  // console.log(
+  //   "=================== File move completed ===================",
+  // );
 }
 
 main().catch((err) => {
