@@ -2,6 +2,38 @@
 
 import admin, { firestore } from "firebase-admin";
 
+import fs from "fs";
+
+const raw = fs.readFileSync("paste.txt", "utf8");
+export function slugifyPartNumber(partNumber: string) {
+  return partNumber
+    .trim()
+    .toUpperCase()
+    .replace(/[^\w\s-]/g, "") // remove punctuation
+    .replace(/\s+/g, "-"); // spaces → hyphens
+}
+
+// 1) All lines trimmed
+export const allLines = raw
+  .split("\n")
+  .map((l) => l.trim())
+  .filter((l) => l.length > 0);
+
+const partNumbers: {
+  original: string;
+  normalized: string;
+  slugified: string;
+}[] = [];
+
+for (const line of allLines) {
+  const [, partNumber] = line.split("/");
+  if (!partNumber) continue;
+
+  const normalized = partNumber.replace(/-/g, "");
+  const slugified = slugifyPartNumber(partNumber);
+  partNumbers.push({ original: partNumber, normalized, slugified });
+}
+
 // 🔁 Initialize source (DEV)
 const sourceApp = admin.initializeApp(
   {
@@ -551,25 +583,114 @@ export async function createMap() {
     "1764583102350-u-cropped_1764583098867.jpg",
     "1764583176542-u-cropped_1764583161476.jpg",
   ];
+  const mixData = [
+    {
+      partNumber: "1018-F",
+      fileName: "1757931444280-cropped_1757931437212.jpg",
+    },
+    {
+      partNumber: "10X11",
+      fileName: "1757509337632-cropped_1757509325923.jpg",
+    },
+    {
+      partNumber: "14X15",
+      fileName: "1757509751560-cropped_1757509728486.jpg",
+    },
+    {
+      partNumber: "14X17",
+      fileName: "1757509879023-cropped_1757509857435.jpg",
+    },
+    {
+      partNumber: "16X17",
+      fileName: "1757510006507-cropped_1757509993344.jpg",
+    },
+    {
+      partNumber: "18X19",
+      fileName: "1757510138660-cropped_1757510126900.jpg",
+    },
+    {
+      partNumber: "19X22",
+      fileName: "1757510320022-cropped_1757510311477.jpg",
+    },
+    {
+      partNumber: "20X22",
+      fileName: "1757510428367-cropped_1757510420742.jpg",
+    },
+    {
+      partNumber: "21X23",
+      fileName: "1757510513416-cropped_1757510502572.jpg",
+    },
+    {
+      partNumber: "22X24",
+      fileName: "1757510605738-cropped_1757510599988.jpg",
+    },
+    {
+      partNumber: "24X27",
+      fileName: "1757510846943-cropped_1757510832175.jpg",
+    },
+    {
+      partNumber: "25X28",
+      fileName: "1757511074050-cropped_1757511066206.jpg",
+    },
+    {
+      partNumber: "30X32",
+      fileName: "1757511187258-cropped_1757511174156.jpg",
+    },
+    { partNumber: "602", fileName: "1757507471990-cropped_1757507453548.jpg" },
+    { partNumber: "630", fileName: "1757675330008-cropped_1757675302133.jpg" },
+    { partNumber: "6X7", fileName: "1757509086690-cropped_1757509074063.jpg" },
+    {
+      partNumber: "6X7RING",
+      fileName: "1757511667725-cropped_1757511616567.jpg",
+    },
+    { partNumber: "712", fileName: "1757666644351-cropped_1757666633303.jpg" },
+    { partNumber: "713", fileName: "1757674372516-cropped_1757674361829.jpg" },
+    {
+      partNumber: "808-F",
+      fileName: "1757930988067-cropped_1757930980001.jpg",
+    },
+    {
+      partNumber: "812-F",
+      fileName: "1757931354140-cropped_1757931346377.jpg",
+    },
+    { partNumber: "8X9", fileName: "1757509237354-cropped_1757509230199.jpg" },
+    {
+      partNumber: "KMSX0012",
+      fileName: "1747306232885-Screenshot 2025-05-14 at 19.30.52.png",
+    },
+    {
+      partNumber: "XYZA0012",
+      fileName: "1748848046735-Screenshot 2025-05-15 at 10.34.44.png",
+    },
+  ];
 
   const productsCol = sourceDb.collection("products");
   const snapshot = await productsCol.get();
 
   // Create Set for O(1) filename lookups
-  const filenameSet = new Set(accurubFileNames);
+  const partNumberSet = new Set(mixData.map((item) => item.partNumber));
 
-  const fileProductMap: { filename: string; partNumber: string }[] = [];
+  const fileProductMap: {
+    brandId: string;
+    filename: string;
+    partNumber: string;
+  }[] = [];
 
   for (const doc of snapshot.docs) {
     const data = doc.data();
     const partNumber = data.partNumber;
 
-    const imagePath = data["image"];
-    const filename = imagePath?.split("/").pop() || "";
-    if (filename) {
-      if (filenameSet.has(filename)) {
-        fileProductMap.push({ filename, partNumber });
-        console.log(`✅ Matched ${filename} → ${partNumber}`);
+    // const imagePath = data["image"];
+    // const filename = imagePath?.split("/").pop() || "";
+    if (partNumberSet.has(partNumber)) {
+      const mixItem = mixData.find((item) => item.partNumber === partNumber);
+      if (mixItem) {
+        fileProductMap.push({
+          brandId: data.brandId,
+          filename: mixItem.fileName,
+          partNumber,
+        });
+        console.log(`✅ Matched ${mixItem.fileName} → ${partNumber}`);
       }
     }
     // else {
@@ -1815,6 +1936,434 @@ async function changeFieldInProductsFromMap() {
   console.log(`✅ All done. ${updatedCount} products updated.`);
 }
 
+function matchesPartNumber(pn: string | undefined | null) {
+  if (!pn) return false;
+
+  return partNumbers.some(
+    (p) => p.original === pn || p.normalized === pn || p.slugified === pn,
+  );
+}
+async function changeImagesInProducts() {
+  const productsCol = sourceDb.collection("products");
+  const snapshot = await productsCol.get();
+  let batch = sourceDb.batch();
+
+  let updatedCount = 0;
+  let ops = 0;
+
+  for (const doc of snapshot.docs) {
+    const data = doc.data() as {
+      brandId?: string;
+      partNumber?: string;
+      image?: string;
+    };
+
+    const shouldUpdate = matchesPartNumber(data?.partNumber);
+    if (!shouldUpdate) {
+      console.log(
+        `Part Number ${data?.partNumber} --> shouldUpdate: ${shouldUpdate} --> ${data?.image}`,
+      );
+    }
+
+    if (shouldUpdate) {
+      const fileName = data?.image?.split("/").pop();
+      const updates: FirebaseFirestore.UpdateData<{ [field: string]: any }> = {
+        image: `products/${data?.brandId}/${data?.partNumber}/${fileName}`,
+      };
+
+      batch.update(doc.ref, updates);
+      updatedCount++;
+      ops++;
+
+      if (ops >= 450) {
+        await batch.commit();
+        batch = sourceDb.batch();
+        ops = 0;
+      }
+    }
+  }
+
+  if (ops > 0) {
+    await batch.commit();
+  }
+
+  console.log(`✅ All done. ${updatedCount} products updated.`);
+}
+
+const imageMap = [
+  { partNumber: "1018-F", fileName: "1757931444280-cropped_1757931437212.jpg" },
+  { partNumber: "10X11", fileName: "1757509337632-cropped_1757509325923.jpg" },
+  { partNumber: "14X15", fileName: "1757509751560-cropped_1757509728486.jpg" },
+  { partNumber: "14X17", fileName: "1757509879023-cropped_1757509857435.jpg" },
+  { partNumber: "16X17", fileName: "1757510006507-cropped_1757509993344.jpg" },
+  { partNumber: "18X19", fileName: "1757510138660-cropped_1757510126900.jpg" },
+  { partNumber: "19X22", fileName: "1757510320022-cropped_1757510311477.jpg" },
+  { partNumber: "20X22", fileName: "1757510428367-cropped_1757510420742.jpg" },
+  { partNumber: "21X23", fileName: "1757510513416-cropped_1757510502572.jpg" },
+  { partNumber: "22X24", fileName: "1757510605738-cropped_1757510599988.jpg" },
+  { partNumber: "24X27", fileName: "1757510846943-cropped_1757510832175.jpg" },
+  { partNumber: "25X28", fileName: "1757511074050-cropped_1757511066206.jpg" },
+  { partNumber: "30X32", fileName: "1757511187258-cropped_1757511174156.jpg" },
+  { partNumber: "602", fileName: "1757507471990-cropped_1757507453548.jpg" },
+  { partNumber: "630", fileName: "1757675330008-cropped_1757675302133.jpg" },
+  { partNumber: "6X7", fileName: "1757509086690-cropped_1757509074063.jpg" },
+  {
+    partNumber: "6X7RING",
+    fileName: "1757511667725-cropped_1757511616567.jpg",
+  },
+  { partNumber: "712", fileName: "1757666644351-cropped_1757666633303.jpg" },
+  { partNumber: "713", fileName: "1757674372516-cropped_1757674361829.jpg" },
+  { partNumber: "808-F", fileName: "1757930988067-cropped_1757930980001.jpg" },
+  { partNumber: "812-F", fileName: "1757931354140-cropped_1757931346377.jpg" },
+  { partNumber: "8X9", fileName: "1757509237354-cropped_1757509230199.jpg" },
+  {
+    partNumber: "KMSX0012",
+    fileName: "1747306232885-Screenshot 2025-05-14 at 19.30.52.png",
+  },
+  {
+    partNumber: "XYZA0012",
+    fileName: "1748848046735-Screenshot 2025-05-15 at 10.34.44.png",
+  },
+];
+
+const askMovedPaths = [
+  {
+    partNumber: "AFF BS6 (8 HOLE LINER)",
+    from: "products/ask/AFF BS6 (8 HOLE LINER)/1757574885582-u-cropped_1757574882348.jpg",
+    to: "products/ask/AFF-BS6-8-HOLE-LINER/1757574885582-u-cropped_1757574882348.jpg",
+  },
+  {
+    partNumber: "AFF/XL/AL/TP/ALS/3&4 (OS-1)",
+    from: "products/ask/AFF/XL/AL/TP/ALS/3&4 (OS-1)/1757658697887-u-cropped_1757658693813.jpg",
+    to: "products/ask/AFFXLALTPALS34-OS-1/1757658697887-u-cropped_1757658693813.jpg",
+  },
+  {
+    partNumber: "AFF/XL/AL/TP/SM/1&2(STD)",
+    from: "products/ask/AFF/XL/AL/TP/SM/1&2(STD)/1757574744087-u-cropped_1757574739921.jpg",
+    to: "products/ask/AFFXLALTPSM12STD/1757574744087-u-cropped_1757574739921.jpg",
+  },
+  {
+    partNumber: "AFF/XL/AL/TP/SM/3 & 4 (STD)",
+    from: "products/ask/AFF/XL/AL/TP/SM/3 & 4 (STD)/1757574691482-u-cropped_1757574687148.jpg",
+    to: "products/ask/AFFXLALTPSM3-4-STD/1757574691482-u-cropped_1757574687148.jpg",
+  },
+  {
+    partNumber: "AFF/XL/AL/TP/SM/3&4(OS-1)",
+    from: "products/ask/AFF/XL/AL/TP/SM/3&4(OS-1)/1757574645156-u-cropped_1757574641602.jpg",
+    to: "products/ask/AFFXLALTPSM34OS-1/1757574645156-u-cropped_1757574641602.jpg",
+  },
+  {
+    partNumber: "AFF/XL/AL/TP/SM/3&4(OS-2)",
+    from: "products/ask/AFF/XL/AL/TP/SM/3&4(OS-2)/1757574612172-u-cropped_1757574608627.jpg",
+    to: "products/ask/AFFXLALTPSM34OS-2/1757574612172-u-cropped_1757574608627.jpg",
+  },
+  {
+    partNumber: "AFF/XL/AL/TP/SM/3&4(OS-3)",
+    from: "products/ask/AFF/XL/AL/TP/SM/3&4(OS-3)/1757574580488-u-cropped_1757574577010.jpg",
+    to: "products/ask/AFFXLALTPSM34OS-3/1757574580488-u-cropped_1757574577010.jpg",
+  },
+  {
+    partNumber: "AFF/XL/AL/TP/SM/7&8 (OS-2)",
+    from: "products/ask/AFF/XL/AL/TP/SM/7&8 (OS-2)/1757574428539-u-cropped_1757574424171.jpg",
+    to: "products/ask/AFFXLALTPSM78-OS-2/1757574428539-u-cropped_1757574424171.jpg",
+  },
+  {
+    partNumber: "AFF/XL/AL/TP/SM/7&8 (STD)",
+    from: "products/ask/AFF/XL/AL/TP/SM/7&8 (STD)/1757574544869-u-cropped_1757574541514.jpg",
+    to: "products/ask/AFFXLALTPSM78-STD/1757574544869-u-cropped_1757574541514.jpg",
+  },
+  {
+    partNumber: "AFF/XL/AL/TP/SM/7&8(OS-1)",
+    from: "products/ask/AFF/XL/AL/TP/SM/7&8(OS-1)/1757574464982-u-cropped_1757574460314.jpg",
+    to: "products/ask/AFFXLALTPSM78OS-1/1757574464982-u-cropped_1757574460314.jpg",
+  },
+  {
+    partNumber: "AFF/XL/AL/TP/SM/7&8(STD)",
+    from: "products/ask/AFF/XL/AL/TP/SM/7&8(STD)/1757574501876-u-cropped_1757574498237.jpg",
+    to: "products/ask/AFFXLALTPSM78STD/1757574501876-u-cropped_1757574498237.jpg",
+  },
+  {
+    partNumber: "AFF/XL/PRIMA/12(OS-1)",
+    from: "products/ask/AFF/XL/PRIMA/12(OS-1)/1757418145936-u-cropped_1757418138570.jpg",
+    to: "products/ask/AFFXLPRIMA12OS-1/1757418145936-u-cropped_1757418138570.jpg",
+  },
+  {
+    partNumber: "AFF/XL/PRIMA/12(STD)",
+    from: "products/ask/AFF/XL/PRIMA/12(STD)/1757576591692-u-cropped_1757576585939.jpg",
+    to: "products/ask/AFFXLPRIMA12STD/1757576591692-u-cropped_1757576585939.jpg",
+  },
+  {
+    partNumber: "AFF/XL/T1109/1(OS-1)",
+    from: "products/ask/AFF/XL/T1109/1(OS-1)/1757575008651-u-cropped_1757575005467.jpg",
+    to: "products/ask/AFFXLT11091OS-1/1757575008651-u-cropped_1757575005467.jpg",
+  },
+  {
+    partNumber: "AFF/XL/T1109/1(OS-2)",
+    from: "products/ask/AFF/XL/T1109/1(OS-2)/1757574959999-u-cropped_1757574956698.jpg",
+    to: "products/ask/AFFXLT11091OS-2/1757574959999-u-cropped_1757574956698.jpg",
+  },
+  {
+    partNumber: "AFF/XL/T1109/1(STD)",
+    from: "products/ask/AFF/XL/T1109/1(STD)/1757575206785-u-cropped_1757575203872.jpg",
+    to: "products/ask/AFFXLT11091STD/1757575206785-u-cropped_1757575203872.jpg",
+  },
+  {
+    partNumber: "AFF/XL/T407/1&2(OS-1)",
+    from: "products/ask/AFF/XL/T407/1&2(OS-1)/1757576132421-u-cropped_1757576129074.jpg",
+    to: "products/ask/AFFXLT40712OS-1/1757576132421-u-cropped_1757576129074.jpg",
+  },
+  {
+    partNumber: "AFF/XL/T407/1&2(OS-2)",
+    from: "products/ask/AFF/XL/T407/1&2(OS-2)/1757576086985-u-cropped_1757576083953.jpg",
+    to: "products/ask/AFFXLT40712OS-2/1757576086985-u-cropped_1757576083953.jpg",
+  },
+  {
+    partNumber: "AFF/XL/T407/1&2(STD)",
+    from: "products/ask/AFF/XL/T407/1&2(STD)/1757576176589-u-cropped_1757576173513.jpg",
+    to: "products/ask/AFFXLT40712STD/1757576176589-u-cropped_1757576173513.jpg",
+  },
+  {
+    partNumber: "AFF/XL/T608/3&4(OS-1)",
+    from: "products/ask/AFF/XL/T608/3&4(OS-1)/1757575725635-u-cropped_1757575722669.jpg",
+    to: "products/ask/AFFXLT60834OS-1/1757575725635-u-cropped_1757575722669.jpg",
+  },
+  {
+    partNumber: "AFF/XL/T608/3&4(OS-2)",
+    from: "products/ask/AFF/XL/T608/3&4(OS-2)/1757575683816-u-cropped_1757575678797.jpg",
+    to: "products/ask/AFFXLT60834OS-2/1757575683816-u-cropped_1757575678797.jpg",
+  },
+  {
+    partNumber: "AFF/XL/T608/3&4(STD)",
+    from: "products/ask/AFF/XL/T608/3&4(STD)/1757575777455-u-cropped_1757575773475.jpg",
+    to: "products/ask/AFFXLT60834STD/1757575777455-u-cropped_1757575773475.jpg",
+  },
+  {
+    partNumber: "AFF/XL/T709/1(OS-1)",
+    from: "products/ask/AFF/XL/T709/1(OS-1)/1757575625589-u-cropped_1757575622490.jpg",
+    to: "products/ask/AFFXLT7091OS-1/1757575625589-u-cropped_1757575622490.jpg",
+  },
+  {
+    partNumber: "AFF/XL/T709/1(OS-2)",
+    from: "products/ask/AFF/XL/T709/1(OS-2)/1757575514872-u-cropped_1757575511762.jpg",
+    to: "products/ask/AFFXLT7091OS-2/1757575514872-u-cropped_1757575511762.jpg",
+  },
+  {
+    partNumber: "AFF/XL/T709/1(STD)",
+    from: "products/ask/AFF/XL/T709/1(STD)/1757575403778-u-cropped_1757575400740.jpg",
+    to: "products/ask/AFFXLT7091STD/1757575403778-u-cropped_1757575400740.jpg",
+  },
+  {
+    partNumber: "AFF/XL/T909/1(OS-1)",
+    from: "products/ask/AFF/XL/T909/1(OS-1)/1757575299694-u-cropped_1757575296059.jpg",
+    to: "products/ask/AFFXLT9091OS-1/1757575299694-u-cropped_1757575296059.jpg",
+  },
+  {
+    partNumber: "AFF/XL/T909/1(OS-2)",
+    from: "products/ask/AFF/XL/T909/1(OS-2)/1757575264398-u-cropped_1757575260396.jpg",
+    to: "products/ask/AFFXLT9091OS-2/1757575264398-u-cropped_1757575260396.jpg",
+  },
+  {
+    partNumber: "AFF/XL/T909/1(STD)",
+    from: "products/ask/AFF/XL/T909/1(STD)/1757575362733-u-cropped_1757575359741.jpg",
+    to: "products/ask/AFFXLT9091STD/1757575362733-u-cropped_1757575359741.jpg",
+  },
+  {
+    partNumber: "AFF/XL/TBS6(STD)",
+    from: "products/ask/AFF/XL/TBS6(STD)/1757574922732-u-cropped_1757574919528.jpg",
+    to: "products/ask/AFFXLTBS6STD/1757574922732-u-cropped_1757574919528.jpg",
+  },
+  {
+    partNumber: "AFF/XL/TTS/1(OS-1)",
+    from: "products/ask/AFF/XL/TTS/1(OS-1)/1757418283826-u-cropped_1757418277862.jpg",
+    to: "products/ask/AFFXLTTS1OS-1/1757418283826-u-cropped_1757418277862.jpg",
+  },
+  {
+    partNumber: "AFF/XL/TTS/1(STD)",
+    from: "products/ask/AFF/XL/TTS/1(STD)/1757576542051-u-cropped_1757576540657.jpg",
+    to: "products/ask/AFFXLTTS1STD/1757576542051-u-cropped_1757576540657.jpg",
+  },
+  {
+    partNumber: "AFF/XL/TTS/2(0S-2)",
+    from: "products/ask/AFF/XL/TTS/2(0S-2)/1757576664997-u-cropped_1757576661354.jpg",
+    to: "products/ask/AFFXLTTS20S-2/1757576664997-u-cropped_1757576661354.jpg",
+  },
+  {
+    partNumber: "AFF/XL/TTS/2(OS-1)",
+    from: "products/ask/AFF/XL/TTS/2(OS-1)/1757577664225-u-cropped_1757577660300.jpg",
+    to: "products/ask/AFFXLTTS2OS-1/1757577664225-u-cropped_1757577660300.jpg",
+  },
+  {
+    partNumber: "AFF/XL/TTS/2(STD)",
+    from: "products/ask/AFF/XL/TTS/2(STD)/1757576412145-u-cropped_1757576409340.jpg",
+    to: "products/ask/AFFXLTTS2STD/1757576412145-u-cropped_1757576409340.jpg",
+  },
+  {
+    partNumber: "AFF/XL/WTP/1(OS-1)",
+    from: "products/ask/AFF/XL/WTP/1(OS-1)/1757576461040-u-cropped_1757576458241.jpg",
+    to: "products/ask/AFFXLWTP1OS-1/1757576461040-u-cropped_1757576458241.jpg",
+  },
+  {
+    partNumber: "AFF/XL/WTP/1STD",
+    from: "products/ask/AFF/XL/WTP/1STD/1757576367327-u-cropped_1757576364436.jpg",
+    to: "products/ask/AFFXLWTP1STD/1757576367327-u-cropped_1757576364436.jpg",
+  },
+  {
+    partNumber: "AFF/XL/WTP/2(OS-1)",
+    from: "products/ask/AFF/XL/WTP/2(OS-1)/1757576220042-u-cropped_1757576217216.jpg",
+    to: "products/ask/AFFXLWTP2OS-1/1757576220042-u-cropped_1757576217216.jpg",
+  },
+  {
+    partNumber: "AFF/XL/WTP/2(STD)",
+    from: "products/ask/AFF/XL/WTP/2(STD)/1757576315549-u-cropped_1757576312612.jpg",
+    to: "products/ask/AFFXLWTP2STD/1757576315549-u-cropped_1757576312612.jpg",
+  },
+  {
+    partNumber: "AFF/XL/YORK/12(OS-1)",
+    from: "products/ask/AFF/XL/YORK/12(OS-1)/1757593283151-u-cropped_1757593282052.jpg",
+    to: "products/ask/AFFXLYORK12OS-1/1757593283151-u-cropped_1757593282052.jpg",
+  },
+];
+
+function findImageForPart(partNumber?: string | null) {
+  console.log(partNumber);
+
+  if (!partNumber) return null;
+  const value = partNumber.toString().trim();
+  console.log(value);
+  return (
+    askMovedPaths.find((p) => slugifyPartNumber(p.partNumber) === value) ?? null
+  );
+}
+
+async function changeSomeImagesInProducts(brandId: string) {
+  const productsCol = sourceDb.collection("products");
+  const snapshot = await productsCol.get();
+  let batch = sourceDb.batch();
+
+  let updatedCount = 0;
+  let ops = 0;
+
+  for (const doc of snapshot.docs) {
+    const data = doc.data() as {
+      id?: string;
+      brandId?: string;
+      partNumber?: string;
+      image?: string;
+    };
+
+    // const match = findImageForPart(data?.id);
+    // console.log(match);
+
+    const shouldUpdate = data.brandId === brandId;
+    if (!shouldUpdate) {
+      console.log(
+        `Part Number ${data?.partNumber} --> shouldUpdate: ${shouldUpdate}`,
+      );
+      continue;
+    }
+
+    const updates: FirebaseFirestore.UpdateData<{ [field: string]: any }> = {
+      image: `products/${brandId}/${data?.id}/${data?.image?.split("/").pop()}`,
+    };
+
+    batch.update(doc.ref, updates);
+    updatedCount++;
+    ops++;
+
+    if (ops >= 450) {
+      await batch.commit();
+      batch = sourceDb.batch();
+      ops = 0;
+    }
+  }
+
+  if (ops > 0) {
+    await batch.commit();
+  }
+
+  console.log(`✅ All done. ${updatedCount} products updated.`);
+}
+
+async function isImageOk(url: string): Promise<boolean> {
+  try {
+    const res = await fetch(url, { method: "GET" });
+    if (!res.ok) return false; // non-200 status
+
+    const contentType = res.headers.get("content-type") || "";
+    return contentType.startsWith("image/");
+  } catch (e) {
+    console.error("Error checking image:", url, e);
+    return false;
+  }
+}
+
+async function listProductImages(brandId: string) {
+  const productsCol = sourceDb.collection("products");
+  const snapshot = await productsCol.get();
+  const partImagePaths: { partId?: string; path: string }[] = [];
+
+  let totalCount = 0;
+  let count = 0;
+  let tableData: any[] = [];
+  let notOkData: any[] = [];
+  let notOkCount = 0;
+  const storageUrl =
+    "https://firebasestorage.googleapis.com/v0/b/megha-sales-corporation.firebasestorage.app/o/";
+  for (const doc of snapshot.docs) {
+    const data = doc.data() as {
+      id?: string;
+      brandId?: string;
+      partNumber?: string;
+      image?: string;
+    };
+
+    const shouldList = data?.brandId === brandId;
+    if (shouldList) {
+      const imagePath = data?.image as string;
+      partImagePaths.push({ partId: data?.id, path: imagePath });
+      const imageUrl = `${storageUrl}${encodeURIComponent(imagePath)}?alt=media`;
+      console.log(
+        `Checking image for Part Number ${data?.partNumber}: ${imageUrl}`,
+      );
+      // const ok = await isImageOk(imageUrl);
+      // if (!ok) {
+      //   notOkCount++;
+      //   notOkData.push({
+      //     partNumber: data?.partNumber,
+      //     imagePath: data?.image,
+      //     imageUrl: imageUrl,
+      //   });
+      //   console.log(
+      //     `❌ Image not OK for Part Number ${data?.partNumber}: ${imageUrl}`,
+      //   );
+      // }
+
+      // tableData.push({
+      //   partNumber: data?.partNumber,
+      //   imagePath: data?.image,
+      //   imageUrl: imageUrl,
+      //   ok,
+      // });
+      count++;
+    }
+    totalCount++;
+  }
+  // console.table(tableData);
+  // console.log(
+  //   tableData.map((item) => ({
+  //     partNumber: item.partNumber,
+  //     imagePath: item.imagePath,
+  //   })),
+  // );
+  // console.log(`❌ Total not OK images: ${notOkCount}`);
+  // console.table(notOkData);
+  // console.log(notOkData.map((item) => item.partNumber));
+  console.log(partImagePaths);
+  console.log(
+    `✅ All done. Listed ${count} products out of ${totalCount} total.`,
+  );
+}
+
 // Usage
 // renameBrandDoc().catch(console.error);
 // replaceHyphensInProducts().catch(console.error);
@@ -1822,4 +2371,7 @@ async function changeFieldInProductsFromMap() {
 // archiveProducts().catch(console.error);
 // moveProducts().catch(console.error);
 // createMap().catch(console.error);
-changeFieldInProductsFromMap().catch(console.error);
+// changeFieldInProductsFromMap().catch(console.error);
+// changeImagesInProducts().catch(console.error);
+// changeSomeImagesInProducts("technix").catch(console.error);
+listProductImages("technix").catch(console.error);

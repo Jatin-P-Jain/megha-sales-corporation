@@ -58,7 +58,7 @@ export default function NewProductForm({ brand }: { brand?: Brand | Brand[] }) {
 
     let imagePath: string = "";
     if (image?.file) {
-      imagePath = `products/${saveResponse.productId}/${Date.now()}-${
+      imagePath = `products/${brandSelected?.id}/${saveResponse.productId}/${Date.now()}-${
         image?.file.name
       }`;
       const logoStorageRef = ref(storage, imagePath);

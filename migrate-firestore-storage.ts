@@ -1,6 +1,56 @@
 // RUN:: npx tsx migrate-firestore-storage.ts
 
+import { log } from "console";
 import admin from "firebase-admin";
+
+import fs from "fs";
+
+// const raw = fs.readFileSync("paste.txt", "utf8");
+// export function slugifyPartNumber(partNumber: string) {
+//   return partNumber
+//     .trim()
+//     .toUpperCase()
+//     .replace(/[^\w\s-]/g, "") // remove punctuation
+//     .replace(/\s+/g, "-"); // spaces → hyphens
+// }
+
+// // 1) All lines trimmed
+// export const allLines = raw
+//   .split("\n")
+//   .map((l) => l.trim())
+//   .filter((l) => l.length > 0);
+
+// const filePathByKey = new Map<string, string>();
+
+// for (const line of allLines) {
+//   const [, partNumber] = line.split("/");
+//   if (!partNumber) continue;
+
+//   const normalized = partNumber.replace(/-/g, "");
+//   const slugified = slugifyPartNumber(partNumber);
+
+//   // direct partNumber
+//   if (!filePathByKey.has(partNumber)) {
+//     filePathByKey.set(partNumber, line);
+//   }
+//   // normalized (no hyphens)
+//   if (!filePathByKey.has(normalized)) {
+//     filePathByKey.set(normalized, line);
+//   }
+//   // slugified
+//   if (!filePathByKey.has(slugified)) {
+//     filePathByKey.set(slugified, line);
+//   }
+// }
+
+// 2) Unique partNumbers
+// export const ids = allLines.map((line) => {
+//   const [, id] = line.split("/");
+//   return id;
+// });
+
+// console.log("allLines length:", allLines.length);
+// console.log("partNumbers length:", ids.length);
 
 const TechnixMap = [
   {
@@ -1181,54 +1231,380 @@ async function main() {
     },
     "prodApp",
   );
-
+  const sourceDb = sourceApp.firestore();
   const bucket = sourceApp
     .storage()
     .bucket("megha-sales-corporation.firebasestorage.app"); // no "gs://" prefix [web:24]
 
   console.log("✅ Source Firebase Storage initialized.");
 
+  const brandPartImages: string[] = [];
   async function listFiles(prefix: string) {
     const [files] = await bucket.getFiles({ prefix });
     files.forEach((file) => {
       console.log(file.name);
+      if (file.name.split("/")[2])
+        brandPartImages.push(file.name.split("/")[2]);
     });
     console.log(`Total files with prefix "${prefix}": ${files.length}`);
+    console.log("Part Numbers:", brandPartImages);
+    console.log("Part Numbers Length:", brandPartImages.length);
   }
 
-  async function moveFiles() {
-    // DRY RUN toggle
-    const DRY_RUN = false;
-    let count = 0;
+  const autokoiPartNumbersImageNotOk = [
+    "KFMF13900",
+    "KFOF12010",
+    "KFTF11008",
+    "KHMF2052",
+    "KHMF2099",
+    "KHSF5037",
+    "KHSF5048",
+    "KMMF3137",
+    "KMMF3144",
+    "KMMF3145",
+    "KMMF3152",
+    "KMMF3158",
+    "KMMF3159",
+    "KMSF1011",
+    "KMSF1012",
+    "KMSF1013",
+    "KMSF1014",
+    "KMSF1015",
+    "KMSF1016",
+    "KMSF1017",
+    "KMSF1018",
+    "KMSF1019",
+    "KMSF1021",
+    "KMSF1023",
+    "KMSF1024",
+    "KMSF1025",
+    "KMSF1026",
+    "KMSF1027",
+    "KMSF1028",
+    "KMSF1029",
+    "KMSF1030",
+    "KMSF1031",
+    "KMSF1032",
+    "KMSF1033",
+    "KMSF1035",
+    "KMSF1036",
+    "KMSF1037",
+    "KMSF1039",
+    "KMSF1040",
+    "KMSF1041",
+    "KMSF1042",
+    "KMSF1066",
+    "KMSF1071",
+    "KMSF1080",
+    "KMSF1087",
+    "KMSF1109",
+    "KMSF1110",
+    "KMSF1125",
+    "KMSF1127",
+    "KMSF1133",
+    "KMSF1135",
+    "KMSF1138",
+    "KRPF14203",
+    "KRPF14228",
+    "KRPF14243",
+    "KRPF14427",
+    "KRPF14486",
+    "KRPF14493",
+    "KRPF14606",
+    "KRPF14607",
+    "KRPF14610",
+    "KRPF14613",
+    "KRPF14616",
+    "KTAF10032",
+    "KTAF10077",
+    "KTAF10110",
+    "KTMF4026",
+    "KTMF4048",
+    "KTMF4049",
+    "KTMF4050",
+    "KTMF4058",
+  ];
+  const accurubPartNumbersImageNotOk = [
+    "120.1200.85",
+    "120.1200.86",
+    "120.1200.87",
+    "120.207.01",
+    "120.207.04",
+    "120.207.06",
+    "120.207.11",
+    "120.207.12",
+    "120.207.16",
+    "120.207.161",
+    "120.207.23",
+    "120.207.24",
+    "120.207.25",
+    "120.207.31",
+  ];
+  const askPartNumbersImageNotOk = [
+    "AFF/XL/AL/SM/BS6/HLP-8(OS-1)",
+    "AFF/XL/AL/SM/BS6/HLP-8(STD)",
+    "AFF/XL/AL/STAG/2(OS-1)",
+    "AFF/XL/AL/STAG/2(STD)",
+    "AFF/XL/AL/TP/ALS 3&4(OS-1)",
+    "AFF/XL/AL/TP/ALS 3&4(STD)",
+    "AFF/XL/AL/TP/SM/HLP-6(OS-1)",
+    "AFF/XL/AL/TP/SM/HLP-6(STD)",
+    "AFF/XL/AL/TP/SM/HLP-7(OS-1)",
+    "AFF/XL/AL/TP/SM/HLP-7(OS-2)",
+    "AFF/XL/AL/TP/SM/HLP-7(STD)",
+    "AFF/XL/AL/TP/SM/HLP-8(OS-1)",
+    "AFF/XL/AL/TP/SM/HLP-8(STD)",
+    "AFF/XL/AMW/1(OS-1)",
+    "AFF/XL/AMW/1(STD)",
+    "AFF/XL/BB/ECH/MM-25T(OS-1)",
+    "AFF/XL/BB/ECH/MM-25T(STD)",
+    "AFF/XL/EM/1(OS-1)",
+    "AFF/XL/EM/1(STD)",
+    "AFF/XL/FUWA/16(OS-1)",
+    "AFF/XL/FUWA/16(STD)",
+    "AFF/XL/JOST(OS-1)",
+    "AFF/XL/JOST(STD)",
+    "AFF/XL/MAN/RR/10(STD)",
+    "AFF/XL/MAN/RR/8(STD)",
+    "AFF/XL/SW/MZ/1(OS-1)",
+    "AFF/XL/SW/MZ/1(STD)",
+    "AFF/XL/SW/MZ/2(OS-1)",
+    "AFF/XL/SW/MZ/2(STD)",
+    "AFF/XL/YK/4551/16(OS-1)",
+    "AFF/XL/YK/4551/16(STD)",
+    "AFF/XL/YORK/12(STD)",
+  ];
 
-    for (const { filename, partNumber } of accurubMap) {
-      const oldPath = `products/accurub/${filename}`;
-      // const oldPath = `product/technix/${productId}/${filename}`;
-      // const oldPath = `products/orbit/${productId}/${filename}`;
-      const newPath = `products/accurub/${partNumber}/${filename}`;
+  // 1) Normalizer: keep only letters and digits
+  function normalizeCode(value: string): string {
+    return value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+  }
 
-      const file = bucket.file(oldPath);
+  // 2) Build a fast lookup for the "not OK" list
+  const notOkSet = new Set(askPartNumbersImageNotOk.map(normalizeCode));
 
-      // Check if file exists
-      const [exists] = await file.exists();
-      if (!exists) {
-        console.warn(`⚠️ File not found: ${oldPath}`);
-        continue;
+  // 3) After listFiles() has populated autokoiPartImages
+  function findMatches() {
+    const matched: string[] = [];
+    const unmatched: string[] = [];
+
+    for (const imgPart of brandPartImages) {
+      const norm = normalizeCode(imgPart); // e.g. "KMSF 1011" -> "KMSF1011"
+      if (notOkSet.has(norm)) {
+        matched.push(imgPart);
+      } else {
+        unmatched.push(imgPart);
       }
-
-      console.log(`↪️  ${oldPath}  -->  ${newPath}`);
-
-      if (!DRY_RUN) {
-        await file.move(newPath); // moves and deletes original [web:24]
-        console.log(`✅ Moved to ${newPath}`);
-      }
-      count++;
     }
 
-    console.log(`🎉 Done processing Accurub files. ${count} files moved.`);
+    // console.log("Matched partImages:", matched);
+    // console.log("Matched count:", matched.length);
+    // console.log("Unmatched partImages:", unmatched);
+    // console.log("Unmatched count:", unmatched.length);
+
+    return { matched, unmatched };
   }
-  await moveFiles();
-  // await listFiles("products");
+
+  // async function buildPartToBrandData() {
+  //   const snap = await sourceDb.collection("products").get();
+
+  //   const partToBrand: {
+  //     id: string;
+  //     partNumber: string;
+  //     brandId: string;
+  //     fileName: string | null;
+  //     filePath: string | null;
+  //   }[] = [];
+  //   const matchedIds = new Set<string>();
+
+  //   // // Build normalized lookup for storage ids (no hyphens)
+  //   const normalizedIdMap = new Map<string, string>(); // normalized -> original
+  //   for (const storageId of ids) {
+  //     const normalized = storageId.replace(/-/g, "");
+  //     normalizedIdMap.set(normalized, storageId);
+  //   }
+
+  //   snap.forEach((doc) => {
+  //     const data = doc.data() as {
+  //       id?: string;
+  //       partNumber?: string;
+  //       brandId?: string;
+  //     };
+
+  //     if (!data.id || !data.brandId || !data.partNumber) return;
+  //     const pnRaw = data.partNumber;
+  //     const pnNorm = pnRaw.replace(/-/g, "");
+  //     const pnSlug = slugifyPartNumber(pnRaw);
+  //     const filePath =
+  //       filePathByKey.get(pnRaw) ??
+  //       filePathByKey.get(pnNorm) ??
+  //       filePathByKey.get(pnSlug) ??
+  //       null;
+
+  //     const fileName = filePath ? (filePath.split("/").pop() ?? null) : null;
+
+  //     // 1) Direct match with storage id
+  //     if (ids.includes(data.id)) {
+  //       partToBrand.push({
+  //         id: data.id,
+  //         partNumber: data.partNumber,
+  //         brandId: data.brandId,
+  //         fileName: fileName,
+  //         filePath: filePath,
+  //       });
+  //       matchedIds.add(data.id);
+  //       return;
+  //     }
+
+  //     // 2) Try normalized (no hyphens) – if you want this, normalize data.id:
+
+  //     const storageId = normalizedIdMap.get(data.id);
+
+  //     if (storageId) {
+  //       partToBrand.push({
+  //         id: storageId,
+  //         partNumber: data.partNumber,
+  //         brandId: data.brandId,
+  //         fileName: fileName,
+  //         filePath: filePath,
+  //       });
+  //       matchedIds.add(storageId);
+  //     }
+  //   });
+
+  //   const unmatchedIds = ids.filter((id) => !matchedIds.has(id));
+
+  //   console.log("partToBrandData size:", partToBrand.length);
+  //   console.log("partToBrandData:", partToBrand);
+  //   console.log("unmatchedIds size:", unmatchedIds.length);
+  //   console.log("unmatchedIds:", unmatchedIds);
+
+  //   return { partToBrand, unmatchedIds };
+  // }
+  // async function moveFiles() {
+  //   // DRY RUN toggle
+  //   const DRY_RUN = false;
+  //   let count = 0;
+
+  //   const partToBrandMap = await buildPartToBrandData();
+  //   const partToBrandMapPART_1 = partToBrandMap.partToBrand.slice(0, 300);
+  //   const partToBrandMapPART_2 = partToBrandMap.partToBrand.slice(300, 600);
+  //   const partToBrandMapPART_3 = partToBrandMap.partToBrand.slice(600, 900);
+  //   const partToBrandMapPART_4 = partToBrandMap.partToBrand.slice(900);
+
+  //   const parts = [
+  //     partToBrandMapPART_1,
+  //     partToBrandMapPART_2,
+  //     partToBrandMapPART_3,
+  //     partToBrandMapPART_4,
+  //   ];
+
+  //   for (const [index, part] of parts.entries()) {
+  //     for (const { id, filePath, partNumber, fileName, brandId } of part) {
+  //       const oldPath = `${filePath}`;
+  //       // const oldPath = `product/technix/${productId}/${filename}`;
+  //       // const oldPath = `products/orbit/${productId}/${filename}`;
+  //       const newPath = `products/${brandId}/${partNumber}/${fileName}`;
+
+  //       const file = bucket.file(oldPath);
+
+  //       // Check if file exists
+  //       const [exists] = await file.exists();
+  //       if (!exists) {
+  //         console.warn(`⚠️ File not found: ${oldPath} - ${partNumber}`);
+  //         continue;
+  //       }
+
+  //       console.log(`↪️  ${oldPath}  -->  ${newPath}`);
+
+  //       if (!DRY_RUN) {
+  //         await file.move(newPath); // moves and deletes original [web:24]
+  //         console.log(`✅ Moved to ${newPath}`);
+  //       }
+  //       count++;
+  //     }
+  //     console.log(
+  //       `=================== 🎉 Done processing part ${index + 1}. ${count} files moved. ==================`,
+  //     );
+  //   }
+  // }
+  // async function moveSomeFiles() {
+  //   // DRY RUN toggle
+  //   const DRY_RUN = false;
+  //   let count = 0;
+
+  //   for (const { partNumber, filename, brandId } of [
+  //     {
+  //       brandId: "mansarovar",
+  //       filename: "1757931444280-cropped_1757931437212.jpg",
+  //       partNumber: "1018-F",
+  //     },
+  //     {
+  //       brandId: "mansarovar",
+  //       filename: "1757675330008-cropped_1757675302133.jpg",
+  //       partNumber: "630",
+  //     },
+  //     {
+  //       brandId: "mansarovar",
+  //       filename: "1757666644351-cropped_1757666633303.jpg",
+  //       partNumber: "712",
+  //     },
+  //     {
+  //       brandId: "mansarovar",
+  //       filename: "1757674372516-cropped_1757674361829.jpg",
+  //       partNumber: "713",
+  //     },
+  //     {
+  //       brandId: "mansarovar",
+  //       filename: "1757930988067-cropped_1757930980001.jpg",
+  //       partNumber: "808-F",
+  //     },
+  //     {
+  //       brandId: "mansarovar",
+  //       filename: "1757931354140-cropped_1757931346377.jpg",
+  //       partNumber: "812-F",
+  //     },
+  //   ]) {
+  //     const oldPath = `products/${partNumber}/${filename}`;
+  //     // const oldPath = `product/technix/${productId}/${filename}`;
+  //     // const oldPath = `products/orbit/${productId}/${filename}`;
+  //     const newPath = `products/${brandId}/${partNumber}/${filename}`;
+
+  //     const file = bucket.file(oldPath);
+
+  //     // Check if file exists
+  //     const [exists] = await file.exists();
+  //     if (!exists) {
+  //       console.warn(`⚠️ File not found: ${oldPath} - ${partNumber}`);
+  //       continue;
+  //     }
+
+  //     console.log(`↪️  ${oldPath}  -->  ${newPath}`);
+
+  //     if (!DRY_RUN) {
+  //       await file.move(newPath); // moves and deletes original [web:24]
+  //       console.log(`✅ Moved to ${newPath}`);
+  //     }
+  //     count++;
+  //   }
+  //   console.log(
+  //     `=================== 🎉 Done processing. ${count} files moved. ==================`,
+  //   );
+  // }
+  // await moveSomeFiles();
+  await listFiles("products/ask");
+  const { matched, unmatched } = findMatches();
+  console.log("Matched partImages:", matched);
+  console.log("Matched count:", matched.length);
+  console.log("Unmatched partImages:", unmatched);
+  console.log("Unmatched count:", unmatched.length);
+  // console.log(
+  //   "=================== Starting file move ===================",
+  // );
+  // await moveFiles();
+  // console.log(
+  //   "=================== File move completed ===================",
+  // );
 }
 
 main().catch((err) => {
