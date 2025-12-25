@@ -13,21 +13,40 @@ export const productDataSchema = z
     partName: z.string().min(2, "Part Name must be at least 2 characters"),
 
     price: z.coerce.number().min(0, "Price must be at least zero").optional(),
-    discount: z.coerce.number().min(0, "Discount must be at least zero").max(100).optional(),
-    gst: z.coerce.number().min(0, "GST must be at least zero").max(100).optional(),
+    discount: z.coerce
+      .number()
+      .min(0, "Discount must be at least zero")
+      .max(100)
+      .optional(),
+    gst: z.coerce
+      .number()
+      .min(0, "GST must be at least zero")
+      .max(100)
+      .optional(),
 
     stock: z.coerce.number().optional(),
     status: z.enum(["draft", "for-sale", "discontinued", "out-of-stock"]),
-    additionalDetails: z.string(),
+    additionalDetails: z.string().optional(),
     hasSizes: z.boolean().default(false),
     samePriceForAllSizes: z.boolean().default(true),
     sizes: z
       .array(
         z.object({
           size: z.string().min(1, "Size is required"),
-          price: z.coerce.number().min(0, "Price must be at least zero").optional(),
-          discount: z.coerce.number().min(0, "Discount must be at least zero").max(100).optional(),
-          gst: z.coerce.number().min(0, "GST must be at least zero").max(100).optional(),
+          price: z.coerce
+            .number()
+            .min(0, "Price must be at least zero")
+            .optional(),
+          discount: z.coerce
+            .number()
+            .min(0, "Discount must be at least zero")
+            .max(100)
+            .optional(),
+          gst: z.coerce
+            .number()
+            .min(0, "GST must be at least zero")
+            .max(100)
+            .optional(),
         }),
       )
       .optional()
