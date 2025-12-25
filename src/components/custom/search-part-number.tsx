@@ -78,7 +78,10 @@ export default function SearchPartNumber({
       <DialogTrigger asChild>
         <Button
           variant={variant}
-          className={clsx(buttonClassName, "w-full shadow-lg border-1 border-primary")}
+          className={clsx(
+            buttonClassName,
+            "border-primary w-full border-1 shadow-lg",
+          )}
         >
           <SearchIcon /> {showText && <> Search Products</>}
         </Button>
@@ -117,7 +120,7 @@ export default function SearchPartNumber({
                 ✅ Found <strong>{result.length} product(s)</strong> for your
                 search: <strong>{searchedPhrase}</strong>
               </div>
-              <div className="flex max-h-100 flex-col gap-3 overflow-auto p-1 md:max-h-150">
+              <div className="flex max-h-100 flex-col gap-3 overflow-auto p-1 md:max-h-120">
                 {result.map((product) => {
                   return (
                     <div className="flex-1" key={product.id}>
