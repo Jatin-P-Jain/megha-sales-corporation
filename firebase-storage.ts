@@ -369,7 +369,6 @@ async function listFiles(prefix: string) {
   const [files] = await bucket.getFiles({ prefix });
   files.forEach((file) => {
     console.log(file.name);
-
     ogFilePaths.push(file.name);
   });
   console.log(ogFilePaths);
@@ -437,5 +436,5 @@ async function migrateImages(brandId: string) {
   console.log("✅ Ask images migration complete.", movedCount, "files moved.");
 }
 
-listFiles("products/technix/").catch(console.error);
+listFiles("products").catch(console.error);
 // migrateImages("orbit").catch(console.error);
