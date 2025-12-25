@@ -666,7 +666,7 @@ export default function ProductForm({
                     {...field}
                     rows={4}
                     disabled={isSubmitting}
-                    className="w-full resize-y rounded-md border-1 shadow px-2 py-1 text-sm"
+                    className="w-full resize-y rounded-md border-1 px-2 py-1 text-sm shadow"
                     onKeyDown={(e) => {
                       // Prevent form submission on Enter
                       if (e.key === "Enter" && !e.shiftKey) {

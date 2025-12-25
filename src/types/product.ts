@@ -27,7 +27,7 @@ export type Product = {
   sizes?: ProductSize[];
   samePriceForAllSizes?: boolean;
   status: ProductStatus;
-  additionalDetails: string;
+  additionalDetails?: string;
   image?: string;
 };
 export type ProductHit = {

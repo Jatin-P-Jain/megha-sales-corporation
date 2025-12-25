@@ -141,20 +141,14 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
       : []),
   ];
 
-  const {
-    data,
-    loading,
-    hasMore,
-    currentPage,
-    loadPage,
-    totalItems,
-  } = usePaginatedFirestore({
-    collectionPath: "products",
-    pageSize: PAGE_SIZE,
-    orderByField: orderBy,
-    orderDirection: orderDir,
-    filters: filters,
-  });
+  const { data, loading, hasMore, currentPage, loadPage, totalItems } =
+    usePaginatedFirestore({
+      collectionPath: "products",
+      pageSize: PAGE_SIZE,
+      orderByField: orderBy,
+      orderDirection: orderDir,
+      filters: filters,
+    });
 
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
@@ -219,7 +213,7 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
             ))}
           </div>
 
-          <Pagination>
+          <Pagination className="z-50">
             <PaginationContent className="w-full items-center justify-center">
               {currentPage > 1 && (
                 <PaginationItem>
