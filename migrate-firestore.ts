@@ -2,22 +2,22 @@
 
 import admin, { firestore } from "firebase-admin";
 
-import fs from "fs";
+// import fs from "fs";
 
-const raw = fs.readFileSync("paste.txt", "utf8");
-export function slugifyPartNumber(partNumber: string) {
-  return partNumber
-    .trim()
-    .toUpperCase()
-    .replace(/[^\w\s-]/g, "") // remove punctuation
-    .replace(/\s+/g, "-"); // spaces → hyphens
-}
+// const raw = fs.readFileSync("paste.txt", "utf8");
+// export function slugifyPartNumber(partNumber: string) {
+//   return partNumber
+//     .trim()
+//     .toUpperCase()
+//     .replace(/[^\w\s-]/g, "") // remove punctuation
+//     .replace(/\s+/g, "-"); // spaces → hyphens
+// }
 
-// 1) All lines trimmed
-export const allLines = raw
-  .split("\n")
-  .map((l) => l.trim())
-  .filter((l) => l.length > 0);
+// // 1) All lines trimmed
+// export const allLines = raw
+//   .split("\n")
+//   .map((l) => l.trim())
+//   .filter((l) => l.length > 0);
 
 const partNumbers: {
   original: string;
@@ -25,14 +25,14 @@ const partNumbers: {
   slugified: string;
 }[] = [];
 
-for (const line of allLines) {
-  const [, partNumber] = line.split("/");
-  if (!partNumber) continue;
+// for (const line of allLines) {
+//   const [, partNumber] = line.split("/");
+//   if (!partNumber) continue;
 
-  const normalized = partNumber.replace(/-/g, "");
-  const slugified = slugifyPartNumber(partNumber);
-  partNumbers.push({ original: partNumber, normalized, slugified });
-}
+//   const normalized = partNumber.replace(/-/g, "");
+//   // const slugified = slugifyPartNumber(partNumber);
+//   // partNumbers.push({ original: partNumber, normalized, slugified });
+// }
 
 // 🔁 Initialize source (DEV)
 const sourceApp = admin.initializeApp(
@@ -42,6 +42,9 @@ const sourceApp = admin.initializeApp(
   "prodApp",
 );
 const sourceDb = sourceApp.firestore();
+const bucket = sourceApp
+  .storage()
+  .bucket("megha-sales-corporation.firebasestorage.app"); // no "gs://" prefix [web:24]
 
 // ✅ Initialize target (PROD)
 const targetApp = admin.initializeApp(
@@ -2230,9 +2233,10 @@ function findImageForPart(partNumber?: string | null) {
   if (!partNumber) return null;
   const value = partNumber.toString().trim();
   console.log(value);
-  return (
-    askMovedPaths.find((p) => slugifyPartNumber(p.partNumber) === value) ?? null
-  );
+  // return (
+  //   // askMovedPaths.find((p) => slugifyPartNumber(p.partNumber) === value) ?? null
+
+  // );
 }
 
 async function changeSomeImagesInProducts(brandId: string) {
@@ -2265,7 +2269,9 @@ async function changeSomeImagesInProducts(brandId: string) {
     const updates: FirebaseFirestore.UpdateData<{ [field: string]: any }> = {
       image: `products/${brandId}/${data?.id}/${data?.image?.split("/").pop()}`,
     };
-
+    console.log(
+      `Updating Image from ${data?.image} --> products/${brandId}/${data?.id}/${data?.image?.split("/").pop()}`,
+    );
     batch.update(doc.ref, updates);
     updatedCount++;
     ops++;
@@ -2284,15 +2290,19 @@ async function changeSomeImagesInProducts(brandId: string) {
   console.log(`✅ All done. ${updatedCount} products updated.`);
 }
 
-async function isImageOk(url: string): Promise<boolean> {
-  try {
-    const res = await fetch(url, { method: "GET" });
-    if (!res.ok) return false; // non-200 status
+async function isImageOk(url?: string): Promise<boolean> {
+  if (url) {
+    try {
+      const res = await fetch(url, { method: "GET" });
+      if (!res.ok) return false; // non-200 status
 
-    const contentType = res.headers.get("content-type") || "";
-    return contentType.startsWith("image/");
-  } catch (e) {
-    console.error("Error checking image:", url, e);
+      const contentType = res.headers.get("content-type") || "";
+      return contentType.startsWith("image/");
+    } catch (e) {
+      console.error("Error checking image:", url, e);
+      return false;
+    }
+  } else {
     return false;
   }
 }
@@ -2304,7 +2314,6 @@ async function listProductImages(brandId: string) {
 
   let totalCount = 0;
   let count = 0;
-  let tableData: any[] = [];
   let notOkData: any[] = [];
   let notOkCount = 0;
   const storageUrl =
@@ -2325,42 +2334,203 @@ async function listProductImages(brandId: string) {
       console.log(
         `Checking image for Part Number ${data?.partNumber}: ${imageUrl}`,
       );
-      // const ok = await isImageOk(imageUrl);
-      // if (!ok) {
-      //   notOkCount++;
-      //   notOkData.push({
-      //     partNumber: data?.partNumber,
-      //     imagePath: data?.image,
-      //     imageUrl: imageUrl,
-      //   });
-      //   console.log(
-      //     `❌ Image not OK for Part Number ${data?.partNumber}: ${imageUrl}`,
-      //   );
-      // }
-
-      // tableData.push({
-      //   partNumber: data?.partNumber,
-      //   imagePath: data?.image,
-      //   imageUrl: imageUrl,
-      //   ok,
-      // });
+      const ok = await isImageOk(imageUrl);
+      if (!ok) {
+        notOkCount++;
+        notOkData.push({
+          partNumber: data?.partNumber,
+          imagePath: data?.image,
+          imageUrl: imageUrl,
+        });
+        console.log(
+          `❌ Image not OK for Part Number ${data?.partNumber}: ${imageUrl}`,
+        );
+      }
       count++;
     }
     totalCount++;
   }
-  // console.table(tableData);
-  // console.log(
-  //   tableData.map((item) => ({
-  //     partNumber: item.partNumber,
-  //     imagePath: item.imagePath,
-  //   })),
-  // );
-  // console.log(`❌ Total not OK images: ${notOkCount}`);
-  // console.table(notOkData);
-  // console.log(notOkData.map((item) => item.partNumber));
-  console.log(partImagePaths);
   console.log(
     `✅ All done. Listed ${count} products out of ${totalCount} total.`,
+  );
+}
+
+async function updateNotOkImages() {
+  const productsCol = sourceDb.collection("products");
+  const snapshot = await productsCol.get();
+  let batch = sourceDb.batch();
+
+  let updatedCount = 0;
+  let ops = 0;
+  const total = snapshot.docs.length;
+
+  console.log(`🔄 Scanning ${total} products for broken images...`);
+
+  // Inline progress helper
+  function printInlineProgress(
+    current: number,
+    total: number,
+    updated: number,
+  ) {
+    const percentage = total === 0 ? 100 : Math.floor((current / total) * 100);
+    const text = `   Processing: ${current}/${total} (${percentage}%) | Updated: ${updated}`;
+    process.stdout.clearLine(0);
+    process.stdout.cursorTo(0);
+    process.stdout.write(text);
+  }
+
+  let index = 0;
+  for (const doc of snapshot.docs) {
+    index++;
+    printInlineProgress(index, total, updatedCount);
+
+    const data = doc.data() as {
+      id?: string;
+      brandId?: string;
+      partNumber?: string;
+      image?: string;
+    };
+
+    const imagePath = data?.image;
+    if (!imagePath) continue;
+    const storageUrl =
+      "https://firebasestorage.googleapis.com/v0/b/megha-sales-corporation.firebasestorage.app/o/";
+    const imageUrl = `${storageUrl}${encodeURIComponent(imagePath)}?alt=media`;
+    const ok = await isImageOk(imageUrl);
+    const shouldUpdate = !ok;
+
+    if (shouldUpdate) {
+      const updates: FirebaseFirestore.UpdateData<{ [field: string]: any }> = {
+        image: ``,
+      };
+      batch.update(doc.ref, updates);
+      updatedCount++;
+      ops++;
+
+      if (ops >= 450) {
+        await batch.commit();
+        console.log(`\n   💾 Committed batch (${ops} ops)`);
+        batch = sourceDb.batch();
+        ops = 0;
+      }
+    }
+  }
+
+  // Finish processing line
+  process.stdout.clearLine(0);
+  process.stdout.cursorTo(0);
+  console.log(`✔️ Scan complete (${total} products)`);
+
+  if (ops > 0) {
+    await batch.commit();
+    console.log(`💾 Final batch committed (${ops} ops)`);
+  }
+
+  console.log(`✅ All done. ${updatedCount} products updated.`);
+}
+
+async function setProductImages() {
+  console.log("🔄 Fetching files from bucket...");
+  const [files] = await bucket.getFiles({ prefix: "products" });
+  console.log(`📁 Found ${files.length} files in products/`);
+
+  const productsCol = sourceDb.collection("products");
+  console.log("🔄 Fetching all products...");
+  const snapshot = await productsCol.get();
+  console.log(`📋 Found ${snapshot.docs.length} products`);
+
+  // Create lookup map for fast product lookup by ID
+  const productMap = new Map();
+  snapshot.docs.forEach((doc) => {
+    const data = doc.data() as {
+      id?: string;
+      brandId?: string;
+      partNumber?: string;
+    };
+    if (data.id) {
+      productMap.set(data.id, { doc: doc, data });
+    }
+  });
+
+  let batch = sourceDb.batch();
+  let updatedCount = 0;
+  let ops = 0;
+  const total = files.length;
+
+  console.log(`🔄 Processing ${total} files...`);
+
+  // Inline progress helper
+  function printInlineProgress(
+    current: number,
+    total: number,
+    updated: number,
+  ) {
+    const percentage = total === 0 ? 100 : Math.floor((current / total) * 100);
+    const text = `   Processing: ${current}/${total} (${percentage}%) | Updated: ${updated}`;
+    process.stdout.clearLine(0);
+    process.stdout.cursorTo(0);
+    process.stdout.write(text);
+  }
+
+  let index = 0;
+  for (const file of files) {
+    index++;
+    printInlineProgress(index, total, updatedCount);
+
+    const fileParts = file.name.split("/");
+    if (fileParts.length < 4 || fileParts[0] !== "products") continue;
+
+    const brand = fileParts[1];
+    const partId = fileParts[2];
+    const fileName = fileParts.slice(3).join("/"); // Handle subfolders if any
+
+    // Find matching product
+    const productMatch = productMap.get(partId);
+    if (!productMatch) continue;
+
+    const { doc, data } = productMatch;
+
+    // Only update if image is missing or different
+    const currentImage = data.image || "";
+    const newImagePath = `products/${brand}/${partId}/${fileName}`;
+    // console.log({ newImagePath });
+
+    const shouldUpdate = !currentImage || currentImage !== newImagePath;
+
+    if (shouldUpdate && !DRY_RUN) {
+      const updates: FirebaseFirestore.UpdateData<{ [field: string]: any }> = {
+        image: newImagePath,
+      };
+      if (!DRY_RUN) {
+        batch.update(doc.ref, updates);
+      }
+      updatedCount++;
+      ops++;
+
+      if (!DRY_RUN && ops >= 450) {
+        await batch.commit();
+        console.log(`\n   💾 Committed batch (${ops} ops)`);
+        batch = sourceDb.batch();
+        ops = 0;
+      }
+    } else if (shouldUpdate) {
+      // DRY RUN - just count
+      updatedCount++;
+    }
+  }
+
+  // Finish processing line
+  process.stdout.clearLine(0);
+  process.stdout.cursorTo(0);
+  console.log(`✔️ File processing complete (${total} files)`);
+
+  if (!DRY_RUN && ops > 0) {
+    await batch.commit();
+    console.log(`💾 Final batch committed (${ops} ops)`);
+  }
+
+  console.log(
+    `✅ All done. ${updatedCount} products would be/will be updated.`,
   );
 }
 
@@ -2373,5 +2543,8 @@ async function listProductImages(brandId: string) {
 // createMap().catch(console.error);
 // changeFieldInProductsFromMap().catch(console.error);
 // changeImagesInProducts().catch(console.error);
-// changeSomeImagesInProducts("technix").catch(console.error);
-listProductImages("technix").catch(console.error);
+// changeSomeImagesInProducts("autokoi").catch(console.error);
+// listProductImages("technix").catch(console.error);
+// updateNotOkImages().catch(console.error);
+const DRY_RUN = false;
+setProductImages().catch(console.error);
