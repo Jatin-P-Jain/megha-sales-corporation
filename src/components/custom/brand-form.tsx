@@ -25,7 +25,7 @@ import { Textarea } from "../ui/textarea";
 import { TagInput } from "./tag-input";
 import MultiMediaUploader, { MediaUpload } from "./multi-media-uploader";
 import ImageUploader, { ImageUpload } from "./image-uploader";
-import { capitalize } from "@/lib/capitalize";
+import { capitalizePhrase } from "@/lib/capitalize";
 import imageUrlFormatter from "@/lib/image-urlFormatter";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 
@@ -119,7 +119,7 @@ export default function BrandForm({
                       <Input
                         disabled={isSubmitting}
                         {...field}
-                        value={capitalize(field.value)}
+                        value={capitalizePhrase(field.value)}
                       />
                     </FormControl>
                     <FormMessage />
