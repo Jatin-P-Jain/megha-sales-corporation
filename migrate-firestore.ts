@@ -2253,24 +2253,26 @@ async function changeSomeImagesInProducts(brandId: string) {
       brandId?: string;
       partNumber?: string;
       image?: string;
+      partCategory?: string;
     };
 
     // const match = findImageForPart(data?.id);
     // console.log(match);
 
-    const shouldUpdate = data.brandId === brandId;
+    const shouldUpdate =
+      data.brandId === brandId && data.partCategory === "BRAKE SHOES";
     if (!shouldUpdate) {
-      console.log(
-        `Part Number ${data?.partNumber} --> shouldUpdate: ${shouldUpdate}`,
-      );
+      // console.log(
+      //   `Part Number ${data?.partNumber} --> shouldUpdate: ${shouldUpdate}`,
+      // );
       continue;
     }
 
     const updates: FirebaseFirestore.UpdateData<{ [field: string]: any }> = {
-      image: `products/${brandId}/${data?.id}/${data?.image?.split("/").pop()}`,
+      image: `products/super-circle/brake-shoes/WhatsApp Image 2025-11-21 at 19.14.57.jpeg`,
     };
     console.log(
-      `Updating Image from ${data?.image} --> products/${brandId}/${data?.id}/${data?.image?.split("/").pop()}`,
+      `Updating Image from ${data?.image} --> products/super-circle/brake-shoes/WhatsApp Image 2025-11-21 at 19.14.57.jpeg`,
     );
     batch.update(doc.ref, updates);
     updatedCount++;
@@ -2543,8 +2545,8 @@ async function setProductImages() {
 // createMap().catch(console.error);
 // changeFieldInProductsFromMap().catch(console.error);
 // changeImagesInProducts().catch(console.error);
-// changeSomeImagesInProducts("autokoi").catch(console.error);
+// changeSomeImagesInProducts("super-circle").catch(console.error);
 // listProductImages("technix").catch(console.error);
 // updateNotOkImages().catch(console.error);
 const DRY_RUN = false;
-setProductImages().catch(console.error);
+// setProductImages().catch(console.error);
