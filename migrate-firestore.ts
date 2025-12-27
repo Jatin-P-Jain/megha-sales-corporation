@@ -1942,11 +1942,24 @@ async function changeFieldInProductsFromMap() {
 function matchesPartNumber(pn: string | undefined | null) {
   if (!pn) return false;
 
-  return partNumbers.some(
-    (p) => p.original === pn || p.normalized === pn || p.slugified === pn,
-  );
+  return [
+    "16X1.5X65",
+    "C 19.125",
+    "C 19.191",
+    "C 19.195",
+    "C 19.196",
+    "C 19.211",
+    "C 19.215",
+    "C 19.216",
+    "C 19.217",
+    "C 19.232",
+    "C 20.116",
+    "C 20.152",
+    "C 20.217",
+    "C P20.376",
+  ].some((p) => p === pn);
 }
-async function changeImagesInProducts() {
+async function changeImagesInProducts(brandId: string, imagePath: string) {
   const productsCol = sourceDb.collection("products");
   const snapshot = await productsCol.get();
   let batch = sourceDb.batch();
@@ -1961,24 +1974,31 @@ async function changeImagesInProducts() {
       image?: string;
     };
 
-    const shouldUpdate = matchesPartNumber(data?.partNumber);
+    const shouldUpdate =
+      data?.brandId === brandId && matchesPartNumber(data?.partNumber);
     if (!shouldUpdate) {
-      console.log(
-        `Part Number ${data?.partNumber} --> shouldUpdate: ${shouldUpdate} --> ${data?.image}`,
-      );
+      continue;
     }
 
     if (shouldUpdate) {
-      const fileName = data?.image?.split("/").pop();
       const updates: FirebaseFirestore.UpdateData<{ [field: string]: any }> = {
-        image: `products/${data?.brandId}/${data?.partNumber}/${fileName}`,
+        image: `${imagePath}`,
       };
+      console.log(
+        `${DRY_RUN ? "DRY RUN: " : ""}Part Number ${data?.partNumber} --> shouldUpdate: ${shouldUpdate} --> ${imagePath}`,
+      );
 
-      batch.update(doc.ref, updates);
+      if (DRY_RUN) {
+        // Do nothing in dry run mode
+      } else {
+        batch.update(doc.ref, updates);
+      }
       updatedCount++;
       ops++;
 
-      if (ops >= 450) {
+      if (!DRY_RUN && ops >= 450) {
+        console.log(`Committing batch of ${ops} operations...`);
+
         await batch.commit();
         batch = sourceDb.batch();
         ops = 0;
@@ -1986,7 +2006,8 @@ async function changeImagesInProducts() {
     }
   }
 
-  if (ops > 0) {
+  if (!DRY_RUN && ops > 0) {
+    console.log(`Committing final batch of ${ops} operations...`);
     await batch.commit();
   }
 
@@ -2535,8 +2556,129 @@ async function setProductImages() {
     `✅ All done. ${updatedCount} products would be/will be updated.`,
   );
 }
+export function capitalize(str: string): string {
+  if (!str) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+export function capitalizePhrase(phrase: string): string {
+  const phraseSmallCase = phrase.toLowerCase();
+  const strParts = phraseSmallCase.split(" ");
+  const capitalizedParts = strParts.map((part) => capitalize(part));
+  return capitalizedParts.join(" ");
+}
+function capitalizeValue(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    // array of strings
+    return value.map((item) =>
+      typeof item === "string" ? capitalizePhrase(item) : item,
+    );
+  }
+  if (typeof value === "string") {
+    // single string
+    return capitalizePhrase(value);
+  }
+  return value;
+}
+async function capitalizedFieldValues(collection: string) {
+  const brandFields = [
+    "companies",
+    "vehicleCompanies",
+    "vehicleNames",
+    "partCategories",
+  ] as const;
+
+  const productFields = [
+    "companyName",
+    "vehicleCompany",
+    "vehicleNames", // may be array
+    "partCategory",
+  ] as const;
+
+  const productsCol = sourceDb.collection(collection);
+  const snapshot = await productsCol.get();
+  let batch = sourceDb.batch();
+  let updatedCount = 0;
+  let ops = 0;
+
+  console.log(`🔄 Found ${snapshot.docs.length} products`);
+
+  for (const doc of snapshot.docs) {
+    const data = doc.data() as Record<string, unknown>;
+    let docHasUpdates = false;
+    const updates: FirebaseFirestore.UpdateData<{ [field: string]: any }> = {};
+
+    const fields = collection === "brands" ? brandFields : productFields;
+
+    for (const field of fields) {
+      const value = data[field];
+      if (value == null) continue;
+
+      let capitalized: unknown = value;
+
+      if (field === "vehicleNames") {
+        // Special handling: split on "/", capitalize each part, then rejoin with "/"
+        if (Array.isArray(value)) {
+          capitalized = value.map((item) => {
+            if (typeof item !== "string") return item;
+            return item
+              .split("/")
+              .map((seg) => capitalizePhrase(seg))
+              .join("/");
+          });
+        } else if (typeof value === "string") {
+          capitalized = value
+            .split("/")
+            .map((seg) => capitalizePhrase(seg))
+            .join("/");
+        }
+      } else {
+        capitalized = capitalizeValue(value);
+      }
+
+      const changed =
+        Array.isArray(value) && Array.isArray(capitalized)
+          ? capitalized.some((v, i) => v !== value[i]) ||
+            capitalized.length !== value.length
+          : capitalized !== value;
+
+      if (changed) {
+        updates[field] = capitalized;
+        docHasUpdates = true;
+      }
+    }
+
+    if (docHasUpdates) {
+      console.log(`✨ Updating product ${doc.id} with:`, updates);
+
+      if (!DRY_RUN) {
+        batch.update(doc.ref, updates);
+      }
+
+      updatedCount++;
+      ops++;
+
+      if (!DRY_RUN && ops >= 450) {
+        await batch.commit();
+        console.log(`💾 Committed batch (${ops} ops)`);
+        batch = sourceDb.batch();
+        ops = 0;
+      }
+    }
+  }
+
+  if (!DRY_RUN && ops > 0) {
+    await batch.commit();
+  }
+
+  console.log(
+    `✅ All done. ${updatedCount} items ${
+      DRY_RUN ? "would be updated (DRY RUN)" : "updated"
+    }.`,
+  );
+}
 
 // Usage
+const DRY_RUN = false;
 // renameBrandDoc().catch(console.error);
 // replaceHyphensInProducts().catch(console.error);
 // changeFieldInProducts().catch(console.error);
@@ -2544,9 +2686,12 @@ async function setProductImages() {
 // moveProducts().catch(console.error);
 // createMap().catch(console.error);
 // changeFieldInProductsFromMap().catch(console.error);
-// changeImagesInProducts().catch(console.error);
+changeImagesInProducts(
+  "nxt",
+  "products/nxt/hex-bolt/Screenshot 2025-12-27 at 18.50.21.png",
+).catch(console.error);
 // changeSomeImagesInProducts("super-circle").catch(console.error);
 // listProductImages("technix").catch(console.error);
 // updateNotOkImages().catch(console.error);
-const DRY_RUN = false;
 // setProductImages().catch(console.error);
+// capitalizedFieldValues("products").catch(console.error);

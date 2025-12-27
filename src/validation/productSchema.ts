@@ -11,7 +11,6 @@ export const productDataSchema = z
     partCategory: z.string().min(1, "Select a Part Category"),
     partNumber: z.string().min(2, "Part Number must be at least 2 characters"),
     partName: z.string().min(2, "Part Name must be at least 2 characters"),
-
     price: z.coerce.number().min(0, "Price must be at least zero").optional(),
     discount: z.coerce
       .number()
@@ -26,7 +25,7 @@ export const productDataSchema = z
 
     stock: z.coerce.number().optional(),
     status: z.enum(["draft", "for-sale", "discontinued", "out-of-stock"]),
-    additionalDetails: z.string().optional(),
+    additionalDetails: z.string(),
     hasSizes: z.boolean().default(false),
     samePriceForAllSizes: z.boolean().default(true),
     sizes: z
