@@ -1,4 +1,5 @@
 "use server";
+import { BusinessProfile } from "@/data/businessProfile";
 import { auth, fireStore } from "@/firebase/server";
 import { userProfileDataSchema } from "@/validation/profileSchema";
 import { DecodedIdToken } from "firebase-admin/auth";
@@ -8,8 +9,9 @@ export const updateUserProfile = async (
     email: string;
     displayName: string;
     phone: string;
-    role: string;
-    firmName?: string;
+    role?: string;
+    gstNumber?: string;
+    businessProfile?: BusinessProfile | null;
     photo?: string;
   },
   verifiedToken: DecodedIdToken | null,
@@ -37,13 +39,11 @@ export const updateUserProfile = async (
     displayName: data.displayName,
     email: data.email,
   });
-  console.log("update user token");
 
   await fireStore
     .collection("users")
     .doc(uid)
     .update({ ...userData, updatedAt: new Date() });
-  console.log("update user in db");
 
   const userRecord = await auth.getUser(uid);
   const existingClaims = userRecord.customClaims ?? {};

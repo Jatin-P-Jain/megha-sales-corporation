@@ -40,7 +40,7 @@ export default async function Profile() {
         ? verifiedToken.phone_number.slice(3)
         : ""),
     role,
-    firmName: user?.firmName ?? "",
+    gstNumber: user?.gstNumber ?? "",
     otherUserRole,
     photoUrl: user?.photoUrl ?? verifiedToken?.picture ?? "",
   };
@@ -65,7 +65,7 @@ export default async function Profile() {
             displayName: mergedUser.displayName,
             phone: mergedUser.phone,
             role: mergedUser.role,
-            firmName: mergedUser.firmName,
+            gstNumber: mergedUser.gstNumber,
             otherUserRole: mergedUser.otherUserRole,
             photoUrl: mergedUser.photoUrl,
           }}

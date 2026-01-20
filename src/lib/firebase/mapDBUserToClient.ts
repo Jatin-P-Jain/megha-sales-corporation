@@ -9,7 +9,7 @@ export function mapDbUserToClientUser(
     email: dbUser?.email || null,
     phone: dbUser?.phone || null,
     displayName: dbUser?.displayName || null,
-    firmName: dbUser?.firmName || undefined,
+    gstNumber: dbUser?.gstNumber || undefined,
     photoUrl: dbUser?.photoUrl || null,
     profileComplete: dbUser?.profileComplete ?? false,
     firebaseAuth: dbUser?.firebaseAuth || undefined,

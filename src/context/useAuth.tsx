@@ -35,9 +35,18 @@ type AuthContextType = {
   customClaims: ParsedToken | null;
   logout: () => Promise<void>;
   loginWithGoogle: () => Promise<User | undefined>;
-  loginWithEmailAndPassword: (data: { email: string; password: string }) => Promise<User | undefined>;
-  handleSendOTP: (mobile: string, appVerifier: RecaptchaVerifier) => Promise<ConfirmationResult>;
-  verifyOTP: (otp: string, confirmationResult: ConfirmationResult) => Promise<User | undefined>;
+  loginWithEmailAndPassword: (data: {
+    email: string;
+    password: string;
+  }) => Promise<User | undefined>;
+  handleSendOTP: (
+    mobile: string,
+    appVerifier: RecaptchaVerifier,
+  ) => Promise<ConfirmationResult>;
+  verifyOTP: (
+    otp: string,
+    confirmationResult: ConfirmationResult,
+  ) => Promise<User | undefined>;
 };
 
 export const AuthContext = createContext<AuthContextType | null>(null);
@@ -116,7 +125,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         displayName: user.displayName ?? null,
         role: result.claims.admin ? "admin" : null,
         photoUrl: user.photoURL,
-        firmName: "",
+        gstNumber: "",
         firebaseAuth: result.claims.firebase
           ? {
               identities: result.claims.firebase.identities ?? {},
@@ -177,9 +186,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
         },
         loginWithGoogle,
-        loginWithEmailAndPassword: ({ email, password }) => loginWithEmailAndPass(email, password),
+        loginWithEmailAndPassword: ({ email, password }) =>
+          loginWithEmailAndPass(email, password),
         handleSendOTP: (mobile, appVerifier) => sendOTP(mobile, appVerifier),
-        verifyOTP: (otp, confirmationResult) => verifyOTP(otp, confirmationResult),
+        verifyOTP: (otp, confirmationResult) =>
+          verifyOTP(otp, confirmationResult),
       }}
     >
       {children}

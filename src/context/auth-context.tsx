@@ -91,7 +91,7 @@
 //           displayName: user.displayName ?? null,
 //           role: result?.claims?.admin ? "admin" : null,
 //           photoUrl: user.photoURL,
-//           firmName: "",
+//           gstNumber: "",
 //           firebaseAuth,
 //         };
 

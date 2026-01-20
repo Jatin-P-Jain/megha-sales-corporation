@@ -1,4 +1,3 @@
-// lib/auth/firebase-auth.ts
 import {
   GoogleAuthProvider,
   RecaptchaVerifier,
