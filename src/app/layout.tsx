@@ -18,8 +18,8 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: "Megha Sales Corporation",
   description: "Auto accessories store in Raipur, Chhattisgarh",
-  icons: "/icons/favicon.svg",
-  manifest: "/manifest.json",
+  icons: "/favicon.svg",
+  manifest: "/site.webmanifest.json",
 };
 
 export default async function RootLayout({
