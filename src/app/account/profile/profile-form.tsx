@@ -156,9 +156,10 @@ export default function ProfileForm({
       } else {
         setGstDetails(data);
       }
-    } catch (err) {
+    } catch (err: unknown) {
       setGstError("Failed to fetch GST details");
       setGstDetails(null);
+      console.error("GST fetch error:", err);
     } finally {
       setLoadingGst(false);
     }
@@ -552,7 +553,9 @@ export default function ProfileForm({
                           <GstDetails data={gstDetails} loading={false} />
                         </div>
                       )}
-
+                      {gstError && (
+                        <div className="text-destructive">{gstError}</div>
+                      )}
                       <FormMessage />
                     </FormItem>
                   );
