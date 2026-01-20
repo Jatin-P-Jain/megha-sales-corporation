@@ -74,7 +74,6 @@ export default async function RootLayout({
         <Analytics />
         <SpeedInsights />
       </body>
-      // Inside your RootLayout (layout.tsx)
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
