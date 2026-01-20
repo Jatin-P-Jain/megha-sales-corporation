@@ -74,6 +74,26 @@ export default async function RootLayout({
         <Analytics />
         <SpeedInsights />
       </body>
+      // Inside your RootLayout (layout.tsx)
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "Megha Sales Corporation",
+            url: "https://www.meghasalescorporation.in",
+            logo: "https://www.meghasalescorporation.in/favicon.png",
+            contactPoint: {
+              "@type": "ContactPoint",
+              telephone: "+91-9425505557",
+              contactType: "sales",
+              areaServed: "IN",
+              availableLanguage: ["en", "hi"],
+            },
+          }),
+        }}
+      />
     </html>
   );
 }
