@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,9 +13,10 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { useState } from "react";
+import { GstDetailsData } from "@/data/businessProfile";
 
 interface GstDetailsProps {
-  data: any;
+  data: GstDetailsData | null;
   loading?: boolean;
 }
 
@@ -54,7 +55,7 @@ export function GstDetails({ data, loading = false }: GstDetailsProps) {
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex flex-col items-center justify-between md:flex-row">
-          <div className="flex flex-1 items-center gap-3 w-full">
+          <div className="flex w-full flex-1 items-center gap-3">
             <CheckCircle2 className="h-6 w-6 text-green-600" />
             <div>
               <p className="text-base font-semibold md:text-lg">{tradeNam}</p>
