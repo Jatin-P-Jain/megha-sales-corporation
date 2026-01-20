@@ -160,14 +160,14 @@ export default function AccountPage({
             <span className="text-muted-foreground text-center text-xs">
               Your Unique Identification Number (UID) in our system :
             </span>
-            <span className="text-primary flex gap-2 text-sm font-semibold justify-center items-center">
+            <span className="text-primary flex items-center justify-center gap-2 text-sm font-semibold">
               {clientUser.uid}
               <CopyIcon
-              className="text-primary size-4 cursor-pointer"
-              onClick={() => {
-                navigator.clipboard.writeText(clientUser.uid);
-                toast.success("UID copied to clipboard!");
-              }}
+                className="text-primary size-4 cursor-pointer"
+                onClick={() => {
+                  navigator.clipboard.writeText(clientUser.uid);
+                  toast.success("UID copied to clipboard!");
+                }}
               />
             </span>
           </div>
@@ -195,9 +195,9 @@ export default function AccountPage({
               </span>
             </li>
             <li className="flex items-center justify-between">
-              <span className="text-muted-foreground text-sm">Firm Name:</span>{" "}
+              <span className="text-muted-foreground text-sm">GST Number:</span>{" "}
               <span className="text-primary font-semibold">
-                {clientUser.firmName ?? "-"}
+                {clientUser.gstNumber ?? "-"}
               </span>
             </li>
           </ul>

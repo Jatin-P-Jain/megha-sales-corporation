@@ -31,6 +31,7 @@ import {
   CheckCircle2,
   ChevronsLeftIcon,
   ChevronsUpIcon,
+  CloudDownload,
   Loader2,
   Loader2Icon,
   SaveIcon,
@@ -47,6 +48,8 @@ import Image from "next/image";
 import { GoogleAuthProvider, linkWithPopup } from "firebase/auth";
 import { setToken } from "@/context/actions";
 import useIsMobile from "@/hooks/useIsMobile";
+import { GstDetails } from "@/components/custom/gst-details";
+import { GstDetailsData } from "@/data/businessProfile";
 
 export default function ProfileForm({
   defaultValues,
@@ -63,6 +66,10 @@ export default function ProfileForm({
     !!defaultValues?.phone ? true : false,
   );
   const [isAccountLinking, setIsAccountLinking] = useState(false);
+  const [gstDetails, setGstDetails] = useState<GstDetailsData | null>(null);
+  const [loadingGst, setLoadingGst] = useState(false);
+  const [gstError, setGstError] = useState<string | null>(null);
+
   const { otpReset, otpSent, sendingOtp, isVerifying, sendOtp, verifyOtp } =
     useMobileOtp({
       onSuccess: () => {
@@ -135,6 +142,29 @@ export default function ProfileForm({
     }
   };
 
+  const gstNumber = form.watch("gstNumber");
+
+  const fetchGstDetails = async (gstin: string) => {
+    setLoadingGst(true);
+    setGstError(null);
+    try {
+      const res = await fetch(`/api/gst-lookup?gstin=${gstin}`);
+      const data = await res.json();
+      if (data.flag !== true) {
+        setGstError("Invalid GSTIN or no data found");
+        setGstDetails(null);
+      } else {
+        setGstDetails(data);
+      }
+    } catch (err: unknown) {
+      setGstError("Failed to fetch GST details");
+      setGstDetails(null);
+      console.error("GST fetch error:", err);
+    } finally {
+      setLoadingGst(false);
+    }
+  };
+
   const handleSubmit = async (data: z.infer<typeof userProfileSchema>) => {
     try {
       delete data.otp;
@@ -142,7 +172,35 @@ export default function ProfileForm({
 
       const finalRole =
         data.role === "other" && otherUserRole ? otherUserRole : data.role;
-      await updateUserProfile({ ...rest, role: finalRole }, verifiedToken);
+
+      // Validate and prepare businessProfile from gstDetails
+      const businessProfile =
+        gstDetails?.flag === true
+          ? {
+              gstin: gstDetails.data.gstin,
+              legalName: gstDetails.data.lgnm,
+              tradeName: gstDetails.data.tradeNam,
+              address: gstDetails.data.pradr?.adr || "",
+              status: gstDetails.data.sts,
+              registrationDate: gstDetails.data.rgdt,
+              natureOfBusiness: gstDetails.data.nba || [],
+              constitutionType: gstDetails.data.ctb,
+              jurisdiction: gstDetails.data.ctj,
+              verified: true,
+              verifiedata: gstDetails.data, // Full verified data for compliance
+              verifiedAt: new Date().toISOString(),
+            }
+          : null;
+
+      await updateUserProfile(
+        {
+          ...rest,
+          role: finalRole,
+          businessProfile, // Will be null if no valid GST details
+        },
+        verifiedToken,
+      );
+
       await auth.refreshClientUser();
       toast.success("Success!", {
         description: "Your profile has been saved successfully!",
@@ -201,21 +259,7 @@ export default function ProfileForm({
                   );
                 }}
               />
-              <FormField
-                control={form.control}
-                name="firmName"
-                render={({ field }) => {
-                  return (
-                    <FormItem>
-                      <FormLabel>Your Firm Name</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="Shop or Firm Name" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  );
-                }}
-              />
+
               <div className="flex flex-col">
                 <FormField
                   control={form.control}
@@ -292,19 +336,17 @@ export default function ProfileForm({
                   className={clsx(
                     !otpSent &&
                       !isVerified &&
-                      "grid grid-cols-[8fr_1fr] items-end justify-center gap-2",
+                      "grid grid-cols-[8fr_1fr] items-center justify-center gap-2",
                   )}
                 >
                   <FormField
                     control={form.control}
                     name="phone"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="">
                         <FormLabel className="flex items-start gap-1">
                           Your mobile number
-                          <span className="text-muted-foreground text-xs">
-                            *
-                          </span>
+                          <span className="text-xs">*</span>
                         </FormLabel>
                         <FormControl>
                           <Input
@@ -324,7 +366,7 @@ export default function ProfileForm({
                     <Button
                       disabled={!isPhoneValid}
                       type="button"
-                      className="self-end"
+                      className=""
                       onClick={() => sendOtp(phoneNumber)}
                     >
                       {sendingOtp ? (
@@ -406,7 +448,7 @@ export default function ProfileForm({
                   <FormItem className="flex flex-col">
                     <FormLabel className="flex items-start gap-1">
                       Your role or business type
-                      <span className="text-muted-foreground text-xs">*</span>
+                      {/* <span className="text-muted-foreground text-xs">*</span> */}
                     </FormLabel>
                     {selectedRole === "admin" && (
                       <span className="text-xs text-green-700">
@@ -457,14 +499,76 @@ export default function ProfileForm({
                   }}
                 />
               )}
+              <FormField
+                control={form.control}
+                name="gstNumber"
+                render={({ field }) => {
+                  return (
+                    <FormItem>
+                      <FormLabel>GSTIN Number</FormLabel>
+                      <FormControl>
+                        <div className="flex flex-col gap-2 md:flex-row">
+                          <Input
+                            {...field}
+                            placeholder="Enter 15-digit GSTIN"
+                            className={clsx(
+                              gstDetails &&
+                                "border-green-300 ring-1 ring-green-200",
+                              !gstDetails &&
+                                gstNumber?.length === 15 &&
+                                "border-orange-300",
+                            )}
+                          />
+                          {!loadingGst && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => fetchGstDetails(gstNumber || "")}
+                              disabled={
+                                gstNumber?.length !== 15 ||
+                                loadingGst ||
+                                isSubmitting
+                              }
+                              className="gap-2"
+                            >
+                              <span>Get Details</span>
+                              {loadingGst ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <CloudDownload className="h-4 w-4" />
+                              )}
+                            </Button>
+                          )}
+                        </div>
+                      </FormControl>
+
+                      {/* Only show GST details or loading after manual fetch */}
+                      {loadingGst && (
+                        <div className="mt-3">
+                          <GstDetails data={null} loading={true} />
+                        </div>
+                      )}
+                      {gstDetails && (
+                        <div className="mt-3">
+                          <GstDetails data={gstDetails} loading={false} />
+                        </div>
+                      )}
+                      {gstError && (
+                        <div className="text-destructive">{gstError}</div>
+                      )}
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
               <Button
-                disabled={!isVerified}
+                disabled={!isVerified || isSubmitting || loadingGst}
                 type="submit"
                 className="w-full cursor-pointer tracking-wide uppercase"
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2Icon className="size-4 animate-spin" />
+                    <Loader2 className="size-4 animate-spin" />
                     Saving Profile
                   </>
                 ) : (

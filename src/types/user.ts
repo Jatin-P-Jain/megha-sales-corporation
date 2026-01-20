@@ -16,7 +16,7 @@ export type UserData = {
   email: string | null;
   phone: string | null;
   displayName: string | null;
-  firmName?: string;
+  gstNumber?: string;
   photoUrl?: string | null;
   profileComplete?: boolean;
   firebaseAuth?: FirebaseAuthData;

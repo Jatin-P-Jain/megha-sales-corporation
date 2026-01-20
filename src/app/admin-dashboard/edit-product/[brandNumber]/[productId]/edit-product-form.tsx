@@ -194,7 +194,7 @@ export default function EditProductForm({
           discount,
           gst,
           status,
-          additionalDetails,
+          additionalDetails: additionalDetails ?? "",
           stock,
           hasSizes: hasSizes ?? false,
           samePriceForAllSizes: samePriceForAllSizes ?? true,
