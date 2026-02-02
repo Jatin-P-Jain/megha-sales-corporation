@@ -58,7 +58,6 @@ export default function ProfileForm({
   defaultValues?: z.infer<typeof userProfileDataSchema>;
   verifiedToken: DecodedIdToken | null;
 }) {
-  const isMobile = useIsMobile();
   const auth = useAuth();
   const user = auth.currentUser;
   const recaptchaVerifier = useRecaptcha();
@@ -173,7 +172,6 @@ export default function ProfileForm({
       const finalRole =
         data.role === "other" && otherUserRole ? otherUserRole : data.role;
 
-      // Validate and prepare businessProfile from gstDetails
       const businessProfile =
         gstDetails?.flag === true
           ? {
@@ -207,6 +205,7 @@ export default function ProfileForm({
       });
       window.location.assign("/");
     } catch (err: unknown) {
+      console.error("Profile Submit error:", err);
       if (err instanceof Error) {
         toast.error(err.message || "Failed to update profile");
       } else {
@@ -300,19 +299,20 @@ export default function ProfileForm({
                                 )}
                               </Button>
                               <span className="m-2 flex justify-center text-[14px] text-zinc-500 md:mx-4">
-                                {!isMobile ? (
+                                {/* {!isMobile ? (
                                   <ChevronsLeftIcon className="size-4" />
                                 ) : (
                                   <ChevronsUpIcon className="size-4" />
-                                )}
+                                )} */}
+                                or
                               </span>
                             </>
                           )}
                           <FormControl className="w-full">
                             <Input
                               {...field}
-                              placeholder="Linked Google email will appear here"
-                              readOnly={true}
+                              placeholder="Your email"
+                              readOnly={!!defaultValues?.email}
                               className={clsx(
                                 defaultValues?.email && "w-full font-semibold",
                               )}
@@ -336,49 +336,51 @@ export default function ProfileForm({
                   className={clsx(
                     !otpSent &&
                       !isVerified &&
-                      "grid grid-cols-[8fr_1fr] items-center justify-center gap-2",
+                      "flex w-full items-center justify-center gap-2",
                   )}
                 >
                   <FormField
                     control={form.control}
                     name="phone"
                     render={({ field }) => (
-                      <FormItem className="">
+                      <FormItem className="w-full">
                         <FormLabel className="flex items-start gap-1">
                           Your mobile number
                           <span className="text-xs">*</span>
                         </FormLabel>
                         <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="Mobile Number"
-                            readOnly={!!defaultValues?.phone || otpSent}
-                            className={clsx(
-                              !!defaultValues?.phone && "font-semibold",
+                          <div className="flex w-full gap-2">
+                            <Input
+                              {...field}
+                              placeholder="Mobile Number"
+                              readOnly={!!defaultValues?.phone || otpSent}
+                              className={clsx(
+                                !!defaultValues?.phone && "font-semibold",
+                              )}
+                            />
+                            {!otpSent && !isVerified && (
+                              <Button
+                                disabled={!isPhoneValid}
+                                type="button"
+                                className=""
+                                onClick={() => sendOtp(phoneNumber)}
+                              >
+                                {sendingOtp ? (
+                                  <>
+                                    <Loader2 className="size-4 animate-spin" />{" "}
+                                    Sending OTP
+                                  </>
+                                ) : (
+                                  "Verify"
+                                )}
+                              </Button>
                             )}
-                          />
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  {!otpSent && !isVerified && (
-                    <Button
-                      disabled={!isPhoneValid}
-                      type="button"
-                      className=""
-                      onClick={() => sendOtp(phoneNumber)}
-                    >
-                      {sendingOtp ? (
-                        <>
-                          <Loader2 className="size-4 animate-spin" /> Sending
-                          OTP
-                        </>
-                      ) : (
-                        "Verify"
-                      )}
-                    </Button>
-                  )}
                 </div>
                 {!defaultValues?.phone && !isVerified && (
                   <span className="mt-1 text-xs text-yellow-700">

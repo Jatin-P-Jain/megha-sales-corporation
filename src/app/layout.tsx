@@ -29,11 +29,11 @@ export default async function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1, height=device-height"
-      />
       <head>
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, height=device-height"
+        />
         <link
           rel="manifest"
           href="/manifest.json"
@@ -61,6 +61,25 @@ export default async function RootLayout({
           src="https://accounts.google.com/gsi/client"
           strategy="afterInteractive"
         />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "Megha Sales Corporation",
+              url: "https://www.meghasalescorporation.in",
+              logo: "https://www.meghasalescorporation.in/favicon.png",
+              contactPoint: {
+                "@type": "ContactPoint",
+                telephone: "+91-9425505557",
+                contactType: "sales",
+                areaServed: "IN",
+                availableLanguage: ["en", "hi"],
+              },
+            }),
+          }}
+        />
       </head>
       <body
         className={`${poppins.className} max-h-screen min-h-[100dvh] antialiased`}
@@ -74,25 +93,6 @@ export default async function RootLayout({
         <Analytics />
         <SpeedInsights />
       </body>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Organization",
-            name: "Megha Sales Corporation",
-            url: "https://www.meghasalescorporation.in",
-            logo: "https://www.meghasalescorporation.in/favicon.png",
-            contactPoint: {
-              "@type": "ContactPoint",
-              telephone: "+91-9425505557",
-              contactType: "sales",
-              areaServed: "IN",
-              availableLanguage: ["en", "hi"],
-            },
-          }),
-        }}
-      />
     </html>
   );
 }
