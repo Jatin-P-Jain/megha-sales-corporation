@@ -1,5 +1,5 @@
 import { CartProduct } from "./cartProduct";
-export type OrderStatus = "pending" | "packing" | "complete";
+export type OrderStatus = "pending" | "packing" | "dispatch";
 export type OrderData = {
   products: CartProduct[];
   totals: {

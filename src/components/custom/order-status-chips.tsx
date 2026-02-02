@@ -10,7 +10,7 @@ import { useTransition, useState, useEffect } from "react";
 export const STATUSES: { label: string; value: string }[] = [
   { label: "Pending", value: "pending" },
   { label: "Packing", value: "packing" },
-  { label: "Complete", value: "complete" },
+  { label: "Dispatch", value: "dispatch" },
 ];
 
 export default function OrderStatusChips() {
@@ -82,7 +82,7 @@ export default function OrderStatusChips() {
                   `${
                     value === "pending"
                       ? "border-amber-600 bg-amber-100 text-yellow-600 hover:bg-amber-200/60"
-                      : value === "complete"
+                      : value === "dispatch"
                         ? "border-green-700 bg-green-100 text-green-700 hover:bg-green-200/60"
                         : value === "packing"
                           ? "border-sky-700 bg-sky-100 text-sky-700 hover:bg-sky-200/60"

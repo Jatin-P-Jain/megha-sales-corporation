@@ -22,7 +22,7 @@ export const updateOrderStatus = async (
     return { error: true, message: "Forbidden: Admin only" };
   }
 
-  const validStatuses = ["pending", "packing", "complete"];
+  const validStatuses = ["pending", "packing", "dispatch"];
   if (!validStatuses.includes(newStatus)) {
     return { error: true, message: "Invalid status" };
   }
