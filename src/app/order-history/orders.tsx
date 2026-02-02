@@ -14,7 +14,7 @@ const getStatusMessage = (orderId: string, status: string) => {
   const messages = {
     pending: `Your order #${orderId} is pending with us. We'll start processing it soon!`,
     packing: `Your order #${orderId} is being packed! Please wait for the next update.`,
-    complete: `Your order #${orderId} has been delivered and marked complete in our system.`,
+    dispatch: `Your order #${orderId} has been disptached.`,
   };
 
   return (

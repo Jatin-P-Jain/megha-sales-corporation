@@ -34,7 +34,7 @@ const statusStyles: Record<
     icon: "text-sky-700 opacity-100",
     focusVisible: "focus-visible:border-sky-700 border-2",
   },
-  complete: {
+  dispatch: {
     border: "border-green-700",
     text: "text-green-700",
     bg: "bg-green-100",
@@ -46,7 +46,7 @@ const statusStyles: Record<
 const statusOptions = [
   { label: "Pending", value: "pending" },
   { label: "Packing", value: "packing" },
-  { label: "Complete", value: "complete" },
+  { label: "Dispatch", value: "dispatch" },
 ];
 
 type OrderStatusDropdownProps = {
