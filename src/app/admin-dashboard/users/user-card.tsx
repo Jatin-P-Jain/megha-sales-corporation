@@ -16,7 +16,8 @@ import {
   CopyIcon,
   AlertTriangle,
   FileText,
-  IdCard,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { UserData } from "@/types/user";
 import { toast } from "sonner";
@@ -30,12 +31,8 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Separator } from "@/components/ui/separator";
+import clsx from "clsx";
 
 interface UserCardProps {
   user: UserData;
@@ -47,6 +44,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
   const [isRejecting, setIsRejecting] = useState(false);
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   const handleApprove = async () => {
     setIsApproving(true);
@@ -160,109 +158,125 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
 
   return (
     <>
-      <Card className="gap-1 overflow-hidden p-0">
-        <CardHeader className="bg-primary/10 p-2">
-          <div className="flex items-start justify-between">
-            <div className="flex w-full items-center justify-between gap-4">
-              <div className="flex gap-4">
-                <Avatar className="h-12 w-12 border-2 border-white shadow-md">
-                  {user.photoUrl ? (
-                    <AvatarImage
-                      src={user.photoUrl}
-                      alt={user.displayName || ""}
-                    />
-                  ) : (
-                    <AvatarFallback className="bg-primary/90 text-lg text-white">
-                      {user.displayName?.[0]?.toUpperCase() ||
-                        user.email?.[0]?.toUpperCase() ||
-                        "U"}
-                    </AvatarFallback>
+      <Card className="gap-0 overflow-hidden p-0">
+        <CardHeader className="bg-primary/10 p-2 md:p-3">
+          <div className="flex flex-col items-start md:items-center justify-between gap-2 md:flex-row">
+            <div className="flex items-center gap-4">
+              <Avatar className="h-12 w-12 border-2 border-white shadow-md">
+                {user.photoUrl ? (
+                  <AvatarImage
+                    src={user.photoUrl}
+                    alt={user.displayName || ""}
+                  />
+                ) : (
+                  <AvatarFallback className="bg-primary/90 text-lg text-white">
+                    {user.displayName?.[0]?.toUpperCase() ||
+                      user.email?.[0]?.toUpperCase() ||
+                      "U"}
+                  </AvatarFallback>
+                )}
+              </Avatar>
+              <div className="flex flex-col gap-1">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  {user.displayName || "Unnamed User"}
+                  {user.userType === "admin" && (
+                    <Badge variant="default" className="bg-sky-900">
+                      <Shield className="h-3 w-3" />
+                      Admin
+                    </Badge>
                   )}
-                </Avatar>
-                <div className="flex flex-col items-start justify-center gap-1">
-                  <CardTitle className="flex items-center gap-2 text-xl">
-                    {user.displayName || "Unnamed User"}
-                    {user.userType === "admin" && (
-                      <Badge variant="default" className="bg-sky-900">
-                        <Shield className="h-3 w-3" />
-                        Admin
-                      </Badge>
-                    )}
-                  </CardTitle>
-                  {user.userType !== "admin" && (
-                    <div className="flex items-center gap-2">
-                      {getStatusBadge()}
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div>
-                {/* Action Buttons */}
-                {user.accountStatus !== "approved" &&
-                  user.userType !== "admin" && (
-                    <>
-                      <div className="flex gap-2">
-                        {user.accountStatus === "pending" && (
-                          <>
-                            <Button
-                              onClick={handleApprove}
-                              disabled={isApproving}
-                              className="flex-1 bg-green-600 hover:bg-green-700"
-                            >
-                              {isApproving ? (
-                                <>
-                                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                                  Approving...
-                                </>
-                              ) : (
-                                <>
-                                  <CheckCircle2 className="h-4 w-4" />
-                                  Approve
-                                </>
-                              )}
-                            </Button>
-                            <Button
-                              onClick={() => setShowRejectDialog(true)}
-                              disabled={isRejecting}
-                              variant="destructive"
-                              className="flex-1"
-                            >
-                              <XCircle className="h-4 w-4" />
-                              Reject
-                            </Button>
-                          </>
-                        )}
-                        {user.accountStatus === "rejected" && (
-                          <Button
-                            onClick={handleApprove}
-                            disabled={isApproving}
-                            className="w-full bg-green-600 hover:bg-green-700"
-                          >
-                            {isApproving ? (
-                              <>
-                                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                                Approving...
-                              </>
-                            ) : (
-                              <>
-                                <CheckCircle2 className="h-4 w-4" />
-                                Approve
-                              </>
-                            )}
-                          </Button>
-                        )}
-                      </div>
-                    </>
-                  )}
+                </CardTitle>
+                {user.userType !== "admin" && (
+                  <div className="flex items-center gap-2">
+                    {getStatusBadge()}
+                  </div>
+                )}
               </div>
             </div>
+
+            {/* Action Buttons */}
+            {user.accountStatus !== "approved" && user.userType !== "admin" && (
+              <div className="grid w-full grid-cols-2 justify-between gap-2 md:w-auto">
+                {user.accountStatus === "pending" && (
+                  <>
+                    <Button
+                      onClick={handleApprove}
+                      disabled={isApproving}
+                      size="sm"
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      {isApproving ? (
+                        <>
+                          <span className="mr-2 h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                          Approving...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="mr-1 h-3 w-3" />
+                          Approve
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      className=""
+                      onClick={() => setShowRejectDialog(true)}
+                      disabled={isRejecting}
+                      size="sm"
+                      variant="destructive"
+                    >
+                      <XCircle className="mr-1 h-3 w-3" />
+                      Reject
+                    </Button>
+                  </>
+                )}
+                {user.accountStatus === "rejected" && (
+                  <Button
+                    onClick={handleApprove}
+                    disabled={isApproving}
+                    size="sm"
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    {isApproving ? (
+                      <>
+                        <span className="mr-2 h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        Approving...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="mr-1 h-3 w-3" />
+                        Approve
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
         </CardHeader>
 
-        <CardContent className="p-2">
-          {/* Basic Information */}
-          <div className="space-y-1">
-            <div className="flex items-start justify-between rounded-lg bg-gray-50 p-3">
+        {/* Collapsible View Details Button */}
+        <div
+          onClick={() => setIsDetailsOpen(!isDetailsOpen)}
+          className={clsx(
+            "flex cursor-pointer items-center justify-between px-4 py-2",
+            isDetailsOpen && "bg-gray-100",
+          )}
+        >
+          <span className="text-sm font-medium text-gray-700">
+            View Details
+          </span>
+          {isDetailsOpen ? (
+            <ChevronUp className="h-4 w-4 text-gray-600" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-gray-600" />
+          )}
+        </div>
+
+        {/* Collapsible Details Section */}
+        {isDetailsOpen && (
+          <CardContent className="space-y-1 p-4">
+            {/* UID */}
+            <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <User className="h-4 w-4" />
                 <span>UID:</span>
@@ -273,12 +287,16 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                 </span>
                 <CopyIcon
                   className="h-4 w-4 cursor-pointer text-gray-500 hover:text-gray-700"
-                  onClick={() => copyToClipboard(user.uid, "UID")}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    copyToClipboard(user.uid, "UID");
+                  }}
                 />
               </div>
             </div>
 
-            <div className="flex items-start justify-between rounded-lg bg-gray-50 p-3">
+            {/* Email */}
+            <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Mail className="h-4 w-4" />
                 <span>Email:</span>
@@ -288,7 +306,8 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
               </span>
             </div>
 
-            <div className="flex items-start justify-between rounded-lg bg-gray-50 p-3">
+            {/* Phone */}
+            <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Phone className="h-4 w-4" />
                 <span>Phone:</span>
@@ -298,18 +317,33 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
               </span>
             </div>
 
-            <div className="flex items-start justify-between rounded-lg bg-gray-50 p-3">
+            {/* User Type */}
+            <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
               <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Building2 className="h-4 w-4" />
-                <span>Business Type:</span>
+                <Shield className="h-4 w-4" />
+                <span>User Type:</span>
               </div>
               <span className="text-sm font-semibold capitalize">
-                {user.businessType || "N/A"}
+                {user.userType || "N/A"}
               </span>
             </div>
 
+            {/* Business Type */}
+            {user.businessType && (
+              <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <Building2 className="h-4 w-4" />
+                  <span>Business Type:</span>
+                </div>
+                <span className="text-sm font-semibold capitalize">
+                  {user.businessType}
+                </span>
+              </div>
+            )}
+
+            {/* GST Number */}
             {user.gstNumber && (
-              <div className="flex items-start justify-between rounded-lg bg-gray-50 p-3">
+              <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <FileText className="h-4 w-4" />
                   <span>GST Number:</span>
@@ -320,127 +354,160 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                   </span>
                   <CopyIcon
                     className="h-4 w-4 cursor-pointer text-gray-500 hover:text-gray-700"
-                    onClick={() =>
-                      copyToClipboard(user.gstNumber!, "GST Number")
-                    }
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      copyToClipboard(user.gstNumber!, "GST Number");
+                    }}
                   />
                 </div>
               </div>
             )}
-          </div>
 
-          {/* Business Profile Accordion */}
-          {user.businessProfile && (
-            <div className="mt-4">
-              <Accordion type="single" collapsible className="w-full">
-                <AccordionItem value="business-profile" className="border-none">
-                  <AccordionTrigger className="rounded-lg bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-900 hover:bg-blue-100 hover:no-underline">
-                    <div className="flex items-center gap-2">
-                      <Building2 className="h-4 w-4" />
-                      <span>Business Profile Details</span>
-                      {user.businessProfile?.gstin && (
-                        <Badge
-                          variant="outline"
-                          className="ml-2 border-green-500 text-xs text-green-700"
-                        >
-                          ✓ GST Verified
-                        </Badge>
-                      )}
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="pt-4">
-                    <div className="space-y-2 rounded-lg border border-gray-200 bg-white p-4">
-                      <div className="grid grid-cols-2 gap-3 text-sm">
-                        <div>
-                          <span className="text-gray-600">GSTIN:</span>
-                          <p className="font-mono font-semibold">
-                            {user.businessProfile.gstin || "N/A"}
-                          </p>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">Status:</span>
-                          <p className="font-semibold">
-                            {user.businessProfile.status || "N/A"}
-                          </p>
-                        </div>
-                        <div className="col-span-2">
-                          <span className="text-gray-600">Legal Name:</span>
-                          <p className="font-semibold">
-                            {user.businessProfile.legalName || "N/A"}
-                          </p>
-                        </div>
-                        <div className="col-span-2">
-                          <span className="text-gray-600">Trade Name:</span>
-                          <p className="font-semibold">
-                            {user.businessProfile.tradeName || "N/A"}
-                          </p>
-                        </div>
-                        <div className="col-span-2">
-                          <span className="text-gray-600">Address:</span>
-                          <p className="font-semibold text-gray-700">
-                            {user.businessProfile.address || "N/A"}
-                          </p>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">
-                            Registration Date:
-                          </span>
-                          <p className="font-semibold">
-                            {formatDate(user.businessProfile.registrationDate)}
-                          </p>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">Verified On:</span>
-                          <p className="font-semibold">
-                            {formatDate(user.businessProfile.verifiedAt)}
-                          </p>
-                        </div>
-                        {user.businessProfile.natureOfBusiness &&
-                          user.businessProfile.natureOfBusiness.length > 0 && (
-                            <div className="col-span-2">
-                              <span className="text-gray-600">
-                                Nature of Business:
-                              </span>
-                              <div className="mt-1 flex flex-wrap gap-1">
-                                {user.businessProfile.natureOfBusiness.map(
-                                  (business, idx) => (
-                                    <Badge
-                                      key={idx}
-                                      variant="secondary"
-                                      className="text-xs"
-                                    >
-                                      {business}
-                                    </Badge>
-                                  ),
-                                )}
-                              </div>
-                            </div>
-                          )}
-                      </div>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            </div>
-          )}
-
-          {/* Rejection Reason */}
-          {user.accountStatus === "rejected" && user.rejectionReason && (
-            <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4">
-              <div className="flex items-start gap-2">
-                <AlertTriangle className="mt-0.5 h-4 w-4 text-red-600" />
-                <div>
-                  <p className="text-sm font-semibold text-red-900">
-                    Rejection Reason:
-                  </p>
-                  <p className="mt-1 text-sm text-red-700">
-                    {user.rejectionReason}
-                  </p>
+            {/* PAN Number */}
+            {user.panNumber && (
+              <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <FileText className="h-4 w-4" />
+                  <span>PAN Number:</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-sm font-semibold">
+                    {user.panNumber}
+                  </span>
+                  <CopyIcon
+                    className="h-4 w-4 cursor-pointer text-gray-500 hover:text-gray-700"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      copyToClipboard(user.panNumber!, "PAN Number");
+                    }}
+                  />
                 </div>
               </div>
-            </div>
-          )}
-        </CardContent>
+            )}
+
+            {/* Account Status */}
+            {user.accountStatus && (
+              <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <Clock className="h-4 w-4" />
+                  <span>Account Status:</span>
+                </div>
+                {getStatusBadge()}
+              </div>
+            )}
+
+            {/* Business Profile */}
+            {user.businessProfile && (
+              <>
+                <Separator className="my-2" />
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-blue-900">
+                    <Building2 className="h-4 w-4" />
+                    <span>Business Profile Details</span>
+                    {user.businessProfile?.gstin && (
+                      <Badge
+                        variant="outline"
+                        className="border-green-500 text-xs text-green-700"
+                      >
+                        ✓ GST Verified
+                      </Badge>
+                    )}
+                  </div>
+
+                  <div className="space-y-2 rounded-lg border border-gray-200 bg-white p-3">
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <span className="text-gray-600">GSTIN:</span>
+                        <p className="font-mono font-semibold">
+                          {user.businessProfile.gstin || "N/A"}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-gray-600">Status:</span>
+                        <p className="font-semibold">
+                          {user.businessProfile.status || "N/A"}
+                        </p>
+                      </div>
+                      <div className="col-span-2">
+                        <span className="text-gray-600">Legal Name:</span>
+                        <p className="font-semibold">
+                          {user.businessProfile.legalName || "N/A"}
+                        </p>
+                      </div>
+                      <div className="col-span-2">
+                        <span className="text-gray-600">Trade Name:</span>
+                        <p className="font-semibold">
+                          {user.businessProfile.tradeName || "N/A"}
+                        </p>
+                      </div>
+                      <div className="col-span-2">
+                        <span className="text-gray-600">Address:</span>
+                        <p className="font-semibold text-gray-700">
+                          {user.businessProfile.address || "N/A"}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-gray-600">
+                          Registration Date:
+                        </span>
+                        <p className="font-semibold">
+                          {formatDate(user.businessProfile.registrationDate)}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-gray-600">Verified On:</span>
+                        <p className="font-semibold">
+                          {formatDate(user.businessProfile.verifiedAt)}
+                        </p>
+                      </div>
+                      {user.businessProfile.natureOfBusiness &&
+                        user.businessProfile.natureOfBusiness.length > 0 && (
+                          <div className="col-span-2">
+                            <span className="text-gray-600">
+                              Nature of Business:
+                            </span>
+                            <div className="mt-1 flex flex-wrap gap-1">
+                              {user.businessProfile.natureOfBusiness.map(
+                                (business, idx) => (
+                                  <Badge
+                                    key={idx}
+                                    variant="secondary"
+                                    className="text-xs"
+                                  >
+                                    {business}
+                                  </Badge>
+                                ),
+                              )}
+                            </div>
+                          </div>
+                        )}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Rejection Reason */}
+            {user.accountStatus === "rejected" && user.rejectionReason && (
+              <>
+                <Separator className="my-2" />
+                <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="mt-0.5 h-4 w-4 text-red-600" />
+                    <div>
+                      <p className="text-sm font-semibold text-red-900">
+                        Rejection Reason:
+                      </p>
+                      <p className="mt-1 text-sm text-red-700">
+                        {user.rejectionReason}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </CardContent>
+        )}
       </Card>
 
       {/* Rejection Dialog */}

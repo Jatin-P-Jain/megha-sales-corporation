@@ -41,9 +41,10 @@ export default async function Profile() {
     gstNumber: user?.gstNumber ?? "",
     photoUrl: user?.photoUrl ?? verifiedToken?.picture ?? "",
     businessType: user?.businessType ?? "",
-    businessIdType: user?.gstNumber ? "gst" : "pan",
+    businessIdType: user?.panNumber ? "pan" : "gst",
     panNumber: user?.panNumber ?? "",
   };
+
   return (
     <Card className="gap-0">
       <CardHeader className="">
@@ -65,7 +66,7 @@ export default async function Profile() {
             displayName: mergedUser.displayName,
             phone: mergedUser.phone,
             userType: mergedUser.userType,
-            businessIdType: mergedUser.businessIdType === "gst" ? "gst" : "pan",
+            businessIdType: mergedUser.businessIdType === "pan" ? "pan" : "gst",
             panNumber: mergedUser.panNumber,
             businessType: mergedUser.businessType ?? "",
             gstNumber: mergedUser.gstNumber,

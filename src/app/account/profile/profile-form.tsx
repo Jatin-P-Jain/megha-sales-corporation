@@ -65,9 +65,10 @@ export default function ProfileForm({
   const [gstDetails, setGstDetails] = useState<GstDetailsData | null>(null);
   const [loadingGst, setLoadingGst] = useState(false);
   const [gstError, setGstError] = useState<string | null>(null);
-  const [idType, setIdType] = useState<"pan" | "gst">("gst");
+  const [idType, setIdType] = useState<"pan" | "gst">(
+    defaultValues?.businessIdType || "gst",
+  );
 
-  // ✅ Check if user is admin
   const isAdmin = defaultValues?.userType === "admin" || verifiedToken?.admin;
 
   const { otpReset, otpSent, sendingOtp, isVerifying, sendOtp, verifyOtp } =
@@ -85,7 +86,10 @@ export default function ProfileForm({
 
   const form = useForm<z.infer<typeof userProfileSchema>>({
     resolver: zodResolver(userProfileSchema),
-    defaultValues,
+    defaultValues: {
+      ...defaultValues,
+      businessIdType: defaultValues?.businessIdType || "gst", // ✅ Set default
+    },
   });
 
   const selectedBusinessType = form.watch("businessType");
@@ -147,6 +151,7 @@ export default function ProfileForm({
   };
 
   const gstNumber = form.watch("gstNumber");
+  const panNumber = form.watch("panNumber");
 
   const fetchGstDetails = async (gstin: string) => {
     setLoadingGst(true);
@@ -175,7 +180,6 @@ export default function ProfileForm({
     try {
       delete data.otp;
 
-      // ✅ For admin, skip business type and profile
       if (isAdmin) {
         console.log("Submitting as admin");
         await updateUserProfile(
@@ -246,9 +250,7 @@ export default function ProfileForm({
 
   const { isSubmitting } = form.formState;
 
-  // ✅ UPDATED: Validation for submit button
   const canSubmit = () => {
-    // ✅ Admin bypass - only check basic requirements
     if (isAdmin) {
       const canSubmitAdmin =
         isVerified &&
@@ -277,7 +279,7 @@ export default function ProfileForm({
       form.formState.isValid &&
       (idType === "gst"
         ? gstDetails !== null
-        : gstNumber && gstNumber.length === 10);
+        : panNumber && panNumber.length === 10);
 
     console.log("Regular user canSubmit check:", {
       isVerified,
@@ -286,6 +288,7 @@ export default function ProfileForm({
       isValid: form.formState.isValid,
       idType,
       gstDetails,
+      panNumber,
       gstNumber,
       canSubmitRegular,
       errors: form.formState.errors,
@@ -294,7 +297,6 @@ export default function ProfileForm({
     return canSubmitRegular;
   };
 
-  // ✅ Add useEffect to debug canSubmit changes
   useEffect(() => {
     console.log("canSubmit status:", canSubmit());
   }, [
@@ -303,11 +305,11 @@ export default function ProfileForm({
     loadingGst,
     gstDetails,
     gstNumber,
+    panNumber,
     idType,
     form.formState.isValid,
   ]);
 
-  // ✅ Handle form submission with custom handler for admin
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("=== FORM onSubmit triggered ===");
@@ -315,18 +317,18 @@ export default function ProfileForm({
     console.log("canSubmit:", canSubmit());
 
     if (isAdmin) {
-      // For admin, bypass form validation and submit directly
       const data = {
         displayName: form.getValues("displayName"),
         email: form.getValues("email"),
         phone: form.getValues("phone"),
         businessType: "",
+        businessIdType: "gst" as const,
         gstNumber: "",
+        panNumber: "",
       };
       console.log("Admin manual submit:", data);
       handleSubmit(data as any);
     } else {
-      // For regular users, use form validation
       form.handleSubmit(handleSubmit)(e);
     }
   };
@@ -343,7 +345,6 @@ export default function ProfileForm({
           </div>
         )}
         <Form {...form}>
-          {/* ✅ CHANGED: Use custom onSubmit handler */}
           <form onSubmit={onSubmit}>
             <fieldset
               className="flex flex-col gap-5"
@@ -556,7 +557,6 @@ export default function ProfileForm({
                 </div>
               )}
 
-              {/* ✅ Show admin badge or business fields */}
               {isAdmin ? (
                 <div className="rounded-md bg-green-100 p-4 text-center">
                   <p className="text-sm font-semibold text-green-800">
@@ -566,7 +566,6 @@ export default function ProfileForm({
                 </div>
               ) : (
                 <>
-                  {/* Business Type */}
                   <FormField
                     control={form.control}
                     name="businessType"
@@ -620,7 +619,15 @@ export default function ProfileForm({
                     />
                   )}
 
-                  {/* ID Type Selection */}
+                  {/* ✅ HIDDEN: businessIdType field - synced with idType */}
+                  <FormField
+                    control={form.control}
+                    name="businessIdType"
+                    render={({ field }) => (
+                      <input type="hidden" {...field} value={idType} />
+                    )}
+                  />
+
                   <div className="space-y-2">
                     <FormLabel>Business Identification Through</FormLabel>
                     <Select
@@ -629,7 +636,11 @@ export default function ProfileForm({
                         setIdType(value);
                         setGstDetails(null);
                         setGstError(null);
+                        // ✅ Update the form field
+                        form.setValue("businessIdType", value);
+                        // ✅ Clear both fields when switching
                         form.setValue("gstNumber", "");
+                        form.setValue("panNumber", "");
                       }}
                     >
                       <SelectTrigger className="w-full">
@@ -647,86 +658,102 @@ export default function ProfileForm({
                     </p>
                   </div>
 
-                  {/* GST/PAN Number Field */}
-                  <FormField
-                    control={form.control}
-                    name="gstNumber"
-                    render={({ field }) => {
-                      return (
-                        <FormItem>
-                          <FormLabel>
-                            {idType === "gst" ? "GSTIN Number" : "PAN Number"}
-                          </FormLabel>
-                          <FormControl>
-                            <div className="flex flex-col gap-2 md:flex-row">
+                  {/* ✅ Conditional rendering for GST or PAN */}
+                  {idType === "gst" ? (
+                    <FormField
+                      control={form.control}
+                      name="gstNumber"
+                      render={({ field }) => {
+                        return (
+                          <FormItem>
+                            <FormLabel>GSTIN Number</FormLabel>
+                            <FormControl>
+                              <div className="flex flex-col gap-2 md:flex-row">
+                                <Input
+                                  {...field}
+                                  placeholder="Enter 15-digit GSTIN"
+                                  maxLength={15}
+                                  className={clsx(
+                                    gstDetails &&
+                                      "border-green-300 ring-1 ring-green-200",
+                                    !gstDetails &&
+                                      field.value?.length === 15 &&
+                                      "border-orange-300",
+                                  )}
+                                />
+                                {!loadingGst && (
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() =>
+                                      fetchGstDetails(field.value || "")
+                                    }
+                                    disabled={
+                                      field.value?.length !== 15 ||
+                                      loadingGst ||
+                                      isSubmitting
+                                    }
+                                    className="gap-2"
+                                  >
+                                    <span>Get Details</span>
+                                    <CloudDownload className="h-4 w-4" />
+                                  </Button>
+                                )}
+                              </div>
+                            </FormControl>
+
+                            {loadingGst && (
+                              <div className="mt-3">
+                                <GstDetails data={null} loading={true} />
+                              </div>
+                            )}
+                            {gstDetails && (
+                              <div className="mt-3">
+                                <GstDetails data={gstDetails} loading={false} />
+                              </div>
+                            )}
+                            {gstError && (
+                              <div className="text-destructive">{gstError}</div>
+                            )}
+
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
+                    />
+                  ) : (
+                    <FormField
+                      control={form.control}
+                      name="panNumber"
+                      render={({ field }) => {
+                        return (
+                          <FormItem>
+                            <FormLabel>PAN Number</FormLabel>
+                            <FormControl>
                               <Input
                                 {...field}
-                                placeholder={
-                                  idType === "gst"
-                                    ? "Enter 15-digit GSTIN"
-                                    : "Enter 10-character PAN"
-                                }
-                                maxLength={idType === "gst" ? 15 : 10}
+                                placeholder="Enter 10-character PAN"
+                                maxLength={10}
                                 className={clsx(
-                                  idType === "gst" &&
-                                    gstDetails &&
-                                    "border-green-300 ring-1 ring-green-200",
-                                  idType === "gst" &&
-                                    !gstDetails &&
-                                    gstNumber?.length === 15 &&
-                                    "border-orange-300",
-                                  idType === "pan" &&
-                                    gstNumber?.length === 10 &&
+                                  field.value?.length === 10 &&
                                     "border-green-300 ring-1 ring-green-200",
                                 )}
                               />
-                              {idType === "gst" && !loadingGst && (
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  onClick={() =>
-                                    fetchGstDetails(gstNumber || "")
-                                  }
-                                  disabled={
-                                    gstNumber?.length !== 15 ||
-                                    loadingGst ||
-                                    isSubmitting
-                                  }
-                                  className="gap-2"
-                                >
-                                  <span>Get Details</span>
-                                  <CloudDownload className="h-4 w-4" />
-                                </Button>
-                              )}
-                            </div>
-                          </FormControl>
+                            </FormControl>
 
-                          {idType === "gst" && loadingGst && (
-                            <div className="mt-3">
-                              <GstDetails data={null} loading={true} />
-                            </div>
-                          )}
-                          {idType === "gst" && gstDetails && (
-                            <div className="mt-3">
-                              <GstDetails data={gstDetails} loading={false} />
-                            </div>
-                          )}
-                          {idType === "gst" && gstError && (
-                            <div className="text-destructive">{gstError}</div>
-                          )}
+                            {field.value?.length === 10 && (
+                              <div className="mt-2 flex items-center gap-2 text-sm text-green-700">
+                                <CheckCircle2 className="h-4 w-4" />
+                                <span>PAN number format is valid</span>
+                              </div>
+                            )}
 
-                          {idType === "pan" && gstNumber?.length === 10 && (
-                            <div className="mt-2 flex items-center gap-2 text-sm text-green-700">
-                              <CheckCircle2 className="h-4 w-4" />
-                              <span>PAN number format is valid</span>
-                            </div>
-                          )}
-
-                          <FormMessage />
-                        </FormItem>
-                      );
-                    }}
-                  />
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
+                    />
+                  )}
                 </>
               )}
 
