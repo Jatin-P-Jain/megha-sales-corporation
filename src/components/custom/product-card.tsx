@@ -18,13 +18,13 @@ import { useAuth } from "@/context/useAuth";
 type ProductCardProps = {
   product: Product;
   isAdmin?: boolean;
-  accountStatus?: "pending" | "approved" | "rejected";
+  isAccountApproved?: boolean;
 };
 
 export default function ProductCard({
   product,
   isAdmin = false,
-  accountStatus = "pending",
+  isAccountApproved = false,
 }: ProductCardProps) {
   const { cart, loading } = useCart();
   const auth = useAuth();
@@ -68,7 +68,6 @@ export default function ProductCard({
   }, [cart, product]);
 
   const isLoading = !hasMounted || loading || !ready;
-  const isAccountApproved = accountStatus === "approved";
 
   const vehicleNameProcessed = useMemo(() => {
     const company = product.vehicleCompany;
