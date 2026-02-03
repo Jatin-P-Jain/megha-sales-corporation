@@ -29,8 +29,6 @@ import { loginUserMobileSchema } from "@/validation/loginUser";
 import { useEffect, useState } from "react";
 import {
   CheckCircle2,
-  ChevronsLeftIcon,
-  ChevronsUpIcon,
   CloudDownload,
   Loader2,
   Loader2Icon,
@@ -47,7 +45,6 @@ import GoogleIcon from "@/components/custom/google-icon.svg";
 import Image from "next/image";
 import { GoogleAuthProvider, linkWithPopup } from "firebase/auth";
 import { setToken } from "@/context/actions";
-import useIsMobile from "@/hooks/useIsMobile";
 import { GstDetails } from "@/components/custom/gst-details";
 import { GstDetailsData } from "@/data/businessProfile";
 
@@ -75,16 +72,18 @@ export default function ProfileForm({
         setIsVerified(true);
         toast.success("Phone number verified!", {
           description:
-            "Phone number verified and linked to your accounf successfully.",
+            "Phone number verified and linked to your account successfully.",
         });
       },
       appVerifier: recaptchaVerifier,
       isProfile: true,
     });
+
   const form = useForm<z.infer<typeof userProfileSchema>>({
     resolver: zodResolver(userProfileSchema),
     defaultValues,
   });
+
   const selectedRole = form.watch("role");
   const phoneNumber = form.watch("phone");
   const otp = form.watch("otp");
@@ -94,6 +93,7 @@ export default function ProfileForm({
       form.resetField("otp");
     }
   }, [otpReset, form]);
+
   const isPhoneAuthProvider =
     verifiedToken?.firebase["sign_in_provider"] === "phone";
 
@@ -115,13 +115,15 @@ export default function ProfileForm({
     }
 
     try {
-      await user.getIdToken(true);
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: "select_account" });
       const result = await linkWithPopup(user, provider);
       await user.reload();
-      const freshToken = await user.getIdToken(/* forceRefresh */ true);
+
+      // ✅ CHANGED: Don't force refresh, just get current token
+      const freshToken = await user.getIdToken(false);
       await setToken(freshToken, user.refreshToken);
+
       form.setValue("email", result.user.email ?? "");
       toast.success("Success!", {
         description:
@@ -136,7 +138,7 @@ export default function ProfileForm({
           description: "This Google account is already linked to another user.",
         });
       } else {
-        toast.error("An error occured while linking google account");
+        toast.error("An error occurred while linking google account");
       }
     }
   };
@@ -185,8 +187,8 @@ export default function ProfileForm({
               constitutionType: gstDetails.data.ctb,
               jurisdiction: gstDetails.data.ctj,
               verified: true,
-              verifiedata: gstDetails.data, // Full verified data for compliance
               verifiedAt: new Date().toISOString(),
+              verifieddata: gstDetails.data,
             }
           : null;
 
@@ -194,16 +196,23 @@ export default function ProfileForm({
         {
           ...rest,
           role: finalRole,
-          businessProfile, // Will be null if no valid GST details
+          businessProfile,
         },
         verifiedToken,
       );
 
+      // Refresh client user from DB
       await auth.refreshClientUser();
+
       toast.success("Success!", {
         description: "Your profile has been saved successfully!",
       });
-      window.location.assign("/");
+
+      // ✅ Use client-side navigation instead of window.location.assign
+      // This prevents the auth state from being cleared
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1000);
     } catch (err: unknown) {
       console.error("Profile Submit error:", err);
       if (err instanceof Error) {
@@ -299,11 +308,6 @@ export default function ProfileForm({
                                 )}
                               </Button>
                               <span className="m-2 flex justify-center text-[14px] text-zinc-500 md:mx-4">
-                                {/* {!isMobile ? (
-                                  <ChevronsLeftIcon className="size-4" />
-                                ) : (
-                                  <ChevronsUpIcon className="size-4" />
-                                )} */}
                                 or
                               </span>
                             </>
@@ -331,6 +335,7 @@ export default function ProfileForm({
                   </span>
                 )}
               </div>
+
               <div className="flex flex-col gap-2">
                 <div
                   className={clsx(
@@ -395,6 +400,7 @@ export default function ProfileForm({
                   </div>
                 )}
               </div>
+
               {otpSent && !isVerified && (
                 <div className="grid grid-cols-1 items-end justify-center gap-4 md:grid-cols-[8fr_1fr] md:gap-4">
                   <FormField
@@ -442,6 +448,7 @@ export default function ProfileForm({
                   </Button>
                 </div>
               )}
+
               {/* Role */}
               <FormField
                 control={form.control}
@@ -450,7 +457,6 @@ export default function ProfileForm({
                   <FormItem className="flex flex-col">
                     <FormLabel className="flex items-start gap-1">
                       Your role or business type
-                      {/* <span className="text-muted-foreground text-xs">*</span> */}
                     </FormLabel>
                     {selectedRole === "admin" && (
                       <span className="text-xs text-green-700">
@@ -482,6 +488,7 @@ export default function ProfileForm({
                   </FormItem>
                 )}
               />
+
               {selectedRole === "other" && (
                 <FormField
                   control={form.control}
@@ -492,7 +499,7 @@ export default function ProfileForm({
                         <FormControl>
                           <Input
                             {...field}
-                            placeholder="Specify your role or bussiness type"
+                            placeholder="Specify your role or business type"
                           />
                         </FormControl>
                         <FormMessage />
@@ -501,6 +508,7 @@ export default function ProfileForm({
                   }}
                 />
               )}
+
               <FormField
                 control={form.control}
                 name="gstNumber"
@@ -544,7 +552,6 @@ export default function ProfileForm({
                         </div>
                       </FormControl>
 
-                      {/* Only show GST details or loading after manual fetch */}
                       {loadingGst && (
                         <div className="mt-3">
                           <GstDetails data={null} loading={true} />
@@ -563,6 +570,7 @@ export default function ProfileForm({
                   );
                 }}
               />
+
               <Button
                 disabled={!isVerified || isSubmitting || loadingGst}
                 type="submit"

@@ -1,8 +1,10 @@
 "use server";
 import { BusinessProfile } from "@/data/businessProfile";
 import { auth, fireStore } from "@/firebase/server";
+import { UserData } from "@/types/user";
 import { userProfileDataSchema } from "@/validation/profileSchema";
 import { DecodedIdToken } from "firebase-admin/auth";
+import { cookies } from "next/headers";
 
 export const updateUserProfile = async (
   data: {
@@ -16,37 +18,35 @@ export const updateUserProfile = async (
   },
   verifiedToken: DecodedIdToken | null,
 ) => {
-  // 1) Authentication check
-  if (!verifiedToken) {
-    throw new Error("You must be signed in to update your profile.");
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("firebaseAuthToken")?.value;
+
+    if (!token) {
+      throw new Error("Unauthorized - No token found");
+    }
+
+    // Verify the token
+    const decodedToken = verifiedToken || (await auth.verifyIdToken(token));
+    const uid = decodedToken.uid;
+    const userData = {
+      ...data,
+      profileComplete: true,
+      firebaseAuth: decodedToken.firebase,
+    };
+
+    await fireStore
+      .collection("users")
+      .doc(uid)
+      .update({ ...userData, updatedAt: new Date() });
+
+    // ✅ REMOVED: Do NOT call getIdToken(true) here
+
+    return { success: true };
+  } catch (error) {
+    console.error("Update profile error:", error);
+    throw new Error(
+      error instanceof Error ? error.message : "Failed to update profile",
+    );
   }
-
-  // 2) Validation check
-  const validation = userProfileDataSchema.safeParse(data);
-  if (!validation.success) {
-    // pick the first issue for simplicity
-    throw new Error(validation.error.issues[0].message);
-  }
-
-  const uid = verifiedToken.uid;
-  const userData = {
-    ...data,
-    profileComplete: true,
-    firebaseAuth: verifiedToken.firebase,
-  };
-
-  await auth.updateUser(uid, {
-    displayName: data.displayName,
-    email: data.email,
-  });
-
-  await fireStore
-    .collection("users")
-    .doc(uid)
-    .update({ ...userData, updatedAt: new Date() });
-
-  console.log("update user claims complete profile");
-
-  // 6) Return the updated user for your client
-  return { uid, ...userData };
 };

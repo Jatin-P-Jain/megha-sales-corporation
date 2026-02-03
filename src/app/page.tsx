@@ -16,50 +16,44 @@ export default async function Home({
   let verifiedToken: {
     admin?: boolean;
     exp?: number;
-    profileComplete?: boolean;
   } | null = null;
 
   if (token) {
     try {
-      // If the token is expired or invalid, this throws
       verifiedToken = await auth.verifyIdToken(token);
-      const isProfileComplete = verifiedToken?.profileComplete;
-      if (!isProfileComplete) {
-        // Redirect to profile completion page
-        return redirect("/account/profile");
-      }
     } catch (err: unknown) {
-      // If it’s specifically “token expired,” send them to refresh (or login)
+      // If token is expired, redirect to refresh
       if ((err as { code?: string }).code === "auth/id-token-expired") {
-        // Redirect to your refresh‐route (which should get a new ID token)
         return redirect(
           `/api/refresh-token?redirect=${encodeURIComponent("/")}`,
         );
       }
       // Any other verification error → force them to log in
-      return redirect("/");
+      return redirect("/login");
     }
   }
-  const isAdmin = verifiedToken?.admin;
 
+  const isAdmin = verifiedToken?.admin;
   const exp = verifiedToken?.exp;
 
+  // Check if token is about to expire
   if (exp && (exp - 5 * 60) * 1000 < Date.now()) {
-    redirect(`/api/refresh-token?redirect=${"/"}`);
+    redirect(`/api/refresh-token?redirect=${encodeURIComponent("/")}`);
   }
 
   const searchParamsValue = await searchParams;
   const page = searchParamsValue?.page ? parseInt(searchParamsValue.page) : 1;
   const brandFilters: BrandStatus[] = [];
+
   if (!isAdmin || !verifiedToken) {
     brandFilters.push("live");
-  } else {
   }
 
   const brandsPromise = getBrands({
     filters: { status: brandFilters },
     pagination: { page, pageSize: PAGE_SIZE + 10 },
   });
+
   return (
     <main className="mx-auto flex h-full max-w-screen-lg flex-col items-center justify-center p-4 px-4 pb-8 md:p-8 lg:p-10">
       <HomePage brandsPromise={brandsPromise} />

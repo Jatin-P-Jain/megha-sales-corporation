@@ -35,11 +35,6 @@ export default async function RootLayout({
           content="width=device-width, initial-scale=1, height=device-height"
         />
         <link
-          rel="manifest"
-          href="/manifest.json"
-          crossOrigin="use-credentials"
-        />
-        <link
           rel="icon"
           type="image/png"
           href="/favicon-96x96.png"
@@ -56,7 +51,7 @@ export default async function RootLayout({
           name="apple-mobile-web-app-title"
           content="Megha Sales Corporation"
         />
-        <link rel="manifest" href="/site.webmanifest" />
+        <link rel="manifest" href="/site.webmanifest.json" />
         <Script
           src="https://accounts.google.com/gsi/client"
           strategy="afterInteractive"

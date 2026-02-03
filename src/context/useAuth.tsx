@@ -9,12 +9,7 @@ import {
 } from "./firebase-auth";
 import { auth, firestore } from "@/firebase/client";
 import { removeToken } from "./actions";
-import {
-  ConfirmationResult,
-  RecaptchaVerifier,
-  User,
-  ParsedToken,
-} from "firebase/auth";
+import { ConfirmationResult, RecaptchaVerifier, User } from "firebase/auth";
 import { createUserIfNotExists } from "@/lib/firebase/createUserIfNotExists";
 import { UserData } from "@/types/user";
 import { doc, getDoc } from "firebase/firestore";
@@ -103,7 +98,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (!user) {
-        // Clear your server cookies (not FCM tokens)
         await removeToken();
         setClientUser(null);
         setClientUserLoading(false);
@@ -115,7 +109,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(false);
 
       // Persist user in Firestore and fetch claims
-      const result = await user.getIdTokenResult(true);
+      // ✅ CHANGED: Use getIdToken(false) instead of getIdToken(true)
+      const result = await user.getIdTokenResult(false);
       const safeUser: UserData = {
         uid: user.uid,
         email: user.email ?? null,
@@ -174,7 +169,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setIsLoggingOut(true);
           try {
             await logoutUser();
-            // Keep FCM tokens intact
             window.location.href = "/";
           } catch (err) {
             console.error("Logout failed", err);
