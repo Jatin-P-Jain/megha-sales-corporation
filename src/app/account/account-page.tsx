@@ -36,7 +36,7 @@ export default function AccountPage({
 
   const auth = useAuth();
   const { clientUser, clientUserLoading, setClientUser } = auth;
-  const isAdmin = clientUser?.role === "admin";
+  const isAdmin = clientUser?.userType === "admin";
   const accountStatus = clientUser?.accountStatus;
   const [uploading, setUploading] = useState(false);
   const [uploadPercent, setUploadPercent] = useState<number>(0);
@@ -270,7 +270,7 @@ export default function AccountPage({
             )}
           </ul>
 
-          {clientUser?.role === "admin" ? (
+          {clientUser?.userType === "admin" ? (
             <div className="rounded-md bg-green-100 p-2 px-4 text-center text-sm text-green-700">
               You are an <span className="font-semibold">Admin</span> - manage
               everything!
@@ -279,7 +279,7 @@ export default function AccountPage({
             <div className="bg-muted text-muted-foreground flex flex-col items-center justify-center rounded-md p-2 text-sm">
               You have user access under role:
               <span className="text-primary text-lg font-semibold first-letter:uppercase">
-                {clientUser.role}
+                {clientUser.userType}
               </span>
             </div>
           )}

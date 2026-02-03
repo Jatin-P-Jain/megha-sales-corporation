@@ -125,9 +125,6 @@ export async function middleware(request: NextRequest) {
   if (!admin && pathname.startsWith("/admin-dashboard")) {
     return NextResponse.redirect(new URL("/", origin));
   }
-  if (admin && pathname === "/admin-dashboard") {
-    return NextResponse.redirect(new URL("/admin-dashboard/brands", origin));
-  }
   if (admin && pathname.startsWith("/account/my-favourites")) {
     return NextResponse.redirect(new URL("/", origin));
   }

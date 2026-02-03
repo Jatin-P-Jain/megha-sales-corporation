@@ -1,6 +1,5 @@
 "use client";
 
-import ProductCard from "@/components/custom/product-card";
 import ProductCardSkeleton from "@/components/custom/product-card-skeleton";
 import {
   Pagination,
@@ -12,147 +11,26 @@ import {
 } from "@/components/ui/pagination";
 import { useAuth } from "@/context/useAuth";
 import { usePaginatedFirestore } from "@/hooks/usePaginatedFireStore";
-import { Product } from "@/types/product";
+import { UserData } from "@/types/user";
 import clsx from "clsx";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import UserCard from "./user-card";
 
-export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
-  const { clientUser } = useAuth();
-  const accountStatus = clientUser?.accountStatus;
-
+export default function UsersList() {
   const PAGE_SIZE = process.env.NEXT_PUBLIC_PAGE_SIZE
     ? parseInt(process.env.NEXT_PUBLIC_PAGE_SIZE)
     : 10;
   const router = useRouter();
   const searchParams = useSearchParams();
-  const previousFiltersRef = useRef<string>("");
-
-  const brandIdValue = searchParams.get("brandId") || "";
-  const statusValue = searchParams.get("status") || "";
-  const categoryValue = searchParams.get("category") || "";
-  const vehicleCompanyValue = searchParams.get("vehicleCompany") || "";
-  const priceValue = searchParams.get("price") || undefined;
-  const discountValue = searchParams.get("discount") || undefined;
-  const sortValue = searchParams.get("sort") || undefined;
-
-  const [minPriceValue, maxPriceValue] = priceValue
-    ? priceValue.split(",")
-    : [undefined, undefined];
-  const [minDiscountValue, maxDiscountValue] = discountValue
-    ? discountValue.split(",")
-    : [undefined, undefined];
-
-  const [orderBy, orderDir] = (() => {
-    if (!sortValue) return ["updated", "desc"] as [string, "asc" | "desc"];
-    const [field, dir] = sortValue.split("-");
-    return [field, dir] as [string, "asc" | "desc"];
-  })();
-  const filtersOnly = {
-    brandId: brandIdValue,
-    status: statusValue,
-    category: categoryValue,
-    vehicleCompany: vehicleCompanyValue,
-  };
-  const filterKey = JSON.stringify(filtersOnly);
-
-  // Convert comma-separated strings to arrays
-  const brandIds = brandIdValue ? brandIdValue.split(",") : [];
-  const statuses = statusValue ? statusValue.split(",") : [];
-  const categories = categoryValue ? categoryValue.split(",") : [];
-  const vehicleCompanies = vehicleCompanyValue
-    ? vehicleCompanyValue.split(",")
-    : [];
-  const minPrice = minPriceValue ? parseInt(minPriceValue) : undefined;
-  const maxPrice = maxPriceValue ? parseInt(maxPriceValue) : undefined;
-  const minDiscount = minDiscountValue ? parseInt(minDiscountValue) : undefined;
-  const maxDiscount = maxDiscountValue ? parseInt(maxDiscountValue) : undefined;
-
-  // Construct filters
-  const filters = [
-    ...(brandIds.length > 0
-      ? [
-          {
-            field: "brandId",
-            op: "in" as const,
-            value: brandIds,
-          },
-        ]
-      : []),
-    ...(statuses.length > 0
-      ? [
-          {
-            field: "status",
-            op: "in" as const,
-            value: statuses,
-          },
-        ]
-      : []),
-    ...(categories.length > 0
-      ? [
-          {
-            field: "partCategory",
-            op: "in" as const,
-            value: categories,
-          },
-        ]
-      : []),
-    ...(vehicleCompanies.length > 0
-      ? [
-          {
-            field: "vehicleCompany",
-            op: "in" as const,
-            value: vehicleCompanies,
-          },
-        ]
-      : []),
-    // Add price range filters
-    ...(minPrice !== undefined
-      ? [
-          {
-            field: "price",
-            op: ">=" as const,
-            value: minPrice,
-          },
-        ]
-      : []),
-    ...(maxPrice !== undefined
-      ? [
-          {
-            field: "price",
-            op: "<=" as const,
-            value: maxPrice,
-          },
-        ]
-      : []),
-    ...(minDiscount !== undefined
-      ? [
-          {
-            field: "discount",
-            op: ">=" as const,
-            value: minDiscount,
-          },
-        ]
-      : []),
-    ...(maxDiscount !== undefined
-      ? [
-          {
-            field: "discount",
-            op: "<=" as const,
-            value: maxDiscount,
-          },
-        ]
-      : []),
-  ];
 
   const { data, loading, hasMore, currentPage, loadPage, totalItems } =
-    usePaginatedFirestore<Product>({
-      collectionPath: "products",
+    usePaginatedFirestore<UserData>({
+      collectionPath: "users",
       pageSize: PAGE_SIZE,
-      orderByField: orderBy,
-      orderDirection: orderDir,
-      filters: filters,
     });
+
+  console.log({ data });
 
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
@@ -163,22 +41,10 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
     }
   }, [loading]);
 
-  // ⏮ Reset to page 1 if filters change
-  useEffect(() => {
-    if (previousFiltersRef.current !== filterKey) {
-      previousFiltersRef.current = filterKey;
-
-      // Reset page to 1 in URL
-      const sp = new URLSearchParams(searchParams.toString());
-      sp.set("page", "1");
-      router.replace(`/products-list?${sp.toString()}`);
-    }
-  }, [filterKey, router, searchParams]);
-
   const handlePageChange = (page: number) => {
     const sp = new URLSearchParams(searchParams.toString());
     sp.set("page", `${page}`);
-    router.replace(`/products-list?${sp.toString()}`);
+    router.replace(`/admin-dashboard/users?${sp.toString()}`);
     loadPage(page);
   };
 
@@ -199,7 +65,7 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
   if (!loading && hasLoadedOnce && data.length === 0) {
     return (
       <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 items-center justify-center">
-        <p className="text-muted-foreground">No products found.</p>
+        <p className="text-muted-foreground">No users found.</p>
       </div>
     );
   }
@@ -212,13 +78,8 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
       {data.length > 0 && (
         <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col justify-between gap-4 py-2">
           <div className="flex w-full flex-1 flex-grow flex-col gap-5">
-            {data.map((product: Product, index: number) => (
-              <ProductCard
-                key={index}
-                product={product}
-                isAdmin={isAdmin}
-                isAccountApproved={accountStatus === "approved"}
-              />
+            {data.map((user: UserData, index: number) => (
+              <UserCard key={index} user={user} />
             ))}
           </div>
 

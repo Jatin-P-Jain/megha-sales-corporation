@@ -1,11 +1,8 @@
 import "server-only"
 import { auth, fireStore } from "@/firebase/server";
 import { cookies } from "next/headers";
-
 import { UserData } from "@/types/user";
 import { mapDbUserToClientUser } from "@/lib/firebase/mapDBUserToClient";
-
-
 
 export async function getUserFromDB() {
   const cookieStore = await cookies();

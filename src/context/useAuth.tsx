@@ -116,7 +116,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         email: user.email ?? null,
         phone: user.phoneNumber?.slice(3) ?? null,
         displayName: user.displayName ?? null,
-        role: result.claims.admin ? "admin" : null,
+        userType: result.claims.admin ? "admin" : null,
         photoUrl: user.photoURL,
         gstNumber: "",
         firebaseAuth: result.claims.firebase
@@ -128,7 +128,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       };
       await createUserIfNotExists(safeUser);
 
-      // Set inactivity limit based on role
+      // Set inactivity limit based on user type
       const limit = result.claims.admin
         ? parseInt(process.env.NEXT_PUBLIC_ADMIN_INACTIVITY_LIMIT || "0")
         : parseInt(process.env.NEXT_PUBLIC_USER_INACTIVITY_LIMIT || "0");

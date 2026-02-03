@@ -1,6 +1,7 @@
 "use server";
 import { BusinessProfile } from "@/data/businessProfile";
 import { auth, fireStore } from "@/firebase/server";
+import { UserType } from "@/types/user";
 import { DecodedIdToken } from "firebase-admin/auth";
 import { cookies } from "next/headers";
 
@@ -9,7 +10,9 @@ export const updateUserProfile = async (
     email: string;
     displayName: string;
     phone: string;
-    role?: string;
+    userType?: UserType;
+    businessType?: string;
+    businessIdType?: "pan" | "gst";
     gstNumber?: string;
     businessProfile?: BusinessProfile | null;
     photo?: string;

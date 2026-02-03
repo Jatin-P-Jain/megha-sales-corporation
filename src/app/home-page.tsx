@@ -22,7 +22,7 @@ const HomePage = ({
   const user = clientUser;
   const { displayName } = user ?? {};
   const userName = displayName ?? "Guest";
-  const isAdmin = clientUser?.role === "admin";
+  const isAdmin = clientUser?.userType === "admin";
   const accountStatus = clientUser?.accountStatus;
   const rejectionReason = clientUser?.rejectionReason;
 
@@ -49,7 +49,7 @@ const HomePage = ({
                 Go to Admin Dasboard
               </Link>
             )}
-            {accountStatus === "pending" && (
+            {!isAdmin && accountStatus === "pending" && (
               <div className="flex w-3/4 cursor-pointer items-center justify-center gap-3 rounded-lg border-1 border-yellow-700 p-1 px-2 text-center text-sm font-semibold text-yellow-700 shadow-md">
                 <TriangleAlert className="size-4" />
                 Account Approval Pending

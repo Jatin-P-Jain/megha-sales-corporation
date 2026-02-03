@@ -65,6 +65,10 @@ export default function ProfileForm({
   const [gstDetails, setGstDetails] = useState<GstDetailsData | null>(null);
   const [loadingGst, setLoadingGst] = useState(false);
   const [gstError, setGstError] = useState<string | null>(null);
+  const [idType, setIdType] = useState<"pan" | "gst">("gst");
+
+  // ✅ Check if user is admin
+  const isAdmin = defaultValues?.userType === "admin" || verifiedToken?.admin;
 
   const { otpReset, otpSent, sendingOtp, isVerifying, sendOtp, verifyOtp } =
     useMobileOtp({
@@ -84,7 +88,7 @@ export default function ProfileForm({
     defaultValues,
   });
 
-  const selectedRole = form.watch("role");
+  const selectedBusinessType = form.watch("businessType");
   const phoneNumber = form.watch("phone");
   const otp = form.watch("otp");
 
@@ -120,7 +124,6 @@ export default function ProfileForm({
       const result = await linkWithPopup(user, provider);
       await user.reload();
 
-      // ✅ CHANGED: Don't force refresh, just get current token
       const freshToken = await user.getIdToken(false);
       await setToken(freshToken, user.refreshToken);
 
@@ -167,45 +170,64 @@ export default function ProfileForm({
   };
 
   const handleSubmit = async (data: z.infer<typeof userProfileSchema>) => {
+    console.log("=== FORM SUBMITTED ===");
+    console.log({ data });
     try {
       delete data.otp;
-      const { otherUserRole, ...rest } = data;
 
-      const finalRole =
-        data.role === "other" && otherUserRole ? otherUserRole : data.role;
+      // ✅ For admin, skip business type and profile
+      if (isAdmin) {
+        console.log("Submitting as admin");
+        await updateUserProfile(
+          {
+            displayName: data.displayName,
+            email: data.email,
+            phone: data.phone,
+            userType: "admin",
+            businessType: "",
+            businessProfile: null,
+          },
+          verifiedToken,
+        );
+      } else {
+        console.log("Submitting as regular user");
+        const { otherBusinessType, ...rest } = data;
+        const finalBusinessType =
+          data.businessType === "other" && otherBusinessType
+            ? otherBusinessType
+            : data.businessType;
 
-      const businessProfile =
-        gstDetails?.flag === true
-          ? {
-              gstin: gstDetails.data.gstin,
-              legalName: gstDetails.data.lgnm,
-              tradeName: gstDetails.data.tradeNam,
-              address: gstDetails.data.pradr?.adr || "",
-              status: gstDetails.data.sts,
-              registrationDate: gstDetails.data.rgdt,
-              natureOfBusiness: gstDetails.data.nba || [],
-              constitutionType: gstDetails.data.ctb,
-              jurisdiction: gstDetails.data.ctj,
-              verified: true,
-              verifiedAt: new Date().toISOString(),
-              verifieddata: gstDetails.data,
-            }
-          : null;
+        const businessProfile =
+          idType === "gst" && gstDetails?.flag === true
+            ? {
+                gstin: gstDetails.data.gstin,
+                legalName: gstDetails.data.lgnm,
+                tradeName: gstDetails.data.tradeNam,
+                address: gstDetails.data.pradr?.adr || "",
+                status: gstDetails.data.sts,
+                registrationDate: gstDetails.data.rgdt,
+                natureOfBusiness: gstDetails.data.nba || [],
+                constitutionType: gstDetails.data.ctb,
+                jurisdiction: gstDetails.data.ctj,
+                verified: true,
+                verifiedAt: new Date().toISOString(),
+                verifieddata: gstDetails.data,
+              }
+            : null;
 
-      await updateUserProfile(
-        {
-          ...rest,
-          role: finalRole,
-          businessProfile,
-        },
-        verifiedToken,
-      );
+        await updateUserProfile(
+          {
+            ...rest,
+            userType: "customer",
+            businessType: finalBusinessType,
+            businessProfile,
+          },
+          verifiedToken,
+        );
+      }
 
-      // Refresh client user from DB
       await auth.refreshClientUser();
 
-      // ✅ Use client-side navigation instead of window.location.assign
-      // This prevents the auth state from being cleared
       setTimeout(() => {
         window.location.href = "/";
       }, 1000);
@@ -224,6 +246,91 @@ export default function ProfileForm({
 
   const { isSubmitting } = form.formState;
 
+  // ✅ UPDATED: Validation for submit button
+  const canSubmit = () => {
+    // ✅ Admin bypass - only check basic requirements
+    if (isAdmin) {
+      const canSubmitAdmin =
+        isVerified &&
+        !isSubmitting &&
+        !!form.watch("displayName") &&
+        !!form.watch("email") &&
+        !!form.watch("phone");
+
+      console.log("Admin canSubmit check:", {
+        isVerified,
+        isSubmitting,
+        displayName: form.watch("displayName"),
+        email: form.watch("email"),
+        phone: form.watch("phone"),
+        canSubmitAdmin,
+      });
+
+      return canSubmitAdmin;
+    }
+
+    // For non-admin users, full validation
+    const canSubmitRegular =
+      isVerified &&
+      !isSubmitting &&
+      !loadingGst &&
+      form.formState.isValid &&
+      (idType === "gst"
+        ? gstDetails !== null
+        : gstNumber && gstNumber.length === 10);
+
+    console.log("Regular user canSubmit check:", {
+      isVerified,
+      isSubmitting,
+      loadingGst,
+      isValid: form.formState.isValid,
+      idType,
+      gstDetails,
+      gstNumber,
+      canSubmitRegular,
+      errors: form.formState.errors,
+    });
+
+    return canSubmitRegular;
+  };
+
+  // ✅ Add useEffect to debug canSubmit changes
+  useEffect(() => {
+    console.log("canSubmit status:", canSubmit());
+  }, [
+    isVerified,
+    isSubmitting,
+    loadingGst,
+    gstDetails,
+    gstNumber,
+    idType,
+    form.formState.isValid,
+  ]);
+
+  // ✅ Handle form submission with custom handler for admin
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("=== FORM onSubmit triggered ===");
+    console.log("isAdmin:", isAdmin);
+    console.log("canSubmit:", canSubmit());
+
+    if (isAdmin) {
+      // For admin, bypass form validation and submit directly
+      const data = {
+        displayName: form.getValues("displayName"),
+        email: form.getValues("email"),
+        phone: form.getValues("phone"),
+        businessType: "",
+        gstNumber: "",
+      };
+      console.log("Admin manual submit:", data);
+      handleSubmit(data as any);
+    } else {
+      // For regular users, use form validation
+      form.handleSubmit(handleSubmit)(e);
+    }
+  };
+
   return (
     <>
       <div className="relative">
@@ -236,7 +343,8 @@ export default function ProfileForm({
           </div>
         )}
         <Form {...form}>
-          <form onSubmit={form.handleSubmit((data) => handleSubmit(data))}>
+          {/* ✅ CHANGED: Use custom onSubmit handler */}
+          <form onSubmit={onSubmit}>
             <fieldset
               className="flex flex-col gap-5"
               disabled={form.formState.isSubmitting}
@@ -448,136 +556,182 @@ export default function ProfileForm({
                 </div>
               )}
 
-              {/* Role */}
-              <FormField
-                control={form.control}
-                name="role"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel className="flex items-start gap-1">
-                      Your role or business type
-                    </FormLabel>
-                    {selectedRole === "admin" && (
-                      <span className="text-xs text-green-700">
-                        You are an admin.
-                      </span>
-                    )}
-                    <FormControl>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                        disabled={field.value === "admin"}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select a role">
-                            {field.value === "admin" ? "Admin" : undefined}
-                          </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="retailer">Retailer</SelectItem>
-                          <SelectItem value="wholesaler">Wholesaler</SelectItem>
-                          <SelectItem value="distributor">
-                            Distributor
-                          </SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {selectedRole === "other" && (
-                <FormField
-                  control={form.control}
-                  name="otherUserRole"
-                  render={({ field }) => {
-                    return (
-                      <FormItem>
+              {/* ✅ Show admin badge or business fields */}
+              {isAdmin ? (
+                <div className="rounded-md bg-green-100 p-4 text-center">
+                  <p className="text-sm font-semibold text-green-800">
+                    ✅ You are an admin. Only basic profile information is
+                    required.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {/* Business Type */}
+                  <FormField
+                    control={form.control}
+                    name="businessType"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel className="flex items-start gap-1">
+                          Business type
+                        </FormLabel>
                         <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="Specify your role or business type"
-                          />
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select your business type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="retailer">Retailer</SelectItem>
+                              <SelectItem value="wholesaler">
+                                Wholesaler
+                              </SelectItem>
+                              <SelectItem value="distributor">
+                                Distributor
+                              </SelectItem>
+                              <SelectItem value="other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
-                    );
-                  }}
-                />
+                    )}
+                  />
+
+                  {selectedBusinessType === "other" && (
+                    <FormField
+                      control={form.control}
+                      name="otherBusinessType"
+                      render={({ field }) => {
+                        return (
+                          <FormItem>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                placeholder="Specify your role or business type"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
+                    />
+                  )}
+
+                  {/* ID Type Selection */}
+                  <div className="space-y-2">
+                    <FormLabel>Business Identification Through</FormLabel>
+                    <Select
+                      value={idType}
+                      onValueChange={(value: "pan" | "gst") => {
+                        setIdType(value);
+                        setGstDetails(null);
+                        setGstError(null);
+                        form.setValue("gstNumber", "");
+                      }}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="gst">GST Number</SelectItem>
+                        <SelectItem value="pan">PAN Card</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-muted-foreground text-xs">
+                      {idType === "gst"
+                        ? "Select this if you have a GST registration"
+                        : "Select this if you don't have GST but have a PAN card"}
+                    </p>
+                  </div>
+
+                  {/* GST/PAN Number Field */}
+                  <FormField
+                    control={form.control}
+                    name="gstNumber"
+                    render={({ field }) => {
+                      return (
+                        <FormItem>
+                          <FormLabel>
+                            {idType === "gst" ? "GSTIN Number" : "PAN Number"}
+                          </FormLabel>
+                          <FormControl>
+                            <div className="flex flex-col gap-2 md:flex-row">
+                              <Input
+                                {...field}
+                                placeholder={
+                                  idType === "gst"
+                                    ? "Enter 15-digit GSTIN"
+                                    : "Enter 10-character PAN"
+                                }
+                                maxLength={idType === "gst" ? 15 : 10}
+                                className={clsx(
+                                  idType === "gst" &&
+                                    gstDetails &&
+                                    "border-green-300 ring-1 ring-green-200",
+                                  idType === "gst" &&
+                                    !gstDetails &&
+                                    gstNumber?.length === 15 &&
+                                    "border-orange-300",
+                                  idType === "pan" &&
+                                    gstNumber?.length === 10 &&
+                                    "border-green-300 ring-1 ring-green-200",
+                                )}
+                              />
+                              {idType === "gst" && !loadingGst && (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  onClick={() =>
+                                    fetchGstDetails(gstNumber || "")
+                                  }
+                                  disabled={
+                                    gstNumber?.length !== 15 ||
+                                    loadingGst ||
+                                    isSubmitting
+                                  }
+                                  className="gap-2"
+                                >
+                                  <span>Get Details</span>
+                                  <CloudDownload className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </FormControl>
+
+                          {idType === "gst" && loadingGst && (
+                            <div className="mt-3">
+                              <GstDetails data={null} loading={true} />
+                            </div>
+                          )}
+                          {idType === "gst" && gstDetails && (
+                            <div className="mt-3">
+                              <GstDetails data={gstDetails} loading={false} />
+                            </div>
+                          )}
+                          {idType === "gst" && gstError && (
+                            <div className="text-destructive">{gstError}</div>
+                          )}
+
+                          {idType === "pan" && gstNumber?.length === 10 && (
+                            <div className="mt-2 flex items-center gap-2 text-sm text-green-700">
+                              <CheckCircle2 className="h-4 w-4" />
+                              <span>PAN number format is valid</span>
+                            </div>
+                          )}
+
+                          <FormMessage />
+                        </FormItem>
+                      );
+                    }}
+                  />
+                </>
               )}
 
-              <FormField
-                control={form.control}
-                name="gstNumber"
-                render={({ field }) => {
-                  return (
-                    <FormItem>
-                      <FormLabel>GSTIN Number</FormLabel>
-                      <FormControl>
-                        <div className="flex flex-col gap-2 md:flex-row">
-                          <Input
-                            {...field}
-                            placeholder="Enter 15-digit GSTIN"
-                            className={clsx(
-                              gstDetails &&
-                                "border-green-300 ring-1 ring-green-200",
-                              !gstDetails &&
-                                gstNumber?.length === 15 &&
-                                "border-orange-300",
-                            )}
-                          />
-                          {!loadingGst && (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={() => fetchGstDetails(gstNumber || "")}
-                              disabled={
-                                gstNumber?.length !== 15 ||
-                                loadingGst ||
-                                isSubmitting
-                              }
-                              className="gap-2"
-                            >
-                              <span>Get Details</span>
-                              {loadingGst ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <CloudDownload className="h-4 w-4" />
-                              )}
-                            </Button>
-                          )}
-                        </div>
-                      </FormControl>
-
-                      {loadingGst && (
-                        <div className="mt-3">
-                          <GstDetails data={null} loading={true} />
-                        </div>
-                      )}
-                      {gstDetails && (
-                        <div className="mt-3">
-                          <GstDetails data={gstDetails} loading={false} />
-                        </div>
-                      )}
-                      {gstError && (
-                        <div className="text-destructive">{gstError}</div>
-                      )}
-                      <FormMessage />
-                    </FormItem>
-                  );
-                }}
-              />
-
               <Button
-                disabled={
-                  !isVerified ||
-                  isSubmitting ||
-                  loadingGst ||
-                  !form.formState.isValid ||
-                  gstDetails === null
-                }
+                disabled={!canSubmit()}
                 type="submit"
                 className="w-full cursor-pointer tracking-wide uppercase"
               >

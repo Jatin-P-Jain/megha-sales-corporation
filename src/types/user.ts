@@ -7,20 +7,23 @@ export interface FirebaseAuthData {
 
 export type AccountStatus = "pending" | "approved" | "rejected";
 
-export type UserRole =
+export type BusinessType = "retailer" | "wholesaler" | "distributor" | "other";
+export type UserType =
   | "admin"
-  | "retailer"
-  | "wholesaler"
-  | "distributor"
+  | "customer"
+  | "accountant"
+  | "dispatcher"
   | "other";
 
 export type UserData = {
   uid: string;
-  role: UserRole | string | null;
+  userType: UserType | string | null;
+  businessType?: BusinessType | string | null;
   email: string | null;
   phone: string | null;
   displayName: string | null;
   gstNumber?: string;
+  panNumber?: string;
   photoUrl?: string | null;
   businessProfile?: BusinessProfile | null;
   profileComplete?: boolean;
