@@ -45,13 +45,6 @@ export const updateUserProfile = async (
     .doc(uid)
     .update({ ...userData, updatedAt: new Date() });
 
-  const userRecord = await auth.getUser(uid);
-  const existingClaims = userRecord.customClaims ?? {};
-  await auth.setCustomUserClaims(uid, {
-    ...existingClaims,
-    role: data.role,
-    profileComplete: true,
-  });
   console.log("update user claims complete profile");
 
   // 6) Return the updated user for your client

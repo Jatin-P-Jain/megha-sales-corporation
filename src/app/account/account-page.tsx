@@ -23,10 +23,8 @@ import { Progress } from "@/components/ui/progress";
 
 export default function AccountPage({
   isPasswordProvider,
-  isAdmin,
 }: {
   isPasswordProvider: boolean;
-  isAdmin: boolean;
 }) {
   // Hydration check for SSR/CSR sync
   const [hasHydrated, setHasHydrated] = useState(false);
@@ -36,7 +34,7 @@ export default function AccountPage({
 
   const auth = useAuth();
   const { clientUser, clientUserLoading, setClientUser } = auth;
-
+  const isAdmin = clientUser?.role === "admin";
   const [uploading, setUploading] = useState(false);
   const [uploadPercent, setUploadPercent] = useState<number>(0);
   const [imageLoading, setImageLoading] = useState<boolean>(true);

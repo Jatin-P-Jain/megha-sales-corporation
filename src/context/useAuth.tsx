@@ -32,7 +32,6 @@ type AuthContextType = {
   clientUserLoading: boolean;
   isLoggingOut: boolean;
   currentUser: User | null;
-  customClaims: ParsedToken | null;
   logout: () => Promise<void>;
   loginWithGoogle: () => Promise<User | undefined>;
   loginWithEmailAndPassword: (data: {
@@ -55,7 +54,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [clientUser, setClientUser] = useState<UserData | null>(null);
   const [clientUserLoading, setClientUserLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [customClaims, setCustomClaims] = useState<ParsedToken | null>(null);
   const [inactivityLimit, setInactivityLimit] = useState<number>();
   const [loading, setLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -134,7 +132,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           : undefined,
       };
       await createUserIfNotExists(safeUser);
-      setCustomClaims(result.claims);
 
       // Set inactivity limit based on role
       const limit = result.claims.admin
@@ -173,7 +170,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         refreshClientUser,
         isLoggingOut,
         currentUser,
-        customClaims,
         logout: async () => {
           setIsLoggingOut(true);
           try {

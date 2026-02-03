@@ -7,27 +7,15 @@ import { useEffect } from "react";
 
 export default function LoginForm() {
   const auth = useAuth();
-  const router = useRouter();
+  const profileComplete = auth.clientUser?.profileComplete;
   const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect");
-  console.log("LoginForm redirect:", redirect);
+  const redirect = searchParams.get("redirect") || undefined;
+  const router = useRouter();
 
-  useEffect(() => {
-    if (auth.currentUser && auth.customClaims) {
-      // Wait until logged in and claims loaded
-      const profileComplete = auth.customClaims.profileComplete;
-      if (profileComplete) {
-        router.replace(redirect || "/");
-      } else {
-        router.replace("/account/profile");
-      }
-    }
-  }, [auth.currentUser, auth.customClaims, redirect]);
 
-  return (
+  return (  
     <CommonLoginForm
       onSuccess={() => {
-        const profileComplete = auth?.customClaims?.profileComplete;
         if (profileComplete) {
           if (redirect) {
             router.replace(redirect);

@@ -21,7 +21,7 @@ const HomePage = ({
   const user = clientUser;
   const { displayName } = user ?? {};
   const userName = displayName ?? "Guest";
-  const isAdmin = auth?.customClaims?.admin ?? false;
+  const isAdmin = clientUser?.role === "admin";
 
   return (
     <>

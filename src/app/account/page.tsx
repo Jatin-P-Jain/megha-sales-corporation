@@ -26,12 +26,10 @@ export default async function Account() {
     (provider) => provider.providerId === "password",
   );
 
-  const isAdmin = !!user.customClaims?.admin;
 
   return (
     <AccountPage
       isPasswordProvider={isPasswordProvider ? true : false}
-      isAdmin={isAdmin}
     />
   );
 }
