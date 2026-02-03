@@ -1,8 +1,6 @@
 "use server";
 import { BusinessProfile } from "@/data/businessProfile";
 import { auth, fireStore } from "@/firebase/server";
-import { UserData } from "@/types/user";
-import { userProfileDataSchema } from "@/validation/profileSchema";
 import { DecodedIdToken } from "firebase-admin/auth";
 import { cookies } from "next/headers";
 
