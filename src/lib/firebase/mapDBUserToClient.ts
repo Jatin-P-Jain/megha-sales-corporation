@@ -11,7 +11,9 @@ export function mapDbUserToClientUser(
     displayName: dbUser?.displayName || null,
     gstNumber: dbUser?.gstNumber || undefined,
     photoUrl: dbUser?.photoUrl || null,
+    businessProfile: dbUser?.businessProfile || null,
     profileComplete: dbUser?.profileComplete ?? false,
+    accountStatus: dbUser?.accountStatus ?? false,
     firebaseAuth: dbUser?.firebaseAuth || undefined,
   };
 }

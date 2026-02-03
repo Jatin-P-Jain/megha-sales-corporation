@@ -18,8 +18,10 @@ import { storage } from "@/firebase/client";
 import { toast } from "sonner";
 import { updateUser } from "./actions";
 import imageUrlFormatter from "@/lib/image-urlFormatter";
-import { CopyIcon, Loader2Icon } from "lucide-react";
+import { CopyIcon, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function AccountPage({
   isPasswordProvider,
@@ -35,9 +37,10 @@ export default function AccountPage({
   const auth = useAuth();
   const { clientUser, clientUserLoading, setClientUser } = auth;
   const isAdmin = clientUser?.role === "admin";
+  const accountStatus = clientUser?.accountStatus;
   const [uploading, setUploading] = useState(false);
   const [uploadPercent, setUploadPercent] = useState<number>(0);
-  const [imageLoading, setImageLoading] = useState<boolean>(true);
+
   // Set profile photo from clientUser when available
   const [photo, setPhoto] = useState<string>("");
   useEffect(() => {
@@ -56,7 +59,6 @@ export default function AccountPage({
         if (e.target?.result) setPhoto(e.target.result as string);
       };
       reader.readAsDataURL(file);
-      // TODO: upload photo to backend/storage here
 
       console.log({ file });
 
@@ -97,6 +99,47 @@ export default function AccountPage({
     setUploading(false);
   };
 
+  // Helper function to get account status display info
+  const getAccountStatusInfo = () => {
+    switch (accountStatus) {
+      case "approved":
+        return {
+          icon: CheckCircle2,
+          text: "Approved",
+          color: "text-green-600",
+          bgColor: "bg-green-50",
+          borderColor: "border-green-300",
+          title: "Account Approved!",
+          description: "You have full access to all features.",
+        };
+      case "rejected":
+        return {
+          icon: XCircle,
+          text: "Rejected",
+          color: "text-red-600",
+          bgColor: "bg-red-50",
+          borderColor: "border-red-300",
+          title: "Account Rejected.",
+          description: "Please contact support for assistance.",
+        };
+      case "pending":
+      default:
+        return {
+          icon: Clock,
+          text: "Pending",
+          color: "text-yellow-600",
+          bgColor: "bg-yellow-50",
+          borderColor: "border-yellow-300",
+          title: "Pending Approval.",
+          description:
+            "Your account is under review. You'll be notified once approved.",
+        };
+    }
+  };
+
+  const statusInfo = getAccountStatusInfo();
+  const StatusIcon = statusInfo.icon;
+
   // Show nothing until hydrated and user data is loaded
   if (!hasHydrated || clientUserLoading || !clientUser) return null;
 
@@ -107,38 +150,47 @@ export default function AccountPage({
           <CardTitle className="text-primary text-center text-2xl font-semibold">
             My Account
           </CardTitle>
-          <div
-            className={clsx("text-center text-sm", {
-              "text-green-700": clientUser?.profileComplete,
-              "text-red-700": !clientUser?.profileComplete,
-            })}
-          >
-            {clientUser.profileComplete
-              ? "✅ Your profile looks great and fully setup!🎉"
-              : "🚫 Your profile is incomplete."}
-          </div>
+
+          {/* Account Approval Status */}
+          {!isAdmin && (
+            <div className="mt-2">
+              <Alert
+                className={clsx(statusInfo.bgColor, statusInfo.borderColor)}
+              >
+                <StatusIcon className={clsx("h-4 w-4", statusInfo.color)} />
+                <AlertDescription
+                  className={clsx("ml-2 text-sm", statusInfo.color)}
+                >
+                  <span className="font-semibold">{statusInfo.title}</span>
+                  {statusInfo.description}
+                </AlertDescription>
+              </Alert>
+            </div>
+          )}
+
           {/* Editable Profile Photo */}
           <div className="relative flex flex-col items-center justify-center gap-2 py-4">
-            {imageLoading && (
-              <div>
-                <Loader2Icon className="text-primary animate-spin" />
-              </div>
-            )}
-            <Image
-              src={photo}
-              alt="Profile"
-              className="ring-primary h-25 w-25 rounded-full border-4 border-white bg-white object-contain ring-2 md:h-30 md:w-30"
-              width={100}
-              height={100}
-              onLoad={() => {
-                setImageLoading(false);
-              }}
-            />
+            <Avatar className="h-15 w-15 bg-white ring-1 md:h-25 md:w-25">
+              {photo ? (
+                <Image
+                  src={photo}
+                  alt="Profile"
+                  className="ring-primary h-25 w-25 rounded-full border-4 border-white bg-white object-contain ring-2 md:h-30 md:w-30"
+                  width={100}
+                  height={100}
+                />
+              ) : (
+                <AvatarFallback className="text-lg">
+                  {(clientUser.displayName || clientUser.email)?.[0] || "U"}
+                </AvatarFallback>
+              )}
+            </Avatar>
+
             {/* Show progress bar and percent while uploading */}
             {uploading ? (
               <div className="my-2 flex flex-col items-center">
                 <Progress value={uploadPercent} className="w-32" />
-                <span className="text-primary mt-2 text-sm font-medium">{`Uploading and updating your profile picture -  ${uploadPercent}%`}</span>
+                <span className="text-primary mt-2 text-sm font-medium">{`Uploading and updating your profile picture - ${uploadPercent}%`}</span>
               </div>
             ) : (
               <label>
@@ -154,9 +206,10 @@ export default function AccountPage({
               </label>
             )}
           </div>
+
           <div className="flex flex-col items-center justify-center">
             <span className="text-muted-foreground text-center text-xs">
-              Your Unique Identification Number (UID) in our system :
+              Your Unique Identification Number (UID) in our system:
             </span>
             <span className="text-primary flex items-center justify-center gap-2 text-sm font-semibold">
               {clientUser.uid}
@@ -170,6 +223,7 @@ export default function AccountPage({
             </span>
           </div>
         </CardHeader>
+
         <CardContent className="flex flex-col gap-4">
           <ul className="grid grid-cols-1 gap-3">
             <li className="flex items-center justify-between">
@@ -198,7 +252,24 @@ export default function AccountPage({
                 {clientUser.gstNumber ?? "-"}
               </span>
             </li>
+            {!isAdmin && (
+              <li className="flex items-center justify-between">
+                <span className="text-muted-foreground text-sm">
+                  Account Status:
+                </span>{" "}
+                <span
+                  className={clsx(
+                    "flex items-center gap-1 font-semibold capitalize",
+                    statusInfo.color,
+                  )}
+                >
+                  <StatusIcon className="h-4 w-4" />
+                  {statusInfo.text}
+                </span>
+              </li>
+            )}
           </ul>
+
           {clientUser?.role === "admin" ? (
             <div className="rounded-md bg-green-100 p-2 px-4 text-center text-sm text-green-700">
               You are an <span className="font-semibold">Admin</span> - manage
@@ -225,6 +296,7 @@ export default function AccountPage({
             </CardContent>
           </>
         )}
+
         {!isAdmin && (
           <>
             <Separator />

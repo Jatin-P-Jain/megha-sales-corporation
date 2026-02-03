@@ -10,6 +10,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { useAuth } from "@/context/useAuth";
 import { usePaginatedFirestore } from "@/hooks/usePaginatedFireStore";
 import { Product } from "@/types/product";
 import clsx from "clsx";
@@ -17,6 +18,9 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
+  const { clientUser } = useAuth();
+  const accountStatus = clientUser?.accountStatus;
+
   const PAGE_SIZE = process.env.NEXT_PUBLIC_PAGE_SIZE
     ? parseInt(process.env.NEXT_PUBLIC_PAGE_SIZE)
     : 10;
@@ -209,7 +213,12 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
         <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col justify-between gap-4 py-2">
           <div className="flex w-full flex-1 flex-grow flex-col gap-5">
             {data.map((product: Product, index: number) => (
-              <ProductCard key={index} product={product} isAdmin={isAdmin} />
+              <ProductCard
+                key={index}
+                product={product}
+                isAdmin={isAdmin}
+                isAccountApproved={accountStatus === "approved"}
+              />
             ))}
           </div>
 

@@ -30,6 +30,7 @@ export const updateUserProfile = async (
     const userData = {
       ...data,
       profileComplete: true,
+      accountStatus: "pending",
       firebaseAuth: decodedToken.firebase,
     };
 

@@ -204,15 +204,14 @@ export default function ProfileForm({
       // Refresh client user from DB
       await auth.refreshClientUser();
 
-      toast.success("Success!", {
-        description: "Your profile has been saved successfully!",
-      });
-
       // ✅ Use client-side navigation instead of window.location.assign
       // This prevents the auth state from being cleared
       setTimeout(() => {
         window.location.href = "/";
       }, 1000);
+      toast.success("Success!", {
+        description: "Your profile has been saved successfully!",
+      });
     } catch (err: unknown) {
       console.error("Profile Submit error:", err);
       if (err instanceof Error) {
@@ -572,7 +571,13 @@ export default function ProfileForm({
               />
 
               <Button
-                disabled={!isVerified || isSubmitting || loadingGst}
+                disabled={
+                  !isVerified ||
+                  isSubmitting ||
+                  loadingGst ||
+                  !form.formState.isValid ||
+                  gstDetails === null
+                }
                 type="submit"
                 className="w-full cursor-pointer tracking-wide uppercase"
               >

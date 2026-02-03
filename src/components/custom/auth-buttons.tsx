@@ -41,6 +41,7 @@ export default function AuthButtons() {
 
   // Determine admin once
   const isAdmin = clientUser?.role === "admin";
+  const accountStatus = clientUser?.accountStatus;
 
   // 1) Loading state
   if (currentUser && clientUserLoading) {
@@ -76,6 +77,11 @@ export default function AuthButtons() {
               {isAdmin && (
                 <div className="bottom-0 rounded-sm bg-green-100 px-1 text-[8px] font-semibold text-green-700">
                   Admin
+                </div>
+              )}
+              {accountStatus === "pending" && (
+                <div className="bottom-0 rounded-sm bg-yellow-100 px-1 text-[8px] font-semibold text-yellow-700">
+                  Approval Pending
                 </div>
               )}
             </button>
