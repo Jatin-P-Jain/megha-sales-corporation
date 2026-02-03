@@ -59,7 +59,6 @@ export async function middleware(request: NextRequest) {
   // 3) Decode your token
   let admin: boolean | undefined;
   let exp: number | undefined;
-  let uid: string | undefined;
 
   try {
     const decoded = decodeJwt(token) as {
