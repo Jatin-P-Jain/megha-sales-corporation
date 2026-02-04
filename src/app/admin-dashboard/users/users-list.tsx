@@ -14,6 +14,11 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import UserCard from "./user-card";
 import UserCardSkeleton from "@/components/custom/user-card-skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
+
+type SearchField = "email" | "phone" | "uid" | "displayName";
 
 export default function UsersList() {
   const PAGE_SIZE = process.env.NEXT_PUBLIC_PAGE_SIZE
@@ -24,9 +29,13 @@ export default function UsersList() {
   const previousFiltersRef = useRef<string>("");
 
   const accountStatusValue = searchParams.get("accountStatus") || "";
+  const searchField = searchParams.get("searchField") as SearchField | null;
+  const searchQuery = searchParams.get("searchQuery") || "";
 
   const filtersOnly = {
     accountStatus: accountStatusValue,
+    searchField,
+    searchQuery,
   };
   const filterKey = JSON.stringify(filtersOnly);
 
@@ -46,6 +55,16 @@ export default function UsersList() {
           },
         ]
       : []),
+    // Add search filter
+    ...(searchField && searchQuery
+      ? [
+          {
+            field: searchField,
+            op: "==" as const,
+            value: searchQuery,
+          },
+        ]
+      : []),
   ];
 
   const { data, loading, hasMore, currentPage, loadPage, totalItems } =
@@ -59,18 +78,17 @@ export default function UsersList() {
 
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
-  // after loading becomes false
   useEffect(() => {
     if (!loading) {
       setHasLoadedOnce(true);
     }
   }, [loading]);
-  // ⏮ Reset to page 1 if filters change
+
+  // Reset to page 1 if filters change
   useEffect(() => {
     if (previousFiltersRef.current !== filterKey) {
       previousFiltersRef.current = filterKey;
 
-      // Reset page to 1 in URL
       const sp = new URLSearchParams(searchParams.toString());
       sp.set("page", "1");
       router.replace(`/admin-dashboard/users?${sp.toString()}`);
@@ -82,6 +100,24 @@ export default function UsersList() {
     sp.set("page", `${page}`);
     router.replace(`/admin-dashboard/users?${sp.toString()}`);
     loadPage(page);
+  };
+
+  const handleClearSearch = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("searchField");
+    params.delete("searchQuery");
+    params.delete("page");
+    router.push(`/admin-dashboard/users?${params.toString()}`);
+  };
+
+  const getFieldLabel = (field: SearchField) => {
+    const labels: Record<SearchField, string> = {
+      email: "Email",
+      phone: "Phone",
+      uid: "User ID",
+      displayName: "Name",
+    };
+    return labels[field];
   };
 
   const start = (currentPage - 1) * PAGE_SIZE + 1;
@@ -100,14 +136,47 @@ export default function UsersList() {
 
   if (!loading && hasLoadedOnce && data.length === 0) {
     return (
-      <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 items-center justify-center">
+      <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col items-center justify-center gap-4">
+        {searchField && searchQuery && (
+          <Badge
+            variant="secondary"
+            className="flex items-center gap-2 px-3 py-1.5"
+          >
+            Searching {getFieldLabel(searchField)}:{" "}
+            <strong>{searchQuery}</strong>
+            <X className="h-3 w-3 cursor-pointer" onClick={handleClearSearch} />
+          </Badge>
+        )}
         <p className="text-muted-foreground">No users found.</p>
+        {searchField && searchQuery && (
+          <Button variant="outline" onClick={handleClearSearch}>
+            Clear Search
+          </Button>
+        )}
       </div>
     );
   }
 
   return (
     <div className="relative mx-auto flex max-w-screen-lg flex-col">
+      {/* Active Search Display */}
+      {searchField && searchQuery && (
+        <div className="flex items-center justify-center gap-0 px-4">
+          <Badge
+            variant="secondary"
+            className="flex items-center gap-2 px-3 py-1"
+          >
+            Searching {getFieldLabel(searchField)}:{" "}
+            <strong>{searchQuery}</strong>
+          </Badge>
+          {searchField && searchQuery && (
+            <Button variant="ghost" onClick={handleClearSearch}>
+              <X className="h-3 w-3 cursor-pointer" />
+            </Button>
+          )}
+        </div>
+      )}
+
       <p className="text-muted-foreground sticky top-0 z-10 w-full px-4 py-1 text-center text-xs md:text-sm">
         Page {currentPage} • Showing {start}–{end} of {totalItems} results
       </p>
@@ -128,7 +197,6 @@ export default function UsersList() {
               {currentPage > 1 && (
                 <PaginationItem>
                   <PaginationPrevious
-                    // href="#"
                     onClick={() => handlePageChange(currentPage - 1)}
                   />
                 </PaginationItem>
@@ -139,16 +207,13 @@ export default function UsersList() {
                 const visiblePages = new Set<number>();
 
                 if (totalPages <= 7) {
-                  // Show all pages if total pages are 7 or fewer
                   for (let i = 1; i <= totalPages; i++) {
                     visiblePages.add(i);
                   }
                 } else {
-                  // Always show first and last page
                   visiblePages.add(1);
                   visiblePages.add(totalPages);
 
-                  // Show current page and two pages before & after
                   for (let i = currentPage - 2; i <= currentPage + 2; i++) {
                     if (i > 1 && i < totalPages) {
                       visiblePages.add(i);
@@ -172,7 +237,6 @@ export default function UsersList() {
                   pageLinks.push(
                     <PaginationItem key={i}>
                       <PaginationLink
-                        // href="#"
                         onClick={() => handlePageChange(i)}
                         isActive={isCurrent}
                         className={clsx(
@@ -194,7 +258,6 @@ export default function UsersList() {
               {hasMore && currentPage < totalPages && (
                 <PaginationItem>
                   <PaginationNext
-                    // href="#"
                     onClick={() => handlePageChange(currentPage + 1)}
                   />
                 </PaginationItem>

@@ -41,14 +41,6 @@ const UserSearchAndFilters: React.FC = () => {
 
     router.push(`?${params.toString()}`);
   };
-
-  const handleClearAll = () => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("accountStatus");
-    params.delete("page");
-    router.push(`?${params.toString()}`);
-  };
-
   const getStatusConfig = (status: AccountStatus) => {
     const configs = {
       pending: {
@@ -89,8 +81,8 @@ const UserSearchAndFilters: React.FC = () => {
 
         {/* Quick Filters */}
         <div className="flex flex-col gap-2">
-          <div className="flex flex-wrap items-center gap-2 md:justify-end justify-center">
-            <span className="text-xs font-medium text-gray-700 md:text-sm hidden md:inline">
+          <div className="flex flex-wrap items-center justify-center gap-2 md:justify-end">
+            <span className="hidden text-xs font-medium text-gray-700 md:inline md:text-sm">
               Account Status:
             </span>
             {(["pending", "approved", "rejected"] as AccountStatus[]).map(

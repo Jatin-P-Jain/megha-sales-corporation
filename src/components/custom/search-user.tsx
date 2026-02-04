@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { SearchIcon, RotateCcwIcon, Loader } from "lucide-react";
+import { SearchIcon, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -21,10 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import clsx from "clsx";
-import { UserData } from "@/types/user";
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { firestore } from "@/firebase/client";
-import UserCard from "@/app/admin-dashboard/users/user-card";
+import { useRouter, useSearchParams } from "next/navigation";
 
 type SearchField = "email" | "phone" | "uid" | "displayName";
 
@@ -37,72 +34,36 @@ export default function SearchUser({
   buttonClassName?: string;
   showText?: boolean;
 }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchField, setSearchField] = useState<SearchField>("email");
-  const [searchedPhrase, setSearchedPhrase] = useState("");
-  const [searchedField, setSearchedField] = useState<SearchField>("email");
-  const [result, setResult] = useState<UserData[] | null>(null);
-  const [notFound, setNotFound] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   const resetState = () => {
     setSearchQuery("");
     setSearchField("email");
-    setResult(null);
-    setNotFound(false);
-    setLoading(false);
   };
 
-  const handleSearch = async () => {
+  const handleSearch = () => {
     if (!searchQuery.trim()) return;
 
-    setLoading(true);
-    setResult(null);
-    setNotFound(false);
-    setSearchedPhrase(searchQuery);
-    setSearchedField(searchField);
+    const params = new URLSearchParams(searchParams.toString());
 
-    try {
-      const usersRef = collection(firestore, "users");
-      let q;
+    // Set search parameters
+    params.set("searchField", searchField);
+    params.set("searchQuery", searchQuery.trim());
 
-      if (searchField === "uid") {
-        // For UID, directly get the document
-        const docSnapshot = await getDocs(
-          query(usersRef, where("__name__", "==", searchQuery.trim())),
-        );
+    // Reset to page 1 when searching
+    params.delete("page");
 
-        if (!docSnapshot.empty) {
-          const users = docSnapshot.docs.map((doc) => ({
-            uid: doc.id,
-            ...doc.data(),
-          })) as UserData[];
-          setResult(users);
-        } else {
-          setNotFound(true);
-        }
-      } else {
-        // For other fields, use where query
-        q = query(usersRef, where(searchField, "==", searchQuery.trim()));
-        const querySnapshot = await getDocs(q);
+    // Navigate with search params
+    router.push(`/admin-dashboard/users?${params.toString()}`);
 
-        if (!querySnapshot.empty) {
-          const users = querySnapshot.docs.map((doc) => ({
-            uid: doc.id,
-            ...doc.data(),
-          })) as UserData[];
-          setResult(users);
-        } else {
-          setNotFound(true);
-        }
-      }
-    } catch (err) {
-      console.error("Search error:", err);
-      setNotFound(true);
-    } finally {
-      setLoading(false);
-    }
+    // Close dialog and reset
+    setOpen(false);
+    resetState();
   };
 
   const getFieldLabel = (field: SearchField) => {
@@ -135,7 +96,7 @@ export default function SearchUser({
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="h-fit max-h-[75vh] w-full px-6 shadow-2xl sm:max-w-3xl md:max-w-2xl lg:max-w-4xl">
+      <DialogContent className="w-full px-6 shadow-2xl sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="mt-2">Search User</DialogTitle>
           <DialogDescription className="text-xs md:text-sm">
@@ -144,14 +105,15 @@ export default function SearchUser({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-3">
+        <div className="grid gap-4">
           {/* Search Field Selector */}
-          <div className="flex gap-2">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Search By</label>
             <Select
               value={searchField}
               onValueChange={(value: SearchField) => setSearchField(value)}
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Search by..." />
               </SelectTrigger>
               <SelectContent>
@@ -161,64 +123,30 @@ export default function SearchUser({
                 <SelectItem value="uid">User ID</SelectItem>
               </SelectContent>
             </Select>
+          </div>
 
+          {/* Search Input */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">
+              {getFieldLabel(searchField)}
+            </label>
             <Input
               placeholder={`Enter ${getFieldLabel(searchField).toLowerCase()}...`}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              className="flex-1"
             />
           </div>
-
-          {loading && (
-            <div className="flex flex-col items-center justify-center gap-2 py-4">
-              <Loader className="text-primary mx-auto h-4 w-4 animate-spin" />
-              <p className="text-muted-foreground text-xs">Searching...</p>
-            </div>
-          )}
-
-          {result && (
-            <>
-              <div className="text-center text-xs text-green-700 md:text-sm">
-                ✅ Found <strong>{result.length} user(s)</strong> for{" "}
-                {getFieldLabel(searchedField)}:{" "}
-                <strong>{searchedPhrase}</strong>
-              </div>
-              <div className="flex max-h-96 flex-col gap-3 overflow-auto p-1 md:max-h-[400px]">
-                {result.map((user) => (
-                  <div className="flex-1" key={user.uid}>
-                    <UserCard user={user} />
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-
-          {notFound && (
-            <p className="text-sm text-red-500">
-              ❌ No user found for {getFieldLabel(searchedField)}:{" "}
-              <strong>{searchedPhrase}</strong>
-            </p>
-          )}
         </div>
 
         <DialogFooter>
           <Button
             onClick={handleSearch}
-            disabled={loading || !searchQuery.trim()}
+            disabled={!searchQuery.trim()}
+            className="w-full"
           >
-            {result ? (
-              <>
-                <RotateCcwIcon className="mr-1 h-4 w-4" />
-                Search Another User
-              </>
-            ) : (
-              <>
-                <SearchIcon className="mr-1 h-4 w-4" />
-                Search User
-              </>
-            )}
+            <SearchIcon className="mr-1 h-4 w-4" />
+            Search User
           </Button>
         </DialogFooter>
       </DialogContent>
