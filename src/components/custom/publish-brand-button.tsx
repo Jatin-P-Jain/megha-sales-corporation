@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button"; // Adjust the import path as ne
 import { Loader2, SendIcon } from "lucide-react";
 import { useAuth } from "@/context/useAuth";
 import { BrandStatus } from "@/types/brandStatus";
-import { updateStatus } from "@/app/admin-dashboard/brands/action";
 import { toast } from "sonner";
+import { updateStatus } from "@/app/admin-dashboard/users/action";
 
 const PublishBrandButton = ({
   brandId,

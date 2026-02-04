@@ -1,6 +1,3 @@
-import { auth } from "@/firebase/server";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,

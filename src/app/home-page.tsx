@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { useAuth } from "@/context/useAuth";
-import { CheckCircle, Loader2Icon, TriangleAlert, XCircle } from "lucide-react";
+import { Loader2Icon, TriangleAlert, XCircle } from "lucide-react";
 import BrandsGrid from "./brands-grid";
 import { Brand } from "@/types/brand";
 import Link from "next/link";

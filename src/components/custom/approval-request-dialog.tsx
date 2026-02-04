@@ -94,7 +94,7 @@ export default function ApprovalRequestDialog({
 
         <div className="my-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
           <h4 className="mb-2 font-semibold text-yellow-800">
-            Why can't I see discounts?
+            Why can&apos;t I see discounts?
           </h4>
           <p className="text-sm text-yellow-700">
             To maintain pricing integrity and ensure genuine business

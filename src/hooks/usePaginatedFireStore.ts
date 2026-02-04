@@ -17,7 +17,7 @@ import { firestore } from "@/firebase/client";
 import { Product } from "@/types/product";
 import { UserData } from "@/types/user";
 
-type UsePaginatedFirestoreOptions<T> = {
+type UsePaginatedFirestoreOptions = {
   collectionPath: string;
   pageSize?: number;
   filters?: {
@@ -35,7 +35,7 @@ export const usePaginatedFirestore = <T extends Product | UserData>({
   filters = [],
   orderByField = "updated",
   orderDirection = "desc",
-}: UsePaginatedFirestoreOptions<T>) => {
+}: UsePaginatedFirestoreOptions) => {
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -63,9 +63,11 @@ export const usePaginatedFirestore = <T extends Product | UserData>({
       // If basePage is not targetPage, we need to step through pages to build cursors
       for (let page = basePage; page <= targetPage; page++) {
         let q = query(collection(firestore, collectionPath));
-        collectionPath === "users"
-          ? (q = query(q, orderBy("updatedAt", "desc")))
-          : (q = query(q, orderBy(orderByField, orderDirection)));
+        if(collectionPath === "users") {
+          q = query(q, orderBy("updatedAt", "desc"));
+        } else {
+          q = query(q, orderBy(orderByField, orderDirection));
+        }
         filters.forEach((f) => {
           q = query(q, where(f.field, f.op, f.value));
         });

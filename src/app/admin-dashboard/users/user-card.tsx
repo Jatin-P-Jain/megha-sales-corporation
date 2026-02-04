@@ -507,7 +507,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
           <DialogHeader>
             <DialogTitle>Reject User Account</DialogTitle>
             <DialogDescription>
-              Please provide a reason for rejecting {user.displayName}'s
+              Please provide a reason for rejecting {user.displayName}&apos;s
               account. This will be shared with the user.
             </DialogDescription>
           </DialogHeader>

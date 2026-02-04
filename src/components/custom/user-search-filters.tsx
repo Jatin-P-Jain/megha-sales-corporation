@@ -1,10 +1,8 @@
 "use client";
 import React from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Clock, XCircle, X } from "lucide-react";
+import { CheckCircle, Clock, XCircle} from "lucide-react";
 import SearchUser from "./search-user";
-import { Button } from "@/components/ui/button";
 
 type AccountStatus = "approved" | "rejected" | "pending";
 
