@@ -18,10 +18,6 @@ import { formatBusinessProfile } from "@/lib/business-profile-formatter";
 
 interface ApprovalRequestDialogProps {
   children: React.ReactNode;
-  userName?: string;
-  userPhone?: string;
-  userEmail?: string;
-  userId?: string;
 }
 
 export default function ApprovalRequestDialog({

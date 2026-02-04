@@ -14,6 +14,7 @@ import { Skeleton } from "../ui/skeleton";
 import useIsMobile from "@/hooks/useIsMobile";
 import ApprovalRequestDialog from "./approval-request-dialog";
 import { useAuth } from "@/context/useAuth";
+import { useRouter } from "next/navigation";
 
 type ProductCardProps = {
   product: Product;
@@ -28,7 +29,8 @@ export default function ProductCard({
 }: ProductCardProps) {
   const { cart, loading } = useCart();
   const auth = useAuth();
-  const { clientUser } = auth;
+  const router = useRouter();
+  const { clientUser, currentUser } = auth;
   const [selectedSize, setSelectedSize] = useState<ProductSize | undefined>(
     undefined,
   );
@@ -77,6 +79,13 @@ export default function ProductCard({
     const vehicleNameProcessed = names ? `${company} - ${names}` : company;
     return vehicleNameProcessed;
   }, [product.vehicleNames]);
+
+  // Handle discount view click
+  const handleDiscountClick = () => {
+    if (!clientUser) {
+      router.push("/login");
+    }
+  };
 
   return (
     <Card
@@ -184,13 +193,20 @@ export default function ProductCard({
                 <span className="font-semibold">
                   {selectedSize?.discount ?? product?.discount}%
                 </span>
-              ) : (
-                <ApprovalRequestDialog
-                  userName={clientUser?.displayName ?? "User"}
-                  userPhone={clientUser?.phone ?? ""}
-                  userEmail={clientUser?.email ?? ""}
-                  userId={clientUser?.uid ?? ""}
+              ) : !currentUser ? (
+                // Not logged in - redirect to login
+                <div
+                  onClick={handleDiscountClick}
+                  className="flex cursor-pointer items-center justify-between gap-2 transition-all hover:opacity-80"
                 >
+                  <span className="inline-flex items-center font-semibold text-yellow-600">
+                    *****
+                  </span>
+                  <EyeIcon className="size-5 text-yellow-600" />
+                </div>
+              ) : (
+                // Logged in but not approved - show approval dialog
+                <ApprovalRequestDialog>
                   <div className="flex cursor-pointer items-center justify-between gap-2 transition-all hover:opacity-80">
                     <span className="inline-flex items-center font-semibold text-yellow-600">
                       *****

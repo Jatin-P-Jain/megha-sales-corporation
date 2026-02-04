@@ -33,6 +33,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import clsx from "clsx";
+import { updateUserAccountStatus } from "@/app/account/actions";
 
 interface UserCardProps {
   user: UserData;
@@ -49,18 +50,11 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
   const handleApprove = async () => {
     setIsApproving(true);
     try {
-      const response = await fetch("/api/admin/approve-user", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: user.uid,
-          action: "approve",
-        }),
+      await updateUserAccountStatus({
+        userId: user.uid,
+        accountStatus: "approved",
+        rejectionReason: "",
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to approve user");
-      }
 
       toast.success("User Approved!", {
         description: `${user.displayName}'s account has been approved successfully.`,
@@ -70,7 +64,10 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
     } catch (error) {
       console.error("Error approving user:", error);
       toast.error("Failed to approve user", {
-        description: "Please try again or contact support.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Please try again or contact support.",
       });
     } finally {
       setIsApproving(false);
@@ -85,19 +82,11 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
 
     setIsRejecting(true);
     try {
-      const response = await fetch("/api/admin/approve-user", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: user.uid,
-          action: "reject",
-          rejectionReason: rejectionReason.trim(),
-        }),
+      await updateUserAccountStatus({
+        userId: user.uid,
+        accountStatus: "rejected",
+        rejectionReason: rejectionReason.trim(),
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to reject user");
-      }
 
       toast.success("User Rejected", {
         description: `${user.displayName}'s account has been rejected.`,
@@ -109,7 +98,10 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
     } catch (error) {
       console.error("Error rejecting user:", error);
       toast.error("Failed to reject user", {
-        description: "Please try again or contact support.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Please try again or contact support.",
       });
     } finally {
       setIsRejecting(false);
@@ -160,7 +152,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
     <>
       <Card className="gap-0 overflow-hidden p-0">
         <CardHeader className="bg-primary/10 p-2 md:p-3">
-          <div className="flex flex-col items-start md:items-center justify-between gap-2 md:flex-row">
+          <div className="flex flex-col items-start justify-between gap-2 md:flex-row md:items-center">
             <div className="flex items-center gap-4">
               <Avatar className="h-12 w-12 border-2 border-white shadow-md">
                 {user.photoUrl ? (
@@ -218,7 +210,6 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                       )}
                     </Button>
                     <Button
-                      className=""
                       onClick={() => setShowRejectDialog(true)}
                       disabled={isRejecting}
                       size="sm"
@@ -234,7 +225,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                     onClick={handleApprove}
                     disabled={isApproving}
                     size="sm"
-                    className="bg-green-600 hover:bg-green-700"
+                    className="w-full bg-green-600 hover:bg-green-700 md:w-auto"
                   >
                     {isApproving ? (
                       <>
@@ -258,7 +249,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
         <div
           onClick={() => setIsDetailsOpen(!isDetailsOpen)}
           className={clsx(
-            "flex cursor-pointer items-center justify-between px-4 py-2",
+            "flex cursor-pointer items-center justify-between px-4 py-2 transition-colors hover:bg-gray-50",
             isDetailsOpen && "bg-gray-100",
           )}
         >
