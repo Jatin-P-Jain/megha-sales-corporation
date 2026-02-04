@@ -7,10 +7,12 @@ export async function POST(req: NextRequest) {
     // 1) parse incoming order data
     const {
       templateKey,
+      customerUserId,
       customerName,
       orderId,
       customerPhone,
       customerMessage,
+      customerEmail,
       customerWANumber,
       customerBusinessProfile,
     } = await req.json();
@@ -21,8 +23,10 @@ export async function POST(req: NextRequest) {
       to: process.env.ADMIN_WHATSAPP_NUMBER!,
       inputParams: {
         adminName: "Jatin",
+        customerUserId,
         customerName,
         customerPhone,
+        customerEmail,
         orderId,
         customerMessage,
         customerWANumber,

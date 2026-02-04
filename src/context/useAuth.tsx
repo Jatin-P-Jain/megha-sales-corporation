@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useRef } from "react";
 import {
   loginWithEmailAndPass,
   loginWithGoogle,
@@ -12,12 +12,13 @@ import { removeToken } from "./actions";
 import { ConfirmationResult, RecaptchaVerifier, User } from "firebase/auth";
 import { createUserIfNotExists } from "@/lib/firebase/createUserIfNotExists";
 import { UserData } from "@/types/user";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import { mapDbUserToClientUser } from "@/lib/firebase/mapDBUserToClient";
 import useMonitorInactivity from "@/hooks/useMonitorInactivity";
 import { getDeviceMetadata } from "@/lib/utils";
 import { saveFcmToken } from "@/firebase/saveFcmToken";
 import { getMessaging, getToken } from "firebase/messaging";
+import { toast } from "sonner";
 
 type AuthContextType = {
   loading: boolean;
@@ -52,6 +53,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [inactivityLimit, setInactivityLimit] = useState<number>();
   const [loading, setLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  // Track previous account status for comparison
+  const previousAccountStatusRef = useRef<string | undefined>(undefined);
 
   const refreshClientUser = async () => {
     if (!currentUser) return;
@@ -103,13 +107,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setClientUserLoading(false);
         setCurrentUser(null);
         setLoading(false);
+        previousAccountStatusRef.current = undefined;
         return;
       }
       setCurrentUser(user);
       setLoading(false);
 
       // Persist user in Firestore and fetch claims
-      // ✅ CHANGED: Use getIdToken(false) instead of getIdToken(true)
       const result = await user.getIdTokenResult(false);
       const safeUser: UserData = {
         uid: user.uid,
@@ -134,23 +138,70 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         : parseInt(process.env.NEXT_PUBLIC_USER_INACTIVITY_LIMIT || "0");
       setInactivityLimit(limit);
 
-      // Fetch client user data
-      try {
-        const snap = await getDoc(doc(firestore, "users", safeUser.uid));
-        if (snap.exists()) {
-          setClientUser(mapDbUserToClientUser(snap.data()));
-        }
-      } catch (e) {
-        console.error("refreshClientUser failed", e);
-        await logoutUser();
-        await removeToken();
-        setCurrentUser(null);
-        setClientUser(null);
-      } finally {
-        setClientUserLoading(false);
-      }
+      // ✅ SET UP REAL-TIME LISTENER for user document
+      const userDocRef = doc(firestore, "users", safeUser.uid);
+
+      const unsubscribeSnapshot = onSnapshot(
+        userDocRef,
+        (docSnapshot) => {
+          if (docSnapshot.exists()) {
+            const userData = mapDbUserToClientUser(docSnapshot.data());
+
+            // Check if account status changed
+            const currentStatus = userData.accountStatus;
+            const previousStatus = previousAccountStatusRef.current;
+
+            // Show notification only if status actually changed (not on initial load)
+            if (
+              previousStatus !== undefined &&
+              currentStatus !== previousStatus
+            ) {
+              if (currentStatus === "approved") {
+                toast.success("Account Approved! 🎉", {
+                  description:
+                    "Your account has been approved. You can now see all product discounts!",
+                  duration: 5000,
+                });
+              } else if (currentStatus === "rejected") {
+                toast.error("Account Rejected", {
+                  description:
+                    userData.rejectionReason ||
+                    "Please contact support for more information.",
+                  duration: 5000,
+                });
+              } else if (currentStatus === "pending") {
+                toast.info("Account Status Updated", {
+                  description:
+                    "Your account status has been changed to pending.",
+                  duration: 5000,
+                });
+              }
+            }
+
+            // Update previous status for next comparison
+            previousAccountStatusRef.current = currentStatus;
+
+            setClientUser(userData);
+          } else {
+            setClientUser(null);
+          }
+          setClientUserLoading(false);
+        },
+        (error) => {
+          console.error("Error listening to user document:", error);
+          setClientUserLoading(false);
+        },
+      );
+
+      // Return cleanup function for snapshot listener
+      return () => {
+        unsubscribeSnapshot();
+      };
     });
-    return unsubscribe;
+
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   useMonitorInactivity(currentUser, inactivityLimit);
