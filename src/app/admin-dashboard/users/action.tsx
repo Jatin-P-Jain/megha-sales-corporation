@@ -4,12 +4,9 @@ import { auth, fireStore } from "@/firebase/server";
 import { BrandStatus } from "@/types/brandStatus";
 import { revalidatePath } from "next/cache";
 
-export const updateAccountStatus = async (
-  {
-    userId,
-    newAccountStatus,
-  }: { userId: string; newAccountStatus: BrandStatus },
-  authToken: string,
+export const updateStatus = async (
+  { brandId, newBrandStatus }: { brandId: string; newBrandStatus: BrandStatus },
+  authToken: string
 ) => {
   const verifiedToken = await auth.verifyIdToken(authToken);
   if (!verifiedToken.admin) {
@@ -20,9 +17,9 @@ export const updateAccountStatus = async (
   }
 
   await fireStore
-    .collection("users")
-    .doc(userId)
-    .update({ accountStatus: newAccountStatus, statusUpdated: new Date() });
+    .collection("brands")
+    .doc(brandId)
+    .update({ status: newBrandStatus, updated: new Date() });
 
-  revalidatePath(`/users/${userId}`);
+  revalidatePath(`/brands/${brandId}`);
 };

@@ -1,7 +1,4 @@
 "use client";
-
-import ProductCard from "@/components/custom/product-card";
-import ProductCardSkeleton from "@/components/custom/product-card-skeleton";
 import {
   Pagination,
   PaginationContent,
@@ -10,17 +7,20 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { useAuth } from "@/context/useAuth";
 import { usePaginatedFirestore } from "@/hooks/usePaginatedFireStore";
-import { Product } from "@/types/product";
+import { UserData } from "@/types/user";
 import clsx from "clsx";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import UserCard from "./user-card";
+import UserCardSkeleton from "@/components/custom/user-card-skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 
-export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
-  const { clientUser } = useAuth();
-  const accountStatus = clientUser?.accountStatus;
+type SearchField = "email" | "phone" | "uid" | "displayName";
 
+export default function UsersList() {
   const PAGE_SIZE = process.env.NEXT_PUBLIC_PAGE_SIZE
     ? parseInt(process.env.NEXT_PUBLIC_PAGE_SIZE)
     : 10;
@@ -28,158 +28,96 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
   const searchParams = useSearchParams();
   const previousFiltersRef = useRef<string>("");
 
-  const brandIdValue = searchParams.get("brandId") || "";
-  const statusValue = searchParams.get("status") || "";
-  const categoryValue = searchParams.get("category") || "";
-  const vehicleCompanyValue = searchParams.get("vehicleCompany") || "";
-  const priceValue = searchParams.get("price") || undefined;
-  const discountValue = searchParams.get("discount") || undefined;
-  const sortValue = searchParams.get("sort") || undefined;
+  const accountStatusValue = searchParams.get("accountStatus") || "";
+  const searchField = searchParams.get("searchField") as SearchField | null;
+  const searchQuery = searchParams.get("searchQuery") || "";
 
-  const [minPriceValue, maxPriceValue] = priceValue
-    ? priceValue.split(",")
-    : [undefined, undefined];
-  const [minDiscountValue, maxDiscountValue] = discountValue
-    ? discountValue.split(",")
-    : [undefined, undefined];
-
-  const [orderBy, orderDir] = (() => {
-    if (!sortValue) return ["updated", "desc"] as [string, "asc" | "desc"];
-    const [field, dir] = sortValue.split("-");
-    return [field, dir] as [string, "asc" | "desc"];
-  })();
   const filtersOnly = {
-    brandId: brandIdValue,
-    status: statusValue,
-    category: categoryValue,
-    vehicleCompany: vehicleCompanyValue,
+    accountStatus: accountStatusValue,
+    searchField,
+    searchQuery,
   };
   const filterKey = JSON.stringify(filtersOnly);
 
   // Convert comma-separated strings to arrays
-  const brandIds = brandIdValue ? brandIdValue.split(",") : [];
-  const statuses = statusValue ? statusValue.split(",") : [];
-  const categories = categoryValue ? categoryValue.split(",") : [];
-  const vehicleCompanies = vehicleCompanyValue
-    ? vehicleCompanyValue.split(",")
+  const accountStatuses = accountStatusValue
+    ? accountStatusValue.split(",")
     : [];
-  const minPrice = minPriceValue ? parseInt(minPriceValue) : undefined;
-  const maxPrice = maxPriceValue ? parseInt(maxPriceValue) : undefined;
-  const minDiscount = minDiscountValue ? parseInt(minDiscountValue) : undefined;
-  const maxDiscount = maxDiscountValue ? parseInt(maxDiscountValue) : undefined;
 
   // Construct filters
   const filters = [
-    ...(brandIds.length > 0
+    ...(accountStatuses.length > 0
       ? [
           {
-            field: "brandId",
+            field: "accountStatus",
             op: "in" as const,
-            value: brandIds,
+            value: accountStatuses,
           },
         ]
       : []),
-    ...(statuses.length > 0
+    // Add search filter
+    ...(searchField && searchQuery
       ? [
           {
-            field: "status",
-            op: "in" as const,
-            value: statuses,
-          },
-        ]
-      : []),
-    ...(categories.length > 0
-      ? [
-          {
-            field: "partCategory",
-            op: "in" as const,
-            value: categories,
-          },
-        ]
-      : []),
-    ...(vehicleCompanies.length > 0
-      ? [
-          {
-            field: "vehicleCompany",
-            op: "in" as const,
-            value: vehicleCompanies,
-          },
-        ]
-      : []),
-    // Add price range filters
-    ...(minPrice !== undefined
-      ? [
-          {
-            field: "price",
-            op: ">=" as const,
-            value: minPrice,
-          },
-        ]
-      : []),
-    ...(maxPrice !== undefined
-      ? [
-          {
-            field: "price",
-            op: "<=" as const,
-            value: maxPrice,
-          },
-        ]
-      : []),
-    ...(minDiscount !== undefined
-      ? [
-          {
-            field: "discount",
-            op: ">=" as const,
-            value: minDiscount,
-          },
-        ]
-      : []),
-    ...(maxDiscount !== undefined
-      ? [
-          {
-            field: "discount",
-            op: "<=" as const,
-            value: maxDiscount,
+            field: searchField,
+            op: "==" as const,
+            value: searchQuery,
           },
         ]
       : []),
   ];
 
   const { data, loading, hasMore, currentPage, loadPage, totalItems } =
-    usePaginatedFirestore<Product>({
-      collectionPath: "products",
+    usePaginatedFirestore<UserData>({
+      collectionPath: "users",
       pageSize: PAGE_SIZE,
-      orderByField: orderBy,
-      orderDirection: orderDir,
+      orderByField: "createdAt",
+      orderDirection: "desc",
       filters: filters,
     });
 
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
-  // after loading becomes false
   useEffect(() => {
     if (!loading) {
       setHasLoadedOnce(true);
     }
   }, [loading]);
 
-  // ⏮ Reset to page 1 if filters change
+  // Reset to page 1 if filters change
   useEffect(() => {
     if (previousFiltersRef.current !== filterKey) {
       previousFiltersRef.current = filterKey;
 
-      // Reset page to 1 in URL
       const sp = new URLSearchParams(searchParams.toString());
       sp.set("page", "1");
-      router.replace(`/products-list?${sp.toString()}`);
+      router.replace(`/admin-dashboard/users?${sp.toString()}`);
     }
   }, [filterKey, router, searchParams]);
 
   const handlePageChange = (page: number) => {
     const sp = new URLSearchParams(searchParams.toString());
     sp.set("page", `${page}`);
-    router.replace(`/products-list?${sp.toString()}`);
+    router.replace(`/admin-dashboard/users?${sp.toString()}`);
     loadPage(page);
+  };
+
+  const handleClearSearch = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("searchField");
+    params.delete("searchQuery");
+    params.delete("page");
+    router.push(`/admin-dashboard/users?${params.toString()}`);
+  };
+
+  const getFieldLabel = (field: SearchField) => {
+    const labels: Record<SearchField, string> = {
+      email: "Email",
+      phone: "Phone",
+      uid: "User ID",
+      displayName: "Name",
+    };
+    return labels[field];
   };
 
   const start = (currentPage - 1) * PAGE_SIZE + 1;
@@ -189,8 +127,8 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
   if (loading || !hasLoadedOnce) {
     return (
       <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col gap-4 px-4 py-6">
-        {[...Array(6)].map((_, i) => (
-          <ProductCardSkeleton key={i} />
+        {[...Array(4)].map((_, i) => (
+          <UserCardSkeleton key={i} />
         ))}
       </div>
     );
@@ -198,26 +136,58 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
 
   if (!loading && hasLoadedOnce && data.length === 0) {
     return (
-      <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 items-center justify-center">
-        <p className="text-muted-foreground">No products found.</p>
+      <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col items-center justify-center gap-4">
+        {searchField && searchQuery && (
+          <Badge
+            variant="secondary"
+            className="flex items-center gap-2 px-3 py-1.5"
+          >
+            Searching {getFieldLabel(searchField)}:{" "}
+            <strong>{searchQuery}</strong>
+            <X className="h-3 w-3 cursor-pointer" onClick={handleClearSearch} />
+          </Badge>
+        )}
+        <p className="text-muted-foreground">No users found.</p>
+        {searchField && searchQuery && (
+          <Button variant="outline" onClick={handleClearSearch}>
+            Clear Search
+          </Button>
+        )}
       </div>
     );
   }
 
   return (
     <div className="relative mx-auto flex max-w-screen-lg flex-col">
-      <p className="text-muted-foreground sticky top-0 z-10 w-full px-4 py-1 text-center text-sm">
+      {/* Active Search Display */}
+      {searchField && searchQuery && (
+        <div className="flex items-center justify-center gap-0 px-4">
+          <Badge
+            variant="secondary"
+            className="flex items-center gap-2 px-3 py-1"
+          >
+            Searching {getFieldLabel(searchField)}:{" "}
+            <strong>{searchQuery}</strong>
+          </Badge>
+          {searchField && searchQuery && (
+            <Button variant="ghost" onClick={handleClearSearch}>
+              <X className="h-3 w-3 cursor-pointer" />
+            </Button>
+          )}
+        </div>
+      )}
+
+      <p className="text-muted-foreground sticky top-0 z-10 w-full px-4 py-1 text-center text-xs md:text-sm">
         Page {currentPage} • Showing {start}–{end} of {totalItems} results
       </p>
       {data.length > 0 && (
         <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col justify-between gap-4 py-2">
           <div className="flex w-full flex-1 flex-grow flex-col gap-5">
-            {data.map((product: Product, index: number) => (
-              <ProductCard
+            {data.map((user: UserData, index: number) => (
+              <UserCard
                 key={index}
-                product={product}
-                isAdmin={isAdmin}
-                isAccountApproved={accountStatus === "approved"}
+                user={user}
+                onStatusUpdate={() => loadPage(currentPage)}
               />
             ))}
           </div>
@@ -227,7 +197,6 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
               {currentPage > 1 && (
                 <PaginationItem>
                   <PaginationPrevious
-                    // href="#"
                     onClick={() => handlePageChange(currentPage - 1)}
                   />
                 </PaginationItem>
@@ -238,16 +207,13 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
                 const visiblePages = new Set<number>();
 
                 if (totalPages <= 7) {
-                  // Show all pages if total pages are 7 or fewer
                   for (let i = 1; i <= totalPages; i++) {
                     visiblePages.add(i);
                   }
                 } else {
-                  // Always show first and last page
                   visiblePages.add(1);
                   visiblePages.add(totalPages);
 
-                  // Show current page and two pages before & after
                   for (let i = currentPage - 2; i <= currentPage + 2; i++) {
                     if (i > 1 && i < totalPages) {
                       visiblePages.add(i);
@@ -271,7 +237,6 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
                   pageLinks.push(
                     <PaginationItem key={i}>
                       <PaginationLink
-                        // href="#"
                         onClick={() => handlePageChange(i)}
                         isActive={isCurrent}
                         className={clsx(
@@ -293,7 +258,6 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
               {hasMore && currentPage < totalPages && (
                 <PaginationItem>
                   <PaginationNext
-                    // href="#"
                     onClick={() => handlePageChange(currentPage + 1)}
                   />
                 </PaginationItem>

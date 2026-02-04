@@ -19,8 +19,8 @@ messaging.onBackgroundMessage(function (payload) {
   const notificationTitle = payload.notification?.title || payload.data?.title || 'New Message';
   const notificationOptions = {
     body: payload.notification?.body || payload.data?.body || 'You have a new message',
-    icon: "/icon-192x192.png",
-    badge: "/icon-192x192.png",
+    icon: "/icons/icon-192x192.png",
+    badge: "/icons/icon-192x192.png",
     tag: 'notification-tag',
     requireInteraction: true,
     data: payload.data || {},

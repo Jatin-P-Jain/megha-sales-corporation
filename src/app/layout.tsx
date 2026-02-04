@@ -29,15 +29,10 @@ export default async function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1, height=device-height"
-      />
       <head>
-        <link
-          rel="manifest"
-          href="/manifest.json"
-          crossOrigin="use-credentials"
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, height=device-height"
         />
         <link
           rel="icon"
@@ -56,10 +51,29 @@ export default async function RootLayout({
           name="apple-mobile-web-app-title"
           content="Megha Sales Corporation"
         />
-        <link rel="manifest" href="/site.webmanifest" />
+        <link rel="manifest" href="/site.webmanifest.json" />
         <Script
           src="https://accounts.google.com/gsi/client"
           strategy="afterInteractive"
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "Megha Sales Corporation",
+              url: "https://www.meghasalescorporation.in",
+              logo: "https://www.meghasalescorporation.in/favicon.png",
+              contactPoint: {
+                "@type": "ContactPoint",
+                telephone: "+91-9425505557",
+                contactType: "sales",
+                areaServed: "IN",
+                availableLanguage: ["en", "hi"],
+              },
+            }),
+          }}
         />
       </head>
       <body
@@ -74,25 +88,6 @@ export default async function RootLayout({
         <Analytics />
         <SpeedInsights />
       </body>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Organization",
-            name: "Megha Sales Corporation",
-            url: "https://www.meghasalescorporation.in",
-            logo: "https://www.meghasalescorporation.in/favicon.png",
-            contactPoint: {
-              "@type": "ContactPoint",
-              telephone: "+91-9425505557",
-              contactType: "sales",
-              areaServed: "IN",
-              availableLanguage: ["en", "hi"],
-            },
-          }),
-        }}
-      />
     </html>
   );
 }

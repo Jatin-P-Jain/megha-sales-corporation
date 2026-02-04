@@ -15,6 +15,29 @@ export const whatsappTemplates: Record<
     resolveParams: TemplateParamResolver;
   }
 > = {
+  account_approval_request: {
+    name: "account_approval_request",
+    language: { code: "en_US" },
+    bodyParamsCount: 5,
+    hasButton: true,
+    resolveParams: ({
+      adminName,
+      customerName,
+      customerPhone,
+      customerEmail,
+      customerBusinessProfile,
+      customerUserId,
+    }) => ({
+      bodyParams: [
+        adminName,
+        customerName,
+        customerPhone,
+        customerEmail,
+        customerBusinessProfile,
+      ],
+      buttonParams: [customerUserId],
+    }),
+  },
   admin_order_recieved_v1: {
     name: "admin_order_recieved_v1",
     language: { code: "en_US" },

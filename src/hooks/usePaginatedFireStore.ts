@@ -15,6 +15,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { firestore } from "@/firebase/client";
 import { Product } from "@/types/product";
+import { UserData } from "@/types/user";
 
 type UsePaginatedFirestoreOptions = {
   collectionPath: string;
@@ -28,14 +29,14 @@ type UsePaginatedFirestoreOptions = {
   orderDirection?: "asc" | "desc";
 };
 
-export const usePaginatedFirestore = ({
+export const usePaginatedFirestore = <T extends Product | UserData>({
   collectionPath,
   pageSize = 10,
   filters = [],
   orderByField = "updated",
   orderDirection = "desc",
 }: UsePaginatedFirestoreOptions) => {
-  const [data, setData] = useState<Product[]>([]);
+  const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -62,7 +63,11 @@ export const usePaginatedFirestore = ({
       // If basePage is not targetPage, we need to step through pages to build cursors
       for (let page = basePage; page <= targetPage; page++) {
         let q = query(collection(firestore, collectionPath));
-        q = query(q, orderBy(orderByField, orderDirection));
+        if(collectionPath === "users") {
+          q = query(q, orderBy("updatedAt", "desc"));
+        } else {
+          q = query(q, orderBy(orderByField, orderDirection));
+        }
         filters.forEach((f) => {
           q = query(q, where(f.field, f.op, f.value));
         });
@@ -76,9 +81,21 @@ export const usePaginatedFirestore = ({
 
         q = query(q, limit(pageSize));
         const snapshot = await getDocs(q);
-        const docs = snapshot.docs.map(
-          (doc) => ({ id: doc.id, ...doc.data() }) as Product,
-        );
+        console.log({ snapshotDocs: snapshot.docs });
+
+        // Map documents with proper typing
+        const docs = snapshot.docs.map((doc) => {
+          console.log({ doc });
+
+          const docData = doc.data();
+          console.log({ docData });
+
+          // For UserData, use uid; for Product, use id
+          if (collectionPath === "users") {
+            return { uid: doc.id, ...docData } as T;
+          }
+          return { id: doc.id, ...docData } as T;
+        });
 
         // Save cursor for this page
         cursors.current[page] = snapshot.docs.at(-1) ?? null;

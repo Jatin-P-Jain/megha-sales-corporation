@@ -35,7 +35,7 @@ export default function SearchPartNumber({
   const [notFound, setNotFound] = useState(false);
   const [loading, setLoading] = useState(false);
   const auth = useAuth();
-  const isAdmin = auth?.clientUser?.role === "admin" || false;
+  const isAdmin = auth?.clientUser?.userType === "admin" || false;
 
   const resetState = () => {
     setSearchQuery("");

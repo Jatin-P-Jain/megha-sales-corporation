@@ -7,11 +7,14 @@ export async function POST(req: NextRequest) {
     // 1) parse incoming order data
     const {
       templateKey,
+      customerUserId,
       customerName,
       orderId,
       customerPhone,
       customerMessage,
+      customerEmail,
       customerWANumber,
+      customerBusinessProfile,
     } = await req.json();
 
     // 3) fire off WhatsApp template
@@ -20,43 +23,17 @@ export async function POST(req: NextRequest) {
       to: process.env.ADMIN_WHATSAPP_NUMBER!,
       inputParams: {
         adminName: "Jatin",
+        customerUserId,
         customerName,
         customerPhone,
+        customerEmail,
         orderId,
         customerMessage,
         customerWANumber,
+        customerBusinessProfile,
       },
     });
     console.log(JSON.stringify(whatsappPayload));
-
-    // const whatsappPayload = {
-    //   messaging_product: "whatsapp",
-    //   to: process.env.ADMIN_WHATSAPP_NUMBER,
-    //   type: "template",
-    //   template: {
-    //     name: "admin_order_recieved_v1",
-    //     language: { code: "en_US" },
-    //     components: [
-    //       {
-    //         type: "body",
-    //         parameters: [
-    //           { type: "text", text: "Jatin" }, // {{1}}
-    //           { type: "text", text: customerName }, // {{2}}
-    //           { type: "text", text: customerPhone }, // {{1}}
-    //           { type: "text", text: orderId }, // {{2}}
-    //         ],
-    //       },
-    //       {
-    //         type: "button",
-    //         sub_type: "url",
-    //         index: "0",
-    //         parameters: [
-    //           { type: "text", text: orderId }, // {{1}} in your URL
-    //         ],
-    //       },
-    //     ],
-    //   },
-    // };
 
     const resp = await fetch(
       `https://graph.facebook.com/v22.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`,

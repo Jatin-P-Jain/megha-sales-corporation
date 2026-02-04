@@ -3,7 +3,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { PencilIcon, TagIcon } from "lucide-react";
+import { EyeIcon, PencilIcon, TagIcon } from "lucide-react";
 import { formatINR } from "@/lib/utils";
 import { Product, ProductSize } from "@/types/product";
 import ProductImage from "./product-image";
@@ -12,17 +12,25 @@ import SizeChips from "./size-selection-chips";
 import { useCart } from "@/context/cartContext";
 import { Skeleton } from "../ui/skeleton";
 import useIsMobile from "@/hooks/useIsMobile";
+import ApprovalRequestDialog from "./approval-request-dialog";
+import { useAuth } from "@/context/useAuth";
+import { useRouter } from "next/navigation";
 
 type ProductCardProps = {
   product: Product;
   isAdmin?: boolean;
+  isAccountApproved?: boolean;
 };
 
 export default function ProductCard({
   product,
   isAdmin = false,
+  isAccountApproved = false,
 }: ProductCardProps) {
   const { cart, loading } = useCart();
+  const auth = useAuth();
+  const router = useRouter();
+  const { clientUser, currentUser } = auth;
   const [selectedSize, setSelectedSize] = useState<ProductSize | undefined>(
     undefined,
   );
@@ -72,6 +80,13 @@ export default function ProductCard({
     return vehicleNameProcessed;
   }, [product.vehicleNames]);
 
+  // Handle discount view click
+  const handleDiscountClick = () => {
+    if (!clientUser) {
+      router.push("/login");
+    }
+  };
+
   return (
     <Card
       key={product?.id}
@@ -109,7 +124,7 @@ export default function ProductCard({
           </div>
           {product?.additionalDetails && (
             <div className="text-primary flex w-full items-start justify-between font-semibold">
-              <span className="text-sm font-normal">Addtional Details :</span>
+              <span className="text-sm font-normal">Additional Details :</span>
               <span className="text-right whitespace-pre-line">
                 {product.additionalDetails}
               </span>
@@ -151,8 +166,8 @@ export default function ProductCard({
       <CardFooter className="grid grid-cols-[3fr_1fr] items-end justify-center gap-4">
         <div className="bg-primary/10 flex w-fit items-center justify-between gap-2 rounded-sm p-1 px-2 text-xs md:w-full md:flex-row md:items-center md:justify-between md:px-8 md:text-base">
           <TagIcon className="text-primary size-4" />
-          <div className="flex w-full flex-col justify-between md:flex-row items-center">
-            <div className="text-primary flex gap-2 font-semibold justify-between items-center w-full md:w-fit">
+          <div className="flex w-full flex-col items-center justify-between md:flex-row">
+            <div className="text-primary flex w-full items-center justify-between gap-2 font-semibold md:w-fit">
               <span className="text-foreground font-normal">Price :</span>
               {product?.hasSizes &&
               !product.samePriceForAllSizes &&
@@ -166,7 +181,7 @@ export default function ProductCard({
                 </span>
               )}
             </div>
-            <div className="text-primary flex items-center gap-2 font-semibold md:text-sm justify-between w-full md:w-fit">
+            <div className="text-primary flex w-full items-center justify-between gap-2 font-semibold md:w-fit md:text-sm">
               <span className="text-foreground font-normal">Discount :</span>
               {product?.hasSizes &&
               !product.samePriceForAllSizes &&
@@ -174,13 +189,34 @@ export default function ProductCard({
                 <span className="text-muted-foreground text-[8px] font-normal italic md:text-xs">
                   Select a size
                 </span>
-              ) : (
+              ) : isAccountApproved ? (
                 <span className="font-semibold">
                   {selectedSize?.discount ?? product?.discount}%
                 </span>
+              ) : !currentUser ? (
+                // Not logged in - redirect to login
+                <div
+                  onClick={handleDiscountClick}
+                  className="flex cursor-pointer items-center justify-between gap-2 transition-all hover:opacity-80"
+                >
+                  <span className="inline-flex items-center font-semibold text-yellow-600">
+                    *****
+                  </span>
+                  <EyeIcon className="size-5 text-yellow-600" />
+                </div>
+              ) : (
+                // Logged in but not approved - show approval dialog
+                <ApprovalRequestDialog>
+                  <div className="flex cursor-pointer items-center justify-between gap-2 transition-all hover:opacity-80">
+                    <span className="inline-flex items-center font-semibold text-yellow-600">
+                      *****
+                    </span>
+                    <EyeIcon className="size-5 text-yellow-600" />
+                  </div>
+                </ApprovalRequestDialog>
               )}
             </div>
-            <div className="text-primary flex items-center gap-2 font-semibold md:text-sm justify-between w-full md:w-fit">
+            <div className="text-primary flex w-full items-center justify-between gap-2 font-semibold md:w-fit md:text-sm">
               <span className="text-foreground font-normal">GST :</span>
               {product?.hasSizes &&
               !product.samePriceForAllSizes &&

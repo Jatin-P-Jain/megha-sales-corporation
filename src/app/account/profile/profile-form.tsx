@@ -29,8 +29,6 @@ import { loginUserMobileSchema } from "@/validation/loginUser";
 import { useEffect, useState } from "react";
 import {
   CheckCircle2,
-  ChevronsLeftIcon,
-  ChevronsUpIcon,
   CloudDownload,
   Loader2,
   Loader2Icon,
@@ -47,7 +45,6 @@ import GoogleIcon from "@/components/custom/google-icon.svg";
 import Image from "next/image";
 import { GoogleAuthProvider, linkWithPopup } from "firebase/auth";
 import { setToken } from "@/context/actions";
-import useIsMobile from "@/hooks/useIsMobile";
 import { GstDetails } from "@/components/custom/gst-details";
 import { GstDetailsData } from "@/data/businessProfile";
 
@@ -58,7 +55,6 @@ export default function ProfileForm({
   defaultValues?: z.infer<typeof userProfileDataSchema>;
   verifiedToken: DecodedIdToken | null;
 }) {
-  const isMobile = useIsMobile();
   const auth = useAuth();
   const user = auth.currentUser;
   const recaptchaVerifier = useRecaptcha();
@@ -69,6 +65,11 @@ export default function ProfileForm({
   const [gstDetails, setGstDetails] = useState<GstDetailsData | null>(null);
   const [loadingGst, setLoadingGst] = useState(false);
   const [gstError, setGstError] = useState<string | null>(null);
+  const [idType, setIdType] = useState<"pan" | "gst">(
+    defaultValues?.businessIdType || "gst",
+  );
+
+  const isAdmin = defaultValues?.userType === "admin" || verifiedToken?.admin;
 
   const { otpReset, otpSent, sendingOtp, isVerifying, sendOtp, verifyOtp } =
     useMobileOtp({
@@ -76,17 +77,22 @@ export default function ProfileForm({
         setIsVerified(true);
         toast.success("Phone number verified!", {
           description:
-            "Phone number verified and linked to your accounf successfully.",
+            "Phone number verified and linked to your account successfully.",
         });
       },
       appVerifier: recaptchaVerifier,
       isProfile: true,
     });
+
   const form = useForm<z.infer<typeof userProfileSchema>>({
     resolver: zodResolver(userProfileSchema),
-    defaultValues,
+    defaultValues: {
+      ...defaultValues,
+      businessIdType: defaultValues?.businessIdType || "gst", // ✅ Set default
+    },
   });
-  const selectedRole = form.watch("role");
+
+  const selectedBusinessType = form.watch("businessType");
   const phoneNumber = form.watch("phone");
   const otp = form.watch("otp");
 
@@ -95,6 +101,7 @@ export default function ProfileForm({
       form.resetField("otp");
     }
   }, [otpReset, form]);
+
   const isPhoneAuthProvider =
     verifiedToken?.firebase["sign_in_provider"] === "phone";
 
@@ -116,13 +123,14 @@ export default function ProfileForm({
     }
 
     try {
-      await user.getIdToken(true);
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: "select_account" });
       const result = await linkWithPopup(user, provider);
       await user.reload();
-      const freshToken = await user.getIdToken(/* forceRefresh */ true);
+
+      const freshToken = await user.getIdToken(false);
       await setToken(freshToken, user.refreshToken);
+
       form.setValue("email", result.user.email ?? "");
       toast.success("Success!", {
         description:
@@ -137,12 +145,13 @@ export default function ProfileForm({
           description: "This Google account is already linked to another user.",
         });
       } else {
-        toast.error("An error occured while linking google account");
+        toast.error("An error occurred while linking google account");
       }
     }
   };
 
   const gstNumber = form.watch("gstNumber");
+  const panNumber = form.watch("panNumber");
 
   const fetchGstDetails = async (gstin: string) => {
     setLoadingGst(true);
@@ -166,47 +175,71 @@ export default function ProfileForm({
   };
 
   const handleSubmit = async (data: z.infer<typeof userProfileSchema>) => {
+    console.log("=== FORM SUBMITTED ===");
+    console.log({ data });
     try {
       delete data.otp;
-      const { otherUserRole, ...rest } = data;
 
-      const finalRole =
-        data.role === "other" && otherUserRole ? otherUserRole : data.role;
+      if (isAdmin) {
+        console.log("Submitting as admin");
+        await updateUserProfile(
+          {
+            displayName: data.displayName,
+            email: data.email,
+            phone: data.phone,
+            userType: "admin",
+            businessType: "",
+            businessProfile: null,
+          },
+          verifiedToken,
+        );
+      } else {
+        console.log("Submitting as regular user");
+        const { otherBusinessType, ...rest } = data;
+        const finalBusinessType =
+          data.businessType === "other" && otherBusinessType
+            ? otherBusinessType
+            : data.businessType;
 
-      // Validate and prepare businessProfile from gstDetails
-      const businessProfile =
-        gstDetails?.flag === true
-          ? {
-              gstin: gstDetails.data.gstin,
-              legalName: gstDetails.data.lgnm,
-              tradeName: gstDetails.data.tradeNam,
-              address: gstDetails.data.pradr?.adr || "",
-              status: gstDetails.data.sts,
-              registrationDate: gstDetails.data.rgdt,
-              natureOfBusiness: gstDetails.data.nba || [],
-              constitutionType: gstDetails.data.ctb,
-              jurisdiction: gstDetails.data.ctj,
-              verified: true,
-              verifiedata: gstDetails.data, // Full verified data for compliance
-              verifiedAt: new Date().toISOString(),
-            }
-          : null;
+        const businessProfile =
+          idType === "gst" && gstDetails?.flag === true
+            ? {
+                gstin: gstDetails.data.gstin,
+                legalName: gstDetails.data.lgnm,
+                tradeName: gstDetails.data.tradeNam,
+                address: gstDetails.data.pradr?.adr || "",
+                status: gstDetails.data.sts,
+                registrationDate: gstDetails.data.rgdt,
+                natureOfBusiness: gstDetails.data.nba || [],
+                constitutionType: gstDetails.data.ctb,
+                jurisdiction: gstDetails.data.ctj,
+                verified: true,
+                verifiedAt: new Date().toISOString(),
+                verifieddata: gstDetails.data,
+              }
+            : null;
 
-      await updateUserProfile(
-        {
-          ...rest,
-          role: finalRole,
-          businessProfile, // Will be null if no valid GST details
-        },
-        verifiedToken,
-      );
+        await updateUserProfile(
+          {
+            ...rest,
+            userType: "customer",
+            businessType: finalBusinessType,
+            businessProfile,
+          },
+          verifiedToken,
+        );
+      }
 
       await auth.refreshClientUser();
+
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1000);
       toast.success("Success!", {
         description: "Your profile has been saved successfully!",
       });
-      window.location.assign("/");
     } catch (err: unknown) {
+      console.error("Profile Submit error:", err);
       if (err instanceof Error) {
         toast.error(err.message || "Failed to update profile");
       } else {
@@ -216,6 +249,90 @@ export default function ProfileForm({
   };
 
   const { isSubmitting } = form.formState;
+
+  const canSubmit = () => {
+    if (isAdmin) {
+      const canSubmitAdmin =
+        isVerified &&
+        !isSubmitting &&
+        !!form.watch("displayName") &&
+        !!form.watch("email") &&
+        !!form.watch("phone");
+
+      console.log("Admin canSubmit check:", {
+        isVerified,
+        isSubmitting,
+        displayName: form.watch("displayName"),
+        email: form.watch("email"),
+        phone: form.watch("phone"),
+        canSubmitAdmin,
+      });
+
+      return canSubmitAdmin;
+    }
+
+    // For non-admin users, full validation
+    const canSubmitRegular =
+      isVerified &&
+      !isSubmitting &&
+      !loadingGst &&
+      form.formState.isValid &&
+      (idType === "gst"
+        ? gstDetails !== null
+        : panNumber && panNumber.length === 10);
+
+    console.log("Regular user canSubmit check:", {
+      isVerified,
+      isSubmitting,
+      loadingGst,
+      isValid: form.formState.isValid,
+      idType,
+      gstDetails,
+      panNumber,
+      gstNumber,
+      canSubmitRegular,
+      errors: form.formState.errors,
+    });
+
+    return canSubmitRegular;
+  };
+
+  useEffect(() => {
+    console.log("canSubmit status:", canSubmit());
+  }, [
+    isVerified,
+    isSubmitting,
+    loadingGst,
+    gstDetails,
+    gstNumber,
+    panNumber,
+    idType,
+    form.formState.isValid,
+  ]);
+
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("=== FORM onSubmit triggered ===");
+    console.log("isAdmin:", isAdmin);
+    console.log("canSubmit:", canSubmit());
+
+    if (isAdmin) {
+      const data = {
+        displayName: form.getValues("displayName"),
+        email: form.getValues("email"),
+        phone: form.getValues("phone"),
+        businessType: "",
+        businessIdType: "gst" as const,
+        gstNumber: "",
+        panNumber: "",
+        userType: "admin" as const,
+      };
+      console.log("Admin manual submit:", data);
+      handleSubmit(data);
+    } else {
+      form.handleSubmit(handleSubmit)(e);
+    }
+  };
 
   return (
     <>
@@ -229,7 +346,7 @@ export default function ProfileForm({
           </div>
         )}
         <Form {...form}>
-          <form onSubmit={form.handleSubmit((data) => handleSubmit(data))}>
+          <form onSubmit={onSubmit}>
             <fieldset
               className="flex flex-col gap-5"
               disabled={form.formState.isSubmitting}
@@ -300,19 +417,15 @@ export default function ProfileForm({
                                 )}
                               </Button>
                               <span className="m-2 flex justify-center text-[14px] text-zinc-500 md:mx-4">
-                                {!isMobile ? (
-                                  <ChevronsLeftIcon className="size-4" />
-                                ) : (
-                                  <ChevronsUpIcon className="size-4" />
-                                )}
+                                or
                               </span>
                             </>
                           )}
                           <FormControl className="w-full">
                             <Input
                               {...field}
-                              placeholder="Linked Google email will appear here"
-                              readOnly={true}
+                              placeholder="Your email"
+                              readOnly={!!defaultValues?.email}
                               className={clsx(
                                 defaultValues?.email && "w-full font-semibold",
                               )}
@@ -331,54 +444,57 @@ export default function ProfileForm({
                   </span>
                 )}
               </div>
+
               <div className="flex flex-col gap-2">
                 <div
                   className={clsx(
                     !otpSent &&
                       !isVerified &&
-                      "grid grid-cols-[8fr_1fr] items-center justify-center gap-2",
+                      "flex w-full items-center justify-center gap-2",
                   )}
                 >
                   <FormField
                     control={form.control}
                     name="phone"
                     render={({ field }) => (
-                      <FormItem className="">
+                      <FormItem className="w-full">
                         <FormLabel className="flex items-start gap-1">
                           Your mobile number
                           <span className="text-xs">*</span>
                         </FormLabel>
                         <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="Mobile Number"
-                            readOnly={!!defaultValues?.phone || otpSent}
-                            className={clsx(
-                              !!defaultValues?.phone && "font-semibold",
+                          <div className="flex w-full gap-2">
+                            <Input
+                              {...field}
+                              placeholder="Mobile Number"
+                              readOnly={!!defaultValues?.phone || otpSent}
+                              className={clsx(
+                                !!defaultValues?.phone && "font-semibold",
+                              )}
+                            />
+                            {!otpSent && !isVerified && (
+                              <Button
+                                disabled={!isPhoneValid}
+                                type="button"
+                                className=""
+                                onClick={() => sendOtp(phoneNumber)}
+                              >
+                                {sendingOtp ? (
+                                  <>
+                                    <Loader2 className="size-4 animate-spin" />{" "}
+                                    Sending OTP
+                                  </>
+                                ) : (
+                                  "Verify"
+                                )}
+                              </Button>
                             )}
-                          />
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  {!otpSent && !isVerified && (
-                    <Button
-                      disabled={!isPhoneValid}
-                      type="button"
-                      className=""
-                      onClick={() => sendOtp(phoneNumber)}
-                    >
-                      {sendingOtp ? (
-                        <>
-                          <Loader2 className="size-4 animate-spin" /> Sending
-                          OTP
-                        </>
-                      ) : (
-                        "Verify"
-                      )}
-                    </Button>
-                  )}
                 </div>
                 {!defaultValues?.phone && !isVerified && (
                   <span className="mt-1 text-xs text-yellow-700">
@@ -393,6 +509,7 @@ export default function ProfileForm({
                   </div>
                 )}
               </div>
+
               {otpSent && !isVerified && (
                 <div className="grid grid-cols-1 items-end justify-center gap-4 md:grid-cols-[8fr_1fr] md:gap-4">
                   <FormField
@@ -440,129 +557,209 @@ export default function ProfileForm({
                   </Button>
                 </div>
               )}
-              {/* Role */}
-              <FormField
-                control={form.control}
-                name="role"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel className="flex items-start gap-1">
-                      Your role or business type
-                      {/* <span className="text-muted-foreground text-xs">*</span> */}
-                    </FormLabel>
-                    {selectedRole === "admin" && (
-                      <span className="text-xs text-green-700">
-                        You are an admin.
-                      </span>
-                    )}
-                    <FormControl>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                        disabled={field.value === "admin"}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select a role">
-                            {field.value === "admin" ? "Admin" : undefined}
-                          </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="retailer">Retailer</SelectItem>
-                          <SelectItem value="wholesaler">Wholesaler</SelectItem>
-                          <SelectItem value="distributor">
-                            Distributor
-                          </SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {selectedRole === "other" && (
-                <FormField
-                  control={form.control}
-                  name="otherUserRole"
-                  render={({ field }) => {
-                    return (
-                      <FormItem>
+
+              {isAdmin ? (
+                <div className="rounded-md bg-green-100 p-4 text-center">
+                  <p className="text-sm font-semibold text-green-800">
+                    ✅ You are an admin. Only basic profile information is
+                    required.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="businessType"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel className="flex items-start gap-1">
+                          Business type
+                        </FormLabel>
                         <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="Specify your role or bussiness type"
-                          />
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select your business type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="retailer">Retailer</SelectItem>
+                              <SelectItem value="wholesaler">
+                                Wholesaler
+                              </SelectItem>
+                              <SelectItem value="distributor">
+                                Distributor
+                              </SelectItem>
+                              <SelectItem value="other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
-                    );
-                  }}
-                />
-              )}
-              <FormField
-                control={form.control}
-                name="gstNumber"
-                render={({ field }) => {
-                  return (
-                    <FormItem>
-                      <FormLabel>GSTIN Number</FormLabel>
-                      <FormControl>
-                        <div className="flex flex-col gap-2 md:flex-row">
-                          <Input
-                            {...field}
-                            placeholder="Enter 15-digit GSTIN"
-                            className={clsx(
-                              gstDetails &&
-                                "border-green-300 ring-1 ring-green-200",
-                              !gstDetails &&
-                                gstNumber?.length === 15 &&
-                                "border-orange-300",
-                            )}
-                          />
-                          {!loadingGst && (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={() => fetchGstDetails(gstNumber || "")}
-                              disabled={
-                                gstNumber?.length !== 15 ||
-                                loadingGst ||
-                                isSubmitting
-                              }
-                              className="gap-2"
-                            >
-                              <span>Get Details</span>
-                              {loadingGst ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <CloudDownload className="h-4 w-4" />
-                              )}
-                            </Button>
-                          )}
-                        </div>
-                      </FormControl>
+                    )}
+                  />
 
-                      {/* Only show GST details or loading after manual fetch */}
-                      {loadingGst && (
-                        <div className="mt-3">
-                          <GstDetails data={null} loading={true} />
-                        </div>
-                      )}
-                      {gstDetails && (
-                        <div className="mt-3">
-                          <GstDetails data={gstDetails} loading={false} />
-                        </div>
-                      )}
-                      {gstError && (
-                        <div className="text-destructive">{gstError}</div>
-                      )}
-                      <FormMessage />
-                    </FormItem>
-                  );
-                }}
-              />
+                  {selectedBusinessType === "other" && (
+                    <FormField
+                      control={form.control}
+                      name="otherBusinessType"
+                      render={({ field }) => {
+                        return (
+                          <FormItem>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                placeholder="Specify your role or business type"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
+                    />
+                  )}
+
+                  {/* ✅ HIDDEN: businessIdType field - synced with idType */}
+                  <FormField
+                    control={form.control}
+                    name="businessIdType"
+                    render={({ field }) => (
+                      <input type="hidden" {...field} value={idType} />
+                    )}
+                  />
+
+                  <div className="space-y-2">
+                    <FormLabel>Business Identification Through</FormLabel>
+                    <Select
+                      value={idType}
+                      onValueChange={(value: "pan" | "gst") => {
+                        setIdType(value);
+                        setGstDetails(null);
+                        setGstError(null);
+                        // ✅ Update the form field
+                        form.setValue("businessIdType", value);
+                        // ✅ Clear both fields when switching
+                        form.setValue("gstNumber", "");
+                        form.setValue("panNumber", "");
+                      }}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="gst">GST Number</SelectItem>
+                        <SelectItem value="pan">PAN Card</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-muted-foreground text-xs">
+                      {idType === "gst"
+                        ? "Select this if you have a GST registration"
+                        : "Select this if you don't have GST but have a PAN card"}
+                    </p>
+                  </div>
+
+                  {/* ✅ Conditional rendering for GST or PAN */}
+                  {idType === "gst" ? (
+                    <FormField
+                      control={form.control}
+                      name="gstNumber"
+                      render={({ field }) => {
+                        return (
+                          <FormItem>
+                            <FormLabel>GSTIN Number</FormLabel>
+                            <FormControl>
+                              <div className="flex flex-col gap-2 md:flex-row">
+                                <Input
+                                  {...field}
+                                  placeholder="Enter 15-digit GSTIN"
+                                  maxLength={15}
+                                  className={clsx(
+                                    gstDetails &&
+                                      "border-green-300 ring-1 ring-green-200",
+                                    !gstDetails &&
+                                      field.value?.length === 15 &&
+                                      "border-orange-300",
+                                  )}
+                                />
+                                {!loadingGst && (
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() =>
+                                      fetchGstDetails(field.value || "")
+                                    }
+                                    disabled={
+                                      field.value?.length !== 15 ||
+                                      loadingGst ||
+                                      isSubmitting
+                                    }
+                                    className="gap-2"
+                                  >
+                                    <span>Get Details</span>
+                                    <CloudDownload className="h-4 w-4" />
+                                  </Button>
+                                )}
+                              </div>
+                            </FormControl>
+
+                            {loadingGst && (
+                              <div className="mt-3">
+                                <GstDetails data={null} loading={true} />
+                              </div>
+                            )}
+                            {gstDetails && (
+                              <div className="mt-3">
+                                <GstDetails data={gstDetails} loading={false} />
+                              </div>
+                            )}
+                            {gstError && (
+                              <div className="text-destructive">{gstError}</div>
+                            )}
+
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
+                    />
+                  ) : (
+                    <FormField
+                      control={form.control}
+                      name="panNumber"
+                      render={({ field }) => {
+                        return (
+                          <FormItem>
+                            <FormLabel>PAN Number</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                placeholder="Enter 10-character PAN"
+                                maxLength={10}
+                                className={clsx(
+                                  field.value?.length === 10 &&
+                                    "border-green-300 ring-1 ring-green-200",
+                                )}
+                              />
+                            </FormControl>
+
+                            {field.value?.length === 10 && (
+                              <div className="mt-2 flex items-center gap-2 text-sm text-green-700">
+                                <CheckCircle2 className="h-4 w-4" />
+                                <span>PAN number format is valid</span>
+                              </div>
+                            )}
+
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
+                    />
+                  )}
+                </>
+              )}
+
               <Button
-                disabled={!isVerified || isSubmitting || loadingGst}
+                disabled={!canSubmit()}
                 type="submit"
                 className="w-full cursor-pointer tracking-wide uppercase"
               >

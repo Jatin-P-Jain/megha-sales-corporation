@@ -102,9 +102,7 @@ export default async function ProductsList({
       <div
         className={`flex-1 overflow-auto px-4 ${!isAdmin ? "pt-43 md:pt-52" : "pt-40"} ${!isUser && "!pt-38"} pb-20`}
       >
-        <ProductList
-          isAdmin={isAdmin}
-        />
+        <ProductList isAdmin={isAdmin} />
       </div>
       <div className="fixed inset-x-0 bottom-7 z-30 mx-auto flex w-full max-w-screen-lg justify-end px-6">
         {isAdmin ? (

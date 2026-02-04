@@ -3,8 +3,8 @@ import ProfileForm from "./profile-form";
 import { Info } from "lucide-react";
 import { cookies } from "next/headers";
 import { auth } from "@/firebase/server";
-import { UserRole } from "@/types/user";
-import { getUserFromDB } from "@/data/user";
+import { UserType } from "@/types/user";
+import { getUserFromDB } from "@/data/users";
 
 export default async function Profile() {
   const cookieStore = await cookies();
@@ -13,22 +13,20 @@ export default async function Profile() {
 
   const user = await getUserFromDB();
 
-  let role: UserRole | string;
-  let otherUserRole: string | undefined = undefined;
+  let userType: UserType | string;
 
   if (verifiedToken?.admin) {
-    role = "admin";
+    userType = "admin";
   } else if (
-    user?.role === "retailer" ||
-    user?.role === "wholesaler" ||
-    user?.role === "distributor"
+    user?.userType === "retailer" ||
+    user?.userType === "wholesaler" ||
+    user?.userType === "distributor"
   ) {
-    role = user.role;
-  } else if (user?.role && typeof user?.role === "string") {
-    role = "other";
-    otherUserRole = user.role;
+    userType = user.userType;
+  } else if (user?.userType && typeof user?.userType === "string") {
+    userType = "other";
   } else {
-    role = ""; // or a sensible fallback default
+    userType = ""; // or a sensible fallback default
   }
 
   const mergedUser = {
@@ -39,11 +37,14 @@ export default async function Profile() {
       (verifiedToken?.phone_number?.startsWith("+91")
         ? verifiedToken.phone_number.slice(3)
         : ""),
-    role,
+    userType,
     gstNumber: user?.gstNumber ?? "",
-    otherUserRole,
     photoUrl: user?.photoUrl ?? verifiedToken?.picture ?? "",
+    businessType: user?.businessType ?? "",
+    businessIdType: user?.panNumber ? "pan" : "gst",
+    panNumber: user?.panNumber ?? "",
   };
+
   return (
     <Card className="gap-0">
       <CardHeader className="">
@@ -64,9 +65,11 @@ export default async function Profile() {
             email: mergedUser.email,
             displayName: mergedUser.displayName,
             phone: mergedUser.phone,
-            role: mergedUser.role,
+            userType: mergedUser.userType,
+            businessIdType: mergedUser.businessIdType === "pan" ? "pan" : "gst",
+            panNumber: mergedUser.panNumber,
+            businessType: mergedUser.businessType ?? "",
             gstNumber: mergedUser.gstNumber,
-            otherUserRole: mergedUser.otherUserRole,
             photoUrl: mergedUser.photoUrl,
           }}
           verifiedToken={verifiedToken}

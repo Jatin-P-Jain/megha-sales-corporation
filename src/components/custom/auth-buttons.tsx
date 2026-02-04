@@ -38,9 +38,13 @@ export default function AuthButtons() {
   const isMobile = useIsMobile();
 
   const [helpOpen, setHelpOpen] = useState(false);
+  console.log({ clientUser });
 
   // Determine admin once
-  const isAdmin = clientUser?.role === "admin";
+  const isAdmin = clientUser?.userType === "admin";
+  console.log({ isAdmin });
+
+  const accountStatus = clientUser?.accountStatus;
 
   // 1) Loading state
   if (currentUser && clientUserLoading) {
@@ -78,6 +82,11 @@ export default function AuthButtons() {
                   Admin
                 </div>
               )}
+              {!isAdmin && accountStatus === "pending" && (
+                <div className="bottom-0 rounded-sm bg-yellow-100 px-1 text-[8px] font-semibold text-yellow-700">
+                  Approval Pending
+                </div>
+              )}
             </button>
           </DropdownMenuTrigger>
 
@@ -96,10 +105,10 @@ export default function AuthButtons() {
                   +91-{clientUser.phone}
                 </span>
               )}
-              {clientUser.role && (
+              {clientUser.userType && (
                 <span className="bg-muted rounded-full px-2 py-0.5 text-xs font-semibold">
-                  {clientUser.role.charAt(0).toUpperCase() +
-                    clientUser.role.slice(1)}
+                  {clientUser.userType.charAt(0).toUpperCase() +
+                    clientUser.userType.slice(1)}
                 </span>
               )}
             </DropdownMenuLabel>
