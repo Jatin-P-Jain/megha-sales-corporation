@@ -4,16 +4,7 @@ import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
 import UserSearchAndFilters from "@/components/custom/user-search-filters";
 import UsersList from "./users-list";
 
-export default async function Users({
-  searchParams,
-}: {
-  searchParams: Promise<{
-    page: string;
-    brandId: string;
-    status: string;
-    category: string | string[];
-  }>;
-}) {
+export default async function Users() {
   const cookieStore = await cookies();
   const token = cookieStore.get("firebaseAuthToken")?.value;
   const verifiedToken = token ? await auth.verifyIdToken(token) : null;

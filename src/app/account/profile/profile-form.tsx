@@ -325,9 +325,10 @@ export default function ProfileForm({
         businessIdType: "gst" as const,
         gstNumber: "",
         panNumber: "",
+        userType: "admin" as const,
       };
       console.log("Admin manual submit:", data);
-      handleSubmit(data as any);
+      handleSubmit(data);
     } else {
       form.handleSubmit(handleSubmit)(e);
     }
