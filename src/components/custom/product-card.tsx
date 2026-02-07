@@ -78,7 +78,7 @@ export default function ProductCard({
       : "";
     const vehicleNameProcessed = names ? `${company} - ${names}` : company;
     return vehicleNameProcessed;
-  }, [product.vehicleNames]);
+  }, [product.vehicleNames, product.vehicleCompany]);
 
   // Handle discount view click
   const handleDiscountClick = () => {

@@ -57,7 +57,7 @@ export default function ProfileForm({
 }) {
   const auth = useAuth();
   const user = auth.currentUser;
-  const recaptchaVerifier = useRecaptcha();
+  const recaptchaVerifier = useRecaptcha({ enabled: true });
   const [isVerified, setIsVerified] = useState(
     !!defaultValues?.phone ? true : false,
   );
