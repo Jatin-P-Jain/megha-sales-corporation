@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useContext, useEffect, useState, useRef } from "react";
+import { createContext, useContext, useEffect, useState, useRef, useCallback } from "react";
 import {
   loginWithEmailAndPass,
   loginWithGoogle,
@@ -72,7 +72,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   // Refresh & save FCM token only when user is logged in
-  const refreshAndSaveFcmToken = async () => {
+  const refreshAndSaveFcmToken = useCallback(async () => {
     if (!currentUser) {
       console.log("No authenticated user; skipping FCM token save");
       return;
@@ -91,12 +91,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (error) {
       console.error("Failed to refresh and save FCM token", error);
     }
-  };
+  }, [currentUser]);
 
   // Trigger token refresh/save on login state changes
   useEffect(() => {
     refreshAndSaveFcmToken();
-  }, [currentUser]);
+  }, [currentUser, refreshAndSaveFcmToken]);
 
   // Listen for Firebase auth state changes
   useEffect(() => {

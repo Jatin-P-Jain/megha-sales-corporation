@@ -37,7 +37,7 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
         We will then kindly ask you to provide a few details to complete your
         registration. Thank you!
       </div>
-      <div id="recaptcha-container" className="opacity-0" />
+
     </div>
   );
 }

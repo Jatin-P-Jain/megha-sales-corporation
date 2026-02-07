@@ -84,7 +84,7 @@ export default async function RootLayout({
         <NewVersionBanner />
         <NavBar>{children}</NavBar>
         <NetworkBanner />
-        <div id="recaptcha-container" className="opacity-0" />
+        <div id="recaptcha-container"  className="opacity-0" />
         <Analytics />
         <SpeedInsights />
       </body>

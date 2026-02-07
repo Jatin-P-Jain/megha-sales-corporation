@@ -35,7 +35,7 @@ if (!currentApps.length) {
   firestore = getFirestore(app);
 }
 // if (process.env.NODE_ENV === "development") {
-//   connectAuthEmulator(auth, "http://localhost:9099", { disableWarnings: true });
+//   connectAuthEmulator(auth, "http://localhost:3000", { disableWarnings: true });
 // }
 
 export { app, auth, storage, firestore, RecaptchaVerifier };

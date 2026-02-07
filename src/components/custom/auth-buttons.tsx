@@ -38,11 +38,9 @@ export default function AuthButtons() {
   const isMobile = useIsMobile();
 
   const [helpOpen, setHelpOpen] = useState(false);
-  console.log({ clientUser });
 
   // Determine admin once
   const isAdmin = clientUser?.userType === "admin";
-  console.log({ isAdmin });
 
   const accountStatus = clientUser?.accountStatus;
 

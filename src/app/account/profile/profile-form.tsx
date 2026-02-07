@@ -778,7 +778,6 @@ export default function ProfileForm({
             </fieldset>
           </form>
         </Form>
-        <div id="recaptcha-container" className="opacity-0" />
       </div>
     </>
   );
