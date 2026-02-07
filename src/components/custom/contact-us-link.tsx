@@ -33,7 +33,9 @@ export default function ContactUsLink() {
               className="object-center"
             />
           </div>
-          About & Contact
+          <span className="hidden lg:flex">
+            About & Contact
+          </span>
         </div>
       )}
     </Link>
