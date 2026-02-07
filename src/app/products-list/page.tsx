@@ -5,8 +5,6 @@ import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
 import { ProductStatus } from "@/types/product";
 import ResponsiveProductFiltersServer from "./responsive-product-filters.server";
 import { unslugify } from "@/lib/utils";
-import SearchButtonWrapper from "./search-button-wrapper";
-import ActionButtonsWrapper from "./action-buttons-wrapper";
 
 export default async function ProductsList({
   searchParams,
@@ -69,11 +67,11 @@ export default async function ProductsList({
     ...(brandName == "Filtered" || brandName == "All"
       ? []
       : [
-          {
-            href: `/brands/${brandId}`,
-            label: brandName ?? brandId,
-          },
-        ]),
+        {
+          href: `/brands/${brandId}`,
+          label: brandName ?? brandId,
+        },
+      ]),
     {
       label: "Product Listings",
     },
@@ -103,13 +101,6 @@ export default async function ProductsList({
         className={`flex-1 overflow-auto px-4 ${!isAdmin ? "pt-43 md:pt-52" : "pt-40"} ${!isUser && "!pt-38"} pb-20`}
       >
         <ProductList isAdmin={isAdmin} />
-      </div>
-      <div className="fixed inset-x-0 bottom-7 z-30 mx-auto flex w-full max-w-screen-lg justify-end px-6">
-        {isAdmin ? (
-          <ActionButtonsWrapper newSearchParams={newSearchParams} />
-        ) : (
-          <SearchButtonWrapper />
-        )}
       </div>
     </div>
   );

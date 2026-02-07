@@ -10,7 +10,7 @@ export default function ContactUsLink() {
   return (
     <Link
       href="/about-contact"
-      className="w-full text-sm tracking-wider whitespace-nowrap uppercase hover:underline md:text-base"
+      className="text-sm tracking-wider whitespace-nowrap uppercase hover:underline md:text-base"
     >
       {isMobile ? (
         <div className="relative">

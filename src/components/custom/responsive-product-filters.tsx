@@ -5,7 +5,6 @@ import useIsMobile from "@/hooks/useIsMobile";
 import CategoryFilter from "./category-filter";
 import MoreFilters from "./more-filters";
 import CartOverview from "./cart-overview";
-import SearchPartNumber from "./search-part-number";
 import StatusSelect from "./status-filter";
 import { Button } from "../ui/button";
 import { XCircle } from "lucide-react";
@@ -101,7 +100,6 @@ const ResponsiveProductFilters: React.FC<{
                 )}
                 <SortBySelect value={sortValue} onChange={applySorting} />
               </div>
-              <SearchPartNumber buttonClassName="text-primary font-semibold" />
             </div>
           </div>
         ) : (
@@ -189,9 +187,6 @@ const ResponsiveProductFilters: React.FC<{
                   : "grid-cols-[minmax(min-content,1fr)_max-content_fit-content(40ch)_max-content_max-content]",
               )}
             >
-              <div className="flex w-full max-w-full min-w-0 flex-grow">
-                <SearchPartNumber buttonClassName="text-primary font-medium w-full" />
-              </div>
               <span className="text-muted-foreground text-xs">Filter by :</span>
               <div className="w-fit max-w-[100%] min-w-0 shrink-0">
                 <CategoryFilter categories={categories} />
