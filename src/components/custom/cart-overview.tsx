@@ -6,8 +6,13 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/context/cartContext";
 import currencyFormatter from "@/lib/currency-formatter";
 import { Skeleton } from "../ui/skeleton";
+import { useAuth } from "@/context/useAuth";
+import clsx from "clsx";
 
 function CartOverview({ isUser }: { isUser: boolean }) {
+  const { clientUser } = useAuth();
+  const accountStatus = clientUser?.accountStatus;
+  const isAccountApproved = accountStatus === "approved";
   const router = useRouter();
   const { cart, loading, cartTotals } = useCart();
   const [hasMounted, setHasMounted] = useState(false);
@@ -28,7 +33,9 @@ function CartOverview({ isUser }: { isUser: boolean }) {
 
   const isLoading = !hasMounted || loading || !ready;
 
+
   if (!isUser) return null;
+
 
   return (
     <div className="grid grid-cols-[2fr_4fr_2fr] items-center justify-center rounded-lg border p-1 text-sm md:px-4">
@@ -70,15 +77,16 @@ function CartOverview({ isUser }: { isUser: boolean }) {
           </div>
         </div>
       )}
-      <Button
-        className="flex w-full items-center justify-center"
-        onClick={() => router.push("/cart")}
-        disabled={isLoading}
-      >
-        <span>Cart</span>
-        <ShoppingCartIcon className="size-5" />
-      </Button>
-    </div>
+      
+        <Button
+          className={clsx("flex w-full items-center justify-center", !isAccountApproved && "cursor-not-allowed ring-2 ring-yellow-700")}
+          onClick={() => router.push("/cart")}
+          disabled={isLoading || isAccountApproved === false}
+        >
+          <span>Cart</span>
+          <ShoppingCartIcon className="size-5" />
+        </Button>
+      </div>
   );
 }
 

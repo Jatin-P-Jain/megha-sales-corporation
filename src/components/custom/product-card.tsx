@@ -292,8 +292,16 @@ export default function ProductCard({
               </Button>
             </div>
           ) : (
-            <div className="flex w-full items-center justify-end">
+            <div className="flex flex-col w-full items-center justify-end">
+              {!isAccountApproved && <div
+                className="bg-yellow-50 px-2"
+              >
+                <span className="text-yellow-700 text-xs">
+                  Account Approval Pending
+                </span>
+              </div>}
               <CartControls
+            isDisabled={!isAccountApproved}
                 productId={product?.id}
                 selectedSize={product.hasSizes ? selectedSize?.size : ""}
                 hasSizes={product.hasSizes}
