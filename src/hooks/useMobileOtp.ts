@@ -41,7 +41,6 @@ export function useMobileOtp({
         return;
       }
       setSendingOtp(true);
-      console.log(appVerifier);
       
       const confirmation = await auth?.handleSendOTP(mobile, appVerifier);
       setMobileNumber(mobile);
