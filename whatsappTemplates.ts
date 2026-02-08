@@ -1,6 +1,6 @@
 // whatsappTemplates.ts
 
-type TemplateParamResolver = (input: Record<string, any>) => {
+type TemplateParamResolver = (input: Record<string, string>) => {
   bodyParams: string[];
   buttonParams?: string[];
 };
@@ -78,7 +78,7 @@ export const createWhatsAppPayloadFromInput = ({
 }: {
   templateKey: keyof typeof whatsappTemplates;
   to: string;
-  inputParams: Record<string, any>;
+  inputParams: Record<string, string>;
 }) => {
   const template = whatsappTemplates[templateKey];
   if (!template) throw new Error("Invalid template key");
@@ -87,11 +87,25 @@ export const createWhatsAppPayloadFromInput = ({
 
   if (bodyParams.length !== template.bodyParamsCount) {
     throw new Error(
-      `Expected ${template.bodyParamsCount} body params for ${templateKey}, but got ${bodyParams.length}`,
+      `Expected ${template.bodyParamsCount} body params for ${templateKey}, but got ${bodyParams.length}`
     );
   }
 
-  const payload: any = {
+  const payload: {
+    messaging_product: string;
+    to: string;
+    type: string;
+    template: {
+      name: string;
+      language: { code: string };
+      components: Array<{
+        type: string;
+        parameters: Array<{ type: string; text: string }>;
+        sub_type?: string;
+        index?: string;
+      }>;
+    };
+  } = {
     messaging_product: "whatsapp",
     to,
     type: "template",

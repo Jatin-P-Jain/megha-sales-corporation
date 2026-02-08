@@ -62,7 +62,6 @@ export const createOrder = async (data: OrderData, userData: UserData, authtoken
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
     };
-    console.log({ orderData });
 
     await newRef.set(orderData);
 
