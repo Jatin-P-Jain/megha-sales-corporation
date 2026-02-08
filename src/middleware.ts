@@ -82,7 +82,7 @@ export async function middleware(request: NextRequest) {
   if (exp && (exp - 5 * 60) * 1000 < Date.now()) {
     const redirectTo = encodeURIComponent(pathname + request.nextUrl.search);
     return NextResponse.redirect(
-      new URL(`/api/refresh-token?redirect=${redirectTo}`, origin),
+      new URL(`/api/refresh-token?redirect=${redirectTo}`, origin)
     );
   }
 
@@ -109,8 +109,6 @@ export async function middleware(request: NextRequest) {
           console.log("❌ Profile incomplete, redirecting to /account/profile");
           // Profile not complete, redirect to profile page
           return NextResponse.redirect(new URL("/account/profile", origin));
-        } else {
-          console.log("✅ Profile complete, allowing access");
         }
       } else {
         console.error("Profile check API returned error:", checkRes.status);

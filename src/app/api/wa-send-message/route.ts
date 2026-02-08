@@ -33,7 +33,6 @@ export async function POST(req: NextRequest) {
         customerBusinessProfile,
       },
     });
-    console.log(JSON.stringify(whatsappPayload));
 
     const resp = await fetch(
       `https://graph.facebook.com/v22.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`,
@@ -44,7 +43,7 @@ export async function POST(req: NextRequest) {
           Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`,
         },
         body: JSON.stringify(whatsappPayload),
-      },
+      }
     );
 
     if (!resp.ok) {
@@ -64,7 +63,7 @@ export async function POST(req: NextRequest) {
     const errorMessage = e instanceof Error ? e.message : String(e);
     return NextResponse.json(
       { success: false, error: errorMessage },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
