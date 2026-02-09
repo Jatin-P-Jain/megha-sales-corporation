@@ -16,7 +16,7 @@ const generateOrderId = async (): Promise<string> => {
   const hh = pad(now.getHours(), 2);
   const min = pad(now.getMinutes(), 2);
 
-  const datePart = `${yy}${mm}${dd}`;
+  const datePart = `${dd}${mm}${yy}`;
   const timePart = `${hh}${min}`;
 
   const counterRef = fireStore.collection("counters").doc("orders");
