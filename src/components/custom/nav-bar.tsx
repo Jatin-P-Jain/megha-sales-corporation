@@ -62,6 +62,7 @@ export default function NavBar({ children }: NavBarProps) {
           {/* Right: Search then Account/Auth */}
           <div className="flex items-center gap-3">
             {!isMobile && <SearchProducts buttonClassName="text-primary font-medium md:!px-20" />}
+            <div className="h-8 bg-accent w-px"/>
             <AuthButtons />
           </div>
         </nav>

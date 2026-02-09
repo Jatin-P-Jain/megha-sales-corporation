@@ -20,10 +20,11 @@ import GoogleMapComponent from "@/components/custom/google-map";
 import { EnquiryDialog } from "@/components/custom/wa-enquiry-dialog";
 import AboutAutoPartsShop from "@/components/custom/about-us";
 import Link from "next/link";
+import BankDetails from "@/components/custom/bank-details";
 
 export default function AboutAndContact() {
   return (
-    <div className="container mx-auto flex max-w-4xl flex-col overflow-auto p-4">
+    <div className="container mx-auto flex max-w-4xl flex-col overflow-auto p-4 gap-4">
       <div className="flex w-full items-center justify-between space-y-1">
         <div className="relative">
           <Image alt="" src={JainLogo} width={30} height={30} />
@@ -35,11 +36,9 @@ export default function AboutAndContact() {
           <Image alt="" src={JainLogo} width={30} height={30} />
         </div>
       </div>
-      {/* <h2 className="text-primary mb-4 text-center text-2xl md:text-3xl font-semibold">
-        Megha Sales Corporation
-      </h2> */}
       <AboutAutoPartsShop />
-      <div className="text-muted-foreground mt-4 flex w-full flex-col items-start justify-center gap-4 px-4">
+      <BankDetails />
+      <div className="text-muted-foreground flex w-full flex-col items-start justify-center gap-4 px-4">
         <div className="flex w-full flex-col items-start justify-start gap-2">
           <p className="flex items-center gap-2 text-sm font-normal">
             <StoreIcon className="size-4" />
