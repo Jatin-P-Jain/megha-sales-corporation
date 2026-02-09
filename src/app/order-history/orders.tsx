@@ -57,7 +57,7 @@ export default function Orders({
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        uid: order.user?.id,
+        uid: order.user?.uid,
         title: "🛒 Order Update",
         body: getStatusMessage(order.id, newStatus),
         url: `${getBaseUrl()}/order-history/${order.id}`,
@@ -72,7 +72,11 @@ export default function Orders({
       {orderData.map((order) => {
         const { id, products, status, totals, createdAt, updatedAt, user } =
           order;
-        const { name: userName, email: userEmail, phone: userPhone } = user;
+        const {
+          displayName: userName,
+          email: userEmail,
+          phone: userPhone,
+        } = user;
         return (
           <Card
             key={order?.id}
