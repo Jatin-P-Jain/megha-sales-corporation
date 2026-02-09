@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useAuth } from "@/context/useAuth";
-import useIsMobile from "@/hooks/useIsMobile";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -12,6 +11,7 @@ import {
   DropdownMenuItem,
 } from "../ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "../ui/avatar";
+import { Badge } from "../ui/badge";
 import Image from "next/image";
 import {
   ClipboardList,
@@ -24,24 +24,104 @@ import {
   ShieldUserIcon,
   ShoppingCartIcon,
   TagsIcon,
+  TriangleAlert,
   UserRound,
+  CheckCircle2,
+  XCircle,
+  ShieldOff,
+  UserX,
+  Clock,
 } from "lucide-react";
 import { usePwaPrompt } from "@/hooks/usePwaPrompt";
 import { useState } from "react";
 import HelpDialog from "./help-dialog";
+
+type AccountStatusUI =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "suspended"
+  | "deactivated";
+
+function toTitleCase(s: string) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function getStatusMeta(status?: string) {
+  const s = (status ?? "pending") as AccountStatusUI;
+
+  switch (s) {
+    case "approved":
+      return {
+        key: "approved" as const,
+        label: "Approved",
+        Icon: CheckCircle2,
+        className: "bg-green-100 text-green-800 hover:bg-green-100",
+        subtle: "text-green-700",
+      };
+    case "rejected":
+      return {
+        key: "rejected" as const,
+        label: "Rejected",
+        Icon: XCircle,
+        className: "bg-red-100 text-red-800 hover:bg-red-100",
+        subtle: "text-red-700",
+      };
+    case "suspended":
+      return {
+        key: "suspended" as const,
+        label: "Suspended",
+        Icon: ShieldOff,
+        className: "bg-orange-100 text-orange-800 hover:bg-orange-100",
+        subtle: "text-orange-700",
+      };
+    case "deactivated":
+      return {
+        key: "deactivated" as const,
+        label: "Deactivated",
+        Icon: UserX,
+        className: "bg-zinc-100 text-zinc-800 hover:bg-zinc-100",
+        subtle: "text-zinc-700",
+      };
+    case "pending":
+    default:
+      return {
+        key: "pending" as const,
+        label: "Pending approval",
+        Icon: Clock,
+        className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
+        subtle: "text-yellow-700",
+      };
+  }
+}
+
+function AccountStatusBadge({
+  status,
+  compact,
+}: {
+  status?: string;
+  compact?: boolean;
+}) {
+  const meta = getStatusMeta(status);
+  const Icon = meta.Icon;
+
+  return (
+    <Badge className={meta.className}>
+      <Icon className="h-3 w-3" />
+      {compact ? toTitleCase(meta.key) : meta.label}
+    </Badge>
+  );
+}
 
 export default function AuthButtons() {
   const { deferredPrompt, promptToInstall, isPwa } = usePwaPrompt();
   const auth = useAuth();
   const { clientUser, clientUserLoading, logout, currentUser, isLoggingOut } =
     auth;
-  const isMobile = useIsMobile();
 
   const [helpOpen, setHelpOpen] = useState(false);
 
-  // Determine admin once
   const isAdmin = clientUser?.userType === "admin";
-
   const accountStatus = clientUser?.accountStatus;
 
   // 1) Loading state
@@ -75,14 +155,10 @@ export default function AuthButtons() {
                   </AvatarFallback>
                 )}
               </Avatar>
+
               {isAdmin && (
                 <div className="bottom-0 rounded-sm bg-green-100 px-1 text-[8px] font-semibold text-green-700">
                   Admin
-                </div>
-              )}
-              {!isAdmin && accountStatus === "pending" && (
-                <div className="bottom-0 rounded-sm bg-yellow-100 px-1 text-[8px] font-semibold text-yellow-700">
-                  Approval Pending
                 </div>
               )}
             </button>
@@ -98,16 +174,36 @@ export default function AuthButtons() {
               <span className="text-muted-foreground text-xs">
                 {clientUser.email}
               </span>
+
               {clientUser.phone && (
                 <span className="text-muted-foreground text-xs">
                   +91-{clientUser.phone}
                 </span>
               )}
-              {clientUser.userType && (
-                <span className="bg-muted rounded-full px-2 py-0.5 text-xs font-semibold">
-                  {clientUser.userType.charAt(0).toUpperCase() +
-                    clientUser.userType.slice(1)}
-                </span>
+
+              <div className="flex w-full items-center justify-between gap-2">
+                {clientUser.userType && (
+                  <span className="bg-muted rounded-full px-2 py-0.5 text-xs font-semibold">
+                    {toTitleCase(clientUser.userType)}
+                  </span>
+                )}
+
+                {!isAdmin && <AccountStatusBadge status={accountStatus} />}
+              </div>
+
+              {!isAdmin && accountStatus && accountStatus !== "approved" && (
+                <div className="mt-1 flex w-full items-center gap-1 text-xs text-zinc-600">
+                  <TriangleAlert className="size-4" />
+                  <span>
+                    {accountStatus === "pending"
+                      ? "Your account is under review."
+                      : accountStatus === "rejected"
+                        ? "Your account was rejected."
+                        : accountStatus === "suspended"
+                          ? "Your account is suspended."
+                          : "Your account is deactivated."}
+                  </span>
+                </div>
               )}
             </DropdownMenuLabel>
 
@@ -148,7 +244,8 @@ export default function AuthButtons() {
                     href="/change-pricing"
                     className="flex items-center justify-between"
                   >
-                    Change Pricing Structure <br></br>(Coming Soon)
+                    Change Pricing Structure <br />
+                    (Coming Soon)
                     <TagsIcon className="text-secondary-foreground" />
                   </Link>
                 </DropdownMenuItem>
@@ -175,7 +272,9 @@ export default function AuthButtons() {
                 </DropdownMenuItem>
               </>
             )}
+
             <DropdownMenuSeparator />
+
             <DropdownMenuItem
               className="flex items-center justify-between"
               onClick={() => setTimeout(() => setHelpOpen(true), 0)}
@@ -183,6 +282,7 @@ export default function AuthButtons() {
               Need help?
               <MessageCircleQuestionIcon className="text-secondary-foreground" />
             </DropdownMenuItem>
+
             <DropdownMenuItem
               className="flex items-center justify-between"
               onClick={promptToInstall}
@@ -190,6 +290,7 @@ export default function AuthButtons() {
             >
               Install app <DownloadIcon className="text-secondary-foreground" />
             </DropdownMenuItem>
+
             {isPwa && (
               <span className="text-muted-foreground px-2 text-xs">
                 Already using the app.
@@ -200,19 +301,19 @@ export default function AuthButtons() {
 
             <DropdownMenuItem
               className="flex items-center justify-between"
-              onClick={() => {
-                logout();
-              }}
+              onClick={() => logout()}
             >
               Logout <LogOutIcon className="text-secondary-foreground" />
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
         <HelpDialog
           open={helpOpen}
           onOpenChange={setHelpOpen}
           user={clientUser}
         />
+
         {isLoggingOut && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/30">
             <div className="bg-primary flex flex-col items-center rounded-lg p-4">
@@ -226,44 +327,12 @@ export default function AuthButtons() {
   }
 
   // 3) Logged-out state
-  if (isMobile) {
-    return (
-      <Link
-        href="/login"
-        className="flex items-center justify-center gap-1 hover:underline"
-      >
-        Login <LogInIcon className="size-4" />
-      </Link>
-      // <DropdownMenu>
-      //   <DropdownMenuTrigger asChild>
-      //     <button>
-      //       <MenuIcon className="h-5 w-5" />
-      //     </button>
-      //   </DropdownMenuTrigger>
-      //   <DropdownMenuContent align="end" sideOffset={4}>
-      //     <DropdownMenuItem asChild>
-      //       <Link href="/login">Login</Link>
-      //     </DropdownMenuItem>
-      //     <DropdownMenuItem asChild>
-      //       <Link href="/register">Signup</Link>
-      //     </DropdownMenuItem>
-      //   </DropdownMenuContent>
-      // </DropdownMenu>
-    );
-  }
-
   return (
-    <div className="">
-      <Link
-        href="/login"
-        className="flex items-center justify-center gap-1 hover:underline"
-      >
-        Login <LogInIcon className="size-4" />
-      </Link>
-
-      {/* <Link href="/register" className="uppercase hover:underline">
-        Signup
-      </Link> */}
-    </div>
+    <Link
+      href="/login"
+      className="flex items-center justify-center gap-1 hover:underline"
+    >
+      Login <LogInIcon className="size-4" />
+    </Link>
   );
 }

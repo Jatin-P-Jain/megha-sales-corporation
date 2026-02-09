@@ -16,6 +16,7 @@ import { useEffect, useRef, useState } from "react";
 import { firestore } from "@/firebase/client";
 import { Product } from "@/types/product";
 import { UserData } from "@/types/user";
+import { Order } from "@/types/order";
 
 type UsePaginatedFirestoreOptions = {
   collectionPath: string;
@@ -29,7 +30,7 @@ type UsePaginatedFirestoreOptions = {
   orderDirection?: "asc" | "desc";
 };
 
-export const usePaginatedFirestore = <T extends Product | UserData>({
+export const usePaginatedFirestore = <T extends Product | UserData |Order>({
   collectionPath,
   pageSize = 10,
   filters = [],
@@ -73,7 +74,6 @@ export const usePaginatedFirestore = <T extends Product | UserData>({
         });
 
         const cursor = cursors.current[page - 1];
-        console.log({ cursors: cursors.current });
 
         if (cursor) {
           q = query(q, startAfter(cursor));
@@ -81,14 +81,11 @@ export const usePaginatedFirestore = <T extends Product | UserData>({
 
         q = query(q, limit(pageSize));
         const snapshot = await getDocs(q);
-        console.log({ snapshotDocs: snapshot.docs });
 
         // Map documents with proper typing
         const docs = snapshot.docs.map((doc) => {
-          console.log({ doc });
 
           const docData = doc.data();
-          console.log({ docData });
 
           // For UserData, use uid; for Product, use id
           if (collectionPath === "users") {
