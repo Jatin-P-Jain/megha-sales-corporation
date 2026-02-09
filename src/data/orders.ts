@@ -2,6 +2,7 @@ import "server-only";
 import { fireStore, getTotalPages } from "@/firebase/server";
 import { CartProduct } from "@/types/cartProduct";
 import { Order, OrderStatus } from "@/types/order";
+import { UserData } from "@/types/user";
 
 type GetOrdersOptions = {
   filters?: {
@@ -54,12 +55,7 @@ export const getOrderById = async (orderId: string) => {
   // build a pure‐JS object matching your Order type
   const order: Order = {
     id: orderSnapshot.id,
-    user: rawOrderData?.user as {
-      id: string;
-      name?: string;
-      email?: string;
-      phone?: string;
-    },
+    user: rawOrderData?.user as UserData,
     products: rawOrderData?.products as CartProduct[],
     totals: rawOrderData?.totals as {
       items: number;
@@ -75,7 +71,7 @@ export const getOrderById = async (orderId: string) => {
 };
 export const getUserOrders = async (
   userId?: string,
-  options?: GetOrdersOptions,
+  options?: GetOrdersOptions
 ) => {
   if (!userId) {
     return { data: [], totalPages: 0 };
@@ -105,12 +101,7 @@ export const getUserOrders = async (
     const rawOrderData = orderItem.data();
     const order: Order = {
       id: orderItem.id,
-      user: rawOrderData?.user as {
-        id: string;
-        name?: string;
-        email?: string;
-        phone?: string;
-      },
+      user: rawOrderData?.user as UserData,
       products: rawOrderData?.products as CartProduct[],
       totals: rawOrderData?.totals as {
         items: number;
