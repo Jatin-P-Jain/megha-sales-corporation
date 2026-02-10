@@ -1,8 +1,6 @@
 "use client";
 import GoogleLoginButton from "@/components/custom/google-login-button";
 
-import CollapsibleLoginForm from "./collapsible-login-form";
-
 import { MobileAuthWrapper } from "./mobile-auth/mobile-auth-wrapper";
 import { Separator } from "../ui/separator";
 
@@ -20,12 +18,12 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
         onSuccess={onSuccess}
         isLogin={true}
       />
-      <div className="relative mx-8 my-4 flex flex-row items-center justify-center gap-4 overflow-hidden md:mx-36 md:gap-8">
+      {/* <div className="relative mx-8 my-4 flex flex-row items-center justify-center gap-4 overflow-hidden md:mx-36 md:gap-8">
         <Separator />
         <span className="text-muted-foreground text-[14px]">or</span>
         <Separator />
       </div>
-      <CollapsibleLoginForm />
+      <CollapsibleLoginForm /> */}
       {/* <div className="mt-4 flex items-center justify-center gap-2 text-xs md:text-sm">
         Don&apos;t have an account?
         <Link href="/register" className="text-cyan-900 underline">
@@ -37,7 +35,6 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
         We will then kindly ask you to provide a few details to complete your
         registration. Thank you!
       </div>
-
     </div>
   );
 }
