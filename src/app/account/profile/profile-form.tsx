@@ -47,6 +47,7 @@ import { GoogleAuthProvider, linkWithPopup } from "firebase/auth";
 import { setToken } from "@/context/actions";
 import { GstDetails } from "@/components/custom/gst-details";
 import { GstDetailsData } from "@/data/businessProfile";
+import { useRouter } from "next/navigation";
 
 export default function ProfileForm({
   defaultValues,
@@ -55,6 +56,7 @@ export default function ProfileForm({
   defaultValues?: z.infer<typeof userProfileDataSchema>;
   verifiedToken: DecodedIdToken | null;
 }) {
+  const router = useRouter();
   const auth = useAuth();
   const user = auth.currentUser;
   const recaptchaVerifier = useRecaptcha({ enabled: true });
@@ -125,6 +127,7 @@ export default function ProfileForm({
     try {
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: "select_account" });
+
       const result = await linkWithPopup(user, provider);
       await user.reload();
 
@@ -132,11 +135,25 @@ export default function ProfileForm({
       await setToken(freshToken, user.refreshToken);
 
       form.setValue("email", result.user.email ?? "");
+      console.log("result user", result.user);
+      const googleProfile = result.user.providerData.find(
+        (p) => p.providerId === "google.com",
+      );
+
+      const photoUrl = googleProfile?.photoURL ?? null;
+
+      // ✅ NEW: store google photo URL in the form only on linking
+      form.setValue("photoUrl", photoUrl ?? "", {
+        shouldDirty: true,
+        shouldValidate: false,
+      });
+
       toast.success("Success!", {
         description:
           "Your Google account linked! You can now sign in with Google moving forward.",
       });
       setIsAccountLinking(false);
+      console.log("form values", form.getValues());
     } catch (err: unknown) {
       console.log("err --", err);
       setIsAccountLinking(false);
@@ -187,6 +204,7 @@ export default function ProfileForm({
             displayName: data.displayName,
             email: data.email,
             phone: data.phone,
+            photoUrl: data.photoUrl,
             userType: "admin",
             businessType: "",
             businessProfile: null,
@@ -232,9 +250,7 @@ export default function ProfileForm({
 
       await auth.refreshClientUser();
 
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 1000);
+      router.push("/");
       toast.success("Success!", {
         description: "Your profile has been saved successfully!",
       });
@@ -259,14 +275,14 @@ export default function ProfileForm({
         !!form.watch("email") &&
         !!form.watch("phone");
 
-      console.log("Admin canSubmit check:", {
-        isVerified,
-        isSubmitting,
-        displayName: form.watch("displayName"),
-        email: form.watch("email"),
-        phone: form.watch("phone"),
-        canSubmitAdmin,
-      });
+      // console.log("Admin canSubmit check:", {
+      //   isVerified,
+      //   isSubmitting,
+      //   displayName: form.watch("displayName"),
+      //   email: form.watch("email"),
+      //   phone: form.watch("phone"),
+      //   canSubmitAdmin,
+      // });
 
       return canSubmitAdmin;
     }
@@ -281,18 +297,18 @@ export default function ProfileForm({
         ? gstDetails !== null
         : panNumber && panNumber.length === 10);
 
-    console.log("Regular user canSubmit check:", {
-      isVerified,
-      isSubmitting,
-      loadingGst,
-      isValid: form.formState.isValid,
-      idType,
-      gstDetails,
-      panNumber,
-      gstNumber,
-      canSubmitRegular,
-      errors: form.formState.errors,
-    });
+    // console.log("Regular user canSubmit check:", {
+    //   isVerified,
+    //   isSubmitting,
+    //   loadingGst,
+    //   isValid: form.formState.isValid,
+    //   idType,
+    //   gstDetails,
+    //   panNumber,
+    //   gstNumber,
+    //   canSubmitRegular,
+    //   errors: form.formState.errors,
+    // });
 
     return canSubmitRegular;
   };
@@ -321,6 +337,7 @@ export default function ProfileForm({
         displayName: form.getValues("displayName"),
         email: form.getValues("email"),
         phone: form.getValues("phone"),
+        photoUrl: form.getValues("photoUrl"),
         businessType: "",
         businessIdType: "gst" as const,
         gstNumber: "",
