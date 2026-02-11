@@ -3,7 +3,24 @@ import { NextRequest, NextResponse } from "next/server";
 import { createWhatsAppPayloadFromInput } from "../../../../whatsappTemplates";
 import { recipientsForTemplate } from "./whatsappRecipients";
 
-// optional: if you used the typed version earlier, import TemplateKey instead
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+type SerializedError = {
+  name?: string;
+  message: string;
+  stack?: string;
+  cause?: {
+    name?: string;
+    message?: string;
+    code?: string;
+    errno?: string | number;
+    syscall?: string;
+    address?: string;
+    port?: number;
+  };
+};
+
 type TemplateKey =
   | "account_approval_request"
   | "admin_order_recieved_v1"
@@ -25,6 +42,66 @@ function requireEnv(name: string): string {
   return value;
 }
 
+function toDigitsE164(to: string): string {
+  // WhatsApp Cloud API expects phone number in international format (digits only is safest)
+  // e.g. "+91 96362 45681" -> "919636245681"
+  return (to ?? "").replace(/[^\d]/g, "");
+}
+function pickString(obj: Record<string, unknown>, key: string) {
+  const v = obj[key];
+  return typeof v === "string" ? v : undefined;
+}
+function pickNumber(obj: Record<string, unknown>, key: string) {
+  const v = obj[key];
+  return typeof v === "number" ? v : undefined;
+}
+
+function serializeError(err: unknown): SerializedError {
+  if (err instanceof Error) {
+    // In Node/undici, the real network reason is often in `err.cause` for "TypeError: fetch failed"
+    const anyErr = err as Error & { cause?: unknown };
+    const cause = anyErr.cause;
+
+    let serializedCause: SerializedError["cause"] | undefined;
+
+    if (isRecord(cause)) {
+      serializedCause = {
+        name: pickString(cause, "name"),
+        message: pickString(cause, "message") ?? String(cause),
+        code: pickString(cause, "code"),
+        errno:
+          pickString(cause, "errno") ??
+          (typeof cause["errno"] === "number"
+            ? String(cause["errno"])
+            : undefined),
+        syscall: pickString(cause, "syscall"),
+        address: pickString(cause, "address"),
+        port: pickNumber(cause, "port"),
+      };
+    } else if (cause != null) {
+      serializedCause = { message: String(cause) };
+    }
+
+    return {
+      name: err.name,
+      message: err.message,
+      stack: err.stack,
+      cause: serializedCause,
+    };
+  }
+
+  return { message: String(err) };
+}
+
+async function fetchWithTimeout(
+  url: string,
+  init: RequestInit,
+  ms = 15000
+): Promise<Response> {
+  // AbortSignal.timeout is supported in modern Node runtimes; it prevents hanging requests. [web:451]
+  return fetch(url, { ...init, signal: AbortSignal.timeout(ms) });
+}
+
 export async function POST(req: NextRequest) {
   try {
     const raw = await req.json();
@@ -34,6 +111,8 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+
+    console.log({ raw });
 
     const {
       templateKey,
@@ -45,7 +124,6 @@ export async function POST(req: NextRequest) {
       customerEmail,
       customerWANumber,
       customerBusinessProfile,
-      // optional override: allow ad-hoc extra recipients
       toNumbers,
     } = raw;
 
@@ -59,10 +137,8 @@ export async function POST(req: NextRequest) {
     const phoneNumberId = requireEnv("WHATSAPP_PHONE_NUMBER_ID");
     const token = requireEnv("WHATSAPP_TOKEN");
 
-    // 1) recipients from role-map
     const roleRecipients = recipientsForTemplate(templateKey);
 
-    // 2) optional ad-hoc recipients from payload (array of E.164)
     const extraRecipients = Array.isArray(toNumbers)
       ? toNumbers.filter(isString)
       : [];
@@ -78,64 +154,90 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Send to each recipient (one request per `to`) [web:234]
+    const url = `https://graph.facebook.com/v22.0/${phoneNumberId}/messages`;
+
     const results = await Promise.allSettled(
-      allRecipientPhones.map(async (to) => {
+      allRecipientPhones.map(async (toRaw) => {
+        const to = toDigitsE164(toRaw);
         const recipient =
-          roleRecipients.find((r) => r.phoneE164 === to) ?? null;
+          roleRecipients.find((r) => r.phoneE164 === toRaw) ?? null;
 
         const whatsappPayload = createWhatsAppPayloadFromInput({
           templateKey,
-          to,
+          to, // ✅ send digits-only
           inputParams: {
             adminName: recipient?.name ?? "Admin",
-            customerUserId: customerUserId as string,
-            customerName: customerName as string,
-            customerPhone: customerPhone as string,
-            customerEmail: customerEmail as string,
-            orderId: orderId as string,
-            customerMessage: customerMessage as string,
-            customerWANumber: customerWANumber as string,
-            customerBusinessProfile: customerBusinessProfile as string,
+            customerUserId: isString(customerUserId) ? customerUserId : "",
+            customerName: isString(customerName) ? customerName : "",
+            customerPhone: isString(customerPhone) ? customerPhone : "",
+            customerEmail: isString(customerEmail) ? customerEmail : "",
+            orderId: isString(orderId) ? orderId : "",
+            customerMessage: isString(customerMessage) ? customerMessage : "",
+            customerWANumber: isString(customerWANumber)
+              ? customerWANumber
+              : "",
+            customerBusinessProfile: isString(customerBusinessProfile)
+              ? customerBusinessProfile
+              : "",
           },
         });
 
-        const resp = await fetch(
-          `https://graph.facebook.com/v22.0/${phoneNumberId}/messages`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
+        try {
+          const resp = await fetchWithTimeout(
+            url,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify(whatsappPayload),
+              cache: "no-store",
             },
-            body: JSON.stringify(whatsappPayload),
-          }
-        );
+            20000
+          );
 
-        const text = await resp.text();
-        if (!resp.ok) {
+          const text = await resp.text();
+
+          if (!resp.ok) {
+            return {
+              to: toRaw,
+              toNormalized: to,
+              ok: false,
+              status: resp.status,
+              error: text,
+            };
+          }
+
           return {
-            to,
-            ok: false,
+            to: toRaw,
+            toNormalized: to,
+            ok: true,
             status: resp.status,
-            error: text,
+            data: text ? JSON.parse(text) : null,
+          };
+        } catch (err) {
+          // ✅ This is where "TypeError: fetch failed" will land (network/DNS/timeout/etc.) [web:454]
+          return {
+            to: toRaw,
+            toNormalized: to,
+            ok: false,
+            status: 0,
+            error: serializeError(err),
           };
         }
-
-        return {
-          to,
-          ok: true,
-          status: resp.status,
-          data: JSON.parse(text),
-        };
       })
     );
 
-    // Normalize results
     const sent = results.map((r) =>
       r.status === "fulfilled"
         ? r.value
-        : { ok: false, status: 0, to: "unknown", error: String(r.reason) }
+        : {
+            ok: false,
+            status: 0,
+            to: "unknown",
+            error: serializeError(r.reason),
+          }
     );
 
     const anySuccess = sent.some((s) => s.ok);
@@ -150,11 +252,8 @@ export async function POST(req: NextRequest) {
       { status: anySuccess ? 200 : 502 }
     );
   } catch (e) {
-    console.error(e);
-    const errorMessage = e instanceof Error ? e.message : String(e);
-    return NextResponse.json(
-      { success: false, error: errorMessage },
-      { status: 500 }
-    );
+    const err = serializeError(e);
+    console.error("Route error:", err);
+    return NextResponse.json({ success: false, error: err }, { status: 500 });
   }
 }

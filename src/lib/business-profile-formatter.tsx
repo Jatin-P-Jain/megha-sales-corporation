@@ -1,58 +1,83 @@
-// lib/formatBusinessProfile.ts
+import type { UserData } from "@/types/user";
 
-import { BusinessProfile } from "@/data/businessProfile";
+export const formatBusinessProfile = (user?: UserData | null): string => {
+  if (!user) return "❌ No business details available.";
 
-export const formatBusinessProfile = (
-  businessProfile?: BusinessProfile | null,
-): string => {
-  if (!businessProfile) {
-    return "❌ No business profile provided";
-  }
+  const businessProfile = user.businessProfile as
+    | {
+        gstin?: string;
+        legalName?: string;
+        tradeName?: string;
+        address?: string;
+        status?: string;
+        registrationDate?: string;
+        natureOfBusiness?: string[];
+        verifiedAt?: string;
+      }
+    | null
+    | undefined;
 
-  const {
-    gstin,
-    legalName,
-    tradeName,
-    address,
-    status,
-    registrationDate,
-    natureOfBusiness,
-    verifiedAt,
-  } = businessProfile;
+  // ✅ 1) GST profile present
+  if (businessProfile) {
+    const {
+      gstin,
+      legalName,
+      tradeName,
+      address,
+      status,
+      registrationDate,
+      natureOfBusiness,
+      verifiedAt,
+    } = businessProfile;
 
-  // Format registration date
-  const formattedRegDate = registrationDate
-    ? new Date(registrationDate).toLocaleDateString("en-IN", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      })
-    : "N/A";
-
-  // Format verified date
-  const formattedVerifiedDate = verifiedAt
-    ? new Date(verifiedAt).toLocaleDateString("en-IN", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    : "N/A";
-
-  // Format nature of business
-  const natureOfBusinessStr =
-    natureOfBusiness && natureOfBusiness.length > 0
-      ? natureOfBusiness.join(", ")
+    const formattedRegDate = registrationDate
+      ? new Date(registrationDate).toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        })
       : "N/A";
 
-  return `✅ *Verified GST Profile*/n
-• GSTIN: ${gstin || "N/A"}/n
-• Legal Name: ${legalName || "N/A"}
-• Trade Name: ${tradeName || "N/A"}
-• Address: ${address || "N/A"}
-• Registration Date: ${formattedRegDate}
-• Status: ${status || "N/A"}
-• Nature of Business: ${natureOfBusinessStr}
-• Verified On: ${formattedVerifiedDate}`;
+    const formattedVerifiedDate = verifiedAt
+      ? new Date(verifiedAt).toLocaleString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : "N/A";
+
+    const natureOfBusinessStr =
+      natureOfBusiness && natureOfBusiness.length > 0
+        ? natureOfBusiness.join(", ")
+        : "N/A";
+
+    return (
+      `✅ Verified GST Profile\n` +
+      `• GSTIN: ${gstin || "N/A"}\n` +
+      `• Legal Name: ${legalName || "N/A"}\n` +
+      `• Trade Name: ${tradeName || "N/A"}\n` +
+      `• Address: ${address || "N/A"}\n` +
+      `• Registration Date: ${formattedRegDate}\n` +
+      `• Status: ${status || "N/A"}\n` +
+      `• Nature of Business: ${natureOfBusinessStr}\n` +
+      `• Verified On: ${formattedVerifiedDate}`
+    );
+  }
+
+  // ✅ 2) No GST profile → show PAN details (friendly)
+  // Adjust these field names to match your actual UserData schema
+  const panNumber = user.panNumber as string | undefined;
+
+  if (panNumber) {
+    return (
+      `ℹ️ PAN Details\n` +
+      `• PAN: ${panNumber}\n` +
+      `• Note: GST profile not provided yet.`
+    ).trim();
+  }
+
+  // ✅ 3) Nothing present
+  return "❌ No GST or PAN details provided yet.";
 };

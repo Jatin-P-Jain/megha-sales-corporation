@@ -17,7 +17,7 @@ export const whatsappTemplates: Record<
 > = {
   account_approval_request: {
     name: "account_approval_request",
-    language: { code: "en_US" },
+    language: { code: "en" },
     bodyParamsCount: 5,
     hasButton: true,
     resolveParams: ({
@@ -129,6 +129,8 @@ export const createWhatsAppPayloadFromInput = ({
       parameters: buttonParams.map((text) => ({ type: "text", text })),
     });
   }
+
+  console.log(JSON.stringify(payload));
 
   return payload;
 };
