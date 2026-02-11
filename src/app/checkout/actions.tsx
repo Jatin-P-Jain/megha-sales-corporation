@@ -2,6 +2,7 @@
 
 import { auth, fireStore } from "@/firebase/server";
 import { Order, OrderData } from "@/types/order";
+import { UserData } from "@/types/user";
 
 // Helper to pad numbers
 const pad = (num: number, size = 4) => num.toString().padStart(size, "0");
@@ -15,7 +16,7 @@ const generateOrderId = async (): Promise<string> => {
   const hh = pad(now.getHours(), 2);
   const min = pad(now.getMinutes(), 2);
 
-  const datePart = `${yy}${mm}${dd}`;
+  const datePart = `${dd}${mm}${yy}`;
   const timePart = `${hh}${min}`;
 
   const counterRef = fireStore.collection("counters").doc("orders");
@@ -35,7 +36,7 @@ const generateOrderId = async (): Promise<string> => {
   return `${envPrefix}MSC-${datePart}-${timePart}-${sequence}-${randomPart}`;
 };
 
-export const createOrder = async (data: OrderData, authtoken: string) => {
+export const createOrder = async (data: OrderData, userData: UserData, authtoken: string) => {
   const verifiedToken = await auth.verifyIdToken(authtoken);
   if (!verifiedToken) {
     return {
@@ -44,10 +45,10 @@ export const createOrder = async (data: OrderData, authtoken: string) => {
     };
   }
   try {
+
     // 2) Pick the top-level collection
     const ordersCol = fireStore.collection("orders");
 
-    // 3) Generate auto-ID and write
     // 1. Generate custom Order ID
     const customOrderId = await generateOrderId();
 
@@ -56,16 +57,12 @@ export const createOrder = async (data: OrderData, authtoken: string) => {
     const now = new Date();
     const orderData: Omit<Order, "id"> = {
       ...data,
-      user: {
-        id: verifiedToken.uid,
-        email: verifiedToken.email,
-        name: verifiedToken.name,
-        phone: verifiedToken.phone_number,
-      },
+      user: userData,
       status: "pending",
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
     };
+
     await newRef.set(orderData);
 
     // 4) Return the generated ID + status

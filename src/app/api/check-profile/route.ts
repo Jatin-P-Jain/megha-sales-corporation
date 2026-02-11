@@ -16,8 +16,6 @@ export async function GET() {
     const decodedToken = await auth.verifyIdToken(token);
     const uid = decodedToken.uid;
 
-    console.log("🔍 Checking profile for user:", uid);
-
     // Get user from Firestore
     const userDoc = await fireStore.collection("users").doc(uid).get();
 
@@ -28,8 +26,6 @@ export async function GET() {
 
     const userData = userDoc.data();
     const profileComplete = userData?.profileComplete ?? false;
-
-    console.log("✅ Profile complete status:", profileComplete);
 
     return NextResponse.json(
       { profileComplete },

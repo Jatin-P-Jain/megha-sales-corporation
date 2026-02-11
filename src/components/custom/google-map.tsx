@@ -20,7 +20,6 @@ export default function GoogleMapComponent({ address }: { address: string }) {
     id: "google-map-script",
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
   });
-  console.log({ isLoaded });
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -34,7 +33,7 @@ export default function GoogleMapComponent({ address }: { address: string }) {
         console.error("Geocoding failed:", status);
       }
     });
-  }, [isLoaded]);
+  }, [isLoaded, address]);
 
   if (!isLoaded || !coords)
     return (

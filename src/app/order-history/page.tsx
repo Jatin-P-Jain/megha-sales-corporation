@@ -22,22 +22,6 @@ export default async function OrderHistoryPage({
   const searchParamValues = await searchParams;
   const requestedOrderId = searchParamValues.orderId ?? "";
 
-  // // 2) parse pagination + optional single‐order
-  // const pageRaw = parseInt(searchParamValues.page || "1");
-  // const page = Number.isNaN(pageRaw) ? 1 : pageRaw;
-  // const statusParam = searchParamValues.status ?? "";
-
-  // const orderStatusFilter: OrderStatus[] = [];
-  // if (statusParam) {
-  //   if (Array.isArray(statusParam))
-  //     statusParam.forEach((status) => {
-  //       orderStatusFilter.push(status as OrderStatus);
-  //     });
-  //   else {
-  //     orderStatusFilter.push(statusParam as OrderStatus);
-  //   }
-  // }
-
   return (
     <div className="mx-auto flex max-w-screen-lg flex-col gap-4">
       {/* header */}

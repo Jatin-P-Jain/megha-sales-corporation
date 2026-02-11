@@ -4,8 +4,8 @@ import { Card, CardContent, CardFooter } from "../ui/card";
 
 export default function ProductCardSkeleton() {
   return (
-    <Card className="relative gap-1 overflow-hidden p-4 px-0 shadow-md md:gap-2">
-      <CardContent className="flex flex-col gap-4 text-sm md:grid md:grid-cols-[3fr_1fr] md:text-base">
+    <Card className="relative gap-1 overflow-hidden p-4 shadow-md md:gap-2">
+      <CardContent className="flex flex-col gap-4 text-sm md:grid md:grid-cols-[3fr_1fr] md:text-base p-0">
         <div className="flex w-full flex-col md:gap-2">
           <div className="text-primary flex w-full items-center justify-between font-semibold">
             <span className="text-sm font-normal">Brand :</span>
@@ -45,7 +45,7 @@ export default function ProductCardSkeleton() {
           <Skeleton className="h-full w-full" />
         </div>
       </CardContent>
-      <CardFooter className="grid grid-cols-[3fr_1fr] items-end justify-center gap-4">
+      <CardFooter className="grid grid-cols-[3fr_1fr] items-end justify-center gap-4 p-0">
         <div className="flex w-full flex-col items-start justify-start md:flex-row md:justify-between">
           <div className="text-primary flex w-full items-center justify-start gap-2 text-lg font-semibold">
             <span className="text-foreground text-base font-normal">

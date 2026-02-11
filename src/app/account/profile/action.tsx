@@ -15,7 +15,7 @@ export const updateUserProfile = async (
     businessIdType?: "pan" | "gst";
     gstNumber?: string;
     businessProfile?: BusinessProfile | null;
-    photo?: string;
+    photoUrl?: string;
   },
   verifiedToken: DecodedIdToken | null,
 ) => {

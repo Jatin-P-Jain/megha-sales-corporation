@@ -49,6 +49,11 @@ export default function CheckoutFooter() {
       setIsOrderPlacing(false);
       return;
     }
+    if (!auth.clientUser) {
+      toast.error("Error!", { description: "User not found" });
+      setIsOrderPlacing(false);
+      return;
+    }
     const data: OrderData = {
       products: cartProducts,
       totals: {
@@ -57,7 +62,8 @@ export default function CheckoutFooter() {
         units: totalUnits,
       },
     };
-    const orderResponse = await createOrder(data, token);
+
+    const orderResponse = await createOrder(data, auth.clientUser, token);
 
     if (!!orderResponse.error || !orderResponse.orderId) {
       toast.error("Error!", { description: orderResponse.message });

@@ -35,7 +35,21 @@ export const sendOTP = async (
   mobile: string,
   verifier: RecaptchaVerifier,
 ): Promise<ConfirmationResult> => {
-  return await signInWithPhoneNumber(auth, `+91${mobile}`, verifier);
+  try {
+    // console.log("Sending OTP to", mobile);
+    return await signInWithPhoneNumber(auth, `+91${mobile}`, verifier);
+  } catch (e) {
+  // Reset so user can retry (Firebase docs)
+  if (typeof window !== "undefined") {
+    if (window.grecaptcha && window.recaptchaWidgetId !== undefined) {
+      window.grecaptcha.reset(window.recaptchaWidgetId);
+    } else if (window.recaptchaVerifier) {
+      // If widgetId not stored, get it then reset
+      window.recaptchaVerifier.render().then((id) => window.grecaptcha?.reset(id));
+    }
+  }
+  throw e;
+}
 };
 
 export const verifyOTP = async (

@@ -5,7 +5,7 @@ export interface FirebaseAuthData {
   sign_in_provider: string;
 }
 
-export type AccountStatus = "pending" | "approved" | "rejected";
+export type AccountStatus = "pending" | "approved" | "rejected" | "suspended" | "deactivated";
 
 export type BusinessType = "retailer" | "wholesaler" | "distributor" | "other";
 export type UserType =

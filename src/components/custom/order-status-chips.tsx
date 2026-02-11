@@ -29,7 +29,7 @@ export default function OrderStatusChips() {
   }, [isPending]);
 
   // read current selected categories
-  const selected = params.getAll("status");
+  const selected = params.getAll("orderStatus");
 
   // toggle one category on/off
   function toggleStatus(status: string) {
@@ -37,13 +37,13 @@ export default function OrderStatusChips() {
     setPendingStatus(status);
 
     const qp = new URLSearchParams(Array.from(params.entries()));
-    qp.delete("status");
+    qp.delete("orderStatus");
 
     const next = selected.includes(status)
       ? selected.filter((c) => c !== status)
       : [...selected, status];
 
-    next.forEach((s) => qp.append("status", s));
+    next.forEach((s) => qp.append("orderStatus", s));
     qp.set("page", "1");
 
     startTransition(() => {
@@ -56,7 +56,7 @@ export default function OrderStatusChips() {
     setPendingStatus("clear");
 
     const qp = new URLSearchParams(Array.from(params.entries()));
-    qp.delete("status");
+    qp.delete("orderStatus");
     qp.set("page", "1");
 
     startTransition(() => {

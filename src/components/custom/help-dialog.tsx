@@ -1,6 +1,7 @@
 // components/HelpDialog.tsx
 "use client";
-import { useState } from "react";
+
+import { useEffect, useMemo, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -27,34 +28,63 @@ export default function HelpDialog({
   onOpenChange: (open: boolean) => void;
   user: UserData;
 }) {
+  const prefill = useMemo(
+    () => ({
+      name: user.displayName ?? "",
+      phone: user.phone ?? "",
+      email: user.email ?? "",
+    }),
+    [user.displayName, user.phone, user.email],
+  );
+
   const [form, setForm] = useState({
-    name: user.displayName ?? "",
-    phone: user.phone ?? "",
-    email: user.email ?? "",
+    name: prefill.name,
+    phone: prefill.phone,
+    email: prefill.email,
     message: "",
   });
+
   const [submitting, setSubmitting] = useState(false);
+
+  // ✅ Sync form with user data when dialog opens or user changes
+  useEffect(() => {
+    if (!open) return;
+
+    setForm((prev) => ({
+      ...prev,
+      name: prefill.name,
+      phone: prefill.phone,
+      email: prefill.email,
+      message: "", // reset message every time dialog opens
+    }));
+  }, [open, prefill.name, prefill.phone, prefill.email]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.message.trim()) {
+      toast.error("Message is required.");
+      return;
+    }
+
     setSubmitting(true);
-    // TODO: handle API submission logic here
     try {
       const response = await fetch("/api/wa-send-message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           templateKey: "customer_inquiry_recieved",
-          customerName: user.displayName,
-          customerPhone: user.phone,
+          customerName: form.name,
+          customerPhone: form.phone,
+          customerEmail: form.email,
           customerMessage: form.message,
-          customerWANumber: user.phone,
+          customerWANumber: form.phone,
         }),
       });
 
@@ -62,27 +92,21 @@ export default function HelpDialog({
         toast.success("Thanks for Reaching Out!", {
           description: "We've received your enquiry. You'll hear from us soon!",
         });
+        onOpenChange(false);
+
+        // Keep prefill, only clear message for next time
+        setForm((prev) => ({ ...prev, message: "" }));
       } else {
-        toast.error("Error sending the message.", {
-          description: "We couldn't send your query. Please try again shortly.",
-        });
+        throw Error;
       }
     } catch (err) {
       console.log(err);
       toast.error("Oops! Something Went Wrong", {
         description: "We couldn't send your query. Please try again shortly.",
       });
-    }
-    setTimeout(() => {
+    } finally {
       setSubmitting(false);
-      onOpenChange(false);
-      setForm({
-        name: "",
-        email: "",
-        phone: "",
-        message: "",
-      });
-    }, 1000);
+    }
   };
 
   return (
@@ -94,6 +118,7 @@ export default function HelpDialog({
             Describe your concern below and we will get back to you soon.
           </DialogDescription>
         </DialogHeader>
+
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <Input
             name="name"
@@ -101,18 +126,20 @@ export default function HelpDialog({
             value={form.name}
             onChange={handleChange}
             required
-            readOnly={!!form.name}
-            className={clsx({ "font-semibold": !!form.name })}
+            readOnly={!!prefill.name}
+            className={clsx({ "font-semibold": !!prefill.name })}
           />
+
           <Input
             name="phone"
             placeholder="Your Phone Number"
             value={form.phone}
             onChange={handleChange}
             required
-            readOnly={!!form.phone}
-            className={clsx({ "font-semibold": !!form.phone })}
+            readOnly={!!prefill.phone}
+            className={clsx({ "font-semibold": !!prefill.phone })}
           />
+
           <Input
             name="email"
             type="email"
@@ -120,9 +147,10 @@ export default function HelpDialog({
             value={form.email}
             onChange={handleChange}
             required
-            readOnly={!!form.email}
-            className={clsx({ "font-semibold": !!form.email })}
+            readOnly={!!prefill.email}
+            className={clsx({ "font-semibold": !!prefill.email })}
           />
+
           <Textarea
             name="message"
             placeholder="Your Message"
@@ -131,6 +159,7 @@ export default function HelpDialog({
             required
             autoFocus
           />
+
           <DialogFooter>
             <Button type="submit" disabled={submitting}>
               {submitting ? (
@@ -145,8 +174,17 @@ export default function HelpDialog({
                 </span>
               )}
             </Button>
+
             <DialogClose asChild>
-              <Button type="button" variant="secondary">
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={submitting}
+                onClick={() => {
+                  // Optional: clear only message when cancelling
+                  setForm((prev) => ({ ...prev, message: "" }));
+                }}
+              >
                 Cancel
               </Button>
             </DialogClose>

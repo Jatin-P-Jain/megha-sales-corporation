@@ -19,6 +19,7 @@ import { useEffect, useRef, useState } from "react";
 
 export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
   const { clientUser } = useAuth();
+  const isUser = !!clientUser;
   const accountStatus = clientUser?.accountStatus;
 
   const PAGE_SIZE = process.env.NEXT_PUBLIC_PAGE_SIZE
@@ -72,76 +73,76 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
   const filters = [
     ...(brandIds.length > 0
       ? [
-          {
-            field: "brandId",
-            op: "in" as const,
-            value: brandIds,
-          },
-        ]
+        {
+          field: "brandId",
+          op: "in" as const,
+          value: brandIds,
+        },
+      ]
       : []),
     ...(statuses.length > 0
       ? [
-          {
-            field: "status",
-            op: "in" as const,
-            value: statuses,
-          },
-        ]
+        {
+          field: "status",
+          op: "in" as const,
+          value: statuses,
+        },
+      ]
       : []),
     ...(categories.length > 0
       ? [
-          {
-            field: "partCategory",
-            op: "in" as const,
-            value: categories,
-          },
-        ]
+        {
+          field: "partCategory",
+          op: "in" as const,
+          value: categories,
+        },
+      ]
       : []),
     ...(vehicleCompanies.length > 0
       ? [
-          {
-            field: "vehicleCompany",
-            op: "in" as const,
-            value: vehicleCompanies,
-          },
-        ]
+        {
+          field: "vehicleCompany",
+          op: "in" as const,
+          value: vehicleCompanies,
+        },
+      ]
       : []),
     // Add price range filters
     ...(minPrice !== undefined
       ? [
-          {
-            field: "price",
-            op: ">=" as const,
-            value: minPrice,
-          },
-        ]
+        {
+          field: "price",
+          op: ">=" as const,
+          value: minPrice,
+        },
+      ]
       : []),
     ...(maxPrice !== undefined
       ? [
-          {
-            field: "price",
-            op: "<=" as const,
-            value: maxPrice,
-          },
-        ]
+        {
+          field: "price",
+          op: "<=" as const,
+          value: maxPrice,
+        },
+      ]
       : []),
     ...(minDiscount !== undefined
       ? [
-          {
-            field: "discount",
-            op: ">=" as const,
-            value: minDiscount,
-          },
-        ]
+        {
+          field: "discount",
+          op: ">=" as const,
+          value: minDiscount,
+        },
+      ]
       : []),
     ...(maxDiscount !== undefined
       ? [
-          {
-            field: "discount",
-            op: "<=" as const,
-            value: maxDiscount,
-          },
-        ]
+        {
+          field: "discount",
+          op: "<=" as const,
+          value: maxDiscount,
+        },
+      ]
       : []),
   ];
 
@@ -188,7 +189,7 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
 
   if (loading || !hasLoadedOnce) {
     return (
-      <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col gap-4 px-4 py-6">
+      <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col gap-4">
         {[...Array(6)].map((_, i) => (
           <ProductCardSkeleton key={i} />
         ))}
@@ -206,7 +207,7 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
 
   return (
     <div className="relative mx-auto flex max-w-screen-lg flex-col">
-      <p className="text-muted-foreground sticky top-0 z-10 w-full px-4 py-1 text-center text-sm">
+      <p className="text-muted-foreground sticky top-0 z-10 w-full px-4 py-1 text-center text-xs md:text-sm">
         Page {currentPage} • Showing {start}–{end} of {totalItems} results
       </p>
       {data.length > 0 && (
@@ -218,6 +219,7 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
                 product={product}
                 isAdmin={isAdmin}
                 isAccountApproved={accountStatus === "approved"}
+                isUser={isUser}
               />
             ))}
           </div>

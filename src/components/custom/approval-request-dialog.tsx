@@ -36,15 +36,15 @@ export default function ApprovalRequestDialog({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           templateKey: "account_approval_request",
-          adminName: "Jatin", // Or get from config
+          customerUserId: auth.clientUser?.uid,
           customerName: auth.clientUser?.displayName || "User",
           customerPhone: auth.clientUser?.phone || "Not provided",
           customerEmail: auth.clientUser?.email || "Not provided",
-          businessProfile: formatBusinessProfile(
-            auth.clientUser?.businessProfile,
-          ),
+          customerBusinessProfile: formatBusinessProfile(auth.clientUser),
         }),
       });
+      console.log({ waResp });
+
       if (!waResp.ok) {
         throw new Error("Failed to send WhatsApp message");
       }
@@ -59,10 +59,6 @@ export default function ApprovalRequestDialog({
           clickAction: "view_account",
           status: "created",
         }),
-      });
-      toast.success("Request Sent!", {
-        description:
-          "Your approval request has been sent to the admin. You'll be notified once approved.",
       });
       setOpen(false);
     } catch (error) {

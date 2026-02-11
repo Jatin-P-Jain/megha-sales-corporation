@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,9 @@ import {
   FileText,
   ChevronDown,
   ChevronUp,
+  MoreVertical,
+  ShieldOff,
+  Trash2,
 } from "lucide-react";
 import { UserData } from "@/types/user";
 import { toast } from "sonner";
@@ -34,6 +38,24 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import clsx from "clsx";
 import { updateUserAccountStatus } from "@/app/account/actions";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface UserCardProps {
   user: UserData;
@@ -41,10 +63,21 @@ interface UserCardProps {
 }
 
 export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
+  // Widen status to allow extra states like "revoked" / "deleted" without TS narrowing issues.
+  const accountStatus = (user.accountStatus ?? "pending") as string;
+  const isAdmin = user.userType === "admin";
+
   const [isApproving, setIsApproving] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
+  const [isSuspending, setIsSuspending] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
+
+  const [showSuspendDialog, setShowSuspendDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   const handleApprove = async () => {
@@ -108,8 +141,66 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
     }
   };
 
+  // Suspend Access. Ensure your backend supports this status.
+  const handleSuspend = async () => {
+    setIsSuspending(true);
+    try {
+      await updateUserAccountStatus({
+        userId: user.uid,
+        accountStatus: "suspended",
+        rejectionReason: "",
+      });
+
+      toast.success("Access suspended", {
+        description: `${user.displayName}'s access has been suspended.`,
+      });
+
+      setShowSuspendDialog(false);
+      onStatusUpdate?.();
+    } catch (error) {
+      console.error("Error suspending access:", error);
+      toast.error("Failed to suspend access", {
+        description:
+          error instanceof Error
+            ? error.message
+            : "Please try again or contact support.",
+      });
+    } finally {
+      setIsSuspending(false);
+    }
+  };
+
+  // Soft delete: set status to "deactivated". Ensure your backend supports this status.
+  const handleSoftDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await updateUserAccountStatus({
+        userId: user.uid,
+        accountStatus: "deactivated",
+        rejectionReason: "",
+      });
+
+      toast.success("Account deactivated", {
+        description: `${user.displayName}'s account status has been set to deactivated.`,
+      });
+
+      setShowDeleteDialog(false);
+      onStatusUpdate?.();
+    } catch (error) {
+      console.error("Error deactivating (soft) user:", error);
+      toast.error("Failed to deactivate account", {
+        description:
+          error instanceof Error
+            ? error.message
+            : "Please try again or contact support.",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const getStatusBadge = () => {
-    switch (user.accountStatus) {
+    switch (accountStatus) {
       case "approved":
         return (
           <Badge className="bg-green-100 text-green-700 hover:bg-green-200">
@@ -122,6 +213,20 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
           <Badge className="bg-red-100 text-red-700 hover:bg-red-200">
             <XCircle className="h-3 w-3" />
             Rejected
+          </Badge>
+        );
+      case "suspended":
+        return (
+          <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-200">
+            <ShieldOff className="h-3 w-3" />
+            Suspended
+          </Badge>
+        );
+      case "deactivated":
+        return (
+          <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-200">
+            <Trash2 className="h-3 w-3" />
+            Deactivated
           </Badge>
         );
       default:
@@ -148,6 +253,12 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
     toast.success(`${label} copied to clipboard!`);
   };
 
+  const canShowActions = !isAdmin && accountStatus !== "deactivated";
+  const showPrimaryApprove =
+    canShowActions && (accountStatus === "pending" || accountStatus === "rejected" || accountStatus === "suspended");
+
+  const revokeEnabled = accountStatus === "approved";
+
   return (
     <>
       <Card className="gap-0 overflow-hidden p-0">
@@ -156,10 +267,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
             <div className="flex items-center gap-4">
               <Avatar className="h-12 w-12 border-2 border-white shadow-md">
                 {user.photoUrl ? (
-                  <AvatarImage
-                    src={user.photoUrl}
-                    alt={user.displayName || ""}
-                  />
+                  <AvatarImage src={user.photoUrl} alt={user.displayName || ""} />
                 ) : (
                   <AvatarFallback className="bg-primary/90 text-lg text-white">
                     {user.displayName?.[0]?.toUpperCase() ||
@@ -168,17 +276,19 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                   </AvatarFallback>
                 )}
               </Avatar>
+
               <div className="flex flex-col gap-1">
                 <CardTitle className="flex items-center gap-2 text-lg">
                   {user.displayName || "Unnamed User"}
-                  {user.userType === "admin" && (
+                  {isAdmin && (
                     <Badge variant="default" className="bg-sky-900">
                       <Shield className="h-3 w-3" />
                       Admin
                     </Badge>
                   )}
                 </CardTitle>
-                {user.userType !== "admin" && (
+
+                {!isAdmin && (
                   <div className="flex items-center gap-2">
                     {getStatusBadge()}
                   </div>
@@ -186,41 +296,10 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
               </div>
             </div>
 
-            {/* Action Buttons */}
-            {user.accountStatus !== "approved" && user.userType !== "admin" && (
-              <div className="grid w-full grid-cols-2 justify-between gap-2 md:w-auto">
-                {user.accountStatus === "pending" && (
-                  <>
-                    <Button
-                      onClick={handleApprove}
-                      disabled={isApproving}
-                      size="sm"
-                      className="bg-green-600 hover:bg-green-700"
-                    >
-                      {isApproving ? (
-                        <>
-                          <span className="mr-2 h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                          Approving...
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle2 className="mr-1 h-3 w-3" />
-                          Approve
-                        </>
-                      )}
-                    </Button>
-                    <Button
-                      onClick={() => setShowRejectDialog(true)}
-                      disabled={isRejecting}
-                      size="sm"
-                      variant="destructive"
-                    >
-                      <XCircle className="mr-1 h-3 w-3" />
-                      Reject
-                    </Button>
-                  </>
-                )}
-                {user.accountStatus === "rejected" && (
+            {/* Actions: primary + dropdown */}
+            {canShowActions && (
+              <div className="flex w-full flex-col gap-2 md:w-auto md:flex-row md:items-center">
+                {showPrimaryApprove && (
                   <Button
                     onClick={handleApprove}
                     disabled={isApproving}
@@ -240,6 +319,65 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                     )}
                   </Button>
                 )}
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="w-full md:w-auto"
+                      disabled={isApproving || isRejecting || isSuspending || isDeleting}
+                    >
+                      Actions
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>Account actions</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+
+                    {/* Reject (only relevant for pending) */}
+                    {accountStatus === "pending" && (
+                      <DropdownMenuItem
+                        onSelect={(e) => {
+                          e.preventDefault();
+                          setShowRejectDialog(true);
+                        }}
+                      >
+                        <XCircle className="h-4 w-4" />
+                        Reject
+                      </DropdownMenuItem>
+                    )}
+
+                    {/* Revoke access (only meaningful for approved) */}
+                    <DropdownMenuItem
+                      disabled={!revokeEnabled}
+                      onSelect={(e) => {
+                        e.preventDefault();
+                        if (!revokeEnabled) return;
+                        setShowSuspendDialog(true);
+                      }}
+                    >
+                      <ShieldOff className="h-4 w-4" />
+                      Suspend Account
+                    </DropdownMenuItem>
+
+                    <DropdownMenuSeparator />
+
+                    {/* Soft delete */}
+                    <DropdownMenuItem
+                      className="text-destructive focus:text-destructive"
+                      onSelect={(e) => {
+                        e.preventDefault();
+                        setShowDeleteDialog(true);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Delete account (soft)
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             )}
           </div>
@@ -250,12 +388,10 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
           onClick={() => setIsDetailsOpen(!isDetailsOpen)}
           className={clsx(
             "flex cursor-pointer items-center justify-between px-4 py-2 transition-colors hover:bg-gray-50",
-            isDetailsOpen && "bg-gray-100",
+            isDetailsOpen && "bg-gray-100"
           )}
         >
-          <span className="text-sm font-medium text-gray-700">
-            View Details
-          </span>
+          <span className="text-sm font-medium text-gray-700">View Details</span>
           {isDetailsOpen ? (
             <ChevronUp className="h-4 w-4 text-gray-600" />
           ) : (
@@ -273,9 +409,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                 <span>UID:</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-sm font-semibold">
-                  {user.uid}
-                </span>
+                <span className="font-mono text-sm font-semibold">{user.uid}</span>
                 <CopyIcon
                   className="h-4 w-4 cursor-pointer text-gray-500 hover:text-gray-700"
                   onClick={(e) => {
@@ -292,9 +426,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                 <Mail className="h-4 w-4" />
                 <span>Email:</span>
               </div>
-              <span className="text-sm font-semibold">
-                {user.email || "N/A"}
-              </span>
+              <span className="text-sm font-semibold">{user.email || "N/A"}</span>
             </div>
 
             {/* Phone */}
@@ -303,9 +435,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                 <Phone className="h-4 w-4" />
                 <span>Phone:</span>
               </div>
-              <span className="text-sm font-semibold">
-                {user.phone || "N/A"}
-              </span>
+              <span className="text-sm font-semibold">{user.phone || "N/A"}</span>
             </div>
 
             {/* User Type */}
@@ -467,7 +597,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                                   >
                                     {business}
                                   </Badge>
-                                ),
+                                )
                               )}
                             </div>
                           </div>
@@ -479,7 +609,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
             )}
 
             {/* Rejection Reason */}
-            {user.accountStatus === "rejected" && user.rejectionReason && (
+            {accountStatus === "rejected" && user.rejectionReason && (
               <>
                 <Separator className="my-2" />
                 <div className="rounded-lg border border-red-200 bg-red-50 p-3">
@@ -501,7 +631,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
         )}
       </Card>
 
-      {/* Rejection Dialog */}
+      {/* Reject Dialog (with reason) */}
       <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
         <DialogContent>
           <DialogHeader>
@@ -531,6 +661,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                 setShowRejectDialog(false);
                 setRejectionReason("");
               }}
+              disabled={isRejecting}
             >
               Cancel
             </Button>
@@ -551,6 +682,70 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Suspend confirmation */}
+      <AlertDialog open={showSuspendDialog} onOpenChange={setShowSuspendDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Suspend access?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will suspend access for {user.displayName || "this user"}.
+              You can later approve again to restore access.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isSuspending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button
+                variant="destructive"
+                onClick={handleSuspend}
+                disabled={isSuspending}
+              >
+                {isSuspending ? (
+                  <>
+                    <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    Suspending...
+                  </>
+                ) : (
+                  "Suspend access"
+                )}
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Soft delete confirmation */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete account (soft)?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will mark {user.displayName || "this user"} as deleted.
+              The user won&apos;t be removed permanently, only the status changes.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button
+                variant="destructive"
+                onClick={handleSoftDelete}
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <>
+                    <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    Deleting...
+                  </>
+                ) : (
+                  "Delete (soft)"
+                )}
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

@@ -20,6 +20,7 @@ interface Props {
   };
   hasSizes?: boolean;
   isCartPage?: boolean;
+  isDisabled?: boolean;
 }
 
 function usePrevious<T>(value: T) {
@@ -36,6 +37,7 @@ export default function CartControls({
   selectedSize,
   hasSizes,
   isCartPage = false,
+  isDisabled = false,
 }: Props) {
   const { currentUser } = useAuth();
   const { cart, increment, decrement, addToCart, loading } = useCart();
@@ -150,7 +152,7 @@ export default function CartControls({
       <Button
         className="flex w-full items-center justify-center gap-2 md:w-3/4"
         onClick={handleAdd}
-        disabled={isBusy}
+        disabled={isBusy || isDisabled}
       >
         {loadingAction === "add" ? (
           <>
