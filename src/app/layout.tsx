@@ -21,6 +21,9 @@ export const metadata: Metadata = {
   description: "Auto accessories store in Raipur, Chhattisgarh",
   icons: "/favicon.svg",
   manifest: "/site.webmanifest.json",
+  alternates: {
+    canonical: "https://www.meghasalescorporation.in/",
+  },
 };
 
 export default async function RootLayout({
