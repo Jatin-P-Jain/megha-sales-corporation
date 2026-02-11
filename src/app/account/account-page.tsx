@@ -41,6 +41,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import DefaultUserIcon from "@/assets/icons/user.png";
 import { Badge } from "@/components/ui/badge";
 import {
   Collapsible,
@@ -481,7 +482,9 @@ export default function AccountPage({
               <div className="text-sm font-semibold text-zinc-900">
                 You created your account using {primary.label}.
               </div>
-              <div className="text-muted-foreground text-sm">{primary.hint}</div>
+              <div className="text-muted-foreground text-sm">
+                {primary.hint}
+              </div>
 
               {primaryPretty.length > 0 && (
                 <div className="text-muted-foreground text-sm">
@@ -511,7 +514,9 @@ export default function AccountPage({
         </ul>
 
         <div className="space-y-2">
-          <div className="text-muted-foreground text-sm">Linked identifiers</div>
+          <div className="text-muted-foreground text-sm">
+            Linked identifiers
+          </div>
 
           {identityEntries.length ? (
             <div className="rounded-md border bg-white">
@@ -529,7 +534,9 @@ export default function AccountPage({
                       className="flex items-start justify-between gap-4 p-3"
                     >
                       <div className="flex items-start gap-2">
-                        <meta.Icon className={clsx("mt-0.5 h-4 w-4", meta.tone)} />
+                        <meta.Icon
+                          className={clsx("mt-0.5 h-4 w-4", meta.tone)}
+                        />
                         <div>
                           <div className="text-sm font-semibold text-zinc-900">
                             {meta.label}
@@ -545,7 +552,7 @@ export default function AccountPage({
                         {displayValues.map((v) => (
                           <div
                             key={`${providerKey}-${v}`}
-                            className="text-xs font-semibold text-zinc-900 break-all"
+                            className="text-xs font-semibold break-all text-zinc-900"
                           >
                             {v}
                           </div>
@@ -588,7 +595,9 @@ export default function AccountPage({
                 )}
               >
                 <StatusIcon className={clsx("h-4 w-4", statusInfo.color)} />
-                <AlertDescription className={clsx("ml-2 text-sm", statusInfo.color)}>
+                <AlertDescription
+                  className={clsx("ml-2 text-sm", statusInfo.color)}
+                >
                   <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
                     <div>
                       <span className="font-semibold">{statusInfo.title}</span>{" "}
@@ -605,7 +614,7 @@ export default function AccountPage({
 
           {/* Editable profile photo */}
           <div className="relative flex flex-col items-center justify-center gap-2 py-4">
-            <Avatar className="h-24 w-24 bg-white p-1 ring-2 ring-primary md:h-28 md:w-28">
+            <Avatar className="ring-primary h-24 w-24 bg-white p-1 ring-2 md:h-28 md:w-28">
               {photo ? (
                 <Image
                   src={photo}
@@ -616,8 +625,14 @@ export default function AccountPage({
                   priority
                 />
               ) : (
-                <AvatarFallback className="text-xl">
-                  {(clientUser.displayName || clientUser.email)?.[0]?.toUpperCase() || "U"}
+                <AvatarFallback className="bg-cyan-800">
+                  <Image
+                    src={DefaultUserIcon}
+                    alt="avatar"
+                    width={60}
+                    height={60}
+                    className="rounded-full object-center p-1"
+                  />
                 </AvatarFallback>
               )}
             </Avatar>
@@ -663,7 +678,8 @@ export default function AccountPage({
           {/* Role banner */}
           {isAdmin ? (
             <div className="rounded-md bg-green-100 p-2 px-4 text-center text-sm text-green-700">
-              You are an <span className="font-semibold">Admin</span> — manage everything!
+              You are an <span className="font-semibold">Admin</span> — manage
+              everything!
             </div>
           ) : (
             <div className="bg-muted text-muted-foreground flex flex-col items-center justify-center rounded-md p-2 text-sm">
@@ -701,7 +717,11 @@ export default function AccountPage({
 
               <DetailRow
                 label="Business type"
-                valueNode={<span className="break-all">{titleCase(clientUser.businessType)}</span>}
+                valueNode={
+                  <span className="break-all">
+                    {titleCase(clientUser.businessType)}
+                  </span>
+                }
                 icon={Building2}
               />
 
@@ -786,7 +806,7 @@ export default function AccountPage({
           <>
             <Separator />
             <CardContent>
-              <div className="mb-5 text-md font-semibold text-cyan-950">
+              <div className="text-md mb-5 font-semibold text-cyan-950">
                 Update your password
               </div>
               <UpdatePasswordForm />
@@ -804,7 +824,6 @@ export default function AccountPage({
               <span className="flex w-full text-sm text-zinc-700 italic">
                 You will be deleting your account permanently. Are you sure?
               </span>
-              
             </CardFooter>
           </>
         )}

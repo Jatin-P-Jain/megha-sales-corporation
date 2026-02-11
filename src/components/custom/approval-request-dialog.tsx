@@ -30,7 +30,6 @@ export default function ApprovalRequestDialog({
   const handleRequestApproval = async () => {
     setSending(true);
     try {
-      // Call API to send WhatsApp notification to admin
       const waResp = await fetch("/api/wa-send-message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -43,11 +42,11 @@ export default function ApprovalRequestDialog({
           customerBusinessProfile: formatBusinessProfile(auth.clientUser),
         }),
       });
-      console.log({ waResp });
 
       if (!waResp.ok) {
         throw new Error("Failed to send WhatsApp message");
       }
+
       await fetch("/api/notify-user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -60,6 +59,7 @@ export default function ApprovalRequestDialog({
           status: "created",
         }),
       });
+
       setOpen(false);
     } catch (error) {
       console.error("Error requesting approval:", error);
@@ -74,28 +74,37 @@ export default function ApprovalRequestDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
+
+      <DialogContent className="p-2 md:p-4">
+        <DialogHeader className="p-2">
           <div className="flex items-center gap-2">
             <AlertCircle className="h-6 w-6 text-yellow-600" />
-            <DialogTitle className="text-xl">
+            <DialogTitle className="text-lg md:text-xl">
               Account Pending Approval
             </DialogTitle>
           </div>
-          <DialogDescription className="pt-4 text-base">
-            Your account is currently under review by our admin team. Product
-            discounts are hidden until your account is approved.
+
+          <DialogDescription className="text-xs md:text-base">
+            To give you the best pricing and protect our business network, we
+            review new accounts before enabling full access. Once approved,
+            everything unlocks automatically.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="my-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
-          <h4 className="mb-2 font-semibold text-yellow-800">
-            Why can&apos;t I see discounts?
+        <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-sm flex flex-col gap-3">
+          <h4 className="text-sm font-semibold text-yellow-800">
+            What&apos;s temporarily unavailable (until approval)
           </h4>
-          <p className="text-sm text-yellow-700">
-            To maintain pricing integrity and ensure genuine business
-            relationships, we verify all new accounts before granting full
-            access to our pricing and discount information.
+
+          <ul className="space-y-1 text-sm text-yellow-700">
+            <li>• Viewing product discounts and special pricing</li>
+            <li>• Adding items to the cart / building a cart</li>
+            <li>• Placing orders (checkout)</li>
+          </ul>
+
+          <p className="text-xs italic text-yellow-700">
+            Requesting approval via WhatsApp helps our team verify your details
+            faster, so you can start ordering sooner.
           </p>
         </div>
 
@@ -108,12 +117,12 @@ export default function ApprovalRequestDialog({
             {sending ? (
               <>
                 <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                Sending Request...
+                Sending request...
               </>
             ) : (
               <>
                 <MessageCircle className="mr-2 h-4 w-4" />
-                Request Approval via WhatsApp
+                Request approval on WhatsApp
               </>
             )}
           </Button>
@@ -123,7 +132,7 @@ export default function ApprovalRequestDialog({
             variant="outline"
             className="w-full"
           >
-            Cancel
+            Not now
           </Button>
         </DialogFooter>
       </DialogContent>
