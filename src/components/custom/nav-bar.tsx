@@ -67,7 +67,7 @@ export default function NavBar({ children }: NavBarProps) {
           </div>
         </nav>
 
-        <div className="pt-18 pb-10">{children}</div>
+        <div className="pt-18">{children}</div>
         {isMobile && <div className="fixed bottom-0 w-full z-50">
           <SearchProducts variant="default" buttonClassName="rounded-none h-12 w-full"/>
         </div>}
