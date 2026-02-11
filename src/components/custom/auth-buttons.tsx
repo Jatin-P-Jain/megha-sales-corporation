@@ -11,6 +11,7 @@ import {
   DropdownMenuItem,
 } from "../ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "../ui/avatar";
+import DefaultUserIcon from "@/assets/icons/user.png";
 import { Badge } from "../ui/badge";
 import Image from "next/image";
 import {
@@ -151,7 +152,13 @@ export default function AuthButtons() {
                   />
                 ) : (
                   <AvatarFallback className="bg-cyan-800">
-                    {(clientUser.displayName || clientUser.email)?.[0] || "U"}
+                    <Image
+                      src={DefaultUserIcon}
+                      alt="avatar"
+                      width={60}
+                      height={60}
+                      className="rounded-full object-center p-1"
+                    />
                   </AvatarFallback>
                 )}
               </Avatar>

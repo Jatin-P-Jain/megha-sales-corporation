@@ -56,6 +56,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import Image from "next/image";
+import DefaultUserIcon from "@/assets/icons/user.png";
 
 interface UserCardProps {
   user: UserData;
@@ -275,10 +277,14 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                     alt={user.displayName || ""}
                   />
                 ) : (
-                  <AvatarFallback className="bg-primary/90 text-lg text-white">
-                    {user.displayName?.[0]?.toUpperCase() ||
-                      user.email?.[0]?.toUpperCase() ||
-                      "U"}
+                  <AvatarFallback className="bg-cyan-800">
+                    <Image
+                      src={DefaultUserIcon}
+                      alt="avatar"
+                      width={60}
+                      height={60}
+                      className="rounded-full object-center p-1"
+                    />
                   </AvatarFallback>
                 )}
               </Avatar>
