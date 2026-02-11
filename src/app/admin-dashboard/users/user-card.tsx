@@ -255,7 +255,10 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
 
   const canShowActions = !isAdmin && accountStatus !== "deactivated";
   const showPrimaryApprove =
-    canShowActions && (accountStatus === "pending" || accountStatus === "rejected" || accountStatus === "suspended");
+    canShowActions &&
+    (accountStatus === "pending" ||
+      accountStatus === "rejected" ||
+      accountStatus === "suspended");
 
   const revokeEnabled = accountStatus === "approved";
 
@@ -267,7 +270,10 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
             <div className="flex items-center gap-4">
               <Avatar className="h-12 w-12 border-2 border-white shadow-md">
                 {user.photoUrl ? (
-                  <AvatarImage src={user.photoUrl} alt={user.displayName || ""} />
+                  <AvatarImage
+                    src={user.photoUrl}
+                    alt={user.displayName || ""}
+                  />
                 ) : (
                   <AvatarFallback className="bg-primary/90 text-lg text-white">
                     {user.displayName?.[0]?.toUpperCase() ||
@@ -326,7 +332,9 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                       size="sm"
                       variant="outline"
                       className="w-full md:w-auto"
-                      disabled={isApproving || isRejecting || isSuspending || isDeleting}
+                      disabled={
+                        isApproving || isRejecting || isSuspending || isDeleting
+                      }
                     >
                       Actions
                       <MoreVertical className="h-4 w-4" />
@@ -374,7 +382,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                       }}
                     >
                       <Trash2 className="h-4 w-4" />
-                      Delete account (soft)
+                      Delete account
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -388,10 +396,12 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
           onClick={() => setIsDetailsOpen(!isDetailsOpen)}
           className={clsx(
             "flex cursor-pointer items-center justify-between px-4 py-2 transition-colors hover:bg-gray-50",
-            isDetailsOpen && "bg-gray-100"
+            isDetailsOpen && "bg-gray-100",
           )}
         >
-          <span className="text-sm font-medium text-gray-700">View Details</span>
+          <span className="text-sm font-medium text-gray-700">
+            View Details
+          </span>
           {isDetailsOpen ? (
             <ChevronUp className="h-4 w-4 text-gray-600" />
           ) : (
@@ -409,7 +419,9 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                 <span>UID:</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-sm font-semibold">{user.uid}</span>
+                <span className="font-mono text-sm font-semibold">
+                  {user.uid}
+                </span>
                 <CopyIcon
                   className="h-4 w-4 cursor-pointer text-gray-500 hover:text-gray-700"
                   onClick={(e) => {
@@ -426,7 +438,9 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                 <Mail className="h-4 w-4" />
                 <span>Email:</span>
               </div>
-              <span className="text-sm font-semibold">{user.email || "N/A"}</span>
+              <span className="text-sm font-semibold">
+                {user.email || "N/A"}
+              </span>
             </div>
 
             {/* Phone */}
@@ -435,7 +449,9 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                 <Phone className="h-4 w-4" />
                 <span>Phone:</span>
               </div>
-              <span className="text-sm font-semibold">{user.phone || "N/A"}</span>
+              <span className="text-sm font-semibold">
+                {user.phone || "N/A"}
+              </span>
             </div>
 
             {/* User Type */}
@@ -597,7 +613,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                                   >
                                     {business}
                                   </Badge>
-                                )
+                                ),
                               )}
                             </div>
                           </div>
@@ -694,7 +710,9 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isSuspending}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isSuspending}>
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction asChild>
               <Button
                 variant="destructive"
@@ -721,8 +739,8 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete account (soft)?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will mark {user.displayName || "this user"} as deleted.
-              The user won&apos;t be removed permanently, only the status changes.
+              This will mark {user.displayName || "this user"} as deleted. The
+              user won&apos;t be removed permanently, only the status changes.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

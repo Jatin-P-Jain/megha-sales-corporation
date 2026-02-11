@@ -7,6 +7,7 @@ import { Brand } from "@/types/brand";
 import Link from "next/link";
 import { PushHandler } from "@/lib/firebase/push-handler";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import ApprovalRequestDialog from "@/components/custom/approval-request-dialog";
 
 const HomePage = ({
   brandsPromise,
@@ -50,10 +51,12 @@ const HomePage = ({
               </Link>
             )}
             {!isAdmin && accountStatus === "pending" && (
-              <div className="flex w-3/4 cursor-pointer items-center justify-center gap-3 rounded-lg border-1 border-yellow-700 p-1 px-2 text-center text-sm font-semibold text-yellow-700 shadow-md">
-                <TriangleAlert className="size-4" />
-                Account Approval Pending
-              </div>
+              <ApprovalRequestDialog>
+                <div className="flex w-3/4 cursor-pointer items-center justify-center gap-3 rounded-lg border-1 border-yellow-700 p-1 px-2 text-center text-sm font-semibold text-yellow-700 shadow-md">
+                  <TriangleAlert className="size-4" />
+                  Account Pending Approval
+                </div>
+              </ApprovalRequestDialog>
             )}
             {accountStatus === "rejected" && (
               <Alert className={"border-red-700 bg-red-50 text-red-700"}>
