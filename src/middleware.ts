@@ -7,7 +7,7 @@ export async function middleware(request: NextRequest) {
 
   // ✅ Bypass auth for static public files
   if (
-    pathname === "/sw.js" ||
+    pathname === "/firebase-messaging-sw.js" ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/icons") ||
     pathname === "/favicon.ico"

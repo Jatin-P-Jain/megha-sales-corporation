@@ -7,7 +7,6 @@ import NavBar from "@/components/custom/nav-bar";
 import { ServiceWorkerRegister } from "./service-worker-register";
 import InstallPWAButton from "@/components/custom/install-pwa-button";
 import Script from "next/script";
-import NewVersionBanner from "@/components/custom/new-version-banner";
 import NetworkBanner from "@/components/custom/network-banner";
 import { Footer } from "@/components/custom/footer";
 
@@ -85,7 +84,6 @@ export default async function RootLayout({
       >
         <ServiceWorkerRegister />
         <InstallPWAButton />
-        <NewVersionBanner />
         <NavBar>{children}</NavBar>
         <Footer />
         <NetworkBanner />
