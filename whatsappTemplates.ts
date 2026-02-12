@@ -16,7 +16,7 @@ export const whatsappTemplates: Record<
   }
 > = {
   account_approval_request: {
-    name: "account_approval_request",
+    name: "account_approval_request_to_admin",
     language: { code: "en" },
     bodyParamsCount: 5,
     hasButton: true,
@@ -39,8 +39,8 @@ export const whatsappTemplates: Record<
     }),
   },
   admin_order_recieved_v1: {
-    name: "admin_order_recieved_v1",
-    language: { code: "en_US" },
+    name: "order_placed_to_admin",
+    language: { code: "en" },
     bodyParamsCount: 4,
     hasButton: true,
     resolveParams: ({ adminName, orderId, customerName, customerPhone }) => ({
@@ -49,7 +49,7 @@ export const whatsappTemplates: Record<
     }),
   },
   customer_inquiry_recieved: {
-    name: "customer_inquiry_recieved",
+    name: "order_placed_to_admin",
     language: { code: "en" },
     bodyParamsCount: 5,
     hasButton: false,
