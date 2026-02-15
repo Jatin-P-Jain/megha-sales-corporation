@@ -7,7 +7,8 @@ import { useRecaptcha } from "@/hooks/useRecaptcha";
 export function MobileAuthWrapper({ onSuccess }: { onSuccess?: () => void }) {
   const [mode, setMode] = useState<"login" | "verify">("login");
 
-  const recaptchaVerifier = useRecaptcha({ enabled: mode === "login" }); // only enable when in login mode
+  const recaptcha = useRecaptcha({ enabled: mode === "login" });
+  const recaptchaVerifier = recaptcha.verifier;
   const {
     mobileNumber,
     isVerifying,
@@ -22,6 +23,8 @@ export function MobileAuthWrapper({ onSuccess }: { onSuccess?: () => void }) {
       onSuccess?.();
     },
     appVerifier: recaptchaVerifier,
+    ensureRecaptcha: recaptcha.ensureReady,
+    resetRecaptcha: recaptcha.reset,
   });
 
   useEffect(() => {

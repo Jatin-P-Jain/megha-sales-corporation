@@ -14,10 +14,14 @@ import { setToken } from "@/context/actions";
 export function useMobileOtp({
   onSuccess,
   appVerifier,
+  ensureRecaptcha,
+  resetRecaptcha,
   isProfile,
 }: {
   onSuccess?: (() => void) | undefined;
   appVerifier: RecaptchaVerifier | null;
+  ensureRecaptcha?: () => Promise<RecaptchaVerifier>;
+  resetRecaptcha?: () => void;
   isProfile?: boolean;
 }) {
   const auth = useAuth();
@@ -31,33 +35,46 @@ export function useMobileOtp({
 
   const resetOtp = () => {
     setOtpSent(false);
-    setOtpReset(true); // if needed
+    setOtpReset(true);
   };
 
   const sendOtp = async (mobile: string, isResent: boolean = false) => {
     try {
-      if (!appVerifier) {
+      setSendingOtp(true);
+
+      // ✅ always use a rendered verifier before sending
+      const verifierToUse =
+        appVerifier ?? (ensureRecaptcha ? await ensureRecaptcha() : null);
+
+      if (!verifierToUse) {
         toast.error("Recaptcha not ready. Please try again in a moment.");
         return;
       }
-      setSendingOtp(true);
-      
-      const confirmation = await auth?.handleSendOTP(mobile, appVerifier);
+
+      const confirmation = await auth?.handleSendOTP(mobile, verifierToUse);
+
       setMobileNumber(mobile);
       setOtpSent(true);
       setTimeout(() => {
         setConfirmationResult(confirmation);
       }, 0);
-      if (!isResent) {
-        toast.success("OTP sent successfully");
-      }
+
+      if (!isResent) toast.success("OTP sent successfully");
     } catch (e) {
       console.error(e);
       toast.error("Failed to send OTP", {
-        description: e instanceof Error ? e.message : "An unknown error occurred",
+        description:
+          e instanceof Error ? e.message : "An unknown error occurred",
       });
     } finally {
       setSendingOtp(false);
+
+      // ✅ reduce later "Timeout"/stale token problems
+      try {
+        resetRecaptcha?.();
+      } catch {
+        // ignore
+      }
     }
   };
 
@@ -65,13 +82,13 @@ export function useMobileOtp({
     try {
       if (!confirmationResult) throw new Error("No confirmation result");
       setIsVerifying(true);
+
       if (isProfile) {
         const credential = PhoneAuthProvider.credential(
           confirmationResult.verificationId,
-          otp,
+          otp
         );
 
-        // Assume `auth.currentUser` is logged in via Google/email already
         const user = auth.currentUser;
 
         if (user) {
@@ -87,13 +104,19 @@ export function useMobileOtp({
       } else {
         await auth?.verifyOTP(otp, confirmationResult);
       }
+
       onSuccess?.();
-      setOtpSent(false); // ✅ Only clear on successful verification
-      setOtpReset(true); // optional
+      setOtpSent(false);
+      setOtpReset(true);
     } catch (e) {
       handleFirebaseAuthError(e);
     } finally {
       setIsVerifying(false);
+      try {
+        resetRecaptcha?.();
+      } catch {
+        // ignore
+      }
     }
   };
 

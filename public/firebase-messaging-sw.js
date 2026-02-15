@@ -61,12 +61,48 @@ self.addEventListener('notificationclick', function(event) {
 
 
 // PWA Service Worker events
-self.addEventListener("install", () => {
+self.addEventListener("install", (event) => {
   console.log("Service Worker installed");
   self.skipWaiting();
 });
 
+self.addEventListener("activate", (event) => {
+  console.log("Service Worker activated");
+  event.waitUntil(
+    Promise.all([
+      self.clients.claim(),
+      // Clear old caches if needed
+      caches.keys().then(function(cacheNames) {
+        return Promise.all(
+          cacheNames.map(function(cacheName) {
+            // Add cache cleanup logic here if needed
+            return null;
+          })
+        );
+      })
+    ])
+  );
+});
 
+self.addEventListener("fetch", (event) => {
+  // Add your caching logic here if needed
+  // Example: Cache important resources
+  /*
+  if (event.request.url.includes('/api/')) {
+    // Handle API requests
+    return;
+  }
+  
+  if (event.request.destination === 'image') {
+    // Cache images
+    event.respondWith(
+      caches.match(event.request).then(function(response) {
+        return response || fetch(event.request);
+      })
+    );
+  }
+  */
+});
 
 // Handle push events (alternative to onBackgroundMessage for more control)
 self.addEventListener('push', function(event) {

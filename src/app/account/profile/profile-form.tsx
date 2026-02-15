@@ -82,7 +82,9 @@ export default function ProfileForm({
             "Phone number verified and linked to your account successfully.",
         });
       },
-      appVerifier: recaptchaVerifier,
+      appVerifier: recaptchaVerifier.verifier,
+      ensureRecaptcha: recaptchaVerifier.ensureReady,
+      resetRecaptcha: recaptchaVerifier.reset,
       isProfile: true,
     });
 
