@@ -53,7 +53,9 @@ export function useMobileOtp({
       }
     } catch (e) {
       console.error(e);
-      toast.error("Failed to send OTP");
+      toast.error("Failed to send OTP", {
+        description: e instanceof Error ? e.message : "An unknown error occurred",
+      });
     } finally {
       setSendingOtp(false);
     }
