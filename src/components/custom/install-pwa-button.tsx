@@ -62,7 +62,7 @@ export default function InstallPWAButton() {
   if (!showCard) return null;
 
   return (
-    <Card className="fixed right-4 bottom-4 left-4 z-50 mx-auto flex max-w-lg flex-col items-center justify-between gap-2 rounded-xl p-4 shadow-lg md:w-full md:flex-row">
+    <Card className="fixed right-4 bottom-20 left-4 z-50 mx-auto flex max-w-lg flex-col items-center justify-between gap-2 rounded-xl p-4 shadow-lg md:w-full md:flex-row">
       <div className="flex w-full flex-1 flex-col text-center md:text-left">
         <span className="text-primary text-sm font-medium">
           Install Megha Sales Corporation as an app.

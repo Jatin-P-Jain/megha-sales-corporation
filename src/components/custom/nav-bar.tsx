@@ -71,12 +71,12 @@ export default function NavBar({ children }: NavBarProps) {
           </div>
         </nav>
 
-        <div className="pt-18">{children}</div>
+        <div className="py-18">{children}</div>
         {isMobile && (
-          <div className="fixed bottom-0 z-50 w-full">
+          <div className="fixed bottom-4 z-50 mx-auto w-full px-4">
             <SearchProducts
               variant="default"
-              buttonClassName="rounded-none h-12 w-full"
+              buttonClassName="rounded-md h-12 w-full"
             />
           </div>
         )}
