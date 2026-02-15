@@ -1,5 +1,5 @@
 "use client";
-import React, { ReactNode } from "react";
+import React, { ReactNode, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Toaster } from "sonner";
@@ -21,9 +21,11 @@ export default function NavBar({ children }: NavBarProps) {
   const isMobile = useIsMobile();
   return (
     <AuthProvider>
-      <GoogleOneTapWrapper />
+      <Suspense fallback={null}>
+        <GoogleOneTapWrapper />
+      </Suspense>
       <CartProvider>
-        <nav className="fixed top-0 right-0 left-0 z-50 flex flex-wrap justify-between items-center bg-cyan-950 p-3 px-4 text-white shadow-md md:px-6 lg:px-10">
+        <nav className="fixed top-0 right-0 left-0 z-50 flex flex-wrap items-center justify-between bg-cyan-950 p-3 px-4 text-white shadow-md md:px-6 lg:px-10">
           {/* Left: logo + name, then Contact Us right beside it */}
           <div className="flex flex-wrap items-center gap-3 md:gap-6">
             <Link
@@ -61,16 +63,23 @@ export default function NavBar({ children }: NavBarProps) {
 
           {/* Right: Search then Account/Auth */}
           <div className="flex items-center gap-3">
-            {!isMobile && <SearchProducts buttonClassName="text-primary font-medium md:!px-20" />}
-            <div className="h-8 bg-accent w-px"/>
+            {!isMobile && (
+              <SearchProducts buttonClassName="text-primary font-medium md:!px-20" />
+            )}
+            <div className="bg-accent h-8 w-px" />
             <AuthButtons />
           </div>
         </nav>
 
         <div className="pt-18">{children}</div>
-        {isMobile && <div className="fixed bottom-0 w-full z-50">
-          <SearchProducts variant="default" buttonClassName="rounded-none h-12 w-full"/>
-        </div>}
+        {isMobile && (
+          <div className="fixed bottom-0 z-50 w-full">
+            <SearchProducts
+              variant="default"
+              buttonClassName="rounded-none h-12 w-full"
+            />
+          </div>
+        )}
       </CartProvider>
 
       <Toaster
