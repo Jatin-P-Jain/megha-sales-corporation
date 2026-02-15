@@ -4,16 +4,36 @@ import GoogleOneTap from "@/components/custom/google-one-tap";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/context/useAuth";
 import { Loader2Icon } from "lucide-react";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
 export default function GoogleOneTapWrapper() {
-  const { currentUser, loading } = useAuth();
+  const auth = useAuth();
   const [signingIn, setSigningIn] = useState(false);
+  const [loginSuccess, setLoginSuccess] = useState(false);
+  const searchParams = useSearchParams();
 
-  // Show nothing while auth is loading
-  if (loading) return null;
-  // Don't show One Tap if user is already logged in
-  if (currentUser) return null;
+  const redirect = searchParams.get("redirect") || undefined;
+
+  const nextPath = useMemo(() => {
+    if (!auth.clientUser) return null;
+    const profileComplete = auth.clientUser.profileComplete;
+    if (!profileComplete) return "/account/profile";
+    return redirect ?? "/";
+  }, [auth.clientUser, redirect]);
+
+  // ✅ Wait for clientUser to be loaded after login before redirecting
+  useEffect(() => {
+    if (!loginSuccess) return;
+    if (auth.clientUserLoading) return;
+    if (!nextPath) return;
+
+    // IMPORTANT: do a full navigation so middleware sees the new cookies immediately
+    window.location.assign(nextPath);
+
+    // Reset the flag (won't usually run because of navigation, but safe)
+    setLoginSuccess(false);
+  }, [loginSuccess, auth.clientUserLoading, nextPath]);
 
   if (signingIn)
     return (
@@ -34,5 +54,10 @@ export default function GoogleOneTapWrapper() {
       </Dialog>
     );
 
-  return <GoogleOneTap setSigningIn={setSigningIn} />;
+  return (
+    <GoogleOneTap
+      setSigningIn={setSigningIn}
+      setLoginSuccess={setLoginSuccess}
+    />
+  );
 }
