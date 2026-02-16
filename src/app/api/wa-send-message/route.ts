@@ -22,9 +22,10 @@ type SerializedError = {
 };
 
 type TemplateKey =
-  | "account_approval_request"
-  | "admin_order_recieved_v1"
-  | "customer_inquiry_recieved";
+  | "account_approval_request_to_admin"
+  | "account_approval_reminder_to_admin"
+  | "order_placed_to_admin"
+  | "enquiry_received_to_admin";
 
 const isRecord = (v: unknown): v is Record<string, unknown> =>
   typeof v === "object" && v !== null && !Array.isArray(v);
@@ -32,9 +33,10 @@ const isRecord = (v: unknown): v is Record<string, unknown> =>
 const isString = (v: unknown): v is string => typeof v === "string";
 
 const isTemplateKey = (v: unknown): v is TemplateKey =>
-  v === "account_approval_request" ||
-  v === "admin_order_recieved_v1" ||
-  v === "customer_inquiry_recieved";
+  v === "account_approval_request_to_admin" ||
+  v === "account_approval_reminder_to_admin" ||
+  v === "order_placed_to_admin" ||
+  v === "enquiry_received_to_admin";
 
 function requireEnv(name: string): string {
   const value = process.env[name];

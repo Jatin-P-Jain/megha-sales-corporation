@@ -48,6 +48,7 @@ import { setToken } from "@/context/actions";
 import { GstDetails } from "@/components/custom/gst-details";
 import { GstDetailsData } from "@/data/businessProfile";
 import { useRouter } from "next/navigation";
+import { formatBusinessProfile } from "@/lib/business-profile-formatter";
 
 export default function ProfileForm({
   defaultValues,
@@ -251,7 +252,24 @@ export default function ProfileForm({
       }
 
       await auth.refreshClientUser();
-
+      const waSendResp = await fetch("/api/wa-send-message", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          templateKey: "account_approval_request_to_admin",
+          customerUserId: auth.clientUser?.uid,
+          customerName: auth.clientUser?.displayName || "User",
+          customerPhone: auth.clientUser?.phone || "Not provided",
+          customerEmail: auth.clientUser?.email || "Not provided",
+          customerBusinessProfile: formatBusinessProfile(auth.clientUser),
+        }),
+      });
+      if (waSendResp.ok) {
+        toast.success("Approval Request Sent", {
+          description:
+            "Your profile has been updated and an approval request has been sent to the admin. You will be notified once your account is approved.",
+        });
+      }
       router.push("/");
       toast.success("Success!", {
         description: "Your profile has been saved successfully!",
