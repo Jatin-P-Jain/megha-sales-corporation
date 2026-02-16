@@ -37,14 +37,16 @@ export const ADMIN_RECIPIENTS: AdminRecipient[] = [
 
 // Which templates go to which roles
 export const TEMPLATE_ROLES: Record<
-  | "account_approval_request"
-  | "admin_order_recieved_v1"
-  | "customer_inquiry_recieved",
+  | "account_approval_request_to_admin"
+  | "account_approval_reminder_to_admin"
+  | "order_placed_to_admin"
+  | "enquiry_received_to_admin",
   AdminRole[]
 > = {
-  account_approval_request: ["owner", "support"],
-  admin_order_recieved_v1: ["owner", "support"],
-  customer_inquiry_recieved: ["owner", "support"],
+  account_approval_request_to_admin: ["owner", "support"],
+  account_approval_reminder_to_admin: ["owner", "support"],
+  order_placed_to_admin: ["owner", "support"],
+  enquiry_received_to_admin: ["owner", "support"],
 };
 
 export function recipientsForTemplate(

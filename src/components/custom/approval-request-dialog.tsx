@@ -34,7 +34,7 @@ export default function ApprovalRequestDialog({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          templateKey: "account_approval_request",
+          templateKey: "account_approval_reminder_to_admin",
           customerUserId: auth.clientUser?.uid,
           customerName: auth.clientUser?.displayName || "User",
           customerPhone: auth.clientUser?.phone || "Not provided",
@@ -91,7 +91,7 @@ export default function ApprovalRequestDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-sm flex flex-col gap-3">
+        <div className="flex flex-col gap-3 rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-sm">
           <h4 className="text-sm font-semibold text-yellow-800">
             What&apos;s temporarily unavailable (until approval)
           </h4>
@@ -102,7 +102,7 @@ export default function ApprovalRequestDialog({
             <li>• Placing orders (checkout)</li>
           </ul>
 
-          <p className="text-xs italic text-yellow-700">
+          <p className="text-xs text-yellow-700 italic">
             Requesting approval via WhatsApp helps our team verify your details
             faster, so you can start ordering sooner.
           </p>

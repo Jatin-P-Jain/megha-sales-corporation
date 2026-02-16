@@ -1,5 +1,12 @@
 "use client";
-import { createContext, useContext, useEffect, useState, useRef, useCallback } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useRef,
+  useCallback,
+} from "react";
 import {
   loginWithEmailAndPass,
   loginWithGoogle,
@@ -159,7 +166,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               if (currentStatus === "approved") {
                 toast.success("Account Approved! 🎉", {
                   description:
-                    "Your account has been approved. You can now see all product discounts!",
+                    "Your account has been approved. All features are now available to you.",
                   duration: 5000,
                 });
               } else if (currentStatus === "rejected") {
@@ -169,10 +176,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     "Please contact support for more information.",
                   duration: 5000,
                 });
-              } else if (currentStatus === "pending") {
-                toast.info("Account Status Updated", {
-                  description:
-                    "Your account status has been changed to pending.",
+              } else if (currentStatus === "suspended") {
+                toast.error("Account Suspended", {
+                  description: "Please contact support for more information.",
+                  duration: 5000,
+                });
+              } else if (currentStatus === "deactivated") {
+                toast.error("Account Deactivated", {
+                  description: "Please contact support for more information.",
                   duration: 5000,
                 });
               }

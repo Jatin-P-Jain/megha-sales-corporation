@@ -83,11 +83,14 @@ export default function NavBar({ children }: NavBarProps) {
       </CartProvider>
 
       <Toaster
+        expand
+        visibleToasts={6}
         richColors
         closeButton
         position="top-right"
         offset={{ top: 100 }}
         style={{ top: 70 }}
+        duration={Infinity}
       />
     </AuthProvider>
   );

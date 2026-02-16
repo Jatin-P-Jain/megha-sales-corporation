@@ -10,7 +10,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CopyIcon } from "lucide-react";
+import { CopyIcon, Loader2 } from "lucide-react";
 import { BANK_DETAILS, UPI_QR_CODE } from "@/data/bank-details";
 
 type BankDetails = {
@@ -30,6 +30,7 @@ export default function BankDetails({
 }) {
   const bankDetails: BankDetails = BANK_DETAILS;
   const upiQr = UPI_QR_CODE;
+  const [qrLoaded, setQRLoaded] = React.useState(false);
   const copy = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -49,11 +50,9 @@ export default function BankDetails({
     copyable?: boolean;
   }) => (
     <div className="flex items-center justify-between gap-4 rounded-md border p-3">
-      <div className="text-sm text-muted-foreground">{label}</div>
+      <div className="text-muted-foreground text-sm">{label}</div>
       <div className="flex items-center gap-2 text-right">
-        <div className="text-sm font-semibold break-all">
-          {value}
-        </div>
+        <div className="text-sm font-semibold break-all">{value}</div>
         {copyable ? (
           <Button
             type="button"
@@ -93,8 +92,11 @@ export default function BankDetails({
         </div>
 
         {upiQr ? (
-          <div className="flex flex-col items-center justify-start gap-2 rounded-lg border bg-muted p-4 cursor-pointer">
+          <div className="bg-muted flex cursor-pointer flex-col items-center justify-start gap-2 rounded-lg border p-4">
             <div className="text-sm font-semibold">UPI QR</div>
+            {qrLoaded ? null : (
+              <Loader2 className="text-muted-foreground animate-spin" />
+            )}
             <Image
               src={upiQr.src}
               alt={upiQr.alt ?? "UPI QR code"}
@@ -102,8 +104,9 @@ export default function BankDetails({
               height={220}
               className="rounded-md bg-white p-2"
               priority={false}
+              onLoad={() => setQRLoaded(true)}
             />
-            <div className="text-center text-xs text-muted-foreground">
+            <div className="text-muted-foreground text-center text-xs">
               Scan with any UPI app to pay.
             </div>
           </div>
