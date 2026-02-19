@@ -64,16 +64,18 @@ export default function NavBar({ children }: NavBarProps) {
           {/* Right: Search then Account/Auth */}
           <div className="flex items-center gap-3">
             {!isMobile && (
-              <SearchProducts buttonClassName="text-primary font-medium md:!px-20" />
+              <>
+                <SearchProducts buttonClassName="text-primary font-medium md:!px-20" />
+                <div className="bg-accent h-8 w-px" />
+              </>
             )}
-            <div className="bg-accent h-8 w-px" />
             <AuthButtons />
           </div>
         </nav>
 
         <div className="py-18">{children}</div>
         {isMobile && (
-          <div className="fixed bottom-4 z-50 mx-auto w-full px-4">
+          <div className="fixed bottom-5 z-50 mx-auto w-full px-4">
             <SearchProducts
               variant="default"
               buttonClassName="rounded-md h-12 w-full"
