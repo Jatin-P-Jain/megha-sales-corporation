@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SearchIcon, RotateCcwIcon, Loader } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -62,6 +62,7 @@ export default function SearchProducts({
   const [loading, setLoading] = useState(false);
   const auth = useAuth();
   const isAdmin = auth?.clientUser?.userType === "admin" || false;
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
@@ -72,7 +73,12 @@ export default function SearchProducts({
     setLoading(false);
   };
 
-  const handleSearch = async () => {
+  const handleSearch = async (reset = false) => {
+    if (reset) {
+      resetState();
+      return;
+    }
+    inputRef.current?.blur();
     if (!searchQuery.trim()) return;
 
     setLoading(true);
@@ -103,13 +109,16 @@ export default function SearchProducts({
 
   const Body = (
     <div className="grid gap-2">
-      <Input
-        placeholder="Enter Part Number or Name to search..."
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-      />
-
+      <div className="p-1 px-4">
+        <Input
+          placeholder="Enter Part Number or Name to search..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+          autoFocus
+          ref={inputRef}
+        />
+      </div>
       {loading && (
         <div className="flex flex-col items-center justify-center gap-2">
           <Loader className="text-primary mx-auto h-4 w-4 animate-spin" />
@@ -120,13 +129,19 @@ export default function SearchProducts({
       {result && (
         <>
           <div className="text-center text-xs text-green-700 md:text-sm">
-            ✅ Found <strong>{result.length} product(s)</strong> for your search:{" "}
-            <strong>{searchedPhrase}</strong>
+            ✅ Found <strong>{result.length} product(s)</strong> for your
+            search: <strong>{searchedPhrase}</strong>
           </div>
-          <div className="flex flex-col gap-3 overflow-auto p-1 max-h-110 md:max-h-130">
+          <div className="z-100 flex  flex-col gap-3 overflow-auto p-1 md:max-h-130 px-4">
             {result.map((product) => (
               <div className="flex-1" key={product.id}>
-                <ProductCard product={product} isAdmin={isAdmin} />
+                <ProductCard
+                  product={product}
+                  isAdmin={isAdmin}
+                  onClose={() => {
+                    setOpen(false);
+                  }}
+                />
               </div>
             ))}
           </div>
@@ -142,15 +157,19 @@ export default function SearchProducts({
   );
 
   const FooterAction = (
-    <Button onClick={handleSearch} disabled={loading}>
+    <Button
+      onClick={() => handleSearch(result ? true : false)}
+      disabled={loading}
+      className="mb-1"
+    >
       {result ? (
         <>
-          <RotateCcwIcon className="mr-1 h-4 w-4" />
+          <RotateCcwIcon className="h-4 w-4" />
           Search Another Product
         </>
       ) : (
         <>
-          <SearchIcon className="mr-1 h-4 w-4" />
+          <SearchIcon className="h-4 w-4" />
           Search Product
         </>
       )}
@@ -168,7 +187,7 @@ export default function SearchProducts({
       >
         <DialogTrigger asChild>{TriggerButton}</DialogTrigger>
 
-        <DialogContent className="h-fit max-h-[90vh] w-[calc(100vw-2rem)] px-6 shadow-2xl sm:max-w-3xl md:max-w-2xl lg:max-w-4xl overflow-auto">
+        <DialogContent className="h-fit max-h-[90vh] w-[calc(100vw-2rem)] overflow-auto px-6 shadow-2xl sm:max-w-3xl md:max-w-2xl lg:max-w-4xl">
           <DialogHeader>
             <DialogTitle className="mt-2">Search product</DialogTitle>
             <DialogDescription className="text-xs md:text-sm">
@@ -193,10 +212,11 @@ export default function SearchProducts({
         setOpen(value);
         if (!value) resetState();
       }}
+      repositionInputs={false}
     >
       <DrawerTrigger asChild>{TriggerButton}</DrawerTrigger>
 
-      <DrawerContent className="p-3 shadow-2xl">
+      <DrawerContent className="mx-auto h-full w-full max-w-lg">
         <DrawerHeader className="px-0">
           <DrawerTitle>Search product</DrawerTitle>
           <DrawerDescription className="text-xs">
@@ -205,9 +225,8 @@ export default function SearchProducts({
           </DrawerDescription>
         </DrawerHeader>
 
-        <div className="h-full">{Body}</div>
-
-        <DrawerFooter className="px-0">{FooterAction}</DrawerFooter>
+        <div className="h-full overflow-y-auto">{Body}</div>
+        <DrawerFooter className="p-1 pb-4">{FooterAction}</DrawerFooter>
       </DrawerContent>
     </Drawer>
   );

@@ -82,6 +82,8 @@ export default function CartControls({
   const isLoading = !hasMounted || loading || !ready;
 
   const handleAdd = async () => {
+    console.log("clicked");
+
     if (!currentUser) {
       router.push("/login");
       return;

@@ -21,6 +21,7 @@ type ProductCardProps = {
   isAdmin?: boolean;
   isAccountApproved?: boolean;
   isUser?: boolean;
+  onClose?: () => void;
 };
 
 export default function ProductCard({
@@ -28,6 +29,7 @@ export default function ProductCard({
   isAdmin = false,
   isAccountApproved = false,
   isUser = false,
+  onClose,
 }: ProductCardProps) {
   const { cart, loading } = useCart();
   const auth = useAuth();
@@ -84,6 +86,7 @@ export default function ProductCard({
 
   // Handle discount view click
   const handleDiscountClick = () => {
+    onClose?.();
     if (!clientUser) {
       router.push("/login");
     }
@@ -94,7 +97,7 @@ export default function ProductCard({
       key={product?.id}
       className="relative gap-1 overflow-hidden p-3 shadow-md md:gap-2"
     >
-      <CardContent className="flex flex-col gap-4 text-sm md:grid md:grid-cols-[3fr_1fr] md:text-base p-0">
+      <CardContent className="flex flex-col gap-4 p-0 text-sm md:grid md:grid-cols-[3fr_1fr] md:text-base">
         <div className="flex w-full flex-col md:gap-2">
           <div className="text-primary flex w-full items-center justify-between font-semibold">
             <span className="text-sm font-normal">Brand :</span>
@@ -165,15 +168,15 @@ export default function ProductCard({
           </div>
         )}
       </CardContent>
-      <CardFooter className="flex flex-col md:grid md:grid-cols-[3fr_1fr] items-end justify-center gap-4 p-0">
-        <div className="bg-primary/10 flex items-center justify-between gap-2 rounded-sm p-1 px-2 text-xs w-full md:flex-row md:items-center md:justify-between md:px-8 md:text-base">
+      <CardFooter className="flex flex-col items-end justify-center gap-4 p-0 md:grid md:grid-cols-[3fr_1fr]">
+        <div className="bg-primary/10 flex w-full items-center justify-between gap-2 rounded-sm p-1 px-2 text-xs md:flex-row md:items-center md:justify-between md:px-8 md:text-base">
           <TagIcon className="text-primary size-4" />
           <div className="flex w-full flex-col items-center justify-between md:flex-row">
             <div className="text-primary flex w-full items-center justify-between gap-2 font-semibold md:w-fit">
               <span className="text-foreground font-normal">Price :</span>
               {product?.hasSizes &&
-                !product.samePriceForAllSizes &&
-                !selectedSize ? (
+              !product.samePriceForAllSizes &&
+              !selectedSize ? (
                 <span className="text-muted-foreground text-[8px] font-normal italic md:text-xs">
                   Select a size
                 </span>
@@ -186,8 +189,8 @@ export default function ProductCard({
             <div className="text-primary flex w-full items-center justify-between gap-2 font-semibold md:w-fit md:text-sm">
               <span className="text-foreground font-normal">Discount :</span>
               {product?.hasSizes &&
-                !product.samePriceForAllSizes &&
-                !selectedSize ? (
+              !product.samePriceForAllSizes &&
+              !selectedSize ? (
                 <span className="text-muted-foreground text-[8px] font-normal italic md:text-xs">
                   Select a size
                 </span>
@@ -221,8 +224,8 @@ export default function ProductCard({
             <div className="text-primary flex w-full items-center justify-between gap-2 font-semibold md:w-fit md:text-sm">
               <span className="text-foreground font-normal">GST :</span>
               {product?.hasSizes &&
-                !product.samePriceForAllSizes &&
-                !selectedSize ? (
+              !product.samePriceForAllSizes &&
+              !selectedSize ? (
                 <span className="text-muted-foreground text-[8px] font-normal italic md:text-xs">
                   Select a size
                 </span>
@@ -245,16 +248,17 @@ export default function ProductCard({
           {isAdmin ? (
             <div className="flex w-full flex-col">
               <div
-                className={`${product.status === "draft"
-                  ? "border-amber-100 bg-amber-100 text-yellow-600"
-                  : product.status === "for-sale"
-                    ? "border-green-100 bg-green-100 text-green-700"
-                    : product.status === "out-of-stock"
-                      ? "border-zinc-100 bg-zinc-100 text-zinc-800"
-                      : product.status === "discontinued"
-                        ? "border-red-100 bg-red-100 text-red-600"
-                        : ""
-                  } py-1font-semibold flex w-full items-center justify-center gap-1 rounded-t-lg border-1 px-1 pt-1 text-xs font-semibold`}
+                className={`${
+                  product.status === "draft"
+                    ? "border-amber-100 bg-amber-100 text-yellow-600"
+                    : product.status === "for-sale"
+                      ? "border-green-100 bg-green-100 text-green-700"
+                      : product.status === "out-of-stock"
+                        ? "border-zinc-100 bg-zinc-100 text-zinc-800"
+                        : product.status === "discontinued"
+                          ? "border-red-100 bg-red-100 text-red-600"
+                          : ""
+                } py-1font-semibold flex w-full items-center justify-center gap-1 rounded-t-lg border-1 px-1 pt-1 text-xs font-semibold`}
               >
                 <span className="text-muted-foreground text-xs font-normal">
                   Status :{" "}
@@ -272,16 +276,17 @@ export default function ProductCard({
               <Button
                 variant={"outline"}
                 asChild
-                className={`${product.status === "draft"
-                  ? "border-amber-100"
-                  : product.status === "for-sale"
-                    ? "border-green-100"
-                    : product.status === "out-of-stock"
-                      ? "border-zinc-100"
-                      : product.status === "discontinued"
-                        ? "border-red-100"
-                        : ""
-                  } rounded-t-none`}
+                className={`${
+                  product.status === "draft"
+                    ? "border-amber-100"
+                    : product.status === "for-sale"
+                      ? "border-green-100"
+                      : product.status === "out-of-stock"
+                        ? "border-zinc-100"
+                        : product.status === "discontinued"
+                          ? "border-red-100"
+                          : ""
+                } rounded-t-none`}
               >
                 <Link
                   href={`/admin-dashboard/edit-product/${product?.brandId}/${product?.id}`}
@@ -291,15 +296,15 @@ export default function ProductCard({
                 </Link>
               </Button>
             </div>
-          ) : (
-            <div className="flex flex-col w-full items-center justify-end">
-              {isUser && !isAccountApproved && <div
-                className="bg-yellow-50 px-2"
-              >
-                <span className="text-yellow-700 text-xs">
-                  Account Approval Pending
-                </span>
-              </div>}
+          ) : isUser ? (
+            <div className="flex w-full flex-col items-center justify-end">
+              {isUser && !isAccountApproved && (
+                <div className="bg-yellow-50 px-2">
+                  <span className="text-xs text-yellow-700">
+                    Account Approval Pending
+                  </span>
+                </div>
+              )}
               <CartControls
                 isDisabled={!isAccountApproved && isUser}
                 productId={product?.id}
@@ -311,6 +316,20 @@ export default function ProductCard({
                   gst: selectedSize?.gst ?? product?.gst,
                 }}
               />
+            </div>
+          ) : (
+            <div className="flex w-full items-center justify-center gap-1 rounded-md border border-yellow-600 bg-yellow-50 p-1 px-2 text-center text-xs text-yellow-600 md:w-fit">
+              Please{" "}
+              <span
+                className="cursor-pointer font-semibold underline"
+                onClick={() => {
+                  onClose?.();
+                  router.push("/login");
+                }}
+              >
+                Login
+              </span>{" "}
+              to add products to your cart.
             </div>
           )}
         </div>
