@@ -35,13 +35,13 @@ export async function GET() {
           // Prevent caching to ensure fresh data
           "Cache-Control": "no-store, must-revalidate",
         },
-      },
+      }
     );
   } catch (error) {
     console.error("❌ Check profile error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

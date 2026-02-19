@@ -181,7 +181,7 @@ export default function UsersList() {
         Page {currentPage} • Showing {start}–{end} of {totalItems} results
       </p>
       {data.length > 0 && (
-        <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col justify-between gap-4 py-2">
+        <div className="flex h-full w-full flex-1 flex-col justify-between gap-4 py-2">
           <div className="flex w-full flex-1 flex-grow flex-col gap-5">
             {data.map((user: UserData, index: number) => (
               <UserCard
@@ -192,78 +192,82 @@ export default function UsersList() {
             ))}
           </div>
 
-          <Pagination className="z-50">
-            <PaginationContent className="w-full items-center justify-center">
-              {currentPage > 1 && (
-                <PaginationItem>
-                  <PaginationPrevious
-                    onClick={() => handlePageChange(currentPage - 1)}
-                  />
-                </PaginationItem>
-              )}
+          {totalPages > 1 && (
+            <Pagination className="z-50">
+              <PaginationContent className="w-full items-center justify-center">
+                {currentPage > 1 && (
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={() => handlePageChange(currentPage - 1)}
+                    />
+                  </PaginationItem>
+                )}
 
-              {(() => {
-                const pageLinks = [];
-                const visiblePages = new Set<number>();
+                {(() => {
+                  const pageLinks = [];
+                  const visiblePages = new Set<number>();
 
-                if (totalPages <= 7) {
-                  for (let i = 1; i <= totalPages; i++) {
-                    visiblePages.add(i);
-                  }
-                } else {
-                  visiblePages.add(1);
-                  visiblePages.add(totalPages);
-
-                  for (let i = currentPage - 2; i <= currentPage + 2; i++) {
-                    if (i > 1 && i < totalPages) {
+                  if (totalPages <= 7) {
+                    for (let i = 1; i <= totalPages; i++) {
                       visiblePages.add(i);
                     }
+                  } else {
+                    visiblePages.add(1);
+                    visiblePages.add(totalPages);
+
+                    for (let i = currentPage - 2; i <= currentPage + 2; i++) {
+                      if (i > 1 && i < totalPages) {
+                        visiblePages.add(i);
+                      }
+                    }
                   }
-                }
 
-                let prev: number | null = null;
-                for (let i = 1; i <= totalPages; i++) {
-                  if (!visiblePages.has(i)) continue;
+                  let prev: number | null = null;
+                  for (let i = 1; i <= totalPages; i++) {
+                    if (!visiblePages.has(i)) continue;
 
-                  if (prev !== null && i - prev > 1) {
+                    if (prev !== null && i - prev > 1) {
+                      pageLinks.push(
+                        <PaginationItem key={`ellipsis-${i}`}>
+                          <span className="text-muted-foreground px-2">
+                            ...
+                          </span>
+                        </PaginationItem>,
+                      );
+                    }
+
+                    const isCurrent = i === currentPage;
                     pageLinks.push(
-                      <PaginationItem key={`ellipsis-${i}`}>
-                        <span className="text-muted-foreground px-2">...</span>
+                      <PaginationItem key={i}>
+                        <PaginationLink
+                          onClick={() => handlePageChange(i)}
+                          isActive={isCurrent}
+                          className={clsx(
+                            isCurrent && "bg-primary font-bold text-white",
+                            "cursor-pointer",
+                          )}
+                        >
+                          {i}
+                        </PaginationLink>
                       </PaginationItem>,
                     );
+
+                    prev = i;
                   }
 
-                  const isCurrent = i === currentPage;
-                  pageLinks.push(
-                    <PaginationItem key={i}>
-                      <PaginationLink
-                        onClick={() => handlePageChange(i)}
-                        isActive={isCurrent}
-                        className={clsx(
-                          isCurrent && "bg-primary font-bold text-white",
-                          "cursor-pointer",
-                        )}
-                      >
-                        {i}
-                      </PaginationLink>
-                    </PaginationItem>,
-                  );
+                  return pageLinks;
+                })()}
 
-                  prev = i;
-                }
-
-                return pageLinks;
-              })()}
-
-              {hasMore && currentPage < totalPages && (
-                <PaginationItem>
-                  <PaginationNext
-                    onClick={() => handlePageChange(currentPage + 1)}
-                  />
-                </PaginationItem>
-              )}
-            </PaginationContent>
-          </Pagination>
+                {hasMore && currentPage < totalPages && (
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() => handlePageChange(currentPage + 1)}
+                    />
+                  </PaginationItem>
+                )}
+              </PaginationContent>
+            </Pagination>
+          )}
         </div>
       )}
     </div>

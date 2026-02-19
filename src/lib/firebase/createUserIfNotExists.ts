@@ -15,6 +15,7 @@ export const createUserIfNotExists = async (user: UserData) => {
       ...user,
       profileComplete: false,
       createdAt: new Date(),
+      updatedAt: new Date(),
     };
 
     await userRef.set(newUserData);

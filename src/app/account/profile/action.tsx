@@ -42,8 +42,6 @@ export const updateUserProfile = async (
       .doc(uid)
       .update({ ...userData, updatedAt: new Date() });
 
-    // ✅ REMOVED: Do NOT call getIdToken(true) here
-
     return { success: true };
   } catch (error) {
     console.error("Update profile error:", error);
