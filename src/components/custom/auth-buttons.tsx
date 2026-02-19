@@ -32,24 +32,27 @@ import {
   ShieldOff,
   UserX,
   Clock,
+  AlertCircle,
 } from "lucide-react";
 import { usePwaPrompt } from "@/hooks/usePwaPrompt";
 import { useState } from "react";
 import HelpDialog from "./help-dialog";
+import clsx from "clsx";
 
 type AccountStatusUI =
   | "pending"
   | "approved"
   | "rejected"
   | "suspended"
-  | "deactivated";
+  | "deactivated"
+  | "incomplete";
 
 function toTitleCase(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 function getStatusMeta(status?: string) {
-  const s = (status ?? "pending") as AccountStatusUI;
+  const s = (status ?? "unknown") as AccountStatusUI;
 
   switch (s) {
     case "approved":
@@ -85,11 +88,26 @@ function getStatusMeta(status?: string) {
         subtle: "text-zinc-700",
       };
     case "pending":
-    default:
       return {
         key: "pending" as const,
         label: "Pending approval",
         Icon: Clock,
+        className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
+        subtle: "text-yellow-700",
+      };
+    case "incomplete":
+      return {
+        key: "incomplete" as const,
+        label: "Incomplete Profile",
+        Icon: TriangleAlert,
+        className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
+        subtle: "text-yellow-700",
+      };
+    default:
+      return {
+        key: "unknown" as const,
+        label: "Unknown status",
+        Icon: AlertCircle,
         className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
         subtle: "text-yellow-700",
       };
@@ -124,6 +142,7 @@ export default function AuthButtons() {
 
   const isAdmin = clientUser?.userType === "admin";
   const accountStatus = clientUser?.accountStatus;
+  const profileComplete = clientUser?.profileComplete;
 
   // 1) Loading state
   if (currentUser && clientUserLoading) {
@@ -141,7 +160,21 @@ export default function AuthButtons() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild className="">
             <button className="relative flex flex-col items-center">
-              <Avatar className="h-6 w-6 bg-white ring-1 md:h-8 md:w-8">
+              <Avatar
+                className={clsx(
+                  "size-8 bg-white ring-2",
+                  isAdmin && "ring-green-500",
+                  (!isAdmin && accountStatus === "pending") ||
+                    (!profileComplete && "ring-yellow-500"),
+                  !isAdmin && accountStatus === "rejected" && "ring-red-500",
+                  !isAdmin &&
+                    accountStatus === "suspended" &&
+                    "ring-orange-500",
+                  !isAdmin &&
+                    accountStatus === "deactivated" &&
+                    "ring-zinc-500",
+                )}
+              >
                 {clientUser.photoUrl ? (
                   <Image
                     src={clientUser.photoUrl}
@@ -195,7 +228,13 @@ export default function AuthButtons() {
                   </span>
                 )}
 
-                {!isAdmin && <AccountStatusBadge status={accountStatus} />}
+                {!isAdmin ? (
+                  !profileComplete ? (
+                    <AccountStatusBadge status={"incomplete"} />
+                  ) : (
+                    <AccountStatusBadge status={accountStatus} />
+                  )
+                ) : null}
               </div>
 
               {!isAdmin && accountStatus && accountStatus !== "approved" && (

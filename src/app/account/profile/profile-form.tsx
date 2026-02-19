@@ -47,7 +47,7 @@ import { GoogleAuthProvider, linkWithPopup } from "firebase/auth";
 import { setToken } from "@/context/actions";
 import { GstDetails } from "@/components/custom/gst-details";
 import { GstDetailsData } from "@/data/businessProfile";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { formatBusinessProfile } from "@/lib/business-profile-formatter";
 
 export default function ProfileForm({
@@ -57,8 +57,10 @@ export default function ProfileForm({
   defaultValues?: z.infer<typeof userProfileDataSchema>;
   verifiedToken: DecodedIdToken | null;
 }) {
+  const searchParams = useSearchParams();
   const router = useRouter();
   const auth = useAuth();
+
   const user = auth.currentUser;
   const recaptchaVerifier = useRecaptcha({ enabled: true });
   const [isVerified, setIsVerified] = useState(
@@ -250,7 +252,7 @@ export default function ProfileForm({
           verifiedToken,
         );
       }
-
+      auth.currentUser?.getIdToken(true); // Force refresh to get latest claims
       await auth.refreshClientUser();
       const waSendResp = await fetch("/api/wa-send-message", {
         method: "POST",
@@ -270,7 +272,8 @@ export default function ProfileForm({
             "Your profile has been updated and an approval request has been sent to the admin. You will be notified once your account is approved.",
         });
       }
-      router.push("/");
+      const redirect = searchParams.get("redirect") ?? "/";
+      router.push(redirect);
       toast.success("Success!", {
         description: "Your profile has been saved successfully!",
       });

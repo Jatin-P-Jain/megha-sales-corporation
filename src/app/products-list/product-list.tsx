@@ -19,7 +19,6 @@ import { useEffect, useRef, useState } from "react";
 
 export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
   const { clientUser } = useAuth();
-  const isUser = !!clientUser;
   const accountStatus = clientUser?.accountStatus;
 
   const PAGE_SIZE = process.env.NEXT_PUBLIC_PAGE_SIZE
@@ -73,76 +72,76 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
   const filters = [
     ...(brandIds.length > 0
       ? [
-        {
-          field: "brandId",
-          op: "in" as const,
-          value: brandIds,
-        },
-      ]
+          {
+            field: "brandId",
+            op: "in" as const,
+            value: brandIds,
+          },
+        ]
       : []),
     ...(statuses.length > 0
       ? [
-        {
-          field: "status",
-          op: "in" as const,
-          value: statuses,
-        },
-      ]
+          {
+            field: "status",
+            op: "in" as const,
+            value: statuses,
+          },
+        ]
       : []),
     ...(categories.length > 0
       ? [
-        {
-          field: "partCategory",
-          op: "in" as const,
-          value: categories,
-        },
-      ]
+          {
+            field: "partCategory",
+            op: "in" as const,
+            value: categories,
+          },
+        ]
       : []),
     ...(vehicleCompanies.length > 0
       ? [
-        {
-          field: "vehicleCompany",
-          op: "in" as const,
-          value: vehicleCompanies,
-        },
-      ]
+          {
+            field: "vehicleCompany",
+            op: "in" as const,
+            value: vehicleCompanies,
+          },
+        ]
       : []),
     // Add price range filters
     ...(minPrice !== undefined
       ? [
-        {
-          field: "price",
-          op: ">=" as const,
-          value: minPrice,
-        },
-      ]
+          {
+            field: "price",
+            op: ">=" as const,
+            value: minPrice,
+          },
+        ]
       : []),
     ...(maxPrice !== undefined
       ? [
-        {
-          field: "price",
-          op: "<=" as const,
-          value: maxPrice,
-        },
-      ]
+          {
+            field: "price",
+            op: "<=" as const,
+            value: maxPrice,
+          },
+        ]
       : []),
     ...(minDiscount !== undefined
       ? [
-        {
-          field: "discount",
-          op: ">=" as const,
-          value: minDiscount,
-        },
-      ]
+          {
+            field: "discount",
+            op: ">=" as const,
+            value: minDiscount,
+          },
+        ]
       : []),
     ...(maxDiscount !== undefined
       ? [
-        {
-          field: "discount",
-          op: "<=" as const,
-          value: maxDiscount,
-        },
-      ]
+          {
+            field: "discount",
+            op: "<=" as const,
+            value: maxDiscount,
+          },
+        ]
       : []),
   ];
 
@@ -219,7 +218,6 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
                 product={product}
                 isAdmin={isAdmin}
                 isAccountApproved={accountStatus === "approved"}
-                isUser={isUser}
               />
             ))}
           </div>

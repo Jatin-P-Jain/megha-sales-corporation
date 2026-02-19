@@ -93,8 +93,6 @@ export default function CheckoutFooter() {
         status: "created",
       }),
     });
-
-    // toast.success("Order Placed!");
     setIsOrderPlacing(false);
     resetCartContext();
     redirect(`/order-placed/${orderResponse.orderId}`);

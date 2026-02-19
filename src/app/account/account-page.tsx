@@ -12,6 +12,7 @@ import { useState, useEffect, ChangeEvent, ReactNode } from "react";
 import UpdatePasswordForm from "./update-password";
 import Image from "next/image";
 import { useAuth } from "@/context/useAuth";
+import { useRouter, useSearchParams } from "next/navigation";
 import clsx from "clsx";
 import { ref, uploadBytesResumable } from "firebase/storage";
 import { storage } from "@/firebase/client";
@@ -37,10 +38,12 @@ import {
   BadgeX,
   KeyRound,
   Hash,
+  ArrowRight,
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import DefaultUserIcon from "@/assets/icons/user.png";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -63,6 +66,8 @@ export default function AccountPage({
   useEffect(() => setHasHydrated(true), []);
 
   const { clientUser, clientUserLoading, setClientUser } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const isAdmin = clientUser?.userType === "admin";
   const accountStatus: AccountStatusUI = (clientUser?.accountStatus ??
@@ -77,6 +82,16 @@ export default function AccountPage({
   useEffect(() => {
     if (clientUser?.photoUrl) setPhoto(clientUser.photoUrl);
   }, [clientUser]);
+
+  const profileComplete = !!clientUser?.profileComplete;
+
+  // 🔑 Button handler to go to profile page
+  const goToProfile = () => {
+    const redirect = searchParams.get("redirect") ?? "/account";
+    const profileUrl = new URL("/account/profile", window.location.origin);
+    profileUrl.searchParams.set("redirect", redirect);
+    router.push(profileUrl.toString());
+  };
 
   const copyToClipboard = async (text: string, label: string) => {
     try {
@@ -184,7 +199,7 @@ export default function AccountPage({
   };
 
   const getAccountStatusInfo = (status: AccountStatusUI) => {
-    const reason = clientUser?.rejectionReason?.trim(); // reusing your existing field for “reason/note” messaging
+    const reason = clientUser?.rejectionReason?.trim(); // reusing your existing field for "reason/note" messaging
 
     switch (status) {
       case "approved":
@@ -420,7 +435,7 @@ export default function AccountPage({
         meta[id] ?? {
           label: providerId || "Unknown provider",
           Icon: User,
-          hint: "Your sign-in method couldn’t be determined.",
+          hint: "Your sign-in method couldn't be determined.",
           tone: "text-zinc-700",
         }
       );
@@ -575,8 +590,6 @@ export default function AccountPage({
 
   if (!hasHydrated || clientUserLoading || !clientUser) return null;
 
-  const profileComplete = !!clientUser.profileComplete;
-
   return (
     <div>
       <Card className="mx-auto w-full max-w-screen-md">
@@ -585,7 +598,7 @@ export default function AccountPage({
             My Account
           </CardTitle>
 
-          {!isAdmin && (
+          {!isAdmin && clientUser.profileComplete && (
             <div className="space-y-2">
               <Alert
                 className={clsx(
@@ -685,9 +698,27 @@ export default function AccountPage({
             <div className="bg-muted text-muted-foreground flex flex-col items-center justify-center rounded-md p-2 text-sm">
               You have user access under role:
               <span className="text-primary text-lg font-semibold first-letter:uppercase">
-                {clientUser.userType}
+                {clientUser.userType || "GUEST"}
               </span>
             </div>
+          )}
+
+          {/* Profile incomplete button */}
+          {!profileComplete && !isAdmin && (
+            <Alert className="flex items-center justify-center border-yellow-200 bg-yellow-50">
+              <AlertDescription className="flex flex-col items-start gap-2 text-sm text-yellow-800">
+                <div>Your profile is incomplete.</div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={goToProfile}
+                  className="gap-2 border-yellow-300 bg-yellow-50 hover:bg-yellow-100"
+                >
+                  Complete profile now
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </AlertDescription>
+            </Alert>
           )}
 
           {/* Details */}
@@ -758,13 +789,17 @@ export default function AccountPage({
                 }
               />
 
-              {!isAdmin && (
-                <DetailRow
-                  label="Account status"
-                  icon={Clock}
-                  valueNode={<StatusBadge status={accountStatus} />}
-                />
-              )}
+              {!isAdmin ? (
+                !profileComplete ? (
+                  <DetailRow label="Account status" icon={Clock} value={"-"} />
+                ) : (
+                  <DetailRow
+                    label="Account status"
+                    icon={Clock}
+                    valueNode={<StatusBadge status={accountStatus} />}
+                  />
+                )
+              ) : null}
             </ul>
           </div>
 

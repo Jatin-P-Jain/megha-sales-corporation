@@ -92,7 +92,6 @@ export default function NavBar({ children }: NavBarProps) {
         position="top-right"
         offset={{ top: 100 }}
         style={{ top: 70 }}
-        duration={Infinity}
       />
     </AuthProvider>
   );

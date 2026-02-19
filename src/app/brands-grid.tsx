@@ -74,7 +74,7 @@ export default function BrandsGrid({ brandsPromise }: Props) {
   // 3) Otherwise, render the real grid
   return (
     <div className="mt-4 flex w-full flex-col gap-2">
-      <div className="text-muted-foreground flex w-full items-center justify-between text-sm md:text-base">
+      <div className="text-muted-foreground flex w-full items-center justify-between text-xs md:text-base">
         <div>Browse products by brands</div>
         <Button variant={"link"} asChild className="p-0">
           <Link href={"/products-list"}>Show all products</Link>

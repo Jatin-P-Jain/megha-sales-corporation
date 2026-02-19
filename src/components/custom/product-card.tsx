@@ -3,7 +3,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { EyeIcon, PencilIcon, TagIcon } from "lucide-react";
+import { ChevronsRight, EyeIcon, PencilIcon, TagIcon } from "lucide-react";
 import { formatINR } from "@/lib/utils";
 import { Product, ProductSize } from "@/types/product";
 import ProductImage from "./product-image";
@@ -12,7 +12,7 @@ import SizeChips from "./size-selection-chips";
 import { useCart } from "@/context/cartContext";
 import { Skeleton } from "../ui/skeleton";
 import useIsMobile from "@/hooks/useIsMobile";
-import ApprovalRequestDialog from "./approval-request-dialog";
+import UserUnlockDialog from "./user-unlock-dialog";
 import { useAuth } from "@/context/useAuth";
 import { useRouter } from "next/navigation";
 
@@ -20,7 +20,6 @@ type ProductCardProps = {
   product: Product;
   isAdmin?: boolean;
   isAccountApproved?: boolean;
-  isUser?: boolean;
   onClose?: () => void;
 };
 
@@ -28,13 +27,14 @@ export default function ProductCard({
   product,
   isAdmin = false,
   isAccountApproved = false,
-  isUser = false,
   onClose,
 }: ProductCardProps) {
   const { cart, loading } = useCart();
   const auth = useAuth();
   const router = useRouter();
   const { clientUser, currentUser } = auth;
+  const isUser = !!currentUser;
+  const isProfileComplete = clientUser?.profileComplete;
   const [selectedSize, setSelectedSize] = useState<ProductSize | undefined>(
     undefined,
   );
@@ -211,14 +211,14 @@ export default function ProductCard({
                 </div>
               ) : (
                 // Logged in but not approved - show approval dialog
-                <ApprovalRequestDialog>
+                <UserUnlockDialog>
                   <div className="flex cursor-pointer items-center justify-between gap-2 transition-all hover:opacity-80">
                     <span className="inline-flex items-center font-semibold text-yellow-600">
                       *****
                     </span>
                     <EyeIcon className="size-5 text-yellow-600" />
                   </div>
-                </ApprovalRequestDialog>
+                </UserUnlockDialog>
               )}
             </div>
             <div className="text-primary flex w-full items-center justify-between gap-2 font-semibold md:w-fit md:text-sm">
@@ -296,28 +296,7 @@ export default function ProductCard({
                 </Link>
               </Button>
             </div>
-          ) : isUser ? (
-            <div className="flex w-full flex-col items-center justify-end">
-              {isUser && !isAccountApproved && (
-                <div className="bg-yellow-50 px-2">
-                  <span className="text-xs text-yellow-700">
-                    Account Approval Pending
-                  </span>
-                </div>
-              )}
-              <CartControls
-                isDisabled={!isAccountApproved && isUser}
-                productId={product?.id}
-                selectedSize={product.hasSizes ? selectedSize?.size : ""}
-                hasSizes={product.hasSizes}
-                productPricing={{
-                  price: selectedSize?.price ?? product.price,
-                  discount: selectedSize?.discount ?? product?.discount,
-                  gst: selectedSize?.gst ?? product?.gst,
-                }}
-              />
-            </div>
-          ) : (
+          ) : !isUser ? (
             <div className="flex w-full items-center justify-center gap-1 rounded-md border border-yellow-600 bg-yellow-50 p-1 px-2 text-center text-xs text-yellow-600 md:w-fit">
               Please{" "}
               <span
@@ -330,6 +309,44 @@ export default function ProductCard({
                 Login
               </span>{" "}
               to add products to your cart.
+            </div>
+          ) : !isProfileComplete ? (
+            <Button
+              onClick={() => {
+                onClose?.();
+                router.push("/account/profile");
+              }}
+              className="flex w-full cursor-pointer items-center justify-center gap-1 rounded-md border border-yellow-600 bg-yellow-50 text-center text-xs text-yellow-600 md:w-fit"
+            >
+              {"Complete Your Profile Now"} <ChevronsRight className="size-4" />
+            </Button>
+          ) : (
+            <div className="flex w-full flex-col items-center justify-end">
+              {!clientUser?.profileComplete ? (
+                <div className="bg-yellow-50 px-2">
+                  <span className="text-xs text-yellow-700">
+                    Incomplete Profile
+                  </span>
+                </div>
+              ) : isUser && !isAccountApproved ? (
+                <div className="bg-yellow-50 px-2">
+                  <span className="text-xs text-yellow-700">
+                    Account Approval Pending
+                  </span>
+                </div>
+              ) : null}
+
+              <CartControls
+                isDisabled={!isAccountApproved && isUser}
+                productId={product?.id}
+                selectedSize={product.hasSizes ? selectedSize?.size : ""}
+                hasSizes={product.hasSizes}
+                productPricing={{
+                  price: selectedSize?.price ?? product.price,
+                  discount: selectedSize?.discount ?? product?.discount,
+                  gst: selectedSize?.gst ?? product?.gst,
+                }}
+              />
             </div>
           )}
         </div>

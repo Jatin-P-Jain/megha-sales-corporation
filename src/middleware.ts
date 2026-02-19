@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 export async function middleware(request: NextRequest) {
   const { pathname, origin, searchParams } = request.nextUrl;
 
-  // ✅ Bypass auth for static public files
+  // 0) Static/public bypass
   if (
     pathname === "/firebase-messaging-sw.js" ||
     pathname.startsWith("/_next") ||
@@ -15,40 +15,33 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Bypass internals & your refresh endpoint
-  if (
-    request.method === "POST" ||
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/favicon.ico") ||
-    pathname.startsWith("/api/refresh-token") ||
-    pathname.startsWith("/api/check-profile") ||
-    pathname.startsWith("/api/") // Bypass all API routes
-  ) {
+  // 1) Bypass API routes & POSTs entirely
+  if (request.method === "POST" || pathname.startsWith("/api/")) {
     return NextResponse.next();
   }
 
-  // 1) Grab the ID token or treat as logged-out
+  // 2) Grab the ID token or treat as logged-out
   const cookieStore = await cookies();
   const token = cookieStore.get("firebaseAuthToken")?.value;
 
-  if (!token) {
-    const publicPaths = ["/", "/login", "/register", "/products-list"];
-    const isPublic =
-      publicPaths.includes(pathname) || pathname.startsWith("/brands");
+  const publicPaths = ["/", "/login", "/register", "/products-list"];
+  const isPublic =
+    publicPaths.includes(pathname) || pathname.startsWith("/brands");
 
+  if (!token) {
     if (isPublic) return NextResponse.next();
 
-    // Clear any remaining cookies and redirect to login
     const redirectUrl = new URL("/login", origin);
     redirectUrl.searchParams.set("deepLink", "1");
     redirectUrl.searchParams.set("redirect", pathname + request.nextUrl.search);
+
     const res = NextResponse.redirect(redirectUrl);
     res.cookies.delete("firebaseAuthToken");
     res.cookies.delete("firebaseAuthRefreshToken");
     return res;
   }
 
-  // 2) Block /login & /register when already logged in
+  // 3) Block /login & /register when already logged in
   if ((pathname === "/login" || pathname === "/register") && token) {
     const hasRedirect = searchParams.get("redirect");
     if (!hasRedirect) {
@@ -56,21 +49,23 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // 3) Decode your token
+  // 4) Decode your token (admin, exp, profileComplete from custom claim)
   let admin: boolean | undefined;
   let exp: number | undefined;
+  let profileComplete: boolean | undefined;
 
   try {
     const decoded = decodeJwt(token) as {
       admin?: boolean;
       exp?: number;
       user_id?: string;
+      profileComplete?: boolean;
     };
     admin = decoded.admin;
     exp = decoded.exp;
+    profileComplete = decoded.profileComplete;
   } catch (error) {
     console.error("Failed to decode JWT:", error);
-    // Token is invalid, treat as logged out
     const redirectUrl = new URL("/login", origin);
     const res = NextResponse.redirect(redirectUrl);
     res.cookies.delete("firebaseAuthToken");
@@ -78,7 +73,7 @@ export async function middleware(request: NextRequest) {
     return res;
   }
 
-  // 4) If your token's about to expire, refresh it
+  // 5) If your token's about to expire, refresh it
   if (exp && (exp - 5 * 60) * 1000 < Date.now()) {
     const redirectTo = encodeURIComponent(pathname + request.nextUrl.search);
     return NextResponse.redirect(
@@ -86,50 +81,38 @@ export async function middleware(request: NextRequest) {
     );
   }
 
+  // 6) Admin unlock guard
   if (pathname.startsWith("/admin-dashboard/users")) {
     const unlocked = request.cookies.get("users_admin_unlock")?.value;
     if (unlocked !== "1") {
       const url = request.nextUrl.clone();
       url.pathname = "/admin-dashboard";
-      url.searchParams.set("unlock", "users"); // optional: to auto-open dialog
+      url.searchParams.set("unlock", "users");
       return NextResponse.redirect(url);
     }
   }
 
-  // 5) Profile‐complete check - NOW USING DB VALUE
-  // Skip profile check for /account/profile itself
-  if (pathname !== "/account/profile") {
-    try {
-      // ✅ IMPORTANT: Use absolute URL for fetch in middleware
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || origin;
-      const checkUrl = new URL("/api/check-profile", baseUrl);
+  // 7) Profile-complete guard (using custom claim, no fetch)
+  //    Only enforce on specific routes, and skip the profile page itself.
+  const profileRequiredPaths = [
+    "/cart",
+    "/checkout",
+    "/order-history",
+  ];
 
-      const checkRes = await fetch(checkUrl.toString(), {
-        headers: {
-          Cookie: `firebaseAuthToken=${token}`,
-        },
-        // Add cache control to prevent stale data
-        cache: "no-store",
-      });
+  const requiresProfile = profileRequiredPaths.some(
+    (p) => pathname === p || pathname.startsWith(p + "/")
+  );
 
-      if (checkRes.ok) {
-        const { profileComplete } = await checkRes.json();
-
-        if (!profileComplete) {
-          console.log("❌ Profile incomplete, redirecting to /account/profile");
-          // Profile not complete, redirect to profile page
-          return NextResponse.redirect(new URL("/account/profile", origin));
-        }
-      } else {
-        console.error("Profile check API returned error:", checkRes.status);
-      }
-    } catch (error) {
-      console.error("Profile check failed:", error);
-      // On error, allow through to avoid blocking legitimate users
+  if (requiresProfile && pathname !== "/account/profile") {
+    if (!profileComplete) {
+      const url = new URL("/account/profile", origin);
+      url.searchParams.set("redirect", pathname + request.nextUrl.search);
+      return NextResponse.redirect(url);
     }
   }
 
-  // 6) Admin vs user guards
+  // 8) Admin vs user guards
   if (!admin && pathname.startsWith("/admin-dashboard")) {
     return NextResponse.redirect(new URL("/", origin));
   }
@@ -137,7 +120,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/", origin));
   }
 
-  // 7) All clear
+  // 9) All clear
   return NextResponse.next();
 }
 
