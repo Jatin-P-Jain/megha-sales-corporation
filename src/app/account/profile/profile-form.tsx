@@ -93,6 +93,7 @@ export default function ProfileForm({
 
   const form = useForm<z.infer<typeof userProfileSchema>>({
     resolver: zodResolver(userProfileSchema),
+    mode: "onChange",
     defaultValues: {
       ...defaultValues,
       businessIdType: defaultValues?.businessIdType || "gst", // ✅ Set default
@@ -775,20 +776,8 @@ export default function ProfileForm({
                                 {...field}
                                 placeholder="Enter 10-character PAN"
                                 maxLength={10}
-                                className={clsx(
-                                  field.value?.length === 10 &&
-                                    "border-green-300 ring-1 ring-green-200",
-                                )}
                               />
                             </FormControl>
-
-                            {field.value?.length === 10 && (
-                              <div className="mt-2 flex items-center gap-2 text-sm text-green-700">
-                                <CheckCircle2 className="h-4 w-4" />
-                                <span>PAN number format is valid</span>
-                              </div>
-                            )}
-
                             <FormMessage />
                           </FormItem>
                         );
