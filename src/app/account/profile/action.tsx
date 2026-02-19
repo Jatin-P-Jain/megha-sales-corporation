@@ -42,7 +42,10 @@ export const updateUserProfile = async (
       .doc(uid)
       .update({ ...userData, updatedAt: new Date() });
 
-    // ✅ REMOVED: Do NOT call getIdToken(true) here
+    await auth.setCustomUserClaims(uid, {
+      ...(decodedToken.customClaims || {}),
+      profileComplete: true,
+    });
 
     return { success: true };
   } catch (error) {

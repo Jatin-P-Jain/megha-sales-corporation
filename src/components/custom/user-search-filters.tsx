@@ -74,70 +74,65 @@ const UserSearchAndFilters: React.FC = () => {
 
   return (
     <div className="space-y-1">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:items-center">
-        <div>
-          <SearchUser variant="outline" showText={true} />
-        </div>
+      <div className="grid grid-cols-[1fr_auto] gap-2 md:items-center">
+        <SearchUser variant="outline" showText={true} />
+        <div className="flex w-full flex-wrap items-center justify-center gap-2 md:justify-end">
+          <span className="hidden text-xs font-medium text-gray-700 md:inline md:text-sm">
+            Account Status:
+          </span>
 
-        <div className="flex flex-col gap-2">
-          <div className="flex flex-wrap items-center justify-center gap-2 md:justify-end">
-            <span className="hidden text-xs font-medium text-gray-700 md:inline md:text-sm">
-              Account Status:
-            </span>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="flex items-center gap-2">
+                {buttonLabel}
+                <ChevronDown className="h-4 w-4 opacity-60" />
+              </Button>
+            </DropdownMenuTrigger>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="flex items-center gap-2">
-                  {buttonLabel}
-                  <ChevronDown className="h-4 w-4 opacity-60" />
-                </Button>
-              </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className="w-56"
+              align="end"
+              // keep menu open when clicking checkboxes (so multi-select feels natural)
+              onCloseAutoFocus={(e) => e.preventDefault()}
+            >
+              <DropdownMenuLabel>Status filter</DropdownMenuLabel>
+              <DropdownMenuSeparator />
 
-              <DropdownMenuContent
-                className="w-56"
-                align="end"
-                // keep menu open when clicking checkboxes (so multi-select feels natural)
-                onCloseAutoFocus={(e) => e.preventDefault()}
+              <DropdownMenuCheckboxItem
+                checked={selectedStatuses.length === 0}
+                // Radix gives boolean | "indeterminate", we only care about boolean here
+                onCheckedChange={(checked) => {
+                  if (checked) clearAll();
+                }}
+                onSelect={(e) => e.preventDefault()}
               >
-                <DropdownMenuLabel>Status filter</DropdownMenuLabel>
-                <DropdownMenuSeparator />
+                All statuses
+              </DropdownMenuCheckboxItem>
 
-                <DropdownMenuCheckboxItem
-                  checked={selectedStatuses.length === 0}
-                  // Radix gives boolean | "indeterminate", we only care about boolean here
-                  onCheckedChange={(checked) => {
-                    if (checked) clearAll();
-                  }}
-                  onSelect={(e) => e.preventDefault()}
-                >
-                  All statuses
-                </DropdownMenuCheckboxItem>
+              <DropdownMenuSeparator />
 
-                <DropdownMenuSeparator />
+              {ALL_STATUSES.map((status) => {
+                const cfg = STATUS_CONFIG[status];
+                const Icon = cfg.icon;
+                const checked = selectedStatuses.includes(status);
 
-                {ALL_STATUSES.map((status) => {
-                  const cfg = STATUS_CONFIG[status];
-                  const Icon = cfg.icon;
-                  const checked = selectedStatuses.includes(status);
-
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={status}
-                      checked={checked}
-                      onCheckedChange={() => toggleStatus(status)}
-                      // prevent default so it doesn't close after each click
-                      onSelect={(e) => e.preventDefault()}
-                    >
-                      <span className="flex items-center gap-2">
-                        <Icon className="h-4 w-4 opacity-70" />
-                        {cfg.label}
-                      </span>
-                    </DropdownMenuCheckboxItem>
-                  );
-                })}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+                return (
+                  <DropdownMenuCheckboxItem
+                    key={status}
+                    checked={checked}
+                    onCheckedChange={() => toggleStatus(status)}
+                    // prevent default so it doesn't close after each click
+                    onSelect={(e) => e.preventDefault()}
+                  >
+                    <span className="flex items-center gap-2">
+                      <Icon className="h-4 w-4 opacity-70" />
+                      {cfg.label}
+                    </span>
+                  </DropdownMenuCheckboxItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </div>

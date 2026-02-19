@@ -23,7 +23,7 @@ export default async function Users() {
   return (
     <div className="mx-auto flex max-w-screen-lg flex-col gap-4">
       <div
-        className={`fixed inset-x-0 top-0 z-30 mx-auto flex w-full max-w-screen-lg flex-col items-end justify-end rounded-lg bg-white px-4 shadow-md ${!isAdmin ? "h-45 pt-45 md:pt-67" : "h-58 pt-0 md:h-55"} ${!isUser && "!h-53 !pt-0"}`}
+        className={`fixed inset-x-0 top-0 z-30 mx-auto flex w-full max-w-screen-lg flex-col items-end justify-end rounded-lg bg-white px-4 shadow-md ${!isAdmin ? "h-45 pt-45 md:pt-67" : "h-48 pt-0 md:h-55"} ${!isUser && "!h-53 !pt-0"}`}
       >
         <div className="mx-auto flex w-full max-w-screen-lg flex-col pt-8 pb-4 md:pt-6 md:pb-4">
           <EllipsisBreadCrumbs items={breadcrumbs} />
@@ -36,7 +36,7 @@ export default async function Users() {
         </div>
       </div>
       <div
-        className={`flex-1 overflow-auto px-4 ${!isAdmin ? "pt-43 md:pt-52" : "pt-42 md:pt-30"} ${!isUser && "!pt-38"} pb-20`}
+        className={`flex-1 overflow-auto px-4 ${!isAdmin ? "pt-43 md:pt-52" : "pt-32 md:pt-30"} ${!isUser && "!pt-38"} pb-20`}
       >
         <UsersList />
       </div>

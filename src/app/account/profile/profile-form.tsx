@@ -47,7 +47,7 @@ import { GoogleAuthProvider, linkWithPopup } from "firebase/auth";
 import { setToken } from "@/context/actions";
 import { GstDetails } from "@/components/custom/gst-details";
 import { GstDetailsData } from "@/data/businessProfile";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { formatBusinessProfile } from "@/lib/business-profile-formatter";
 
 export default function ProfileForm({
@@ -57,8 +57,10 @@ export default function ProfileForm({
   defaultValues?: z.infer<typeof userProfileDataSchema>;
   verifiedToken: DecodedIdToken | null;
 }) {
+  const searchParams = useSearchParams();
   const router = useRouter();
   const auth = useAuth();
+
   const user = auth.currentUser;
   const recaptchaVerifier = useRecaptcha({ enabled: true });
   const [isVerified, setIsVerified] = useState(
@@ -91,6 +93,7 @@ export default function ProfileForm({
 
   const form = useForm<z.infer<typeof userProfileSchema>>({
     resolver: zodResolver(userProfileSchema),
+    mode: "onChange",
     defaultValues: {
       ...defaultValues,
       businessIdType: defaultValues?.businessIdType || "gst", // ✅ Set default
@@ -250,7 +253,7 @@ export default function ProfileForm({
           verifiedToken,
         );
       }
-
+      auth.currentUser?.getIdToken(true); // Force refresh to get latest claims
       await auth.refreshClientUser();
       const waSendResp = await fetch("/api/wa-send-message", {
         method: "POST",
@@ -270,7 +273,8 @@ export default function ProfileForm({
             "Your profile has been updated and an approval request has been sent to the admin. You will be notified once your account is approved.",
         });
       }
-      router.push("/");
+      const redirect = searchParams.get("redirect") ?? "/";
+      router.push(redirect);
       toast.success("Success!", {
         description: "Your profile has been saved successfully!",
       });
@@ -772,20 +776,8 @@ export default function ProfileForm({
                                 {...field}
                                 placeholder="Enter 10-character PAN"
                                 maxLength={10}
-                                className={clsx(
-                                  field.value?.length === 10 &&
-                                    "border-green-300 ring-1 ring-green-200",
-                                )}
                               />
                             </FormControl>
-
-                            {field.value?.length === 10 && (
-                              <div className="mt-2 flex items-center gap-2 text-sm text-green-700">
-                                <CheckCircle2 className="h-4 w-4" />
-                                <span>PAN number format is valid</span>
-                              </div>
-                            )}
-
                             <FormMessage />
                           </FormItem>
                         );

@@ -49,10 +49,10 @@ export default async function Profile() {
     <Card className="gap-0">
       <CardHeader className="">
         <CardTitle className="flex flex-col items-center justify-center gap-4 text-2xl">
-          Your Profile
+          Complete Your Profile
           <span className="flex items-center justify-center gap-2 text-xs font-medium text-yellow-800 md:text-sm">
             <Info className="size-6 text-yellow-800" />
-            Almost there! Just a few more details to get you fully set up.
+            Please ensure your profile information is accurate and complete. This will help us provide you with the best experience and services.
           </span>
         </CardTitle>
       </CardHeader>
