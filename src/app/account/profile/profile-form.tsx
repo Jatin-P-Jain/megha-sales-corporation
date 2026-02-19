@@ -295,14 +295,14 @@ export default function ProfileForm({
         !!form.watch("email") &&
         !!form.watch("phone");
 
-      // console.log("Admin canSubmit check:", {
-      //   isVerified,
-      //   isSubmitting,
-      //   displayName: form.watch("displayName"),
-      //   email: form.watch("email"),
-      //   phone: form.watch("phone"),
-      //   canSubmitAdmin,
-      // });
+      console.log("Admin canSubmit check:", {
+        isVerified,
+        isSubmitting,
+        displayName: form.watch("displayName"),
+        email: form.watch("email"),
+        phone: form.watch("phone"),
+        canSubmitAdmin,
+      });
 
       return canSubmitAdmin;
     }
@@ -317,18 +317,18 @@ export default function ProfileForm({
         ? gstDetails !== null
         : panNumber && panNumber.length === 10);
 
-    // console.log("Regular user canSubmit check:", {
-    //   isVerified,
-    //   isSubmitting,
-    //   loadingGst,
-    //   isValid: form.formState.isValid,
-    //   idType,
-    //   gstDetails,
-    //   panNumber,
-    //   gstNumber,
-    //   canSubmitRegular,
-    //   errors: form.formState.errors,
-    // });
+    console.log("Regular user canSubmit check:", {
+      isVerified,
+      isSubmitting,
+      loadingGst,
+      isValid: form.formState.isValid,
+      idType,
+      gstDetails,
+      panNumber,
+      gstNumber,
+      canSubmitRegular,
+      errors: form.formState.errors,
+    });
 
     return canSubmitRegular;
   };
