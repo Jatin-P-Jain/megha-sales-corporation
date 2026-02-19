@@ -297,10 +297,10 @@ export default function ProductCard({
               </Button>
             </div>
           ) : !isUser ? (
-            <div className="flex w-full items-center justify-center gap-1 rounded-md border border-yellow-600 bg-yellow-50 p-1 px-2 text-center text-xs text-yellow-600 md:w-fit">
+            <div className="inline-flex w-full items-center justify-center gap-1 rounded-md border border-yellow-600 bg-yellow-50 p-1 px-2 text-center text-xs whitespace-nowrap text-yellow-600">
               Please{" "}
               <span
-                className="cursor-pointer font-semibold underline"
+                className="cursor-pointer font-semibold underline hover:text-yellow-800"
                 onClick={() => {
                   onClose?.();
                   router.push("/login");
