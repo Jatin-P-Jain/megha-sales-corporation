@@ -33,21 +33,24 @@ const HomePage = ({
   const isAdmin = clientUser?.userType === "admin";
   const accountStatus = clientUser?.accountStatus;
   const rejectionReason = clientUser?.rejectionReason;
+  const profileComplete = clientUser && clientUser?.profileComplete;
 
   return (
     <>
       <PushHandler />
       {currentUser && clientUserLoading ? (
-        <div className="bg-muted text-muted-foreground mx-auto flex min-h-30 w-1/2 flex-col items-center justify-center gap-4 rounded-lg p-4">
+        <div className="bg-muted text-muted-foreground mx-auto flex h-full flex-col items-center justify-center gap-4 rounded-lg p-4">
           <Loader2Icon className="size-5 animate-spin" />
-          <span className="text-sm font-semibold">Please wait...</span>
+          <span className="text-sm font-semibold">
+            We are fetching your account details...
+          </span>
         </div>
       ) : (
         <>
           <div className="flex w-full items-center justify-between gap-4">
-            <h1 className="w-full text-sm md:text-lg font-semibold">
+            <h1 className="w-full text-sm font-semibold md:text-lg">
               Hello,{" "}
-              <span className="text-base md:text-xl font-bold">
+              <span className="text-base font-bold md:text-xl">
                 {userName || userPhone || "Guest"} 🙋🏻
               </span>
             </h1>
@@ -57,21 +60,23 @@ const HomePage = ({
                 href="/admin-dashboard"
                 className="w-3/4 rounded-lg border-1 border-green-700 p-1 px-2 text-center text-sm font-semibold text-green-700"
               >
-                Go to Admin Dasboard
+                Go to Admin Dashboard
               </Link>
             )}
-            {!isAdmin && accountStatus === "pending" && (
+            {profileComplete && !isAdmin && accountStatus === "pending" && (
               <UserUnlockDialog>
                 <Button
                   variant={"secondary"}
                   className="flex items-center justify-center gap-3 rounded-lg border-1 border-yellow-700 p-1 px-2 text-center text-sm font-semibold text-yellow-700 shadow-md"
                 >
                   <TriangleAlert className="size-4" />
-                  Account Pending Approval
+                  <span className="hidden md:inline-flex">
+                    Account Pending Approval
+                  </span>
                 </Button>
               </UserUnlockDialog>
             )}
-            {!!clientUser && !clientUser?.profileComplete && (
+            {currentUser && !profileComplete && (
               <UserUnlockDialog>
                 <Button
                   variant={"secondary"}
@@ -79,7 +84,9 @@ const HomePage = ({
                   className="flex items-center justify-center border-1 border-yellow-600 bg-yellow-50 text-xs text-yellow-700 shadow-sm hover:bg-yellow-100"
                 >
                   <OctagonAlert className="size-5" />
-                  Incomplete Profile
+                  <span className="hidden md:inline-flex">
+                    Incomplete Profile
+                  </span>
                 </Button>
               </UserUnlockDialog>
             )}

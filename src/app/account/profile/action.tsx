@@ -2,22 +2,22 @@
 import { BusinessProfile } from "@/data/businessProfile";
 import { auth, fireStore } from "@/firebase/server";
 import { UserType } from "@/types/user";
-import { DecodedIdToken } from "firebase-admin/auth";
 import { cookies } from "next/headers";
 
 export const updateUserProfile = async (
   data: {
-    email: string;
-    displayName: string;
-    phone: string;
+    email?: string;
+    displayName?: string;
+    phone?: string;
     userType?: UserType;
     businessType?: string;
     businessIdType?: "pan" | "gst";
     gstNumber?: string;
+    panNumber?: string;
     businessProfile?: BusinessProfile | null;
     photoUrl?: string;
   },
-  verifiedToken: DecodedIdToken | null,
+  { profileComplete }: { profileComplete: boolean },
 ) => {
   try {
     const cookieStore = await cookies();
@@ -28,11 +28,11 @@ export const updateUserProfile = async (
     }
 
     // Verify the token
-    const decodedToken = verifiedToken || (await auth.verifyIdToken(token));
+    const decodedToken = await auth.verifyIdToken(token);
     const uid = decodedToken.uid;
     const userData = {
       ...data,
-      profileComplete: true,
+      profileComplete,
       accountStatus: "pending",
       firebaseAuth: decodedToken.firebase,
     };
@@ -44,7 +44,7 @@ export const updateUserProfile = async (
 
     await auth.setCustomUserClaims(uid, {
       ...(decodedToken.customClaims || {}),
-      profileComplete: true,
+      profileComplete,
     });
 
     return { success: true };

@@ -148,8 +148,7 @@ export default function ProductForm({
                 return (
                   <FormItem>
                     <FormLabel className="flex items-start gap-1">
-                      Company Name
-                      <span className="text-muted-foreground text-xs">*</span>
+                      Company Name *
                     </FormLabel>
                     <FormControl>
                       <Select
@@ -186,8 +185,7 @@ export default function ProductForm({
                 return (
                   <FormItem className="">
                     <FormLabel className="flex items-start gap-1">
-                      Vehicle Company
-                      <span className="text-muted-foreground text-xs">*</span>
+                      Vehicle Company *
                     </FormLabel>
                     <FormControl>
                       <Select
@@ -246,8 +244,7 @@ export default function ProductForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="flex items-start gap-1">
-                    Part Category
-                    <span className="text-muted-foreground text-xs">*</span>
+                    Part Category *
                   </FormLabel>
                   <FormControl>
                     <Select
@@ -281,8 +278,7 @@ export default function ProductForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="flex items-start gap-1">
-                    Part Name
-                    <span className="text-muted-foreground text-xs">*</span>
+                    Part Name *
                   </FormLabel>
                   <FormControl>
                     <Input disabled={isSubmitting || !brand} {...field} />
@@ -298,8 +294,7 @@ export default function ProductForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="flex items-start gap-1">
-                    Part Number
-                    <span className="text-muted-foreground text-xs">*</span>
+                    Part Number *
                   </FormLabel>
                   <FormControl>
                     <Input disabled={isSubmitting || !brand} {...field} />
@@ -319,7 +314,7 @@ export default function ProductForm({
                   <FormItem className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <FormLabel className="text-sm font-medium">
-                        Sizes Available?
+                        Sizes Available? *
                       </FormLabel>
                     </div>
                     <FormControl>
@@ -372,7 +367,7 @@ export default function ProductForm({
                             )}
                           >
                             <div className="flex flex-col gap-1">
-                              <FormLabel>Size</FormLabel>
+                              <FormLabel>Size *</FormLabel>
                               <Input
                                 placeholder="Enter Size"
                                 value={entry.size}
@@ -387,7 +382,7 @@ export default function ProductForm({
                             {!form.watch("samePriceForAllSizes") && (
                               <div className="flex w-full gap-1">
                                 <div className="flex flex-col gap-1">
-                                  <FormLabel>Price(₹)</FormLabel>
+                                  <FormLabel>Price(₹) *</FormLabel>
                                   <Input
                                     type="number"
                                     placeholder="Price"
@@ -422,7 +417,7 @@ export default function ProductForm({
                                   />
                                 </div>
                                 <div className="flex flex-col gap-1">
-                                  <FormLabel>Disc.(%)</FormLabel>
+                                  <FormLabel>Disc.(%) *</FormLabel>
                                   <Input
                                     type="number"
                                     placeholder="Discount (%)"
@@ -437,7 +432,7 @@ export default function ProductForm({
                                   />
                                 </div>
                                 <div className="flex flex-col gap-1">
-                                  <FormLabel>GST (%)</FormLabel>
+                                  <FormLabel>GST (%) *</FormLabel>
                                   <Input
                                     type="number"
                                     placeholder="GST (%)"
@@ -495,7 +490,7 @@ export default function ProductForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="flex items-start gap-1">
-                      Price (₹)
+                      Price (₹) *
                       <span className="text-muted-foreground text-xs">*</span>
                     </FormLabel>
                     <FormControl>
@@ -527,7 +522,7 @@ export default function ProductForm({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="flex items-start gap-1">
-                        Discount (%)
+                        Discount (%) *
                         <span className="text-muted-foreground text-xs">*</span>
                       </FormLabel>
                       <FormControl>
@@ -558,7 +553,7 @@ export default function ProductForm({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="flex items-start gap-1">
-                        GST (%)
+                        GST (%) *
                         <span className="text-muted-foreground text-xs">*</span>
                       </FormLabel>
                       <FormControl>
@@ -594,8 +589,7 @@ export default function ProductForm({
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="flex items-start gap-1">
-                  Status
-                  <span className="text-muted-foreground text-xs">*</span>
+                  Status *
                 </FormLabel>
                 <FormControl>
                   <Select

@@ -17,14 +17,14 @@ export default async function Login({
       </CardHeader>
       <CardContent>
         {sessionExpired && (
-          <div className="mx-auto mb-4 flex w-fit items-center justify-center gap-2 rounded-lg bg-amber-100 p-2 text-center text-sm text-amber-700 italic">
-            <InfoIcon className="size-8 md:size-4" />
+          <div className="mx-auto mb-4 flex w-fit items-center justify-center gap-2 rounded-lg bg-amber-100 p-2 text-center text-xs text-amber-700 italic">
+            <InfoIcon className="size-4" />
             Your session has expired due to inactivity. Please log in again.
           </div>
         )}
         {deepLink && (
-          <div className="mx-auto mb-4 flex w-fit items-center justify-center gap-2 rounded-lg bg-amber-100 p-2 text-center text-sm text-amber-700 italic">
-            <InfoIcon className="size-8 md:size-4" />
+          <div className="mx-auto mb-4 flex w-fit items-center justify-center gap-2 rounded-lg bg-amber-100 p-2 text-center text-xs text-amber-700 italic">
+            <InfoIcon className="size-4" />
             Please log in to continue to the page.
           </div>
         )}

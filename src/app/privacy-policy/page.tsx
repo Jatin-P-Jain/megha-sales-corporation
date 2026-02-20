@@ -25,6 +25,8 @@ export default function PrivacyPolicy() {
           <a
             href="https://developers.google.com/terms/api-services-user-data-policy"
             className="ml-1 underline"
+            target="_blank"
+            rel="noopener noreferrer"
           >
             Google API Services User Data Policy
           </a>

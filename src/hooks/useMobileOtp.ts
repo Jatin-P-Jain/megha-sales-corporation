@@ -16,13 +16,13 @@ export function useMobileOtp({
   appVerifier,
   ensureRecaptcha,
   resetRecaptcha,
-  isProfile,
+  linkPhone = false,
 }: {
   onSuccess?: (() => void) | undefined;
   appVerifier: RecaptchaVerifier | null;
   ensureRecaptcha?: () => Promise<RecaptchaVerifier>;
   resetRecaptcha?: () => void;
-  isProfile?: boolean;
+  linkPhone?: boolean;
 }) {
   const auth = useAuth();
   const [mobileNumber, setMobileNumber] = useState("");
@@ -83,7 +83,7 @@ export function useMobileOtp({
       if (!confirmationResult) throw new Error("No confirmation result");
       setIsVerifying(true);
 
-      if (isProfile) {
+      if (linkPhone) {
         const credential = PhoneAuthProvider.credential(
           confirmationResult.verificationId,
           otp

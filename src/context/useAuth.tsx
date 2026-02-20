@@ -31,7 +31,7 @@ type AuthContextType = {
   loading: boolean;
   clientUser: UserData | null;
   setClientUser: React.Dispatch<React.SetStateAction<UserData | null>>;
-  refreshClientUser: () => Promise<void>;
+  refreshClientUser: () => Promise<UserData | null | undefined>;
   clientUserLoading: boolean;
   isLoggingOut: boolean;
   currentUser: User | null;
@@ -71,6 +71,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (snap.exists()) {
         setClientUser(mapDbUserToClientUser(snap.data()));
       }
+      return snap.exists() ? mapDbUserToClientUser(snap.data()) : null;
     } catch (e) {
       console.error("refreshClientUser failed", e);
     } finally {

@@ -98,7 +98,7 @@ export default async function ProductsList({
         </div>
       </div>
       <div
-        className={`flex-1 overflow-auto px-4 ${!isAdmin ? "pt-45 md:pt-50" : "pt-30"} ${!isUser && "!pt-30 md:!pt-34"} pb-4 md:pb-0`}
+        className={`flex-1 overflow-auto px-4 ${!isAdmin ? "pt-45 md:pt-50" : "pt-30"} ${!isUser && "!pt-30 md:!pt-34"} pb-18 md:pb-0`}
       >
         <ProductList isAdmin={isAdmin} />
       </div>
