@@ -33,6 +33,7 @@ const HomePage = ({
   const isAdmin = clientUser?.userType === "admin";
   const accountStatus = clientUser?.accountStatus;
   const rejectionReason = clientUser?.rejectionReason;
+  const profileComplete = clientUser && clientUser?.profileComplete;
 
   return (
     <>
@@ -45,9 +46,9 @@ const HomePage = ({
       ) : (
         <>
           <div className="flex w-full items-center justify-between gap-4">
-            <h1 className="w-full text-sm md:text-lg font-semibold">
+            <h1 className="w-full text-sm font-semibold md:text-lg">
               Hello,{" "}
-              <span className="text-base md:text-xl font-bold">
+              <span className="text-base font-bold md:text-xl">
                 {userName || userPhone || "Guest"} 🙋🏻
               </span>
             </h1>
@@ -60,18 +61,20 @@ const HomePage = ({
                 Go to Admin Dasboard
               </Link>
             )}
-            {!isAdmin && accountStatus === "pending" && (
+            {profileComplete && !isAdmin && accountStatus === "pending" && (
               <UserUnlockDialog>
                 <Button
                   variant={"secondary"}
                   className="flex items-center justify-center gap-3 rounded-lg border-1 border-yellow-700 p-1 px-2 text-center text-sm font-semibold text-yellow-700 shadow-md"
                 >
                   <TriangleAlert className="size-4" />
-                  Account Pending Approval
+                  <span className="hidden md:inline-flex">
+                    Account Pending Approval
+                  </span>
                 </Button>
               </UserUnlockDialog>
             )}
-            {!!clientUser && !clientUser?.profileComplete && (
+            {!profileComplete && (
               <UserUnlockDialog>
                 <Button
                   variant={"secondary"}
@@ -79,7 +82,9 @@ const HomePage = ({
                   className="flex items-center justify-center border-1 border-yellow-600 bg-yellow-50 text-xs text-yellow-700 shadow-sm hover:bg-yellow-100"
                 >
                   <OctagonAlert className="size-5" />
-                  Incomplete Profile
+                  <span className="hidden md:inline-flex">
+                    Incomplete Profile
+                  </span>
                 </Button>
               </UserUnlockDialog>
             )}

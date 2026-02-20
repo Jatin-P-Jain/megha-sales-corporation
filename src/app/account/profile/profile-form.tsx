@@ -13,10 +13,7 @@ import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
-import {
-  userProfileDataSchema,
-  userProfileSchema,
-} from "@/validation/profileSchema";
+import { userProfileSchema } from "@/validation/profileSchema";
 import {
   Select,
   SelectContent,
@@ -41,7 +38,6 @@ import { useRecaptcha } from "@/hooks/useRecaptcha";
 import { toast } from "sonner";
 import { useAuth } from "@/context/useAuth";
 import { updateUserProfile } from "./action";
-import { DecodedIdToken } from "firebase-admin/auth";
 import GoogleIcon from "@/components/custom/google-icon.svg";
 import Image from "next/image";
 import { GstDetails } from "@/components/custom/gst-details";
@@ -50,44 +46,25 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { formatBusinessProfile } from "@/lib/business-profile-formatter";
 import { useLinkAuthProviders } from "@/hooks/useLinkAuthProviders";
 import { setToken } from "@/context/actions";
+import { updateUserFirebaseMethods } from "../actions";
 
-export default function ProfileForm({
-  defaultValues,
-  verifiedToken,
-}: {
-  defaultValues?: z.infer<typeof userProfileDataSchema>;
-  verifiedToken: DecodedIdToken | null;
-}) {
+export default function ProfileForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const auth = useAuth();
+  const clientUser = auth?.clientUser;
+
   const recaptchaVerifier = useRecaptcha({ enabled: true });
-  const [isVerified, setIsVerified] = useState(
-    !!defaultValues?.phone ? true : false,
-  );
+
+  const [isVerified, setIsVerified] = useState(false);
+  const [isPhoneLinked, setIsPhoneLinked] = useState(false);
+
   const [gstDetails, setGstDetails] = useState<GstDetailsData | null>(null);
   const [loadingGst, setLoadingGst] = useState(false);
   const [gstError, setGstError] = useState<string | null>(null);
-  const [idType, setIdType] = useState<"pan" | "gst">(
-    defaultValues?.businessIdType || "gst",
-  );
+  const [idType, setIdType] = useState<"pan" | "gst">("gst");
 
-  const isAdmin = defaultValues?.userType === "admin" || verifiedToken?.admin;
-
-  const { otpReset, otpSent, sendingOtp, isVerifying, sendOtp, verifyOtp } =
-    useMobileOtp({
-      onSuccess: () => {
-        setIsVerified(true);
-        toast.success("Phone number verified!", {
-          description:
-            "Phone number verified and linked to your account successfully.",
-        });
-      },
-      appVerifier: recaptchaVerifier.verifier,
-      ensureRecaptcha: recaptchaVerifier.ensureReady,
-      resetRecaptcha: recaptchaVerifier.reset,
-      isProfile: true,
-    });
+  const isAdmin = clientUser?.userType === "admin";
 
   const { linkGoogle, linkingGoogle } = useLinkAuthProviders({
     user: auth.currentUser,
@@ -96,32 +73,63 @@ export default function ProfileForm({
       await setToken(idToken, refreshToken);
     },
     onLinked: async () => {
+      await updateUserFirebaseMethods();
       await auth.refreshClientUser();
     },
     toast,
   });
 
+  // ✅ RHF: don’t rely on async defaultValues; reset when clientUser loads/changes. [web:125]
   const form = useForm<z.infer<typeof userProfileSchema>>({
     resolver: zodResolver(userProfileSchema),
     mode: "onChange",
     defaultValues: {
-      ...defaultValues,
-      businessIdType: defaultValues?.businessIdType || "gst", // ✅ Set default
+      displayName: "",
+      email: "",
+      phone: "",
+      businessType: undefined,
+      businessIdType: undefined,
+      gstNumber: "",
+      panNumber: "",
+      photoUrl: "",
+      otp: "",
+      otherBusinessType: "",
     },
   });
+
+  useEffect(() => {
+    if (!clientUser) return;
+
+    const nextDefaults = {
+      displayName: clientUser.displayName || "",
+      email: clientUser.email || "",
+      phone: clientUser.phone || "",
+      businessType: clientUser.businessType || undefined,
+      businessIdType: (clientUser.businessProfile
+        ? clientUser.businessProfile.gstin
+          ? "gst"
+          : "pan"
+        : undefined) as "gst" | "pan" | undefined,
+      gstNumber: clientUser.businessProfile?.gstin || "",
+      panNumber: clientUser.panNumber || "",
+      photoUrl: clientUser.photoUrl || "",
+      otp: "",
+      otherBusinessType: "",
+    };
+
+    form.reset(nextDefaults);
+    setIdType((nextDefaults.businessIdType ?? "gst") as "gst" | "pan");
+    setIsVerified(!!clientUser.phone);
+    setIsPhoneLinked(!!clientUser.phone && !!clientUser.email);
+  }, [clientUser, form]);
 
   const selectedBusinessType = form.watch("businessType");
   const phoneNumber = form.watch("phone");
   const otp = form.watch("otp");
 
-  useEffect(() => {
-    if (otpReset) {
-      form.resetField("otp");
-    }
-  }, [otpReset, form]);
+  const panNumber = form.watch("panNumber");
 
-  const isPhoneAuthProvider =
-    verifiedToken?.firebase["sign_in_provider"] === "phone";
+  const [isPhoneValid, setIsPhoneValid] = useState(false);
 
   useEffect(() => {
     if (loginUserMobileSchema.safeParse({ mobile: phoneNumber }).success) {
@@ -131,10 +139,29 @@ export default function ProfileForm({
     }
   }, [phoneNumber]);
 
-  const [isPhoneValid, setIsPhoneValid] = useState(false);
+  const { otpReset, otpSent, sendingOtp, isVerifying, sendOtp, verifyOtp } =
+    useMobileOtp({
+      onSuccess: async () => {
+        setIsPhoneLinked(true);
+        await updateUserProfile(
+          {
+            phone: phoneNumber,
+          },
+          { profileComplete: false },
+        );
+        await auth.refreshClientUser();
+      },
+      appVerifier: recaptchaVerifier.verifier,
+      ensureRecaptcha: recaptchaVerifier.ensureReady,
+      resetRecaptcha: recaptchaVerifier.reset,
+      linkPhone: true,
+    });
 
-  const gstNumber = form.watch("gstNumber");
-  const panNumber = form.watch("panNumber");
+  useEffect(() => {
+    if (otpReset) {
+      form.resetField("otp");
+    }
+  }, [otpReset, form]);
 
   const fetchGstDetails = async (gstin: string) => {
     setLoadingGst(true);
@@ -158,13 +185,10 @@ export default function ProfileForm({
   };
 
   const handleSubmit = async (data: z.infer<typeof userProfileSchema>) => {
-    console.log("=== FORM SUBMITTED ===");
-    console.log({ data });
     try {
       delete data.otp;
 
       if (isAdmin) {
-        console.log("Submitting as admin");
         await updateUserProfile(
           {
             displayName: data.displayName,
@@ -175,10 +199,9 @@ export default function ProfileForm({
             businessType: "",
             businessProfile: null,
           },
-          verifiedToken,
+          { profileComplete: true },
         );
       } else {
-        console.log("Submitting as regular user");
         const { otherBusinessType, ...rest } = data;
         const finalBusinessType =
           data.businessType === "other" && otherBusinessType
@@ -210,10 +233,11 @@ export default function ProfileForm({
             businessType: finalBusinessType,
             businessProfile,
           },
-          verifiedToken,
+          { profileComplete: true },
         );
       }
-      await auth.currentUser?.getIdToken(true); // Force refresh to get latest claims
+
+      await auth.currentUser?.getIdToken(true);
       const freshClientUser = await auth.refreshClientUser();
 
       const waSendResp = await fetch("/api/wa-send-message", {
@@ -228,24 +252,25 @@ export default function ProfileForm({
           customerBusinessProfile: formatBusinessProfile(freshClientUser),
         }),
       });
+
       if (waSendResp.ok) {
         toast.success("Approval Request Sent", {
           description:
-            "Your profile has been updated and an approval request has been sent to the admin. You will be notified once your account is approved.",
+            "Your profile has been updated and an approval request has been sent to the admin.",
         });
       }
+
       const redirect = searchParams.get("redirect") ?? "/";
       router.push(redirect);
+
       toast.success("Success!", {
         description: "Your profile has been saved successfully!",
       });
     } catch (err: unknown) {
       console.error("Profile Submit error:", err);
-      if (err instanceof Error) {
-        toast.error(err.message || "Failed to update profile");
-      } else {
-        toast.error("Failed to update profile");
-      }
+      toast.error(
+        err instanceof Error ? err.message : "Failed to update profile",
+      );
     }
   };
 
@@ -253,69 +278,28 @@ export default function ProfileForm({
 
   const canSubmit = () => {
     if (isAdmin) {
-      const canSubmitAdmin =
+      return (
         isVerified &&
         !isSubmitting &&
         !!form.watch("displayName") &&
         !!form.watch("email") &&
-        !!form.watch("phone");
-
-      console.log("Admin canSubmit check:", {
-        isVerified,
-        isSubmitting,
-        displayName: form.watch("displayName"),
-        email: form.watch("email"),
-        phone: form.watch("phone"),
-        canSubmitAdmin,
-      });
-
-      return canSubmitAdmin;
+        !!form.watch("phone")
+      );
     }
 
-    // For non-admin users, full validation
-    const canSubmitRegular =
+    return (
       isVerified &&
       !isSubmitting &&
       !loadingGst &&
       form.formState.isValid &&
       (idType === "gst"
         ? gstDetails !== null
-        : panNumber && panNumber.length === 10);
-
-    console.log("Regular user canSubmit check:", {
-      isVerified,
-      isSubmitting,
-      loadingGst,
-      isValid: form.formState.isValid,
-      idType,
-      gstDetails,
-      panNumber,
-      gstNumber,
-      canSubmitRegular,
-      errors: form.formState.errors,
-    });
-
-    return canSubmitRegular;
+        : panNumber && panNumber.length === 10)
+    );
   };
-
-  useEffect(() => {
-    console.log("canSubmit status:", canSubmit());
-  }, [
-    isVerified,
-    isSubmitting,
-    loadingGst,
-    gstDetails,
-    gstNumber,
-    panNumber,
-    idType,
-    form.formState.isValid,
-  ]);
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("=== FORM onSubmit triggered ===");
-    console.log("isAdmin:", isAdmin);
-    console.log("canSubmit:", canSubmit());
 
     if (isAdmin) {
       const data = {
@@ -329,7 +313,6 @@ export default function ProfileForm({
         panNumber: "",
         userType: "admin" as const,
       };
-      console.log("Admin manual submit:", data);
       handleSubmit(data);
     } else {
       form.handleSubmit(handleSubmit)(e);
@@ -347,69 +330,70 @@ export default function ProfileForm({
             </div>
           </div>
         )}
+
         <Form {...form}>
           <form onSubmit={onSubmit}>
             <fieldset
               className="flex flex-col gap-5"
               disabled={form.formState.isSubmitting}
             >
+              {/* Display name */}
               <FormField
                 control={form.control}
                 name="displayName"
-                render={({ field }) => {
-                  return (
-                    <FormItem>
-                      <FormLabel className="flex items-start gap-1">
-                        Your Name
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          placeholder="Name"
-                          readOnly={!!defaultValues?.displayName}
-                          className={clsx(
-                            defaultValues?.displayName && "font-semibold",
-                          )}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  );
-                }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-start gap-1">
+                      Your Name
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="Name"
+                        readOnly={!!clientUser?.displayName}
+                        className={clsx(
+                          clientUser?.displayName && "font-semibold",
+                        )}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
 
+              {/* Email + link google */}
               <div className="flex flex-col">
                 <FormField
                   control={form.control}
                   name="email"
-                  render={({ field }) => {
-                    return (
-                      <FormItem className="flex flex-col gap-1">
-                        <div className="flex w-full flex-col items-center justify-center gap-1 md:gap-4 md:flex-row md:items-end">
-                          <div className="flex w-full flex-col gap-1">
-                            <FormLabel className="flex items-start gap-1">
-                              Your email
-                            </FormLabel>
-                            <FormControl className="w-full">
-                              <Input
-                                {...field}
-                                placeholder="Your email"
-                                readOnly={!!defaultValues?.email}
-                                className={clsx(
-                                  defaultValues?.email &&
-                                    "w-full font-semibold",
-                                )}
-                              />
-                            </FormControl>
-                            <FormMessage className="text-xs" />
-                          </div>
-                          <span className="text-muted-foreground md:mb-2 flex justify-center text-sm">
-                            or
-                          </span>
-                          {!defaultValues?.email && (
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col gap-1">
+                      <div className="flex w-full flex-col items-center justify-center gap-1 md:flex-row md:items-end md:gap-4">
+                        <div className="flex w-full flex-col gap-1">
+                          <FormLabel className="flex items-start gap-1">
+                            Your email
+                          </FormLabel>
+                          <FormControl className="w-full">
+                            <Input
+                              {...field}
+                              placeholder="Your email"
+                              readOnly={!!clientUser?.email}
+                              className={clsx(
+                                clientUser?.email && "w-full font-semibold",
+                              )}
+                            />
+                          </FormControl>
+                          <FormMessage className="text-xs" />
+                        </div>
+
+                        {!clientUser?.email && (
+                          <div className="flex flex-col md:flex-row">
+                            <span className="text-muted-foreground flex justify-center text-sm md:mb-2">
+                              or
+                            </span>
                             <Button
                               type="button"
-                              className="cursor-pointer rounded-full shadow-md w-full md:w-auto"
+                              className="w-full cursor-pointer rounded-full shadow-md md:w-auto"
                               variant={"outline"}
                               onClick={linkGoogle}
                             >
@@ -430,21 +414,23 @@ export default function ProfileForm({
                                 </>
                               )}
                             </Button>
-                          )}
-                        </div>
-                        {!defaultValues?.email && (
-                          <span className="flex items-center gap-1 text-xs text-sky-900">
-                            <Info className="size-3" />
-                            The Google Account linked will allow
-                            you to log in using Google in the future.
-                          </span>
+                          </div>
                         )}
-                      </FormItem>
-                    );
-                  }}
+                      </div>
+
+                      {!clientUser?.email && (
+                        <span className="flex items-center gap-1 text-xs text-sky-900">
+                          <Info className="size-4" />
+                          The Google Account linked will allow you to log in
+                          using Google in the future.
+                        </span>
+                      )}
+                    </FormItem>
+                  )}
                 />
               </div>
 
+              {/* Phone + OTP */}
               <div className="flex flex-col gap-2">
                 <div
                   className={clsx(
@@ -466,16 +452,15 @@ export default function ProfileForm({
                             <Input
                               {...field}
                               placeholder="Mobile Number"
-                              readOnly={!!defaultValues?.phone || otpSent}
+                              readOnly={!!clientUser?.phone || otpSent}
                               className={clsx(
-                                !!defaultValues?.phone && "font-semibold",
+                                !!clientUser?.phone && "font-semibold",
                               )}
                             />
                             {!otpSent && !isVerified && (
                               <Button
                                 disabled={!isPhoneValid}
                                 type="button"
-                                className=""
                                 onClick={() => sendOtp(phoneNumber)}
                               >
                                 {sendingOtp ? (
@@ -495,20 +480,26 @@ export default function ProfileForm({
                     )}
                   />
                 </div>
-                {!defaultValues?.phone && !isVerified && (
-                  <span className="mt-1 text-xs text-yellow-700">
-                    This mobile number will be linked to your account. You will
-                    be able to log in using it in the future.
+
+                {/* ✅ Ask only Google-login users if they want linking */}
+                {!isVerified && (
+                  <span className="flex items-start gap-1 text-xs text-sky-900">
+                    <Info className="size-4" />
+                    The mobile number will be linked to your account for OTP
+                    login in the future
                   </span>
                 )}
+
                 {isVerified && (
-                  <div className="flex w-fit gap-1 rounded-lg bg-green-200 p-1 px-3 text-xs font-semibold text-green-800">
-                    <CheckCircle2 className="size-4 text-green-800" />
-                    {!isPhoneAuthProvider ? "Verified & Linked" : "Verified"}
+                  <div className="inline-flex w-fit gap-1 text-xs font-semibold text-green-700">
+                    <CheckCircle2 className="size-4 text-green-700" />
+                    {isVerified && "Verified"}{" "}
+                    {isPhoneLinked && "and Linked to your email account."}
                   </div>
                 )}
               </div>
 
+              {/* OTP entry */}
               {otpSent && !isVerified && (
                 <div className="grid grid-cols-1 items-end justify-center gap-4 md:grid-cols-[8fr_1fr] md:gap-4">
                   <FormField
@@ -536,11 +527,16 @@ export default function ProfileForm({
                       </FormItem>
                     )}
                   />
+
                   <Button
                     disabled={isVerifying}
                     type="button"
                     className="w-full"
-                    onClick={() => verifyOtp(otp ?? "")}
+                    onClick={async () => {
+                      const code = otp ?? "";
+                      if (!code) return;
+                      await verifyOtp(code);
+                    }}
                   >
                     {isVerifying ? (
                       <>
@@ -554,6 +550,7 @@ export default function ProfileForm({
                 </div>
               )}
 
+              {/* Admin banner */}
               {isAdmin ? (
                 <div className="rounded-md bg-green-100 p-4 text-center">
                   <p className="text-sm font-semibold text-green-800">
@@ -563,6 +560,7 @@ export default function ProfileForm({
                 </div>
               ) : (
                 <>
+                  {/* Business type */}
                   <FormField
                     control={form.control}
                     name="businessType"
@@ -600,23 +598,21 @@ export default function ProfileForm({
                     <FormField
                       control={form.control}
                       name="otherBusinessType"
-                      render={({ field }) => {
-                        return (
-                          <FormItem>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                placeholder="Specify your role or business type"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        );
-                      }}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder="Specify your role or business type"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
                   )}
 
-                  {/* ✅ HIDDEN: businessIdType field - synced with idType */}
+                  {/* Hidden businessIdType synced with idType */}
                   <FormField
                     control={form.control}
                     name="businessIdType"
@@ -633,9 +629,7 @@ export default function ProfileForm({
                         setIdType(value);
                         setGstDetails(null);
                         setGstError(null);
-                        // ✅ Update the form field
                         form.setValue("businessIdType", value);
-                        // ✅ Clear both fields when switching
                         form.setValue("gstNumber", "");
                         form.setValue("panNumber", "");
                       }}
@@ -655,93 +649,90 @@ export default function ProfileForm({
                     </p>
                   </div>
 
-                  {/* ✅ Conditional rendering for GST or PAN */}
+                  {/* GST/PAN */}
                   {idType === "gst" ? (
                     <FormField
                       control={form.control}
                       name="gstNumber"
-                      render={({ field }) => {
-                        return (
-                          <FormItem>
-                            <FormLabel>GSTIN Number</FormLabel>
-                            <FormControl>
-                              <div className="flex flex-col gap-2 md:flex-row">
-                                <Input
-                                  {...field}
-                                  placeholder="Enter 15-digit GSTIN"
-                                  maxLength={15}
-                                  className={clsx(
-                                    gstDetails &&
-                                      "border-green-300 ring-1 ring-green-200",
-                                    !gstDetails &&
-                                      field.value?.length === 15 &&
-                                      "border-orange-300",
-                                  )}
-                                />
-                                {!loadingGst && (
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() =>
-                                      fetchGstDetails(field.value || "")
-                                    }
-                                    disabled={
-                                      field.value?.length !== 15 ||
-                                      loadingGst ||
-                                      isSubmitting
-                                    }
-                                    className="gap-2"
-                                  >
-                                    <span>Get Details</span>
-                                    <CloudDownload className="h-4 w-4" />
-                                  </Button>
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>GSTIN Number</FormLabel>
+                          <FormControl>
+                            <div className="flex flex-col gap-2 md:flex-row">
+                              <Input
+                                {...field}
+                                placeholder="Enter 15-digit GSTIN"
+                                maxLength={15}
+                                className={clsx(
+                                  gstDetails &&
+                                    "border-green-300 ring-1 ring-green-200",
+                                  !gstDetails &&
+                                    field.value?.length === 15 &&
+                                    "border-orange-300",
                                 )}
-                              </div>
-                            </FormControl>
+                              />
+                              {!loadingGst && (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  onClick={() =>
+                                    fetchGstDetails(field.value || "")
+                                  }
+                                  disabled={
+                                    field.value?.length !== 15 ||
+                                    loadingGst ||
+                                    isSubmitting
+                                  }
+                                  className="gap-2"
+                                >
+                                  <span>Get Details</span>
+                                  <CloudDownload className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </FormControl>
 
-                            {loadingGst && (
-                              <div className="mt-3">
-                                <GstDetails data={null} loading={true} />
-                              </div>
-                            )}
-                            {gstDetails && (
-                              <div className="mt-3">
-                                <GstDetails data={gstDetails} loading={false} />
-                              </div>
-                            )}
-                            {gstError && (
-                              <div className="text-destructive">{gstError}</div>
-                            )}
+                          {loadingGst && (
+                            <div className="mt-3">
+                              <GstDetails data={null} loading={true} />
+                            </div>
+                          )}
+                          {gstDetails && (
+                            <div className="mt-3">
+                              <GstDetails data={gstDetails} loading={false} />
+                            </div>
+                          )}
+                          {gstError && (
+                            <div className="text-destructive">{gstError}</div>
+                          )}
 
-                            <FormMessage />
-                          </FormItem>
-                        );
-                      }}
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
                   ) : (
                     <FormField
                       control={form.control}
                       name="panNumber"
-                      render={({ field }) => {
-                        return (
-                          <FormItem>
-                            <FormLabel>PAN Number</FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                placeholder="Enter 10-character PAN"
-                                maxLength={10}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        );
-                      }}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>PAN Number</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder="Enter 10-character PAN"
+                              maxLength={10}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
                   )}
                 </>
               )}
 
+              {/* Submit */}
               <Button
                 disabled={!canSubmit()}
                 type="submit"

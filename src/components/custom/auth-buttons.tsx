@@ -221,9 +221,9 @@ export default function AuthButtons() {
                 </span>
               )}
 
-              <div className="flex w-full md:items-center justify-between gap-2 flex-col md:flex-row">
+              <div className="flex w-full flex-col justify-between gap-2 md:flex-row md:items-center">
                 {clientUser.userType && (
-                  <span className="bg-muted rounded-full px-2 py-0.5 text-xs font-semibold w-fit">
+                  <span className="bg-muted w-fit rounded-full px-2 py-0.5 text-xs font-semibold">
                     {toTitleCase(clientUser.userType)}
                   </span>
                 )}
@@ -237,20 +237,23 @@ export default function AuthButtons() {
                 ) : null}
               </div>
 
-              {!isAdmin && accountStatus && accountStatus !== "approved" && (
-                <div className="mt-1 flex w-full items-center gap-1 text-xs text-zinc-600">
-                  <TriangleAlert className="size-4" />
-                  <span>
-                    {accountStatus === "pending"
-                      ? "Your account is under review."
-                      : accountStatus === "rejected"
-                        ? "Your account was rejected."
-                        : accountStatus === "suspended"
-                          ? "Your account is suspended."
-                          : "Your account is deactivated."}
-                  </span>
-                </div>
-              )}
+              {profileComplete &&
+                !isAdmin &&
+                accountStatus &&
+                accountStatus !== "approved" && (
+                  <div className="mt-1 flex w-full items-center gap-1 text-xs text-zinc-600">
+                    <TriangleAlert className="size-4" />
+                    <span>
+                      {accountStatus === "pending"
+                        ? "Your account is under review."
+                        : accountStatus === "rejected"
+                          ? "Your account was rejected."
+                          : accountStatus === "suspended"
+                            ? "Your account is suspended."
+                            : "Your account is deactivated."}
+                    </span>
+                  </div>
+                )}
             </DropdownMenuLabel>
 
             <DropdownMenuSeparator />
