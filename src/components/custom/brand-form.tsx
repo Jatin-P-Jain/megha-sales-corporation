@@ -80,8 +80,7 @@ export default function BrandForm({
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel className="flex items-start gap-1">
-                      Status
-                      <span className="text-muted-foreground text-xs">*</span>
+                      Status *
                     </FormLabel>
                     <FormControl>
                       <Select
@@ -112,8 +111,7 @@ export default function BrandForm({
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel className="flex items-start gap-1">
-                      Brand Name
-                      <span className="text-muted-foreground text-xs">*</span>
+                      Brand Name *
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -182,8 +180,7 @@ export default function BrandForm({
             render={({ field }) => (
               <FormItem className="flex flex-col">
                 <FormLabel className="flex items-start gap-1">
-                  Deals in Vehicle Category
-                  <span className="text-muted-foreground text-xs">*</span>
+                  Vehicle Category *
                 </FormLabel>
                 <FormControl>
                   <RadioGroup

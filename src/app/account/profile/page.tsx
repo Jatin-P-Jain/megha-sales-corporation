@@ -52,14 +52,12 @@ export default async function Profile() {
           Complete Your Profile
           <span className="flex items-center justify-center gap-2 text-xs font-medium text-yellow-800 md:text-sm">
             <Info className="size-6 text-yellow-800" />
-            Please ensure your profile information is accurate and complete. This will help us provide you with the best experience and services.
+            Please ensure your profile information is accurate and complete.
+            This will help us provide you with the best experience and services.
           </span>
         </CardTitle>
       </CardHeader>
       <CardContent className="">
-        <span className="text-muted-foreground text-xs">
-          * marked fields are mandatory
-        </span>
         <ProfileForm
           defaultValues={{
             email: mergedUser.email,

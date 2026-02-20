@@ -253,18 +253,19 @@ export default function ProfileForm({
           verifiedToken,
         );
       }
-      auth.currentUser?.getIdToken(true); // Force refresh to get latest claims
-      await auth.refreshClientUser();
+      await auth.currentUser?.getIdToken(true); // Force refresh to get latest claims
+      const freshClientUser = await auth.refreshClientUser();
+
       const waSendResp = await fetch("/api/wa-send-message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           templateKey: "account_approval_request_to_admin",
-          customerUserId: auth.clientUser?.uid,
-          customerName: auth.clientUser?.displayName || "User",
-          customerPhone: auth.clientUser?.phone || "Not provided",
-          customerEmail: auth.clientUser?.email || "Not provided",
-          customerBusinessProfile: formatBusinessProfile(auth.clientUser),
+          customerUserId: freshClientUser?.uid,
+          customerName: freshClientUser?.displayName || "User",
+          customerPhone: freshClientUser?.phone || "Not provided",
+          customerEmail: freshClientUser?.email || "Not provided",
+          customerBusinessProfile: formatBusinessProfile(freshClientUser),
         }),
       });
       if (waSendResp.ok) {
@@ -400,7 +401,6 @@ export default function ProfileForm({
                     <FormItem>
                       <FormLabel className="flex items-start gap-1">
                         Your Name
-                        <span className="text-muted-foreground text-xs">*</span>
                       </FormLabel>
                       <FormControl>
                         <Input
@@ -425,13 +425,10 @@ export default function ProfileForm({
                   render={({ field }) => {
                     return (
                       <FormItem className="">
-                        <FormLabel className="flex w-1/4 items-start gap-1">
-                          Your email
-                          <span className="text-muted-foreground text-xs">
-                            *
-                          </span>
+                        <FormLabel className="flex items-start gap-1">
+                          Your email 
                         </FormLabel>
-                        <div className="flex w-full flex-col-reverse items-center justify-center md:flex-row-reverse">
+                        <div className="flex w-full flex-col-reverse items-start justify-center md:flex-row-reverse">
                           {isPhoneAuthProvider && !defaultValues?.email && (
                             <>
                               <Button
@@ -462,17 +459,20 @@ export default function ProfileForm({
                               </span>
                             </>
                           )}
-                          <FormControl className="w-full">
-                            <Input
-                              {...field}
-                              placeholder="Your email"
-                              readOnly={!!defaultValues?.email}
-                              className={clsx(
-                                defaultValues?.email && "w-full font-semibold",
-                              )}
-                            />
-                          </FormControl>
-                          <FormMessage />
+                          <div className="flex w-full flex-col gap-1">
+                            <FormControl className="w-full">
+                              <Input
+                                {...field}
+                                placeholder="Your email"
+                                readOnly={!!defaultValues?.email}
+                                className={clsx(
+                                  defaultValues?.email &&
+                                    "w-full font-semibold",
+                                )}
+                              />
+                            </FormControl>
+                            <FormMessage className="text-xs" />
+                          </div>
                         </div>
                       </FormItem>
                     );
@@ -501,7 +501,6 @@ export default function ProfileForm({
                       <FormItem className="w-full">
                         <FormLabel className="flex items-start gap-1">
                           Your mobile number
-                          <span className="text-xs">*</span>
                         </FormLabel>
                         <FormControl>
                           <div className="flex w-full gap-2">
@@ -560,9 +559,6 @@ export default function ProfileForm({
                       <FormItem>
                         <FormLabel className="flex items-start gap-1">
                           Enter OTP
-                          <span className="text-muted-foreground text-xs">
-                            *
-                          </span>
                         </FormLabel>
                         <FormControl>
                           <Controller
