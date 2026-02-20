@@ -52,12 +52,29 @@ export async function updateUserAccountStatus({
   } catch (error) {
     console.error("Error updating user account status:", error);
     throw new Error(
-      error instanceof Error ? error.message : "Failed to update user status",
+      error instanceof Error ? error.message : "Failed to update user status"
     );
   }
 }
 
-export const updateUser = async ({
+export const updateUserFirebaseMethods = async () => {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("firebaseAuthToken")?.value;
+
+  if (!token) {
+    throw new Error("Unauthorized - No token found");
+  }
+  const decodedToken = await auth.verifyIdToken(token);
+  const uid = decodedToken.uid;
+
+  await fireStore
+    .collection("users")
+    .doc(uid)
+    .update({ firebaseAuth: decodedToken.firebase, updatedAt: new Date() });
+
+  return { success: true };
+};
+export const updateUserPhoto = async ({
   userId,
   photoUrl,
 }: {

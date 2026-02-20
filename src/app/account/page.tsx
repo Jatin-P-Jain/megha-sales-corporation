@@ -22,14 +22,6 @@ export default async function Account() {
   if (!user) {
     redirect("/");
   }
-  const isPasswordProvider = user.providerData.find(
-    (provider) => provider.providerId === "password",
-  );
 
-
-  return (
-    <AccountPage
-      isPasswordProvider={isPasswordProvider ? true : false}
-    />
-  );
+  return <AccountPage />;
 }

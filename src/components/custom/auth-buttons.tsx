@@ -221,9 +221,9 @@ export default function AuthButtons() {
                 </span>
               )}
 
-              <div className="flex w-full items-center justify-between gap-2">
+              <div className="flex w-full md:items-center justify-between gap-2 flex-col md:flex-row">
                 {clientUser.userType && (
-                  <span className="bg-muted rounded-full px-2 py-0.5 text-xs font-semibold">
+                  <span className="bg-muted rounded-full px-2 py-0.5 text-xs font-semibold w-fit">
                     {toTitleCase(clientUser.userType)}
                   </span>
                 )}

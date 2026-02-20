@@ -1,15 +1,7 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState, useEffect, ChangeEvent, ReactNode } from "react";
-import UpdatePasswordForm from "./update-password";
 import Image from "next/image";
 import { useAuth } from "@/context/useAuth";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -17,7 +9,6 @@ import clsx from "clsx";
 import { ref, uploadBytesResumable } from "firebase/storage";
 import { storage } from "@/firebase/client";
 import { toast } from "sonner";
-import { updateUser } from "./actions";
 import imageUrlFormatter from "@/lib/image-urlFormatter";
 import {
   CopyIcon,
@@ -33,10 +24,8 @@ import {
   User,
   Building2,
   FileText,
-  Shield,
   BadgeCheck,
   BadgeX,
-  KeyRound,
   Hash,
   ArrowRight,
 } from "lucide-react";
@@ -52,20 +41,27 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 
-import type { AccountStatus, FirebaseAuthData } from "@/types/user"; // adjust path if needed
+import type { AccountStatus } from "@/types/user"; // adjust path if needed
 import { BusinessProfile } from "@/data/businessProfile";
+import FirebaseAuthMethods from "./firebase-auth-methods";
+import { useRecaptcha } from "@/hooks/useRecaptcha";
+import { useLinkAuthProviders } from "@/hooks/useLinkAuthProviders";
+import { setToken } from "@/context/actions";
+import { updateUserFirebaseMethods, updateUserPhoto } from "./actions";
 
 type AccountStatusUI = Exclude<AccountStatus, never>;
 
-export default function AccountPage({
-  isPasswordProvider,
-}: {
-  isPasswordProvider: boolean;
-}) {
+export default function AccountPage() {
   const [hasHydrated, setHasHydrated] = useState(false);
   useEffect(() => setHasHydrated(true), []);
 
-  const { clientUser, clientUserLoading, setClientUser } = useAuth();
+  const {
+    clientUser,
+    clientUserLoading,
+    setClientUser,
+    refreshClientUser,
+    currentUser,
+  } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -78,6 +74,20 @@ export default function AccountPage({
 
   const [photo, setPhoto] = useState<string>("");
   const [moreOpen, setMoreOpen] = useState(false);
+
+  const recaptchaVerifier = useRecaptcha({ enabled: true }); // your existing hook
+  const { linkGoogle, startLinkPhone } = useLinkAuthProviders({
+    user: currentUser,
+    recaptchaVerifier: recaptchaVerifier.verifier,
+    onToken: async (idToken, refreshToken) => {
+      await setToken(idToken, refreshToken);
+    },
+    onLinked: async () => {
+      await updateUserFirebaseMethods();
+      await refreshClientUser();
+    },
+    toast,
+  });
 
   useEffect(() => {
     if (clientUser?.photoUrl) setPhoto(clientUser.photoUrl);
@@ -259,7 +269,6 @@ export default function AccountPage({
   };
 
   const statusInfo = getAccountStatusInfo(accountStatus);
-  const StatusIcon = statusInfo.icon;
 
   const handlePhotoChange = async (event: ChangeEvent<HTMLInputElement>) => {
     if (!clientUser?.uid) return;
@@ -296,7 +305,7 @@ export default function AccountPage({
         );
       });
 
-      await updateUser({ userId: clientUser.uid, photoUrl: imagePath });
+      await updateUserPhoto({ userId: clientUser.uid, photoUrl: imagePath });
 
       const formatted = imageUrlFormatter(imagePath);
       setPhoto(formatted);
@@ -394,207 +403,13 @@ export default function AccountPage({
     );
   };
 
-  // Note: your Firestore shows identities values as arrays (e.g. phone: ["+91..."])
-  // so handle both string | string[] safely without changing your global type.
-  const FirebaseAuthCard = ({ fa }: { fa: FirebaseAuthData }) => {
-    const identities = (fa.identities ?? {}) as Record<string, unknown>;
-    const identityEntries = Object.entries(identities); // providerKey -> unknown (usually string[])
-
-    const providerMeta = (providerId?: string) => {
-      const id = (providerId ?? "").toLowerCase();
-      const meta: Record<
-        string,
-        {
-          label: string;
-          Icon: React.ComponentType<{ className?: string }>;
-          hint: string;
-          tone: string;
-        }
-      > = {
-        phone: {
-          label: "Phone number",
-          Icon: Phone,
-          hint: "You sign in using an OTP (SMS verification).",
-          tone: "text-indigo-700",
-        },
-        password: {
-          label: "Email & password",
-          Icon: Mail,
-          hint: "You sign in using your email and a password.",
-          tone: "text-sky-700",
-        },
-        email: {
-          label: "Email",
-          Icon: Mail,
-          hint: "You sign in using your email.",
-          tone: "text-sky-700",
-        },
-      };
-
-      return (
-        meta[id] ?? {
-          label: providerId || "Unknown provider",
-          Icon: User,
-          hint: "Your sign-in method couldn't be determined.",
-          tone: "text-zinc-700",
-        }
-      );
-    };
-
-    const maskPhone = (phone: string) => {
-      const s = (phone ?? "").trim();
-      if (!s) return "-";
-      const last4 = s.slice(-4);
-      const ccMatch = s.match(/^\+\d{1,3}/)?.[0] ?? "";
-      return ccMatch ? `${ccMatch}•••••${last4}` : `•••••${last4}`;
-    };
-
-    const maskEmail = (email: string) => {
-      const s = (email ?? "").trim();
-      if (!s || !s.includes("@")) return s || "-";
-      const [local, domain] = s.split("@");
-      const first = local.slice(0, 1);
-      return `${first}••••@${domain}`;
-    };
-
-    const asStringArray = (v: unknown): string[] => {
-      if (Array.isArray(v)) return v.map(String).filter(Boolean);
-      if (typeof v === "string" && v.trim()) return [v.trim()];
-      return [];
-    };
-
-    const formatIdentifier = (providerKey: string, value: string) => {
-      const key = providerKey.toLowerCase();
-      if (key === "phone") return maskPhone(value);
-      if (key === "password" || key === "email") return maskEmail(value);
-      return value;
-    };
-
-    const primary = providerMeta(fa.sign_in_provider);
-    const primaryIdentifiers = asStringArray(identities[fa.sign_in_provider]);
-    const primaryPretty = primaryIdentifiers.map((v) =>
-      formatIdentifier(fa.sign_in_provider, v),
-    );
-
-    const linkedProviders = identityEntries
-      .map(([k]) => providerMeta(k).label)
-      .filter(Boolean);
-    const linkedProvidersText = linkedProviders.length
-      ? Array.from(new Set(linkedProviders)).join(", ")
-      : "None";
-
-    return (
-      <div className="space-y-3 rounded-md border bg-white p-3">
-        <div className="flex items-center gap-2 text-sm font-semibold text-zinc-900">
-          <Shield className="h-4 w-4" />
-          Sign-in details
-        </div>
-
-        <div className="rounded-md bg-zinc-50 p-3">
-          <div className="flex items-start gap-2">
-            <primary.Icon className={clsx("mt-0.5 h-4 w-4", primary.tone)} />
-            <div className="space-y-1">
-              <div className="text-sm font-semibold text-zinc-900">
-                You created your account using {primary.label}.
-              </div>
-              <div className="text-muted-foreground text-sm">
-                {primary.hint}
-              </div>
-
-              {primaryPretty.length > 0 && (
-                <div className="text-muted-foreground text-sm">
-                  Primary identifier:{" "}
-                  <span className="font-medium text-zinc-900">
-                    {primaryPretty.join(", ")}
-                  </span>
-                </div>
-              )}
-
-              <div className="text-muted-foreground text-sm">
-                Linked sign-in methods:{" "}
-                <span className="font-medium text-zinc-900">
-                  {linkedProvidersText}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <ul className="grid grid-cols-1 gap-3">
-          <DetailRow
-            label="Primary sign-in method"
-            value={primary.label}
-            icon={KeyRound}
-          />
-        </ul>
-
-        <div className="space-y-2">
-          <div className="text-muted-foreground text-sm">
-            Linked identifiers
-          </div>
-
-          {identityEntries.length ? (
-            <div className="rounded-md border bg-white">
-              <ul className="divide-y">
-                {identityEntries.map(([providerKey, raw]) => {
-                  const meta = providerMeta(providerKey);
-                  const values = asStringArray(raw);
-                  const displayValues = values.length
-                    ? values.map((v) => formatIdentifier(providerKey, v))
-                    : ["-"];
-
-                  return (
-                    <li
-                      key={providerKey}
-                      className="flex items-start justify-between gap-4 p-3"
-                    >
-                      <div className="flex items-start gap-2">
-                        <meta.Icon
-                          className={clsx("mt-0.5 h-4 w-4", meta.tone)}
-                        />
-                        <div>
-                          <div className="text-sm font-semibold text-zinc-900">
-                            {meta.label}
-                          </div>
-                          <div className="text-muted-foreground text-xs">
-                            Provider key:{" "}
-                            <span className="font-mono">{providerKey}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="text-right">
-                        {displayValues.map((v) => (
-                          <div
-                            key={`${providerKey}-${v}`}
-                            className="text-xs font-semibold break-all text-zinc-900"
-                          >
-                            {v}
-                          </div>
-                        ))}
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ) : (
-            <div className="text-muted-foreground text-sm">
-              No linked identifiers found.
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
-
   if (!hasHydrated || clientUserLoading || !clientUser) return null;
 
   return (
     <div>
-      <Card className="mx-auto w-full max-w-screen-md">
-        <CardHeader>
-          <CardTitle className="text-primary text-center text-2xl font-semibold">
+      <Card className="mx-auto w-full max-w-screen-md p-2 py-4 md:p-4 md:py-6">
+        <CardHeader className="p-0">
+          <CardTitle className="text-primary p-0 text-center text-xl font-semibold md:text-2xl">
             My Account
           </CardTitle>
 
@@ -604,21 +419,17 @@ export default function AccountPage({
                 className={clsx(
                   statusInfo.bgColor,
                   statusInfo.borderColor,
-                  "items-center",
+                  "items-start p-2",
                 )}
               >
-                <StatusIcon className={clsx("h-4 w-4", statusInfo.color)} />
                 <AlertDescription
                   className={clsx("ml-2 text-sm", statusInfo.color)}
                 >
-                  <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
-                    <div>
-                      <span className="font-semibold">{statusInfo.title}</span>{" "}
-                      {statusInfo.description}
-                    </div>
-                    <div className="mt-1 md:mt-0">
-                      <StatusBadge status={accountStatus} />
-                    </div>
+                  <div className="flex flex-col gap-1 text-xs md:flex-row md:items-center md:justify-between">
+                    <span className="text-center text-sm font-semibold">
+                      {statusInfo.title}
+                    </span>{" "}
+                    {statusInfo.description}
                   </div>
                 </AlertDescription>
               </Alert>
@@ -687,7 +498,7 @@ export default function AccountPage({
           </div>
         </CardHeader>
 
-        <CardContent className="flex flex-col gap-4">
+        <CardContent className="flex flex-col gap-4 p-0">
           {/* Role banner */}
           {isAdmin ? (
             <div className="rounded-md bg-green-100 p-2 px-4 text-center text-sm text-green-700">
@@ -805,7 +616,11 @@ export default function AccountPage({
 
           {/* Firebase auth card moved OUT of collapsible */}
           {clientUser.firebaseAuth ? (
-            <FirebaseAuthCard fa={clientUser.firebaseAuth} />
+            <FirebaseAuthMethods
+              firebaseAuth={clientUser.firebaseAuth}
+              onLinkGoogle={linkGoogle}
+              onLinkPhone={() => startLinkPhone("+919479201388")}
+            />
           ) : null}
 
           {/* Show collapsible ONLY when GST number AND GST details are present */}
@@ -836,32 +651,6 @@ export default function AccountPage({
             </Collapsible>
           ) : null}
         </CardContent>
-
-        {isPasswordProvider && (
-          <>
-            <Separator />
-            <CardContent>
-              <div className="text-md mb-5 font-semibold text-cyan-950">
-                Update your password
-              </div>
-              <UpdatePasswordForm />
-            </CardContent>
-          </>
-        )}
-
-        {!isAdmin && (
-          <>
-            <Separator />
-            <CardFooter className="flex flex-col gap-1">
-              <div className="flex w-full text-xl font-bold text-red-600">
-                Delete account
-              </div>
-              <span className="flex w-full text-sm text-zinc-700 italic">
-                You will be deleting your account permanently. Are you sure?
-              </span>
-            </CardFooter>
-          </>
-        )}
       </Card>
     </div>
   );

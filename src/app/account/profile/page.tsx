@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ProfileForm from "./profile-form";
-import { Info } from "lucide-react";
+import { CircleUserRound } from "lucide-react";
 import { cookies } from "next/headers";
 import { auth } from "@/firebase/server";
 import { UserType } from "@/types/user";
@@ -48,16 +48,17 @@ export default async function Profile() {
   return (
     <Card className="gap-0">
       <CardHeader className="">
-        <CardTitle className="flex flex-col items-center justify-center gap-4 text-2xl">
-          Complete Your Profile
-          <span className="flex items-center justify-center gap-2 text-xs font-medium text-yellow-800 md:text-sm">
-            <Info className="size-6 text-yellow-800" />
+        <CardTitle className="flex flex-col items-center justify-center gap-4 text-xl md:text-2xl">
+          <div className="flex items-center gap-2">
+            <CircleUserRound className="size-8" /> Complete Your Profile
+          </div>
+          <span className="flex items-center justify-center gap-2 text-xs font-medium text-yellow-700">
             Please ensure your profile information is accurate and complete.
             This will help us provide you with the best experience and services.
           </span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="">
+      <CardContent className="py-2">
         <ProfileForm
           defaultValues={{
             email: mergedUser.email,

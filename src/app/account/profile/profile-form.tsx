@@ -30,6 +30,7 @@ import { useEffect, useState } from "react";
 import {
   CheckCircle2,
   CloudDownload,
+  Info,
   Loader2,
   Loader2Icon,
   SaveIcon,
@@ -43,12 +44,12 @@ import { updateUserProfile } from "./action";
 import { DecodedIdToken } from "firebase-admin/auth";
 import GoogleIcon from "@/components/custom/google-icon.svg";
 import Image from "next/image";
-import { GoogleAuthProvider, linkWithPopup } from "firebase/auth";
-import { setToken } from "@/context/actions";
 import { GstDetails } from "@/components/custom/gst-details";
 import { GstDetailsData } from "@/data/businessProfile";
 import { useRouter, useSearchParams } from "next/navigation";
 import { formatBusinessProfile } from "@/lib/business-profile-formatter";
+import { useLinkAuthProviders } from "@/hooks/useLinkAuthProviders";
+import { setToken } from "@/context/actions";
 
 export default function ProfileForm({
   defaultValues,
@@ -60,13 +61,10 @@ export default function ProfileForm({
   const searchParams = useSearchParams();
   const router = useRouter();
   const auth = useAuth();
-
-  const user = auth.currentUser;
   const recaptchaVerifier = useRecaptcha({ enabled: true });
   const [isVerified, setIsVerified] = useState(
     !!defaultValues?.phone ? true : false,
   );
-  const [isAccountLinking, setIsAccountLinking] = useState(false);
   const [gstDetails, setGstDetails] = useState<GstDetailsData | null>(null);
   const [loadingGst, setLoadingGst] = useState(false);
   const [gstError, setGstError] = useState<string | null>(null);
@@ -90,6 +88,18 @@ export default function ProfileForm({
       resetRecaptcha: recaptchaVerifier.reset,
       isProfile: true,
     });
+
+  const { linkGoogle, linkingGoogle } = useLinkAuthProviders({
+    user: auth.currentUser,
+    recaptchaVerifier: recaptchaVerifier.verifier,
+    onToken: async (idToken, refreshToken) => {
+      await setToken(idToken, refreshToken);
+    },
+    onLinked: async () => {
+      await auth.refreshClientUser();
+    },
+    toast,
+  });
 
   const form = useForm<z.infer<typeof userProfileSchema>>({
     resolver: zodResolver(userProfileSchema),
@@ -122,56 +132,6 @@ export default function ProfileForm({
   }, [phoneNumber]);
 
   const [isPhoneValid, setIsPhoneValid] = useState(false);
-
-  const handleLinkGoogle = async () => {
-    setIsAccountLinking(true);
-    if (!user) {
-      setIsAccountLinking(false);
-      return;
-    }
-
-    try {
-      const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({ prompt: "select_account" });
-
-      const result = await linkWithPopup(user, provider);
-      await user.reload();
-
-      const freshToken = await user.getIdToken(false);
-      await setToken(freshToken, user.refreshToken);
-
-      form.setValue("email", result.user.email ?? "");
-      console.log("result user", result.user);
-      const googleProfile = result.user.providerData.find(
-        (p) => p.providerId === "google.com",
-      );
-
-      const photoUrl = googleProfile?.photoURL ?? null;
-
-      // ✅ NEW: store google photo URL in the form only on linking
-      form.setValue("photoUrl", photoUrl ?? "", {
-        shouldDirty: true,
-        shouldValidate: false,
-      });
-
-      toast.success("Success!", {
-        description:
-          "Your Google account linked! You can now sign in with Google moving forward.",
-      });
-      setIsAccountLinking(false);
-      console.log("form values", form.getValues());
-    } catch (err: unknown) {
-      console.log("err --", err);
-      setIsAccountLinking(false);
-      if ((err as { code: string }).code === "auth/credential-already-in-use") {
-        toast.error("Error!", {
-          description: "This Google account is already linked to another user.",
-        });
-      } else {
-        toast.error("An error occurred while linking google account");
-      }
-    }
-  };
 
   const gstNumber = form.watch("gstNumber");
   const panNumber = form.watch("panNumber");
@@ -424,42 +384,12 @@ export default function ProfileForm({
                   name="email"
                   render={({ field }) => {
                     return (
-                      <FormItem className="">
-                        <FormLabel className="flex items-start gap-1">
-                          Your email 
-                        </FormLabel>
-                        <div className="flex w-full flex-col-reverse items-start justify-center md:flex-row-reverse">
-                          {isPhoneAuthProvider && !defaultValues?.email && (
-                            <>
-                              <Button
-                                type="button"
-                                className="mx-auto w-full cursor-pointer rounded-full text-[14px] shadow-md md:w-fit"
-                                variant={"outline"}
-                                onClick={handleLinkGoogle}
-                              >
-                                {isAccountLinking ? (
-                                  <>
-                                    <Loader2Icon className="size-4 animate-spin" />
-                                    Linking Google Account
-                                  </>
-                                ) : (
-                                  <>
-                                    <Image
-                                      src={GoogleIcon}
-                                      alt=""
-                                      width={25}
-                                      height={25}
-                                    />
-                                    Link Google Account
-                                  </>
-                                )}
-                              </Button>
-                              <span className="m-2 flex justify-center text-[14px] text-zinc-500 md:mx-4">
-                                or
-                              </span>
-                            </>
-                          )}
+                      <FormItem className="flex flex-col gap-1">
+                        <div className="flex w-full flex-col items-center justify-center gap-1 md:gap-4 md:flex-row md:items-end">
                           <div className="flex w-full flex-col gap-1">
+                            <FormLabel className="flex items-start gap-1">
+                              Your email
+                            </FormLabel>
                             <FormControl className="w-full">
                               <Input
                                 {...field}
@@ -473,17 +403,46 @@ export default function ProfileForm({
                             </FormControl>
                             <FormMessage className="text-xs" />
                           </div>
+                          <span className="text-muted-foreground md:mb-2 flex justify-center text-sm">
+                            or
+                          </span>
+                          {!defaultValues?.email && (
+                            <Button
+                              type="button"
+                              className="cursor-pointer rounded-full shadow-md w-full md:w-auto"
+                              variant={"outline"}
+                              onClick={linkGoogle}
+                            >
+                              {linkingGoogle ? (
+                                <>
+                                  <Loader2Icon className="size-4 animate-spin" />
+                                  Linking Google Account
+                                </>
+                              ) : (
+                                <>
+                                  <Image
+                                    src={GoogleIcon}
+                                    alt=""
+                                    width={25}
+                                    height={25}
+                                  />
+                                  Link Google Account
+                                </>
+                              )}
+                            </Button>
+                          )}
                         </div>
+                        {!defaultValues?.email && (
+                          <span className="flex items-center gap-1 text-xs text-sky-900">
+                            <Info className="size-3" />
+                            The Google Account linked will allow
+                            you to log in using Google in the future.
+                          </span>
+                        )}
                       </FormItem>
                     );
                   }}
                 />
-                {!isPhoneAuthProvider && !defaultValues?.email && (
-                  <span className="mt-1 text-xs text-yellow-700">
-                    This email (Google Account) will be linked to your account.
-                    You will be able to log in using it in the future.
-                  </span>
-                )}
               </div>
 
               <div className="flex flex-col gap-2">
