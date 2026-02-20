@@ -18,7 +18,7 @@ export default function GoogleOneTapWrapper() {
   const nextPath = useMemo(() => {
     if (!auth.clientUser) return null;
     const profileComplete = auth.clientUser.profileComplete;
-    if (!profileComplete) return "/account/profile";
+    if (!profileComplete) return "/account/profile?from=login";
     return redirect ?? "/";
   }, [auth.clientUser, redirect]);
 
