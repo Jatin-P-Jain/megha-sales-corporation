@@ -17,19 +17,14 @@ export default function LoginForm() {
     if (loginSuccess && !auth.clientUserLoading && auth.clientUser) {
       const profileComplete = auth.clientUser.profileComplete;
 
-      console.log(
-        "🔍 Login redirect check - Profile complete:",
-        profileComplete,
-      );
-
       if (profileComplete) {
         if (redirect) {
-          router.replace(redirect);
+          router.push(redirect);
         } else {
-          router.replace("/");
+          router.push("/");
         }
       } else {
-        router.replace("/account/profile");
+        router.push("/account/profile?from=login");
       }
 
       // Reset the flag

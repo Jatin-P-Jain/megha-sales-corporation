@@ -39,9 +39,11 @@ const HomePage = ({
     <>
       <PushHandler />
       {currentUser && clientUserLoading ? (
-        <div className="bg-muted text-muted-foreground mx-auto flex min-h-30 w-1/2 flex-col items-center justify-center gap-4 rounded-lg p-4">
+        <div className="bg-muted text-muted-foreground mx-auto flex h-full flex-col items-center justify-center gap-4 rounded-lg p-4">
           <Loader2Icon className="size-5 animate-spin" />
-          <span className="text-sm font-semibold">Please wait...</span>
+          <span className="text-sm font-semibold">
+            We are fetching your account details...
+          </span>
         </div>
       ) : (
         <>
@@ -58,7 +60,7 @@ const HomePage = ({
                 href="/admin-dashboard"
                 className="w-3/4 rounded-lg border-1 border-green-700 p-1 px-2 text-center text-sm font-semibold text-green-700"
               >
-                Go to Admin Dasboard
+                Go to Admin Dashboard
               </Link>
             )}
             {profileComplete && !isAdmin && accountStatus === "pending" && (
@@ -74,7 +76,7 @@ const HomePage = ({
                 </Button>
               </UserUnlockDialog>
             )}
-            {!profileComplete && (
+            {currentUser && !profileComplete && (
               <UserUnlockDialog>
                 <Button
                   variant={"secondary"}

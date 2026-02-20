@@ -26,6 +26,7 @@ import { loginUserMobileSchema } from "@/validation/loginUser";
 import { useEffect, useState } from "react";
 import {
   CheckCircle2,
+  CircleUserRound,
   CloudDownload,
   Info,
   Loader2,
@@ -47,6 +48,8 @@ import { formatBusinessProfile } from "@/lib/business-profile-formatter";
 import { useLinkAuthProviders } from "@/hooks/useLinkAuthProviders";
 import { setToken } from "@/context/actions";
 import { updateUserFirebaseMethods } from "../actions";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import ProfileCompleteAsk from "./profile-complete-ask";
 
 export default function ProfileForm() {
   const searchParams = useSearchParams();
@@ -58,6 +61,7 @@ export default function ProfileForm() {
 
   const [isVerified, setIsVerified] = useState(false);
   const [isPhoneLinked, setIsPhoneLinked] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const [gstDetails, setGstDetails] = useState<GstDetailsData | null>(null);
   const [loadingGst, setLoadingGst] = useState(false);
@@ -99,7 +103,9 @@ export default function ProfileForm() {
 
   useEffect(() => {
     if (!clientUser) return;
-
+    if (searchParams.get("from") === "login") {
+      setDialogOpen(true);
+    }
     const nextDefaults = {
       displayName: clientUser.displayName || "",
       email: clientUser.email || "",
@@ -321,205 +327,53 @@ export default function ProfileForm() {
 
   return (
     <>
-      <div className="relative">
-        {auth.loading && (
-          <div className="absolute top-0 z-30 flex h-full w-full items-center justify-center gap-2 bg-zinc-400/10">
-            <div className="flex h-1/8 w-3/4 items-center justify-center gap-2 rounded-lg border-1 bg-white">
-              <Loader2 className="animate-spin" />
-              Fetching your profile...
+      <ProfileCompleteAsk open={dialogOpen} setOpen={setDialogOpen} />
+      <Card className="gap-0">
+        <CardHeader className="">
+          <CardTitle className="flex flex-col items-center justify-center gap-4 text-xl md:text-2xl">
+            <div className="flex items-center gap-2">
+              <CircleUserRound className="size-8" /> Complete Your Profile
             </div>
-          </div>
-        )}
-
-        <Form {...form}>
-          <form onSubmit={onSubmit}>
-            <fieldset
-              className="flex flex-col gap-5"
-              disabled={form.formState.isSubmitting}
-            >
-              {/* Display name */}
-              <FormField
-                control={form.control}
-                name="displayName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-start gap-1">
-                      Your Name
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="Name"
-                        readOnly={!!clientUser?.displayName}
-                        className={clsx(
-                          clientUser?.displayName && "font-semibold",
-                        )}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Email + link google */}
-              <div className="flex flex-col">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col gap-1">
-                      <div className="flex w-full flex-col items-center justify-center gap-1 md:flex-row md:items-end md:gap-4">
-                        <div className="flex w-full flex-col gap-1">
-                          <FormLabel className="flex items-start gap-1">
-                            Your email
-                          </FormLabel>
-                          <FormControl className="w-full">
-                            <Input
-                              {...field}
-                              placeholder="Your email"
-                              readOnly={!!clientUser?.email}
-                              className={clsx(
-                                clientUser?.email && "w-full font-semibold",
-                              )}
-                            />
-                          </FormControl>
-                          <FormMessage className="text-xs" />
-                        </div>
-
-                        {!clientUser?.email && (
-                          <div className="flex flex-col md:flex-row">
-                            <span className="text-muted-foreground flex justify-center text-sm md:mb-2">
-                              or
-                            </span>
-                            <Button
-                              type="button"
-                              className="w-full cursor-pointer rounded-full shadow-md md:w-auto"
-                              variant={"outline"}
-                              onClick={linkGoogle}
-                            >
-                              {linkingGoogle ? (
-                                <>
-                                  <Loader2Icon className="size-4 animate-spin" />
-                                  Linking Google Account
-                                </>
-                              ) : (
-                                <>
-                                  <Image
-                                    src={GoogleIcon}
-                                    alt=""
-                                    width={25}
-                                    height={25}
-                                  />
-                                  Link Google Account
-                                </>
-                              )}
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-
-                      {!clientUser?.email && (
-                        <span className="flex items-center gap-1 text-xs text-sky-900">
-                          <Info className="size-4" />
-                          The Google Account linked will allow you to log in
-                          using Google in the future.
-                        </span>
-                      )}
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {/* Phone + OTP */}
-              <div className="flex flex-col gap-2">
-                <div
-                  className={clsx(
-                    !otpSent &&
-                      !isVerified &&
-                      "flex w-full items-center justify-center gap-2",
-                  )}
-                >
-                  <FormField
-                    control={form.control}
-                    name="phone"
-                    render={({ field }) => (
-                      <FormItem className="w-full">
-                        <FormLabel className="flex items-start gap-1">
-                          Your mobile number
-                        </FormLabel>
-                        <FormControl>
-                          <div className="flex w-full gap-2">
-                            <Input
-                              {...field}
-                              placeholder="Mobile Number"
-                              readOnly={!!clientUser?.phone || otpSent}
-                              className={clsx(
-                                !!clientUser?.phone && "font-semibold",
-                              )}
-                            />
-                            {!otpSent && !isVerified && (
-                              <Button
-                                disabled={!isPhoneValid}
-                                type="button"
-                                onClick={() => sendOtp(phoneNumber)}
-                              >
-                                {sendingOtp ? (
-                                  <>
-                                    <Loader2 className="size-4 animate-spin" />{" "}
-                                    Sending OTP
-                                  </>
-                                ) : (
-                                  "Verify"
-                                )}
-                              </Button>
-                            )}
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+            <span className="flex items-center justify-center gap-2 text-xs font-medium text-yellow-700">
+              Please ensure your profile information is accurate and complete.
+              This will help us provide you with the best experience and
+              services.
+            </span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="py-2">
+          <div className="relative">
+            {auth.loading && (
+              <div className="absolute top-0 z-30 flex h-full w-full items-center justify-center gap-2 bg-zinc-400/10">
+                <div className="flex h-1/8 w-3/4 items-center justify-center gap-2 rounded-lg border-1 bg-white">
+                  <Loader2 className="animate-spin" />
+                  Fetching your profile...
                 </div>
-
-                {/* ✅ Ask only Google-login users if they want linking */}
-                {!isVerified && (
-                  <span className="flex items-start gap-1 text-xs text-sky-900">
-                    <Info className="size-4" />
-                    The mobile number will be linked to your account for OTP
-                    login in the future
-                  </span>
-                )}
-
-                {isVerified && (
-                  <div className="inline-flex w-fit gap-1 text-xs font-semibold text-green-700">
-                    <CheckCircle2 className="size-4 text-green-700" />
-                    {isVerified && "Verified"}{" "}
-                    {isPhoneLinked && "and Linked to your email account."}
-                  </div>
-                )}
               </div>
+            )}
 
-              {/* OTP entry */}
-              {otpSent && !isVerified && (
-                <div className="grid grid-cols-1 items-end justify-center gap-4 md:grid-cols-[8fr_1fr] md:gap-4">
+            <Form {...form}>
+              <form onSubmit={onSubmit}>
+                <fieldset
+                  className="flex flex-col gap-5"
+                  disabled={form.formState.isSubmitting}
+                >
+                  {/* Display name */}
                   <FormField
                     control={form.control}
-                    name="otp"
+                    name="displayName"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-start gap-1">
-                          Enter OTP
+                          Your Name
                         </FormLabel>
                         <FormControl>
-                          <Controller
-                            name={field.name}
-                            control={form.control}
-                            render={({ field: { value, onChange } }) => (
-                              <OTPInput
-                                value={value ?? ""}
-                                onChange={onChange}
-                                length={6}
-                              />
+                          <Input
+                            {...field}
+                            placeholder="Name"
+                            readOnly={!!clientUser?.displayName}
+                            className={clsx(
+                              clientUser?.displayName && "font-semibold",
                             )}
                           />
                         </FormControl>
@@ -528,232 +382,408 @@ export default function ProfileForm() {
                     )}
                   />
 
-                  <Button
-                    disabled={isVerifying}
-                    type="button"
-                    className="w-full"
-                    onClick={async () => {
-                      const code = otp ?? "";
-                      if (!code) return;
-                      await verifyOtp(code);
-                    }}
-                  >
-                    {isVerifying ? (
-                      <>
-                        <Loader2 className="size-4 animate-spin" />
-                        Verifying OTP
-                      </>
-                    ) : (
-                      "Verify OTP"
-                    )}
-                  </Button>
-                </div>
-              )}
-
-              {/* Admin banner */}
-              {isAdmin ? (
-                <div className="rounded-md bg-green-100 p-4 text-center">
-                  <p className="text-sm font-semibold text-green-800">
-                    ✅ You are an admin. Only basic profile information is
-                    required.
-                  </p>
-                </div>
-              ) : (
-                <>
-                  {/* Business type */}
-                  <FormField
-                    control={form.control}
-                    name="businessType"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-col">
-                        <FormLabel className="flex items-start gap-1">
-                          Business type
-                        </FormLabel>
-                        <FormControl>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select your business type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="retailer">Retailer</SelectItem>
-                              <SelectItem value="wholesaler">
-                                Wholesaler
-                              </SelectItem>
-                              <SelectItem value="distributor">
-                                Distributor
-                              </SelectItem>
-                              <SelectItem value="other">Other</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {selectedBusinessType === "other" && (
+                  {/* Email + link google */}
+                  <div className="flex flex-col">
                     <FormField
                       control={form.control}
-                      name="otherBusinessType"
+                      name="email"
                       render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="Specify your role or business type"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
+                        <FormItem className="flex flex-col gap-1">
+                          <div className="flex w-full flex-col items-center justify-center gap-1 md:flex-row md:items-end md:gap-4">
+                            <div className="flex w-full flex-col gap-1">
+                              <FormLabel className="flex items-start gap-1">
+                                Your email
+                              </FormLabel>
+                              <FormControl className="w-full">
+                                <Input
+                                  {...field}
+                                  placeholder="Your email"
+                                  readOnly={!!clientUser?.email}
+                                  className={clsx(
+                                    clientUser?.email && "w-full font-semibold",
+                                  )}
+                                />
+                              </FormControl>
+                              <FormMessage className="text-xs" />
+                            </div>
 
-                  {/* Hidden businessIdType synced with idType */}
-                  <FormField
-                    control={form.control}
-                    name="businessIdType"
-                    render={({ field }) => (
-                      <input type="hidden" {...field} value={idType} />
-                    )}
-                  />
-
-                  <div className="space-y-2">
-                    <FormLabel>Business Identification Through</FormLabel>
-                    <Select
-                      value={idType}
-                      onValueChange={(value: "pan" | "gst") => {
-                        setIdType(value);
-                        setGstDetails(null);
-                        setGstError(null);
-                        form.setValue("businessIdType", value);
-                        form.setValue("gstNumber", "");
-                        form.setValue("panNumber", "");
-                      }}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="gst">GST Number</SelectItem>
-                        <SelectItem value="pan">PAN Card</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <p className="text-muted-foreground text-xs">
-                      {idType === "gst"
-                        ? "Select this if you have a GST registration"
-                        : "Select this if you don't have GST but have a PAN card"}
-                    </p>
-                  </div>
-
-                  {/* GST/PAN */}
-                  {idType === "gst" ? (
-                    <FormField
-                      control={form.control}
-                      name="gstNumber"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>GSTIN Number</FormLabel>
-                          <FormControl>
-                            <div className="flex flex-col gap-2 md:flex-row">
-                              <Input
-                                {...field}
-                                placeholder="Enter 15-digit GSTIN"
-                                maxLength={15}
-                                className={clsx(
-                                  gstDetails &&
-                                    "border-green-300 ring-1 ring-green-200",
-                                  !gstDetails &&
-                                    field.value?.length === 15 &&
-                                    "border-orange-300",
-                                )}
-                              />
-                              {!loadingGst && (
+                            {!clientUser?.email && (
+                              <div className="flex flex-col md:flex-row">
+                                <span className="text-muted-foreground flex justify-center text-sm md:mb-2">
+                                  or
+                                </span>
                                 <Button
                                   type="button"
-                                  variant="outline"
-                                  onClick={() =>
-                                    fetchGstDetails(field.value || "")
-                                  }
-                                  disabled={
-                                    field.value?.length !== 15 ||
-                                    loadingGst ||
-                                    isSubmitting
-                                  }
-                                  className="gap-2"
+                                  className="w-full cursor-pointer rounded-full shadow-md md:w-auto"
+                                  variant={"outline"}
+                                  onClick={linkGoogle}
                                 >
-                                  <span>Get Details</span>
-                                  <CloudDownload className="h-4 w-4" />
+                                  {linkingGoogle ? (
+                                    <>
+                                      <Loader2Icon className="size-4 animate-spin" />
+                                      Linking Google Account
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Image
+                                        src={GoogleIcon}
+                                        alt=""
+                                        width={25}
+                                        height={25}
+                                      />
+                                      Link Google Account
+                                    </>
+                                  )}
                                 </Button>
-                              )}
-                            </div>
-                          </FormControl>
+                              </div>
+                            )}
+                          </div>
 
-                          {loadingGst && (
-                            <div className="mt-3">
-                              <GstDetails data={null} loading={true} />
-                            </div>
+                          {!clientUser?.email && (
+                            <span className="flex items-center gap-1 text-xs text-sky-900">
+                              <Info className="size-4" />
+                              The Google Account linked will allow you to log in
+                              using Google in the future.
+                            </span>
                           )}
-                          {gstDetails && (
-                            <div className="mt-3">
-                              <GstDetails data={gstDetails} loading={false} />
-                            </div>
-                          )}
-                          {gstError && (
-                            <div className="text-destructive">{gstError}</div>
-                          )}
-
-                          <FormMessage />
                         </FormItem>
                       )}
                     />
-                  ) : (
-                    <FormField
-                      control={form.control}
-                      name="panNumber"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>PAN Number</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="Enter 10-character PAN"
-                              maxLength={10}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
+                  </div>
+
+                  {/* Phone + OTP */}
+                  <div className="flex flex-col gap-2">
+                    <div
+                      className={clsx(
+                        !otpSent &&
+                          !isVerified &&
+                          "flex w-full items-center justify-center gap-2",
                       )}
-                    />
+                    >
+                      <FormField
+                        control={form.control}
+                        name="phone"
+                        render={({ field }) => (
+                          <FormItem className="w-full">
+                            <FormLabel className="flex items-start gap-1">
+                              Your mobile number
+                            </FormLabel>
+                            <FormControl>
+                              <div className="flex w-full gap-2">
+                                <Input
+                                  {...field}
+                                  placeholder="Mobile Number"
+                                  readOnly={!!clientUser?.phone || otpSent}
+                                  className={clsx(
+                                    !!clientUser?.phone && "font-semibold",
+                                  )}
+                                />
+                                {!otpSent && !isVerified && (
+                                  <Button
+                                    disabled={!isPhoneValid}
+                                    type="button"
+                                    onClick={() => sendOtp(phoneNumber)}
+                                  >
+                                    {sendingOtp ? (
+                                      <>
+                                        <Loader2 className="size-4 animate-spin" />{" "}
+                                        Sending OTP
+                                      </>
+                                    ) : (
+                                      "Verify"
+                                    )}
+                                  </Button>
+                                )}
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    {/* ✅ Ask only Google-login users if they want linking */}
+                    {!isVerified && (
+                      <span className="flex items-start gap-1 text-xs text-sky-900">
+                        <Info className="size-4" />
+                        The mobile number will be linked to your account for OTP
+                        login in the future
+                      </span>
+                    )}
+
+                    {isVerified && (
+                      <div className="inline-flex w-fit gap-1 text-xs font-semibold text-green-700">
+                        <CheckCircle2 className="size-4 text-green-700" />
+                        {isVerified && "Verified"}{" "}
+                        {isPhoneLinked && "and Linked to your email account."}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* OTP entry */}
+                  {otpSent && !isVerified && (
+                    <div className="grid grid-cols-1 items-end justify-center gap-4 md:grid-cols-[8fr_1fr] md:gap-4">
+                      <FormField
+                        control={form.control}
+                        name="otp"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-start gap-1">
+                              Enter OTP
+                            </FormLabel>
+                            <FormControl>
+                              <Controller
+                                name={field.name}
+                                control={form.control}
+                                render={({ field: { value, onChange } }) => (
+                                  <OTPInput
+                                    value={value ?? ""}
+                                    onChange={onChange}
+                                    length={6}
+                                  />
+                                )}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <Button
+                        disabled={isVerifying}
+                        type="button"
+                        className="w-full"
+                        onClick={async () => {
+                          const code = otp ?? "";
+                          if (!code) return;
+                          await verifyOtp(code);
+                        }}
+                      >
+                        {isVerifying ? (
+                          <>
+                            <Loader2 className="size-4 animate-spin" />
+                            Verifying OTP
+                          </>
+                        ) : (
+                          "Verify OTP"
+                        )}
+                      </Button>
+                    </div>
                   )}
-                </>
-              )}
 
-              {/* Submit */}
-              <Button
-                disabled={!canSubmit()}
-                type="submit"
-                className="w-full cursor-pointer tracking-wide uppercase"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="size-4 animate-spin" />
-                    Saving Profile
-                  </>
-                ) : (
-                  <>
-                    <SaveIcon className="size-4" />
-                    Save Profile
-                  </>
-                )}
-              </Button>
-            </fieldset>
-          </form>
-        </Form>
-      </div>
+                  {/* Admin banner */}
+                  {isAdmin ? (
+                    <div className="rounded-md bg-green-100 p-4 text-center">
+                      <p className="text-sm font-semibold text-green-800">
+                        ✅ You are an admin. Only basic profile information is
+                        required.
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Business type */}
+                      <FormField
+                        control={form.control}
+                        name="businessType"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col">
+                            <FormLabel className="flex items-start gap-1">
+                              Business type
+                            </FormLabel>
+                            <FormControl>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
+                                <SelectTrigger className="w-full">
+                                  <SelectValue placeholder="Select your business type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="retailer">
+                                    Retailer
+                                  </SelectItem>
+                                  <SelectItem value="wholesaler">
+                                    Wholesaler
+                                  </SelectItem>
+                                  <SelectItem value="distributor">
+                                    Distributor
+                                  </SelectItem>
+                                  <SelectItem value="other">Other</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {selectedBusinessType === "other" && (
+                        <FormField
+                          control={form.control}
+                          name="otherBusinessType"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  placeholder="Specify your role or business type"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      )}
+
+                      {/* Hidden businessIdType synced with idType */}
+                      <FormField
+                        control={form.control}
+                        name="businessIdType"
+                        render={({ field }) => (
+                          <input type="hidden" {...field} value={idType} />
+                        )}
+                      />
+
+                      <div className="space-y-2">
+                        <FormLabel>Business Identification Through</FormLabel>
+                        <Select
+                          value={idType}
+                          onValueChange={(value: "pan" | "gst") => {
+                            setIdType(value);
+                            setGstDetails(null);
+                            setGstError(null);
+                            form.setValue("businessIdType", value);
+                            form.setValue("gstNumber", "");
+                            form.setValue("panNumber", "");
+                          }}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="gst">GST Number</SelectItem>
+                            <SelectItem value="pan">PAN Card</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <p className="text-muted-foreground text-xs">
+                          {idType === "gst"
+                            ? "Select this if you have a GST registration"
+                            : "Select this if you don't have GST but have a PAN card"}
+                        </p>
+                      </div>
+
+                      {/* GST/PAN */}
+                      {idType === "gst" ? (
+                        <FormField
+                          control={form.control}
+                          name="gstNumber"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>GSTIN Number</FormLabel>
+                              <FormControl>
+                                <div className="flex flex-col gap-2 md:flex-row">
+                                  <Input
+                                    {...field}
+                                    placeholder="Enter 15-digit GSTIN"
+                                    maxLength={15}
+                                    className={clsx(
+                                      gstDetails &&
+                                        "border-green-300 ring-1 ring-green-200",
+                                      !gstDetails &&
+                                        field.value?.length === 15 &&
+                                        "border-orange-300",
+                                    )}
+                                  />
+                                  {!loadingGst && (
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      onClick={() =>
+                                        fetchGstDetails(field.value || "")
+                                      }
+                                      disabled={
+                                        field.value?.length !== 15 ||
+                                        loadingGst ||
+                                        isSubmitting
+                                      }
+                                      className="gap-2"
+                                    >
+                                      <span>Get Details</span>
+                                      <CloudDownload className="h-4 w-4" />
+                                    </Button>
+                                  )}
+                                </div>
+                              </FormControl>
+
+                              {loadingGst && (
+                                <div className="mt-3">
+                                  <GstDetails data={null} loading={true} />
+                                </div>
+                              )}
+                              {gstDetails && (
+                                <div className="mt-3">
+                                  <GstDetails
+                                    data={gstDetails}
+                                    loading={false}
+                                  />
+                                </div>
+                              )}
+                              {gstError && (
+                                <div className="text-destructive">
+                                  {gstError}
+                                </div>
+                              )}
+
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      ) : (
+                        <FormField
+                          control={form.control}
+                          name="panNumber"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>PAN Number</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  placeholder="Enter 10-character PAN"
+                                  maxLength={10}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      )}
+                    </>
+                  )}
+
+                  {/* Submit */}
+                  <Button
+                    disabled={!canSubmit()}
+                    type="submit"
+                    className="w-full cursor-pointer tracking-wide uppercase"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="size-4 animate-spin" />
+                        Saving Profile
+                      </>
+                    ) : (
+                      <>
+                        <SaveIcon className="size-4" />
+                        Save Profile
+                      </>
+                    )}
+                  </Button>
+                </fieldset>
+              </form>
+            </Form>
+          </div>
+        </CardContent>
+      </Card>
     </>
   );
 }
