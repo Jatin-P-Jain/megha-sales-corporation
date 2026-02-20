@@ -310,13 +310,13 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
 
             {/* Actions: primary + dropdown */}
             {canShowActions && (
-              <div className="flex w-full flex-col gap-2 md:w-auto md:flex-row md:items-center">
+              <div className="flex flex-row gap-2 md:items-center">
                 {showPrimaryApprove && (
                   <Button
                     onClick={handleApprove}
                     disabled={isApproving}
                     size="sm"
-                    className="w-full bg-green-600 hover:bg-green-700 md:w-auto"
+                    className="w-full bg-green-600 hover:bg-green-700 md:w-fit"
                   >
                     {isApproving ? (
                       <>
@@ -337,7 +337,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="w-full md:w-auto"
+                      className="w-auto"
                       disabled={
                         isApproving || isRejecting || isSuspending || isDeleting
                       }

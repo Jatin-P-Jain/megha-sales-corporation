@@ -4,10 +4,11 @@ export const userProfileDataSchema = z
   .object({
     userType: z
       .enum(["admin", "customer", "accountant", "dispatcher", "other"])
-      .or(z.string()),
+      .or(z.string())
+      .optional(),
     email: z.string().email(),
     displayName: z.string().min(2, "Name must be at least 2 characters"),
-    businessIdType: z.enum(["pan", "gst"]),
+    businessIdType: z.enum(["pan", "gst"]).optional(),
     panNumber: z.string().optional(), // ✅ Kept optional
     gstNumber: z.string().optional(), // ✅ Kept optional
     phone: z

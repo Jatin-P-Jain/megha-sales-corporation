@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 import BrandsGrid from "./brands-grid";
 import { Brand } from "@/types/brand";
-import Link from "next/link";
 import { PushHandler } from "@/lib/firebase/push-handler";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import UserUnlockDialog from "@/components/custom/user-unlock-dialog";
@@ -54,15 +53,6 @@ const HomePage = ({
                 {userName || userPhone || "Guest"} 🙋🏻
               </span>
             </h1>
-
-            {isAdmin && (
-              <Link
-                href="/admin-dashboard"
-                className="w-3/4 rounded-lg border-1 border-green-700 p-1 px-2 text-center text-sm font-semibold text-green-700"
-              >
-                Go to Admin Dashboard
-              </Link>
-            )}
             {profileComplete && !isAdmin && accountStatus === "pending" && (
               <UserUnlockDialog>
                 <Button

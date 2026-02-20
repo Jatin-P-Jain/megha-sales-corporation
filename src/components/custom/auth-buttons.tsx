@@ -163,7 +163,7 @@ export default function AuthButtons() {
               <Avatar
                 className={clsx(
                   "size-8 bg-white ring-2",
-                  isAdmin && "ring-green-500",
+                  isAdmin && "ring-1",
                   (!isAdmin && accountStatus === "pending") ||
                     (!profileComplete && "ring-yellow-500"),
                   !isAdmin && accountStatus === "rejected" && "ring-red-500",

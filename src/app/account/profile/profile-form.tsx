@@ -43,7 +43,7 @@ import GoogleIcon from "@/components/custom/google-icon.svg";
 import Image from "next/image";
 import { GstDetails } from "@/components/custom/gst-details";
 import { GstDetailsData } from "@/data/businessProfile";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { formatBusinessProfile } from "@/lib/business-profile-formatter";
 import { useLinkAuthProviders } from "@/hooks/useLinkAuthProviders";
 import { setToken } from "@/context/actions";
@@ -53,6 +53,7 @@ import ProfileCompleteAsk from "./profile-complete-ask";
 
 export default function ProfileForm() {
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const router = useRouter();
   const auth = useAuth();
   const clientUser = auth?.clientUser;
@@ -67,6 +68,8 @@ export default function ProfileForm() {
   const [loadingGst, setLoadingGst] = useState(false);
   const [gstError, setGstError] = useState<string | null>(null);
   const [idType, setIdType] = useState<"pan" | "gst">("gst");
+
+  const [didInit, setDidInit] = useState(false);
 
   const isAdmin = clientUser?.userType === "admin";
 
@@ -87,6 +90,8 @@ export default function ProfileForm() {
   const form = useForm<z.infer<typeof userProfileSchema>>({
     resolver: zodResolver(userProfileSchema),
     mode: "onChange",
+    reValidateMode: "onChange",
+    criteriaMode: "all",
     defaultValues: {
       displayName: "",
       email: "",
@@ -103,8 +108,15 @@ export default function ProfileForm() {
 
   useEffect(() => {
     if (!clientUser) return;
-    if (searchParams.get("from") === "login") {
+    const from = searchParams.get("from");
+    if (from === "login") {
       setDialogOpen(true);
+
+      const next = new URLSearchParams(searchParams.toString());
+      next.delete("from");
+
+      const qs = next.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname); // removes param without full reload [web:177]
     }
     const nextDefaults = {
       displayName: clientUser.displayName || "",
@@ -119,15 +131,16 @@ export default function ProfileForm() {
       gstNumber: clientUser.businessProfile?.gstin || "",
       panNumber: clientUser.panNumber || "",
       photoUrl: clientUser.photoUrl || "",
-      otp: "",
-      otherBusinessType: "",
+      otp: undefined,
+      otherBusinessType: undefined,
     };
 
     form.reset(nextDefaults);
     setIdType((nextDefaults.businessIdType ?? "gst") as "gst" | "pan");
     setIsVerified(!!clientUser.phone);
     setIsPhoneLinked(!!clientUser.phone && !!clientUser.email);
-  }, [clientUser, form]);
+    setDidInit(true);
+  }, [clientUser?.uid, didInit, form]);
 
   const selectedBusinessType = form.watch("businessType");
   const phoneNumber = form.watch("phone");
@@ -281,6 +294,39 @@ export default function ProfileForm() {
   };
 
   const { isSubmitting } = form.formState;
+  // useEffect(() => {
+  //   const values = form.getValues();
+  //   const result = userProfileSchema.safeParse(values);
+  //   console.log(
+  //     "zod safeParse success?",
+  //     result.success,
+  //     result.success ? null : JSON.stringify(result.error.issues, null, 2),
+  //   );
+  // }, [form.watch()]);
+
+  // useEffect(() => {
+  //   console.log("submit blockers", {
+  //     isVerified,
+  //     isSubmitting,
+  //     loadingGst,
+  //     isValid: form.formState.isValid,
+  //     errors: Object.keys(form.formState.errors),
+  //     idType,
+
+  //     gstDetailsPresent: gstDetails !== null,
+  //     panNumber,
+  //   });
+  // }, [
+  //   isVerified,
+  //   isSubmitting,
+  //   loadingGst,
+  //   form.formState.isValid,
+  //   form.formState.errors,
+  //   idType,
+
+  //   gstDetails,
+  //   panNumber,
+  // ]);
 
   const canSubmit = () => {
     if (isAdmin) {
@@ -292,6 +338,14 @@ export default function ProfileForm() {
         !!form.watch("phone")
       );
     }
+    // console.log({
+    //   isVerified,
+    //   isSubmitting,
+    //   gstDetails,
+    //   panNumber,
+    //   isValid: form.formState.isValid,
+    //   formErrors: Object.keys(form.formState.errors),
+    // });
 
     return (
       isVerified &&
@@ -303,6 +357,14 @@ export default function ProfileForm() {
         : panNumber && panNumber.length === 10)
     );
   };
+
+  // useEffect(() => {
+  //   if (Object.keys(form.formState.errors).length) {
+  //     console.log("RHF errors:", form.formState.errors);
+  //   }
+  // }, [form.formState.errors]);
+
+  // console.log(canSubmit());
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -652,9 +714,15 @@ export default function ProfileForm() {
                             setIdType(value);
                             setGstDetails(null);
                             setGstError(null);
-                            form.setValue("businessIdType", value);
-                            form.setValue("gstNumber", "");
-                            form.setValue("panNumber", "");
+                            form.setValue("businessIdType", value, {
+                              shouldValidate: true,
+                            });
+                            form.setValue("gstNumber", "", {
+                              shouldValidate: true,
+                            });
+                            form.setValue("panNumber", "", {
+                              shouldValidate: true,
+                            });
                           }}
                         >
                           <SelectTrigger className="w-full">
