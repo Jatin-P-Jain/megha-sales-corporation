@@ -107,7 +107,7 @@ export default function ProfileForm() {
   });
 
   useEffect(() => {
-    if (!clientUser) return;
+    if (!clientUser || didInit) return;
     const from = searchParams.get("from");
     if (from === "login") {
       setDialogOpen(true);
@@ -161,6 +161,7 @@ export default function ProfileForm() {
   const { otpReset, otpSent, sendingOtp, isVerifying, sendOtp, verifyOtp } =
     useMobileOtp({
       onSuccess: async () => {
+        setIsVerified(true);
         setIsPhoneLinked(true);
         await updateUserProfile(
           {
@@ -256,7 +257,9 @@ export default function ProfileForm() {
         );
       }
 
-      await auth.currentUser?.getIdToken(true);
+      const token = (await auth.currentUser?.getIdToken(true)) || "";
+      const refreshToken = auth.currentUser?.refreshToken || "";
+      await setToken(token, refreshToken);
       const freshClientUser = await auth.refreshClientUser();
 
       const waSendResp = await fetch("/api/wa-send-message", {

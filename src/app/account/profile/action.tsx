@@ -42,8 +42,9 @@ export const updateUserProfile = async (
       .doc(uid)
       .update({ ...userData, updatedAt: new Date() });
 
+    const userRecord = await auth.getUser(uid);
     await auth.setCustomUserClaims(uid, {
-      ...(decodedToken.customClaims || {}),
+      ...(userRecord.customClaims || {}),
       profileComplete,
     });
 
