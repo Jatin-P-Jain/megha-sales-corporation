@@ -75,13 +75,14 @@ export const whatsappTemplates: Record<
     name: "enquiry_received_to_admin",
     language: { code: "en" },
     bodyParamsCount: 5,
-    hasButton: false,
+    hasButton: true,
     resolveParams: ({
       adminName,
       customerName,
       customerPhone,
       customerMessage,
       customerWANumber,
+      enquiryId,
     }) => ({
       bodyParams: [
         adminName,
@@ -90,6 +91,7 @@ export const whatsappTemplates: Record<
         customerMessage,
         customerWANumber,
       ],
+      buttonParams: [enquiryId],
     }),
   },
 };

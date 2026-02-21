@@ -127,6 +127,7 @@ export async function POST(req: NextRequest) {
       customerWANumber,
       customerBusinessProfile,
       toNumbers,
+      enquiryId,
     } = raw;
 
     if (!isTemplateKey(templateKey)) {
@@ -181,6 +182,7 @@ export async function POST(req: NextRequest) {
             customerBusinessProfile: isString(customerBusinessProfile)
               ? customerBusinessProfile
               : "",
+            enquiryId: isString(enquiryId) ? enquiryId : "",
           },
         });
 
