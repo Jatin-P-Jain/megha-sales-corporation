@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import LoginForm from "./login-form";
-import { InfoIcon } from "lucide-react";
+import { InfoIcon, LogIn } from "lucide-react";
 
 export default async function Login({
   searchParams,
@@ -13,7 +13,9 @@ export default async function Login({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex justify-center text-2xl">Login</CardTitle>
+        <CardTitle className="flex items-center justify-center text-xl md:text-2xl gap-2">
+          Login <LogIn className="font-bold" />
+        </CardTitle>
       </CardHeader>
       <CardContent>
         {sessionExpired && (

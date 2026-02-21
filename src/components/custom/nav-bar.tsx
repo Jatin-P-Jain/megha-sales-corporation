@@ -25,9 +25,9 @@ export default function NavBar({ children }: NavBarProps) {
         <GoogleOneTapWrapper />
       </Suspense>
       <CartProvider>
-        <nav className="fixed top-0 right-0 left-0 z-50 flex flex-wrap items-center justify-between bg-cyan-950 p-3 px-4 text-white shadow-md md:px-6 lg:px-10">
+        <nav className="fixed top-0 right-0 left-0 z-50 flex flex-wrap items-end justify-between bg-cyan-950 p-3 px-4 text-white shadow-md md:px-6 lg:px-10">
           {/* Left: logo + name, then Contact Us right beside it */}
-          <div className="flex flex-wrap items-center gap-3 md:gap-6">
+          <div className="flex flex-wrap items-center justify-center gap-3 md:gap-6">
             <Link
               href="/"
               className="flex items-center justify-end gap-2 text-lg tracking-wider uppercase md:gap-4 md:text-2xl"
@@ -35,7 +35,7 @@ export default function NavBar({ children }: NavBarProps) {
               <div className="relative h-10 w-7 md:h-12 md:w-9">
                 <Image
                   src={JinendraLogo}
-                  alt=""
+                  alt="Jai Jinendra Logo"
                   width={100}
                   height={100}
                   className="object-center"
@@ -44,7 +44,7 @@ export default function NavBar({ children }: NavBarProps) {
               <div className="relative h-10 w-8 md:h-12 md:w-10">
                 <Image
                   src={BrandLogo}
-                  alt=""
+                  alt="Megha Sales Corporation Logo"
                   width={100}
                   height={100}
                   className="object-center"
@@ -57,12 +57,12 @@ export default function NavBar({ children }: NavBarProps) {
                 </span>
               </div>
             </Link>
-
+            <div className="bg-accent h-12 w-px mt-2 hidden" />
             <ContactUsLink />
           </div>
 
           {/* Right: Search then Account/Auth */}
-          <div className="flex items-center gap-3">
+          <div className="mb-1 flex h-full items-center gap-3">
             {!isMobile && (
               <>
                 <SearchProducts buttonClassName="text-primary font-medium md:!px-20" />

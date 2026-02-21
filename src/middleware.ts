@@ -61,6 +61,8 @@ export async function middleware(request: NextRequest) {
       user_id?: string;
       profileComplete?: boolean;
     };
+    console.log({ decoded });
+
     admin = decoded.admin;
     exp = decoded.exp;
     profileComplete = decoded.profileComplete;
@@ -94,11 +96,7 @@ export async function middleware(request: NextRequest) {
 
   // 7) Profile-complete guard (using custom claim, no fetch)
   //    Only enforce on specific routes, and skip the profile page itself.
-  const profileRequiredPaths = [
-    "/cart",
-    "/checkout",
-    "/order-history",
-  ];
+  const profileRequiredPaths = ["/cart", "/checkout", "/order-history"];
 
   const requiresProfile = profileRequiredPaths.some(
     (p) => pathname === p || pathname.startsWith(p + "/")
