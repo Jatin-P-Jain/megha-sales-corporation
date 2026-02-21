@@ -76,6 +76,7 @@ export function EnquiryDialog({ trigger }: EnquiryDialogProps) {
           customerPhone: phone,
           customerMessage: message,
           customerWANumber: phone,
+          enquiryId: `enquiry-${Date.now()}`, // Generate a unique enquiry ID
         }),
       });
 

@@ -85,6 +85,7 @@ export default function HelpDialog({
           customerEmail: form.email,
           customerMessage: form.message,
           customerWANumber: form.phone,
+          enquiryId: `enquiry-${Date.now()}`, // Generate a unique enquiry ID
         }),
       });
 
