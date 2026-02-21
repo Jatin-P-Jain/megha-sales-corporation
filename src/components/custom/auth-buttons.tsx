@@ -379,7 +379,7 @@ export default function AuthButtons() {
   return (
     <Link
       href="/login"
-      className="flex items-center justify-center gap-1 hover:underline"
+      className="flex items-center justify-center gap-1 hover:underline text-base font-medium"
     >
       Login <LogInIcon className="size-4" />
     </Link>
