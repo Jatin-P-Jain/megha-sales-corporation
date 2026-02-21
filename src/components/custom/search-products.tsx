@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { SearchIcon, RotateCcwIcon, Loader } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,33 +27,17 @@ import { Product } from "@/types/product";
 import ProductCard from "./product-card";
 import { useAuth } from "@/context/useAuth";
 import { searchProducts } from "@/lib/algolia/search";
-
-function useMediaQuery(query: string) {
-  const [matches, setMatches] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const mql = window.matchMedia(query);
-    const onChange = () => setMatches(mql.matches);
-
-    onChange();
-    mql.addEventListener("change", onChange);
-    return () => mql.removeEventListener("change", onChange);
-  }, [query]);
-
-  return matches;
-}
+import useIsMobile from "@/hooks/useIsMobile";
 
 export default function SearchProducts({
   variant = "outline",
   buttonClassName,
-  showText = true,
 }: {
   variant?: "outline" | "default";
   buttonClassName?: string;
   showText?: boolean;
 }) {
+  const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchedPhrase, setSearchedPhrase] = useState("");
@@ -63,8 +47,6 @@ export default function SearchProducts({
   const auth = useAuth();
   const isAdmin = auth?.clientUser?.userType === "admin" || false;
   const inputRef = useRef<HTMLInputElement | null>(null);
-
-  const isDesktop = useMediaQuery("(min-width: 768px)");
 
   const resetState = () => {
     setSearchQuery("");
@@ -101,9 +83,14 @@ export default function SearchProducts({
     }
   };
 
-  const TriggerButton = (
+  const TriggerButton = isMobile ? (
+    <Button variant={"ghost"} className="p-0!">
+      <SearchIcon className="size-5" />
+    </Button>
+  ) : (
     <Button variant={variant} className={clsx(buttonClassName, "shadow-lg")}>
-      <SearchIcon /> {showText && <> Search Products</>}
+      <SearchIcon />
+      Search Products
     </Button>
   );
 
@@ -132,7 +119,7 @@ export default function SearchProducts({
             ✅ Found <strong>{result.length} product(s)</strong> for your
             search: <strong>{searchedPhrase}</strong>
           </div>
-          <div className="z-100 flex  flex-col gap-3 overflow-auto p-1 md:max-h-130 px-4">
+          <div className="z-100 flex flex-col gap-3 overflow-auto p-1 px-4 md:max-h-130">
             {result.map((product) => (
               <div className="flex-1" key={product.id}>
                 <ProductCard
@@ -176,7 +163,7 @@ export default function SearchProducts({
     </Button>
   );
 
-  if (isDesktop) {
+  if (!isMobile) {
     return (
       <Dialog
         open={open}

@@ -31,6 +31,36 @@ export const userProfileDataSchema = z
   // ✅ NEW: Self-validation for PAN - only triggers after exactly 10 chars
   .refine(
     (data) => {
+      const displayName = data.displayName;
+      return !displayName || displayName.length >= 2;
+    },
+    {
+      message: "Name must be at least 2 characters",
+      path: ["displayName"],
+    }
+  )
+  .refine(
+    (data) => {
+      const email = data.email;
+      return !email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    },
+    {
+      message: "Invalid email format",
+      path: ["email"],
+    }
+  )
+  .refine(
+    (data) => {
+      const phone = data.phone;
+      return !phone || phone.length !== 10 || /^[6-9]\d{9}$/.test(phone);
+    },
+    {
+      message: "Invalid phone format (must be like 9876543210)",
+      path: ["phone"],
+    }
+  )
+  .refine(
+    (data) => {
       const pan = data.panNumber;
       return !pan || pan.length !== 10 || /^[A-Z]{5}\d{4}[A-Z]{1}$/.test(pan);
     },
@@ -55,11 +85,16 @@ export const userProfileDataSchema = z
     }
   );
 
-export const mobileOtpSchema = z.object({
-  otp: z
-    .string()
-    .regex(/^\d{6}$/, { message: "Invalid OTP" })
-    .optional(),
-});
+export const mobileOtpSchema = z
+  .object({
+    otp: z
+      .string()
+      .regex(/^\d{6}$/, { message: "Invalid OTP" })
+      .optional(),
+  })
+  .refine((data) => !data.otp || /^\d{6}$/.test(data.otp), {
+    message: "Invalid OTP format",
+    path: ["otp"],
+  });
 
 export const userProfileSchema = userProfileDataSchema.and(mobileOtpSchema);
