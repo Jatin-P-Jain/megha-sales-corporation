@@ -300,8 +300,21 @@ export default function AuthButtons() {
                 </DropdownMenuItem>
               </>
             ) : (
-              <>
-                <DropdownMenuItem asChild>
+              <div>
+                {!profileComplete && (
+                  <span className="text-muted-foreground px-2 text-xs">
+                    (Complete your profile)
+                  </span>
+                )}
+                {profileComplete && accountStatus !== "approved" && (
+                  <span className="text-muted-foreground px-2 text-xs">
+                    (Waiting for approval)
+                  </span>
+                )}
+                <DropdownMenuItem
+                  asChild
+                  disabled={!profileComplete || accountStatus !== "approved"}
+                >
                   <Link
                     href="/cart"
                     className="flex items-center justify-between"
@@ -310,7 +323,10 @@ export default function AuthButtons() {
                     <ShoppingCartIcon className="text-secondary-foreground" />
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
+                <DropdownMenuItem
+                  asChild
+                  disabled={!profileComplete || accountStatus !== "approved"}
+                >
                   <Link
                     href="/order-history"
                     className="flex items-center justify-between"
@@ -319,7 +335,7 @@ export default function AuthButtons() {
                     <ClipboardList className="text-secondary-foreground" />
                   </Link>
                 </DropdownMenuItem>
-              </>
+              </div>
             )}
 
             <DropdownMenuSeparator />
@@ -379,7 +395,7 @@ export default function AuthButtons() {
   return (
     <Link
       href="/login"
-      className="flex items-center justify-center gap-1 hover:underline text-base font-medium"
+      className="flex items-center justify-center gap-1 text-base font-medium hover:underline"
     >
       Login <LogInIcon className="size-4" />
     </Link>
