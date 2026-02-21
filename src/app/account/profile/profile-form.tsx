@@ -294,15 +294,15 @@ export default function ProfileForm() {
   };
 
   const { isSubmitting } = form.formState;
-  // useEffect(() => {
-  //   const values = form.getValues();
-  //   const result = userProfileSchema.safeParse(values);
-  //   console.log(
-  //     "zod safeParse success?",
-  //     result.success,
-  //     result.success ? null : JSON.stringify(result.error.issues, null, 2),
-  //   );
-  // }, [form.watch()]);
+  useEffect(() => {
+    const values = form.getValues();
+    const result = userProfileSchema.safeParse(values);
+    console.log(
+      "zod safeParse success?",
+      result.success,
+      result.success ? null : JSON.stringify(result.error.issues, null, 2),
+    );
+  }, [form.watch()]);
 
   // useEffect(() => {
   //   console.log("submit blockers", {
