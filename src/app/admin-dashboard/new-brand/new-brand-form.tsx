@@ -10,10 +10,10 @@ import { storage } from "@/firebase/client";
 import BrandForm from "@/components/custom/brand-form";
 import { brandSchema } from "@/validation/brandSchema";
 import { createBrand } from "./actions";
-import { saveBrandMedia } from "../actions";
 import { BrandMedia } from "@/types/brand";
 import { useState } from "react";
 import { slugify } from "@/lib/utils";
+import { saveBrandMedia } from "../brands/action";
 
 export default function NewBrandForm() {
   const auth = useAuth();

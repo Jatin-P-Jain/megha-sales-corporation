@@ -26,7 +26,8 @@ export default function AboutAutoPartsShop() {
             At <strong>Megha Sales Corporation</strong>, established in{" "}
             <strong>2001</strong>, we specialize in wholesale distribution of
             high-quality <strong>automobile spare parts</strong> for{" "}
-            <strong>Light</strong> and <strong>Heavy Commercial Vehicles</strong>. We are your one-stop
+            <strong>Light</strong> and{" "}
+            <strong>Heavy Commercial Vehicles</strong>. We are your one-stop
             destination for reliable and performance-tested components.
           </p>
           <div>

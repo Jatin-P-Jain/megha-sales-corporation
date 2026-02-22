@@ -16,8 +16,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { deleteProduct } from "./actions";
-import { updateBrandProcuctCount } from "@/app/admin-dashboard/actions";
 import { useAuth } from "@/context/useAuth";
+import { updateBrandProcuctCount } from "@/app/admin-dashboard/brands/action";
 
 export default function DeleteProductButton({
   brandId,

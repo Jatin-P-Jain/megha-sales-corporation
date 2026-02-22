@@ -15,6 +15,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { Loader2Icon, SendIcon, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/context/useAuth";
 import { toast } from "sonner";
+import { saveEnquiry } from "@/app/admin-dashboard/enquires/actions";
+import { generateSequenceId } from "@/lib/firebase/generateSequenceId";
 
 type EnquiryDialogProps = {
   trigger: React.ReactNode;
@@ -64,9 +66,14 @@ export function EnquiryDialog({ trigger }: EnquiryDialogProps) {
       toast.error("Message is required.");
       return;
     }
-
     setIsSending(true);
+
     try {
+      // 1. Generate custom Enquiry ID
+      const customEnquiryId = await generateSequenceId("enquiries");
+      if (!customEnquiryId) {
+        throw new Error("Failed to generate enquiry ID");
+      }
       const response = await fetch("/api/wa-send-message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -76,12 +83,28 @@ export function EnquiryDialog({ trigger }: EnquiryDialogProps) {
           customerPhone: phone,
           customerMessage: message,
           customerWANumber: phone,
-          enquiryId: `enquiry-${Date.now()}`, // Generate a unique enquiry ID
+          enquiryId: customEnquiryId, // Use the generated custom enquiry ID
         }),
       });
-
       if (response.ok) {
         setIsSent(true);
+        const savedEnquiryResponse = await saveEnquiry({
+          id: customEnquiryId,
+          enquiryText: message,
+          sentBy: auth.clientUser || {
+            name: name,
+            phone: phone,
+            email: email,
+          },
+          status: "pending",
+          created: new Date(),
+          updated: new Date(),
+        });
+        if (savedEnquiryResponse.success === false) {
+          throw new Error(
+            savedEnquiryResponse.error || "Failed to save enquiry",
+          );
+        }
         toast.success("Thanks for Reaching Out!", {
           description: "We've received your enquiry. You'll hear from us soon!",
         });
@@ -123,7 +146,10 @@ export function EnquiryDialog({ trigger }: EnquiryDialogProps) {
       <DialogTrigger asChild>
         <div onClick={() => setIsOpen(true)}>{trigger}</div>
       </DialogTrigger>
-      <DialogContent className="p-4 md:p-8">
+      <DialogContent
+        className="p-4 md:p-8"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>Contact & Enquiry</DialogTitle>
         </DialogHeader>
@@ -165,7 +191,9 @@ export function EnquiryDialog({ trigger }: EnquiryDialogProps) {
                     required
                     ref={nameInputRef}
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => {
+                      setName(e.target.value);
+                    }}
                     readOnly={isLoggedIn}
                     className={isLoggedIn ? "font-semibold" : ""}
                   />

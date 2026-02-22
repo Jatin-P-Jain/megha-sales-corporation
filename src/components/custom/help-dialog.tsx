@@ -18,6 +18,8 @@ import { UserData } from "@/types/user";
 import clsx from "clsx";
 import { toast } from "sonner";
 import { Loader2Icon, SendIcon } from "lucide-react";
+import { generateSequenceId } from "@/lib/firebase/generateSequenceId";
+import { saveEnquiry } from "@/app/admin-dashboard/enquires/actions";
 
 export default function HelpDialog({
   open,
@@ -75,6 +77,11 @@ export default function HelpDialog({
 
     setSubmitting(true);
     try {
+      // 1. Generate custom Enquiry ID
+      const customEnquiryId = await generateSequenceId("enquiries");
+      if (!customEnquiryId) {
+        throw new Error("Failed to generate enquiry ID");
+      }
       const response = await fetch("/api/wa-send-message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -85,16 +92,32 @@ export default function HelpDialog({
           customerEmail: form.email,
           customerMessage: form.message,
           customerWANumber: form.phone,
-          enquiryId: `enquiry-${Date.now()}`, // Generate a unique enquiry ID
+          enquiryId: customEnquiryId, // Use the generated custom enquiry ID
         }),
       });
 
       if (response.ok) {
+        const savedEnquiryResponse = await saveEnquiry({
+          id: customEnquiryId,
+          enquiryText: form.message,
+          sentBy: user || {
+            name: form.name,
+            phone: form.phone,
+            email: form.email,
+          },
+          status: "pending",
+          created: new Date(),
+          updated: new Date(),
+        });
+        if (savedEnquiryResponse.success === false) {
+          throw new Error(
+            savedEnquiryResponse.error || "Failed to save enquiry",
+          );
+        }
         toast.success("Thanks for Reaching Out!", {
           description: "We've received your enquiry. You'll hear from us soon!",
         });
         onOpenChange(false);
-
         // Keep prefill, only clear message for next time
         setForm((prev) => ({ ...prev, message: "" }));
       } else {

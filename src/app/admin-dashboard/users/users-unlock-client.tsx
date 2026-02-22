@@ -33,7 +33,7 @@ export default function UsersCardClient() {
   return (
     <UsersUnlockDialog open={open} onOpenChange={onOpenChange}>
       <Button className="w-full">
-        <Users className="mr-2 h-4 w-4" />
+        <Users className="h-4 w-4" />
         Manage Users
       </Button>
     </UsersUnlockDialog>

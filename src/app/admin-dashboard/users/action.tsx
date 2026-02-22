@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 
 export const updateStatus = async (
   { brandId, newBrandStatus }: { brandId: string; newBrandStatus: BrandStatus },
-  authToken: string
+  authToken: string,
 ) => {
   const verifiedToken = await auth.verifyIdToken(authToken);
   if (!verifiedToken.admin) {
