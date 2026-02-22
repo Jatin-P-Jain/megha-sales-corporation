@@ -74,20 +74,21 @@ export const whatsappTemplates: Record<
   enquiry_received_to_admin: {
     name: "enquiry_received_to_admin",
     language: { code: "en" },
-    bodyParamsCount: 5,
+    bodyParamsCount: 6,
     hasButton: true,
     resolveParams: ({
       adminName,
       customerName,
       customerPhone,
+      enquiryId,
       customerMessage,
       customerWANumber,
-      enquiryId,
     }) => ({
       bodyParams: [
         adminName,
         customerName,
         customerPhone,
+        enquiryId,
         customerMessage,
         customerWANumber,
       ],

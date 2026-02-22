@@ -5,7 +5,12 @@ export interface FirebaseAuthData {
   sign_in_provider: string;
 }
 
-export type AccountStatus = "pending" | "approved" | "rejected" | "suspended" | "deactivated";
+export type AccountStatus =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "suspended"
+  | "deactivated";
 
 export type BusinessType = "retailer" | "wholesaler" | "distributor" | "other";
 export type UserType =
@@ -16,7 +21,8 @@ export type UserType =
   | "other";
 
 export type UserData = {
-  uid: string;
+  uuid: string;
+  userId: string;
   userType: UserType | string | null;
   businessType?: BusinessType | string | null;
   email: string | null;
@@ -24,6 +30,7 @@ export type UserData = {
   displayName: string | null;
   gstNumber?: string;
   panNumber?: string;
+  firmName?: string;
   photoUrl?: string | null;
   businessProfile?: BusinessProfile | null;
   profileComplete?: boolean;

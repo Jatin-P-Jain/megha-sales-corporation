@@ -87,9 +87,9 @@ export const usePaginatedFirestore = <T extends Product | UserData |Order>({
 
           const docData = doc.data();
 
-          // For UserData, use uid; for Product, use id
+          // For UserData, use userId; for Product, use id
           if (collectionPath === "users") {
-            return { uid: doc.id, ...docData } as T;
+            return { uuid: doc.id, ...docData } as T;
           }
           return { id: doc.id, ...docData } as T;
         });

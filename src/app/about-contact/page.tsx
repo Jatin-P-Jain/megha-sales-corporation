@@ -24,7 +24,7 @@ import BankDetails from "@/components/custom/bank-details";
 
 export default function AboutAndContact() {
   return (
-    <div className="container mx-auto flex max-w-4xl flex-col overflow-auto p-4 gap-4">
+    <div className="container mx-auto flex max-w-4xl flex-col overflow-auto p-4 gap-4 mb-8">
       <div className="flex w-full items-center justify-between space-y-1">
         <div className="relative">
           <Image alt="" src={JainLogo} width={30} height={30} />

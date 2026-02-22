@@ -85,7 +85,7 @@ export default function CheckoutFooter() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        uid: auth.clientUser?.uid,
+        uuid: auth.clientUser?.uuid,
         title: "🛒 Order Update",
         body: `Your order #${orderResponse.orderId} has been placed!`,
         url: `${getBaseUrl()}/order-history/${orderResponse.orderId}`,

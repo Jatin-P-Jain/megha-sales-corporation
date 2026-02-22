@@ -10,6 +10,7 @@ export const userProfileDataSchema = z
     displayName: z.string().min(2, "Name must be at least 2 characters"),
     businessIdType: z.enum(["pan", "gst"]).optional(),
     panNumber: z.string().optional(), // ✅ Kept optional
+    firmName: z.string().optional(), // ✅ Kept optional
     gstNumber: z.string().optional(), // ✅ Kept optional
     phone: z
       .string()
@@ -67,6 +68,16 @@ export const userProfileDataSchema = z
     {
       message: "Invalid PAN format (must be like ABCDE1234F)",
       path: ["panNumber"],
+    }
+  )
+  .refine(
+    (data) => {
+      const firmName = data.firmName;
+      return !firmName || firmName.length >= 2;
+    },
+    {
+      message: "Firm/Business Name must be at least 2 characters",
+      path: ["firmName"],
     }
   )
   // ✅ NEW: Self-validation for GST - only triggers after exactly 15 chars

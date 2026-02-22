@@ -79,10 +79,7 @@ export default async function OrderHistoryPage({
           isUser ? "pt-30 md:pt-35" : "pt-20"
         }`}
       >
-        <OrdersList
-          isAdmin={isAdmin}
-          userId={isUser ? verified?.uid : undefined}
-        />
+        <OrdersList isAdmin={isAdmin} userId={verified?.uid} />
       </div>
     </div>
   );

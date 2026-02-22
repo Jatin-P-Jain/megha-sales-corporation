@@ -14,6 +14,7 @@ export const updateUserProfile = async (
     businessIdType?: "pan" | "gst";
     gstNumber?: string;
     panNumber?: string;
+    firmName?: string;
     businessProfile?: BusinessProfile | null;
     photoUrl?: string;
   },

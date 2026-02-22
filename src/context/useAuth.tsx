@@ -26,6 +26,7 @@ import { getDeviceMetadata } from "@/lib/utils";
 import { saveFcmToken } from "@/firebase/saveFcmToken";
 import { getMessaging, getToken } from "firebase/messaging";
 import { toast } from "sonner";
+import { generateSequenceId } from "@/lib/firebase/generateSequenceId";
 
 type AuthContextType = {
   loading: boolean;
@@ -123,14 +124,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       // Persist user in Firestore and fetch claims
       const result = await user.getIdTokenResult(false);
+      const customUserId = await generateSequenceId("users");
       const safeUser: UserData = {
-        uid: user.uid,
+        uuid: user.uid,
+        userId: customUserId,
         email: user.email ?? null,
         phone: user.phoneNumber?.slice(3) ?? null,
         displayName: user.displayName ?? null,
         userType: result.claims.admin ? "admin" : null,
         photoUrl: user.photoURL,
-        gstNumber: "",
         firebaseAuth: result.claims.firebase
           ? {
               identities: result.claims.firebase.identities ?? {},
@@ -147,7 +149,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setInactivityLimit(limit);
 
       // ✅ SET UP REAL-TIME LISTENER for user document
-      const userDocRef = doc(firestore, "users", safeUser.uid);
+      const userDocRef = doc(firestore, "users", safeUser.uuid);
 
       const unsubscribeSnapshot = onSnapshot(
         userDocRef,

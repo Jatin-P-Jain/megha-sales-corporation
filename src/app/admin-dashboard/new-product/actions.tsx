@@ -3,6 +3,7 @@
 import { auth, fireStore } from "@/firebase/server";
 import { slugifyPartNumber } from "@/lib/utils";
 import { productDataSchema } from "@/validation/productSchema";
+import { z } from "zod";
 
 export const createProduct = async (
   data: {
@@ -71,4 +72,37 @@ export const createProduct = async (
       error: e instanceof Error ? e.message : "An unknown error occurred",
     };
   }
+};
+
+export const saveProductMedia = async (
+  {
+    image,
+    productId,
+  }: {
+    image: string;
+    productId: string;
+  },
+  authtoken: string,
+) => {
+  const verifiedToken = await auth.verifyIdToken(authtoken);
+  if (!verifiedToken.admin) {
+    return {
+      error: true,
+      message: "Unauthorized",
+    };
+  }
+  const schema = z.object({
+    productId: z.string(),
+    image: z.string(),
+  });
+
+  const validation = schema.safeParse({ image, productId });
+  if (!validation.success) {
+    return {
+      error: true,
+      message: validation.error.issues[0]?.message || "An error occurred",
+    };
+  }
+
+  await fireStore.collection("products").doc(productId).update({ image });
 };

@@ -11,10 +11,10 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { ref, uploadBytesResumable, UploadTask } from "firebase/storage";
 import { storage } from "@/firebase/client";
-import { createProduct } from "./actions";
-import { saveProductMedia, updateBrandProcuctCount } from "../actions";
+import { createProduct, saveProductMedia } from "./actions";
 import { Brand } from "@/types/brand";
 import { useEffect, useState } from "react";
+import { updateBrandProcuctCount } from "../brands/action";
 
 export default function NewProductForm({ brand }: { brand?: Brand | Brand[] }) {
   const auth = useAuth();

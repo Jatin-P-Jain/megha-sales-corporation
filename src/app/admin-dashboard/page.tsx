@@ -7,8 +7,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Link from "next/link";
-import { Users, Package } from "lucide-react";
-import UsersCardClient from "./users-unlock-client";
+import { Users, Package, MessageSquareMore } from "lucide-react";
+import UsersCardClient from "./users/users-unlock-client";
 
 const AdminDashboard = async () => {
   return (
@@ -34,7 +34,7 @@ const AdminDashboard = async () => {
           <CardContent>
             <Button asChild className="w-full">
               <Link href="/admin-dashboard/brands">
-                <Package className="mr-2 h-4 w-4" />
+                <Package className="h-4 w-4" />
                 Manage Brands
               </Link>
             </Button>
@@ -53,6 +53,25 @@ const AdminDashboard = async () => {
           </CardHeader>
           <CardContent>
             <UsersCardClient />
+          </CardContent>
+        </Card>
+        <Card className="transition-shadow hover:shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquareMore className="h-5 w-5" />
+              Enquiry Management
+            </CardTitle>
+            <CardDescription>
+              View and manage enquiries, respond to user queries
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link href="/admin-dashboard/enquiries">
+                <MessageSquareMore className="h-4 w-4" />
+                View Enquiries
+              </Link>
+            </Button>
           </CardContent>
         </Card>
       </div>

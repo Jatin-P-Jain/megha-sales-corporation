@@ -14,9 +14,9 @@ import BrandForm from "@/components/custom/brand-form";
 import { Brand, BrandMedia } from "@/types/brand";
 import { brandSchema } from "@/validation/brandSchema";
 import { updateBrand } from "./actions";
-import { saveBrandMedia } from "../../actions";
 import { useState } from "react";
 import { slugify } from "@/lib/utils";
+import { saveBrandMedia } from "../../brands/action";
 
 type Props = Brand;
 export default function EditBrandForm({

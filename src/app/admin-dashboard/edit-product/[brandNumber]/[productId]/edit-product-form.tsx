@@ -13,12 +13,11 @@ import {
 import { Brand } from "@/types/brand";
 import { useState } from "react";
 import { slugify } from "@/lib/utils";
-import { saveProductMedia } from "@/app/admin-dashboard/actions";
 import { Product } from "@/types/product";
 import ProductForm from "@/components/custom/product-form";
 import { productSchema } from "@/validation/productSchema";
 import { deleteProduct, updateProduct } from "./actions";
-import { createProduct } from "@/app/admin-dashboard/new-product/actions";
+import { createProduct, saveProductMedia } from "@/app/admin-dashboard/new-product/actions";
 
 export default function EditProductForm({
   product,

@@ -18,7 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 
-type SearchField = "email" | "phone" | "uid" | "displayName";
+type SearchField = "email" | "phone" | "userId" | "displayName";
 
 export default function UsersList() {
   const PAGE_SIZE = process.env.NEXT_PUBLIC_PAGE_SIZE
@@ -114,7 +114,7 @@ export default function UsersList() {
     const labels: Record<SearchField, string> = {
       email: "Email",
       phone: "Phone",
-      uid: "User ID",
+      userId: "User ID",
       displayName: "Name",
     };
     return labels[field];
@@ -161,17 +161,22 @@ export default function UsersList() {
     <div className="relative mx-auto flex max-w-screen-lg flex-col">
       {/* Active Search Display */}
       {searchField && searchQuery && (
-        <div className="flex items-center justify-center gap-0 px-4">
+        <div className="flex w-full items-center justify-center gap-2 px-4">
           <Badge
             variant="secondary"
-            className="flex items-center gap-2 px-3 py-1"
+            className="flex flex-col items-center gap-2 px-3 py-2 md:flex-row"
           >
-            Searching {getFieldLabel(searchField)}:{" "}
+            Results for {getFieldLabel(searchField)}:{" "}
             <strong>{searchQuery}</strong>
           </Badge>
           {searchField && searchQuery && (
-            <Button variant="ghost" onClick={handleClearSearch}>
-              <X className="h-3 w-3 cursor-pointer" />
+            <Button
+              variant="secondary"
+              size={"sm"}
+              onClick={handleClearSearch}
+              className="inline-flex border border-red-700 bg-transparent p-2! py-1! text-xs text-red-700"
+            >
+              <X className="size-3 cursor-pointer" /> Clear
             </Button>
           )}
         </div>

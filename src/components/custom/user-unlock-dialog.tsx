@@ -39,7 +39,7 @@ export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           templateKey: "account_approval_reminder_to_admin",
-          customerUserId: auth.clientUser?.uid,
+          customerUserId: auth.clientUser?.userId,
           customerName: auth.clientUser?.displayName || "User",
           customerPhone: auth.clientUser?.phone || "Not provided",
           customerEmail: auth.clientUser?.email || "Not provided",
@@ -55,7 +55,7 @@ export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          uid: auth.clientUser?.uid,
+          uuid: auth.clientUser?.uuid,
           title: "🛎️ Approval Request Sent",
           body: `Your approval request has been sent to the admin.`,
           url: `${getBaseUrl()}/account`,
