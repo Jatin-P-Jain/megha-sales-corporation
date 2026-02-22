@@ -70,7 +70,6 @@ export default function ProfileForm() {
   const [idType, setIdType] = useState<"pan" | "gst">("gst");
 
   const [didInit, setDidInit] = useState(false);
-
   const isAdmin = clientUser?.userType === "admin";
 
   const { linkGoogle, linkingGoogle } = useLinkAuthProviders({
