@@ -3,9 +3,9 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const { uid, title, body, url, clickAction, status } = await req.json();
+    const { uuid, title, body, url, clickAction, status } = await req.json();
 
-    if (!uid || !title || !body) {
+    if (!uuid || !title || !body) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 },
@@ -14,7 +14,7 @@ export async function POST(req: Request) {
 
     // 1. Get all FCM tokens for the user
     const tokensSnapshot = await fireStore
-      .collection(`users/${uid}/fcmTokens`)
+      .collection(`users/${uuid}/fcmTokens`)
       .get();
 
     const tokens = tokensSnapshot.docs.map((doc) => doc.id);
@@ -51,7 +51,7 @@ export async function POST(req: Request) {
         },
       },
       data: {
-        uid,
+        uuid,
         title,
         body,
         url: url || "BROKEN_URL",
@@ -71,7 +71,7 @@ export async function POST(req: Request) {
 
     await Promise.all(
       failedTokens.map((token) =>
-        fireStore.doc(`users/${uid}/fcmTokens/${token}`).delete(),
+        fireStore.doc(`users/${uuid}/fcmTokens/${token}`).delete(),
       ),
     );
 

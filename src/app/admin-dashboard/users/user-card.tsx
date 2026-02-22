@@ -86,7 +86,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
     setIsApproving(true);
     try {
       await updateUserAccountStatus({
-        userId: user.uid,
+        userId: user.uuid,
         accountStatus: "approved",
         rejectionReason: "",
       });
@@ -118,7 +118,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
     setIsRejecting(true);
     try {
       await updateUserAccountStatus({
-        userId: user.uid,
+        userId: user.uuid,
         accountStatus: "rejected",
         rejectionReason: rejectionReason.trim(),
       });
@@ -148,7 +148,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
     setIsSuspending(true);
     try {
       await updateUserAccountStatus({
-        userId: user.uid,
+        userId: user.uuid,
         accountStatus: "suspended",
         rejectionReason: "",
       });
@@ -177,7 +177,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
     setIsDeleting(true);
     try {
       await updateUserAccountStatus({
-        userId: user.uid,
+        userId: user.uuid,
         accountStatus: "deactivated",
         rejectionReason: "",
       });
@@ -310,7 +310,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
 
             {/* Actions: primary + dropdown */}
             {canShowActions && (
-              <div className="grid w-full md:w-fit grid-cols-[1fr_auto] gap-2 md:items-center">
+              <div className="grid w-full grid-cols-[1fr_auto] gap-2 md:w-fit md:items-center">
                 {showPrimaryApprove && (
                   <Button
                     onClick={handleApprove}
@@ -426,13 +426,13 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
               </div>
               <div className="flex items-center gap-2">
                 <span className="font-mono text-sm font-semibold">
-                  {user.uid}
+                  {user.userId}
                 </span>
                 <CopyIcon
                   className="h-4 w-4 cursor-pointer text-gray-500 hover:text-gray-700"
                   onClick={(e) => {
                     e.stopPropagation();
-                    copyToClipboard(user.uid, "UID");
+                    copyToClipboard(user.userId, "UID");
                   }}
                 />
               </div>

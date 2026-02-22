@@ -4,7 +4,21 @@ import { fireStore } from "@/firebase/server";
 // Helper to pad numbers
 const pad = (num: number, size = 4) => num.toString().padStart(size, "0");
 
-// Function to generate order ID
+const getPrefix = (entity: string) => {
+  switch (entity) {
+    case "users":
+      return "USR";
+    case "orders":
+      return "ORD";
+    case "enquiries":
+      return "ENQ";
+    // Add more entity types as needed
+    default:
+      return entity.toUpperCase().slice(0, 3);
+  }
+};
+
+// Function to generate sequence ID
 export const generateSequenceId = async (
   forEntity: string
 ): Promise<string> => {
@@ -30,8 +44,8 @@ export const generateSequenceId = async (
   const sequence = pad(newCount);
   const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
 
-  const forEntityPrefix = forEntity === "orders" ? "MSC-ORD" : "MSC-ENQ"; // Add more entity types as needed
+  const forEntityPrefix = getPrefix(forEntity); // Add more entity types as needed
   const envPrefix = process.env.VERCEL_ENV === "production" ? "" : "D-";
 
-  return `${envPrefix}${forEntityPrefix}-${datePart}-${timePart}-${sequence}-${randomPart}`;
+  return `${envPrefix}${forEntityPrefix}-${sequence}-${datePart}-${timePart}-${randomPart}`;
 };

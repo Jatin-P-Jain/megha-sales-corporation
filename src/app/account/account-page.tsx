@@ -207,7 +207,7 @@ export default function AccountPage() {
   const statusInfo = getAccountStatusInfo(accountStatus);
 
   const handlePhotoChange = async (event: ChangeEvent<HTMLInputElement>) => {
-    if (!clientUser?.uid) return;
+    if (!clientUser?.uuid) return;
 
     const file = event.target.files?.[0];
     if (!file) return;
@@ -218,7 +218,7 @@ export default function AccountPage() {
     };
     reader.readAsDataURL(file);
 
-    const imagePath = `users/${clientUser.uid}/profile-picture/${Date.now()}-${file.name}`;
+    const imagePath = `users/${clientUser.userId}/profile-picture/${Date.now()}-${file.name}`;
     const logoStorageRef = ref(storage, imagePath);
 
     setUploading(true);
@@ -241,7 +241,7 @@ export default function AccountPage() {
         );
       });
 
-      await updateUserPhoto({ userId: clientUser.uid, photoUrl: imagePath });
+      await updateUserPhoto({ userId: clientUser.uuid, photoUrl: imagePath });
 
       const formatted = imageUrlFormatter(imagePath);
       setPhoto(formatted);
@@ -421,13 +421,13 @@ export default function AccountPage() {
         {/* UID */}
         <div className="flex flex-col items-center justify-center">
           <span className="text-muted-foreground text-center text-xs">
-            Your Unique Identification Number (UID) in our system:
+            Your User ID (UID) in our system:
           </span>
           <span className="text-primary flex items-center justify-center gap-2 text-sm font-semibold">
-            {clientUser.uid}
+            {clientUser.userId}
             <CopyIcon
               className="text-primary size-4 cursor-pointer"
-              onClick={() => copyToClipboard(clientUser.uid, "UID")}
+              onClick={() => copyToClipboard(clientUser.userId, "UID")}
             />
           </span>
         </div>

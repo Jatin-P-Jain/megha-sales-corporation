@@ -18,7 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 
-type SearchField = "email" | "phone" | "uid" | "displayName";
+type SearchField = "email" | "phone" | "userId" | "displayName";
 
 export default function UsersList() {
   const PAGE_SIZE = process.env.NEXT_PUBLIC_PAGE_SIZE
@@ -114,7 +114,7 @@ export default function UsersList() {
     const labels: Record<SearchField, string> = {
       email: "Email",
       phone: "Phone",
-      uid: "User ID",
+      userId: "User ID",
       displayName: "Name",
     };
     return labels[field];

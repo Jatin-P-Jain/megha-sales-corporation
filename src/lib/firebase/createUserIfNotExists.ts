@@ -1,13 +1,12 @@
-// lib/firebase/createUserIfNotExists.ts
 "use server";
 
 import { fireStore } from "@/firebase/server";
 import { UserData } from "@/types/user";
 
 export const createUserIfNotExists = async (user: UserData) => {
-  if (!user || !user.uid) return;
+  if (!user || !user.uuid) return;
 
-  const userRef = fireStore.collection("users").doc(user.uid);
+  const userRef = fireStore.collection("users").doc(user.uuid);
   const userSnapshot = await userRef.get();
 
   if (!userSnapshot.exists) {

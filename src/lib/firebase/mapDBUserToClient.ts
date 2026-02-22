@@ -4,7 +4,8 @@ export function mapDbUserToClientUser(
   dbUser: FirebaseFirestore.DocumentData | undefined
 ): UserData {
   return {
-    uid: dbUser?.uid,
+    uuid: dbUser?.uuid,
+    userId: dbUser?.userId,
     userType: (dbUser?.userType as UserType) || null,
     email: dbUser?.email || null,
     phone: dbUser?.phone || null,

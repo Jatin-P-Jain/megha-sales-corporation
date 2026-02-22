@@ -1,4 +1,3 @@
-// lib/firebase/createUserIfNotExists.ts
 "use server";
 
 import { fireStore } from "@/firebase/server";

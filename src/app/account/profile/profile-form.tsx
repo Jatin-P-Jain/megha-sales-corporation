@@ -142,7 +142,7 @@ export default function ProfileForm() {
     setIsVerified(!!clientUser.phone);
     setIsPhoneLinked(!!clientUser.phone && !!clientUser.email);
     setDidInit(true);
-  }, [clientUser?.uid, didInit, form]);
+  }, [clientUser?.uuid, didInit, form]);
 
   const selectedBusinessType = form.watch("businessType");
   const phoneNumber = form.watch("phone");
@@ -270,7 +270,7 @@ export default function ProfileForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           templateKey: "account_approval_request_to_admin",
-          customerUserId: freshClientUser?.uid,
+          customerUserId: freshClientUser?.userId,
           customerName: freshClientUser?.displayName || "User",
           customerPhone: freshClientUser?.phone || "Not provided",
           customerEmail: freshClientUser?.email || "Not provided",

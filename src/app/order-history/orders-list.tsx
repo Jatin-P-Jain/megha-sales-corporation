@@ -86,7 +86,7 @@ export default function OrdersList({
     // If not admin, scope to user
     if (!isAdmin) {
       f.push({
-        field: "user.uid",
+        field: "user.uuid",
         op: "==",
         value: userId ?? "__missing__",
       });
@@ -109,14 +109,27 @@ export default function OrdersList({
     return f;
   }, [isAdmin, userId, requestedOrderId, statuses]);
 
-  const { data, loading, hasMore, currentPage, loadPage, totalItems } =
-    usePaginatedFirestore<Order>({
-      collectionPath: "orders",
-      pageSize: PAGE_SIZE,
-      filters,
-      orderByField: "updatedAt",
-      orderDirection: "desc",
-    });
+  const {
+    data,
+    loading,
+    hasMore,
+    currentPage,
+    loadPage,
+    totalItems,
+  }: {
+    data: Order[];
+    loading: boolean;
+    hasMore: boolean;
+    currentPage: number;
+    loadPage: (page: number) => void;
+    totalItems: number;
+  } = usePaginatedFirestore<Order>({
+    collectionPath: "orders",
+    pageSize: PAGE_SIZE,
+    filters,
+    orderByField: "updatedAt",
+    orderDirection: "desc",
+  });
 
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 

@@ -152,7 +152,7 @@ export default function CartControls({
   if (qty === 0) {
     return (
       <Button
-        className="flex w-full items-center justify-center gap-2 md:w-3/4"
+        className="flex w-full items-center justify-center gap-2"
         onClick={handleAdd}
         disabled={isBusy || isDisabled}
       >
@@ -172,15 +172,15 @@ export default function CartControls({
 
   // 2) Otherwise show – [qty] + with animated qty
   return (
-    <div className="flex w-full items-center justify-center gap-2 md:w-3/4">
+    <div className="flex w-full items-center justify-center gap-2">
       <Button
         onClick={handleDec}
         disabled={isBusy}
-        className="rounded-none rounded-l-lg px-3"
+        className="rounded-none rounded-l-lg px-6 font-semibold"
       >
         –
       </Button>
-      <div className="relative h-4 w-8 overflow-hidden md:w-16">
+      <div className="relative h-4 overflow-hidden w-full">
         <AnimatePresence initial={false}>
           <motion.span
             key={qty}
@@ -188,7 +188,7 @@ export default function CartControls({
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -direction * 70, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="absolute inset-0 flex items-center justify-center text-sm"
+            className="absolute inset-0 flex items-center justify-center text-base font-semibold text-primary"
           >
             {qty}
           </motion.span>
@@ -198,7 +198,7 @@ export default function CartControls({
       <Button
         onClick={handleInc}
         disabled={isBusy}
-        className="rounded-none rounded-r-lg px-3"
+        className="rounded-none rounded-r-lg px-6 font-semibold"
       >
         +
       </Button>

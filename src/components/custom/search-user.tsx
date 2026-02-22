@@ -23,7 +23,7 @@ import {
 import clsx from "clsx";
 import { useRouter, useSearchParams } from "next/navigation";
 
-type SearchField = "email" | "phone" | "uid" | "displayName";
+type SearchField = "email" | "phone" | "userId" | "displayName";
 
 export default function SearchUser({
   variant = "outline",
@@ -70,7 +70,7 @@ export default function SearchUser({
     const labels: Record<SearchField, string> = {
       email: "Email",
       phone: "Phone Number",
-      uid: "User ID",
+      userId: "User ID",
       displayName: "Name",
     };
     return labels[field];
@@ -120,7 +120,7 @@ export default function SearchUser({
                 <SelectItem value="email">Email</SelectItem>
                 <SelectItem value="phone">Phone Number</SelectItem>
                 <SelectItem value="displayName">Name</SelectItem>
-                <SelectItem value="uid">User ID</SelectItem>
+                <SelectItem value="userId">User ID</SelectItem>
               </SelectContent>
             </Select>
           </div>

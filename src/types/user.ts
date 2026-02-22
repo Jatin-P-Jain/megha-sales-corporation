@@ -21,7 +21,8 @@ export type UserType =
   | "other";
 
 export type UserData = {
-  uid: string;
+  uuid: string;
+  userId: string;
   userType: UserType | string | null;
   businessType?: BusinessType | string | null;
   email: string | null;

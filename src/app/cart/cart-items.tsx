@@ -69,9 +69,7 @@ export function CartItems() {
               <div className="flex w-full items-center justify-between gap-2">
                 <h3 className="line-clamp-1 flex w-full flex-row gap-2 text-sm font-semibold md:text-base">
                   {item?.product.partName}{" "}
-                  {item.selectedSize && (
-                    <span>({item.selectedSize})</span>
-                  )}
+                  {item.selectedSize && <span>({item.selectedSize})</span>}
                 </h3>
 
                 <div
@@ -91,7 +89,11 @@ export function CartItems() {
                 <h3 className="line-clamp-1 flex w-full justify-center text-sm font-semibold md:text-base">
                   [{item?.product?.partNumber}]
                 </h3>
-                <PartDetailsDialog part={item} selectedSize={item.selectedSize} productPricing={item.productPricing}/>
+                <PartDetailsDialog
+                  part={item}
+                  selectedSize={item.selectedSize}
+                  productPricing={item.productPricing}
+                />
               </div>
               <div className="flex w-full flex-col items-end gap-1 text-sm md:text-base">
                 <div className="flex w-full items-center justify-between text-xs md:text-sm">
@@ -144,7 +146,7 @@ export function CartItems() {
                     {currencyFormatter(totalPrice)}
                   </span>
                 </div>
-                <div className="flex h-full items-end justify-end">
+                <div className="flex h-full w-full items-end justify-end md:w-1/2">
                   <CartControls
                     isCartPage={true}
                     productId={item.cartItemKey}
