@@ -24,9 +24,9 @@ const FILTERS = [
     applyKey: "vehicleCompany",
     label: "Vehicle Company",
   },
-  { key: "category", applyKey: "category", label: "Category" },
-  { key: "price", applyKey: "price", label: "Price" },
-  { key: "discount", applyKey: "discount", label: "Discount" },
+  // { key: "category", applyKey: "category", label: "Category" },
+  // { key: "price", applyKey: "price", label: "Price" },
+  // { key: "discount", applyKey: "discount", label: "Discount" },
 ];
 
 export default function MoreFilters({
