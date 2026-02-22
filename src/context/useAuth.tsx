@@ -130,7 +130,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         displayName: user.displayName ?? null,
         userType: result.claims.admin ? "admin" : null,
         photoUrl: user.photoURL,
-        gstNumber: "",
         firebaseAuth: result.claims.firebase
           ? {
               identities: result.claims.firebase.identities ?? {},

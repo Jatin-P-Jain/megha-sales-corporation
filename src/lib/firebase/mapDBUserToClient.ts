@@ -1,7 +1,7 @@
 import { UserData, UserType } from "@/types/user";
 
 export function mapDbUserToClientUser(
-  dbUser: FirebaseFirestore.DocumentData | undefined,
+  dbUser: FirebaseFirestore.DocumentData | undefined
 ): UserData {
   return {
     uid: dbUser?.uid,
@@ -11,6 +11,7 @@ export function mapDbUserToClientUser(
     displayName: dbUser?.displayName || null,
     businessType: dbUser?.businessType || null,
     panNumber: dbUser?.panNumber || undefined,
+    firmName: dbUser?.firmName || undefined,
     gstNumber: dbUser?.gstNumber || undefined,
     photoUrl: dbUser?.photoUrl || null,
     businessProfile: dbUser?.businessProfile || null,

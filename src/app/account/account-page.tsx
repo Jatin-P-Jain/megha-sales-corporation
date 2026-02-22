@@ -144,70 +144,6 @@ export default function AccountPage() {
     return String(value);
   };
 
-  const StatusBadge = ({ status }: { status: AccountStatusUI }) => {
-    const base = "capitalize";
-    switch (status) {
-      case "approved":
-        return (
-          <Badge
-            className={clsx(
-              base,
-              "bg-green-100 text-green-800 hover:bg-green-100",
-            )}
-          >
-            <CheckCircle2 className="h-3 w-3" />
-            Approved
-          </Badge>
-        );
-      case "rejected":
-        return (
-          <Badge
-            className={clsx(base, "bg-red-100 text-red-800 hover:bg-red-100")}
-          >
-            <XCircle className="h-3 w-3" />
-            Rejected
-          </Badge>
-        );
-      case "suspended":
-        return (
-          <Badge
-            className={clsx(
-              base,
-              "bg-orange-100 text-orange-800 hover:bg-orange-100",
-            )}
-          >
-            <ShieldOff className="h-3 w-3" />
-            Suspended
-          </Badge>
-        );
-      case "deactivated":
-        return (
-          <Badge
-            className={clsx(
-              base,
-              "bg-zinc-100 text-zinc-800 hover:bg-zinc-100",
-            )}
-          >
-            <UserX className="h-3 w-3" />
-            Deactivated
-          </Badge>
-        );
-      case "pending":
-      default:
-        return (
-          <Badge
-            className={clsx(
-              base,
-              "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
-            )}
-          >
-            <Clock className="h-3 w-3" />
-            Pending
-          </Badge>
-        );
-    }
-  };
-
   const getAccountStatusInfo = (status: AccountStatusUI) => {
     const reason = clientUser?.rejectionReason?.trim(); // reusing your existing field for "reason/note" messaging
 
@@ -406,252 +342,250 @@ export default function AccountPage() {
   if (!hasHydrated || clientUserLoading || !clientUser) return null;
 
   return (
-    <div>
-      <Card className="mx-auto w-full max-w-screen-md p-2 py-4 md:p-4 md:py-6">
-        <CardHeader className="p-0">
-          <CardTitle className="text-primary p-0 text-center text-xl font-semibold md:text-2xl">
-            My Account
-          </CardTitle>
+    <Card className="mx-auto w-full max-w-screen-lg p-2 py-4 md:p-4 md:py-6">
+      <CardHeader className="p-0">
+        <CardTitle className="text-primary p-0 text-center text-xl font-semibold md:text-2xl">
+          My Account
+        </CardTitle>
 
-          {!isAdmin && clientUser.profileComplete && (
-            <div className="space-y-2">
-              <Alert
-                className={clsx(
-                  statusInfo.bgColor,
-                  statusInfo.borderColor,
-                  "items-start p-2",
-                )}
-              >
-                <AlertDescription
-                  className={clsx("ml-2 text-sm", statusInfo.color)}
-                >
-                  <div className="flex flex-col gap-1 text-xs md:flex-row md:items-center md:justify-between">
-                    <span className="text-center text-sm font-semibold">
-                      {statusInfo.title}
-                    </span>{" "}
-                    {statusInfo.description}
-                  </div>
-                </AlertDescription>
-              </Alert>
-            </div>
-          )}
-
-          {/* Editable profile photo */}
-          <div className="relative flex flex-col items-center justify-center gap-2 py-4">
-            <Avatar className="ring-primary h-24 w-24 bg-white p-1 ring-2 md:h-28 md:w-28">
-              {photo ? (
-                <Image
-                  src={photo}
-                  alt="Profile"
-                  className="h-full w-full rounded-full object-cover"
-                  width={112}
-                  height={112}
-                  priority
-                />
-              ) : (
-                <AvatarFallback className="bg-cyan-800">
-                  <Image
-                    src={DefaultUserIcon}
-                    alt="avatar"
-                    width={60}
-                    height={60}
-                    className="rounded-full object-center p-1"
-                  />
-                </AvatarFallback>
+        {!isAdmin && clientUser.profileComplete && (
+          <div className="space-y-2">
+            <Alert
+              className={clsx(
+                statusInfo.bgColor,
+                statusInfo.borderColor,
+                "items-start p-2",
               )}
-            </Avatar>
-
-            {uploading ? (
-              <div className="my-2 flex w-full flex-col items-center">
-                <Progress value={uploadPercent} className="w-48" />
-                <span className="text-primary mt-2 text-center text-sm font-medium">
-                  Uploading and updating your profile picture — {uploadPercent}%
-                </span>
-              </div>
-            ) : (
-              <label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handlePhotoChange}
-                  style={{ display: "none" }}
-                />
-                <span className="bg-muted text-primary hover:text-primary/90 cursor-pointer rounded-md px-3 py-1 text-xs">
-                  Change profile picture
-                </span>
-              </label>
-            )}
-          </div>
-
-          {/* UID */}
-          <div className="flex flex-col items-center justify-center">
-            <span className="text-muted-foreground text-center text-xs">
-              Your Unique Identification Number (UID) in our system:
-            </span>
-            <span className="text-primary flex items-center justify-center gap-2 text-sm font-semibold">
-              {clientUser.uid}
-              <CopyIcon
-                className="text-primary size-4 cursor-pointer"
-                onClick={() => copyToClipboard(clientUser.uid, "UID")}
-              />
-            </span>
-          </div>
-        </CardHeader>
-
-        <CardContent className="flex flex-col gap-4 p-0">
-          {/* Role banner */}
-          {isAdmin ? (
-            <div className="rounded-md bg-green-100 p-2 px-4 text-center text-sm text-green-700">
-              You are an <span className="font-semibold">Admin</span> — manage
-              everything!
-            </div>
-          ) : (
-            <div className="bg-muted text-muted-foreground flex flex-col items-center justify-center rounded-md p-2 text-sm">
-              You have user access under role:
-              <span className="text-primary text-lg font-semibold first-letter:uppercase">
-                {clientUser.userType || "GUEST"}
-              </span>
-            </div>
-          )}
-
-          {/* Profile incomplete button */}
-          {!profileComplete && !isAdmin && (
-            <Alert className="flex items-center justify-center border-yellow-200 bg-yellow-50">
-              <AlertDescription className="flex flex-col items-start gap-2 text-sm text-yellow-800">
-                <div>Your profile is incomplete.</div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={goToProfile}
-                  className="gap-2 border-yellow-300 bg-yellow-50 hover:bg-yellow-100"
-                >
-                  Complete profile now
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
+            >
+              <AlertDescription
+                className={clsx("ml-2 text-sm", statusInfo.color)}
+              >
+                <div className="flex flex-col gap-1 text-xs md:flex-row md:items-center md:justify-between">
+                  <span className="text-center text-sm font-semibold">
+                    {statusInfo.title}
+                  </span>{" "}
+                  {statusInfo.description}
+                </div>
               </AlertDescription>
             </Alert>
-          )}
-
-          {/* Details */}
-          <div className="space-y-2">
-            <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              <DetailRow
-                label="Display name"
-                value={clientUser.displayName}
-                icon={User}
-              />
-
-              <DetailRow
-                label="Email"
-                value={clientUser.email}
-                icon={Mail}
-                copyValue={clientUser.email ?? undefined}
-                copyLabel="Email"
-              />
-
-              <DetailRow
-                label="Phone"
-                value={clientUser.phone}
-                icon={Phone}
-                copyValue={clientUser.phone ?? undefined}
-                copyLabel="Phone"
-              />
-
-              <DetailRow
-                label="Business type"
-                valueNode={
-                  <span className="break-all">
-                    {titleCase(clientUser.businessType)}
-                  </span>
-                }
-                icon={Building2}
-              />
-
-              <DetailRow
-                label="GST number"
-                value={clientUser.gstNumber}
-                icon={FileText}
-                copyValue={clientUser.gstNumber}
-                copyLabel="GST number"
-              />
-
-              <DetailRow
-                label="PAN number"
-                value={clientUser.panNumber}
-                icon={FileText}
-                copyValue={clientUser.panNumber}
-                copyLabel="PAN number"
-              />
-
-              <DetailRow
-                label="Profile status"
-                icon={profileComplete ? BadgeCheck : BadgeX}
-                valueNode={
-                  <Badge
-                    className={clsx(
-                      "capitalize",
-                      profileComplete
-                        ? "bg-green-100 text-green-800 hover:bg-green-100"
-                        : "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
-                    )}
-                  >
-                    {profileComplete ? "Complete" : "Incomplete"}
-                  </Badge>
-                }
-              />
-
-              {!isAdmin ? (
-                !profileComplete ? (
-                  <DetailRow label="Account status" icon={Clock} value={"-"} />
-                ) : (
-                  <DetailRow
-                    label="Account status"
-                    icon={Clock}
-                    valueNode={<StatusBadge status={accountStatus} />}
-                  />
-                )
-              ) : null}
-            </ul>
           </div>
+        )}
 
-          {/* Firebase auth card moved OUT of collapsible */}
-          {clientUser.firebaseAuth ? (
-            <FirebaseAuthMethods
-              firebaseAuth={clientUser.firebaseAuth}
-              onLinkGoogle={linkGoogle}
-              onLinkPhone={() => startLinkPhone("+919479201388")}
+        {/* Editable profile photo */}
+        <div className="relative flex flex-col items-center justify-center gap-2 py-4">
+          <Avatar className="ring-primary h-24 w-24 bg-white p-1 ring-2 md:h-28 md:w-28">
+            {photo ? (
+              <Image
+                src={photo}
+                alt="Profile"
+                className="h-full w-full rounded-full object-cover"
+                width={112}
+                height={112}
+                priority
+              />
+            ) : (
+              <AvatarFallback className="bg-cyan-800">
+                <Image
+                  src={DefaultUserIcon}
+                  alt="avatar"
+                  width={60}
+                  height={60}
+                  className="rounded-full object-center p-1"
+                />
+              </AvatarFallback>
+            )}
+          </Avatar>
+
+          {uploading ? (
+            <div className="my-2 flex w-full flex-col items-center">
+              <Progress value={uploadPercent} className="w-48" />
+              <span className="text-primary mt-2 text-center text-sm font-medium">
+                Uploading and updating your profile picture — {uploadPercent}%
+              </span>
+            </div>
+          ) : (
+            <label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoChange}
+                style={{ display: "none" }}
+              />
+              <span className="bg-muted text-primary hover:text-primary/90 cursor-pointer rounded-md px-3 py-1 text-xs">
+                Change profile picture
+              </span>
+            </label>
+          )}
+        </div>
+
+        {/* UID */}
+        <div className="flex flex-col items-center justify-center">
+          <span className="text-muted-foreground text-center text-xs">
+            Your Unique Identification Number (UID) in our system:
+          </span>
+          <span className="text-primary flex items-center justify-center gap-2 text-sm font-semibold">
+            {clientUser.uid}
+            <CopyIcon
+              className="text-primary size-4 cursor-pointer"
+              onClick={() => copyToClipboard(clientUser.uid, "UID")}
             />
-          ) : null}
+          </span>
+        </div>
+      </CardHeader>
 
-          {/* Show collapsible ONLY when GST number AND GST details are present */}
-          {clientUser.gstNumber && clientUser.businessProfile ? (
-            <Collapsible open={moreOpen} onOpenChange={setMoreOpen}>
-              <CollapsibleTrigger asChild>
-                <button
-                  type="button"
+      <CardContent className="flex flex-col gap-4 p-0">
+        {/* Role banner */}
+        {isAdmin ? (
+          <div className="rounded-md bg-green-100 p-2 px-4 text-center text-sm text-green-700">
+            You are an <span className="font-semibold">Admin</span> — manage
+            everything!
+          </div>
+        ) : (
+          <div className="bg-muted text-muted-foreground flex flex-col items-center justify-center rounded-md p-2 text-sm">
+            You have user access under role:
+            <span className="text-primary text-lg font-semibold first-letter:uppercase">
+              {clientUser.userType || "GUEST"}
+            </span>
+          </div>
+        )}
+
+        {/* Profile incomplete button */}
+        {!profileComplete && !isAdmin && (
+          <Alert className="flex items-center justify-center border-yellow-200 bg-yellow-50">
+            <AlertDescription className="flex flex-col items-start gap-2 text-sm text-yellow-800">
+              <div>Your profile is incomplete.</div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={goToProfile}
+                className="gap-2 border-yellow-300 bg-yellow-50 hover:bg-yellow-100"
+              >
+                Complete profile now
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Details */}
+        <div className="space-y-2">
+          <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <DetailRow
+              label="Display name"
+              value={clientUser.displayName}
+              icon={User}
+            />
+
+            <DetailRow
+              label="Email"
+              value={clientUser.email}
+              icon={Mail}
+              copyValue={clientUser.email ?? undefined}
+              copyLabel="Email"
+            />
+
+            <DetailRow
+              label="Phone"
+              value={clientUser.phone}
+              icon={Phone}
+              copyValue={clientUser.phone ?? undefined}
+              copyLabel="Phone"
+            />
+
+            <DetailRow
+              label="Business type"
+              valueNode={
+                <span className="break-all">
+                  {titleCase(clientUser.businessType)}
+                </span>
+              }
+              icon={Building2}
+            />
+
+            <DetailRow
+              label="GST number"
+              value={clientUser.gstNumber}
+              icon={FileText}
+              copyValue={clientUser.gstNumber}
+              copyLabel="GST number"
+            />
+
+            <DetailRow
+              label="PAN number"
+              value={clientUser.panNumber}
+              icon={FileText}
+              copyValue={clientUser.panNumber}
+              copyLabel="PAN number"
+            />
+
+            <DetailRow
+              label="Firm/Business Name"
+              value={
+                clientUser.firmName || clientUser.businessProfile?.legalName
+              }
+              icon={FileText}
+              copyValue={
+                clientUser.firmName || clientUser.businessProfile?.legalName
+              }
+              copyLabel="Firm/Business Name"
+            />
+
+            <DetailRow
+              label="Profile status"
+              icon={profileComplete ? BadgeCheck : BadgeX}
+              valueNode={
+                <Badge
                   className={clsx(
-                    "flex w-full items-center justify-between rounded-md border bg-white px-3 py-2 text-left transition-colors hover:bg-zinc-50",
-                    moreOpen && "bg-zinc-50",
+                    "capitalize",
+                    profileComplete
+                      ? "bg-green-100 text-green-800 hover:bg-green-100"
+                      : "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
                   )}
                 >
-                  <span className="text-sm font-medium text-zinc-700">
-                    {moreOpen ? "Hide GST details" : "Show GST details"}
-                  </span>
-                  {moreOpen ? (
-                    <ChevronUp className="h-4 w-4 text-zinc-600" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4 text-zinc-600" />
-                  )}
-                </button>
-              </CollapsibleTrigger>
+                  {profileComplete ? "Complete" : "Incomplete"}
+                </Badge>
+              }
+            />
+          </ul>
+        </div>
 
-              <CollapsibleContent className="mt-3 space-y-3">
-                <BusinessProfileCard bp={clientUser.businessProfile} />
-              </CollapsibleContent>
-            </Collapsible>
-          ) : null}
-        </CardContent>
-      </Card>
-    </div>
+        {/* Firebase auth card moved OUT of collapsible */}
+        {clientUser.firebaseAuth ? (
+          <FirebaseAuthMethods
+            firebaseAuth={clientUser.firebaseAuth}
+            onLinkGoogle={linkGoogle}
+            onLinkPhone={() => startLinkPhone("+919479201388")}
+          />
+        ) : null}
+
+        {/* Show collapsible ONLY when GST number AND GST details are present */}
+        {clientUser.gstNumber && clientUser.businessProfile ? (
+          <Collapsible open={moreOpen} onOpenChange={setMoreOpen}>
+            <CollapsibleTrigger asChild>
+              <button
+                type="button"
+                className={clsx(
+                  "flex w-full items-center justify-between rounded-md border bg-white px-3 py-2 text-left transition-colors hover:bg-zinc-50",
+                  moreOpen && "bg-zinc-50",
+                )}
+              >
+                <span className="text-sm font-medium text-zinc-700">
+                  {moreOpen ? "Hide GST details" : "Show GST details"}
+                </span>
+                {moreOpen ? (
+                  <ChevronUp className="h-4 w-4 text-zinc-600" />
+                ) : (
+                  <ChevronDown className="h-4 w-4 text-zinc-600" />
+                )}
+              </button>
+            </CollapsibleTrigger>
+
+            <CollapsibleContent className="mt-3 space-y-3">
+              <BusinessProfileCard bp={clientUser.businessProfile} />
+            </CollapsibleContent>
+          </Collapsible>
+        ) : null}
+      </CardContent>
+    </Card>
   );
 }

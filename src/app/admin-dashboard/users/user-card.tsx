@@ -310,7 +310,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
 
             {/* Actions: primary + dropdown */}
             {canShowActions && (
-              <div className="flex flex-row gap-2 md:items-center">
+              <div className="grid w-full md:w-fit grid-cols-[1fr_auto] gap-2 md:items-center">
                 {showPrimaryApprove && (
                   <Button
                     onClick={handleApprove}
@@ -337,7 +337,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="w-auto"
+                      className="w-auto justify-between"
                       disabled={
                         isApproving || isRejecting || isSuspending || isDeleting
                       }
@@ -524,6 +524,20 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                       copyToClipboard(user.panNumber!, "PAN Number");
                     }}
                   />
+                </div>
+              </div>
+            )}
+            {/* Firm Name */}
+            {user.firmName && (
+              <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <FileText className="h-4 w-4" />
+                  <span>Firm Name:</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-sm font-semibold">
+                    {user.firmName}
+                  </span>
                 </div>
               </div>
             )}

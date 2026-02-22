@@ -100,6 +100,7 @@ export default function ProfileForm() {
       businessIdType: undefined,
       gstNumber: "",
       panNumber: "",
+      firmName: "",
       photoUrl: "",
       otp: "",
       otherBusinessType: "",
@@ -129,6 +130,7 @@ export default function ProfileForm() {
           : "pan"
         : undefined) as "gst" | "pan" | undefined,
       gstNumber: clientUser.businessProfile?.gstin || "",
+      firmName: clientUser.firmName || "",
       panNumber: clientUser.panNumber || "",
       photoUrl: clientUser.photoUrl || "",
       otp: undefined,
@@ -147,6 +149,7 @@ export default function ProfileForm() {
   const otp = form.watch("otp");
 
   const panNumber = form.watch("panNumber");
+  const firmName = form.watch("firmName");
 
   const [isPhoneValid, setIsPhoneValid] = useState(false);
 
@@ -357,7 +360,10 @@ export default function ProfileForm() {
       form.formState.isValid &&
       (idType === "gst"
         ? gstDetails !== null
-        : panNumber && panNumber.length === 10)
+        : panNumber &&
+          panNumber.length === 10 &&
+          firmName &&
+          firmName.length >= 2)
     );
   };
 
@@ -382,6 +388,7 @@ export default function ProfileForm() {
         businessIdType: "gst" as const,
         gstNumber: "",
         panNumber: "",
+        firmName: "",
         userType: "admin" as const,
       };
       handleSubmit(data);
@@ -709,7 +716,7 @@ export default function ProfileForm() {
                         )}
                       />
 
-                      <div className="space-y-2">
+                      <div className="space-y-1">
                         <FormLabel>Business Identification Through</FormLabel>
                         <Select
                           value={idType}
@@ -739,7 +746,7 @@ export default function ProfileForm() {
                         <p className="text-muted-foreground text-xs">
                           {idType === "gst"
                             ? "Select this if you have a GST registration"
-                            : "Select this if you don't have GST but have a PAN card"}
+                            : "Select this if you don't have GST but have a PAN card and firm name to provide."}
                         </p>
                       </div>
 
@@ -810,23 +817,42 @@ export default function ProfileForm() {
                           )}
                         />
                       ) : (
-                        <FormField
-                          control={form.control}
-                          name="panNumber"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>PAN Number</FormLabel>
-                              <FormControl>
-                                <Input
-                                  {...field}
-                                  placeholder="Enter 10-character PAN"
-                                  maxLength={10}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        <div className="flex w-full flex-col gap-4">
+                          <FormField
+                            control={form.control}
+                            name="panNumber"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>PAN Number</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="Enter 10-character PAN"
+                                    maxLength={10}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="firmName"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Firm/Business Name</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="Enter your firm or business name"
+                                    maxLength={100}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
                       )}
                     </>
                   )}

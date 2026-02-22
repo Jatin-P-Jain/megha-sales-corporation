@@ -74,7 +74,7 @@ const UserSearchAndFilters: React.FC = () => {
 
   return (
     <div className="space-y-1">
-      <div className="grid grid-cols-[1fr_auto] gap-2 md:items-center">
+      <div className="grid grid-cols-[1fr_auto] md:gap-4 gap-2  md:items-center">
         <SearchUser variant="outline" showText={true} />
         <div className="flex w-full flex-wrap items-center justify-center gap-2 md:justify-end">
           <span className="hidden text-xs font-medium text-gray-700 md:inline md:text-sm">
