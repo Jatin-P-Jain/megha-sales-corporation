@@ -3,12 +3,14 @@ import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Poppins } from "next/font/google";
-import NavBar from "@/components/custom/nav-bar";
+import Script from "next/script";
+
+import Providers from "./providers";
 import { ServiceWorkerRegister } from "./service-worker-register";
 import InstallPWAButton from "@/components/custom/install-pwa-button";
-import Script from "next/script";
 import NetworkBanner from "@/components/custom/network-banner";
 import { Footer } from "@/components/custom/footer";
+import { NavBar } from "@/components/custom/navbar/nav-bar";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -55,10 +57,12 @@ export default async function RootLayout({
           content="Megha Sales Corporation"
         />
         <link rel="manifest" href="/site.webmanifest.json" />
+
         <Script
           src="https://accounts.google.com/gsi/client"
           strategy="afterInteractive"
         />
+
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -79,15 +83,22 @@ export default async function RootLayout({
           }}
         />
       </head>
+
       <body
         className={`${poppins.className} max-h-screen min-h-[100dvh] antialiased`}
       >
         <ServiceWorkerRegister />
         <InstallPWAButton />
-        <NavBar>{children}</NavBar>
+
+        <Providers>
+          <NavBar />
+          <div className="mx-auto mt-24 max-w-screen-lg">{children}</div>
+        </Providers>
+
         <Footer />
         <NetworkBanner />
         <div id="recaptcha-container" className="opacity-0" />
+
         <Analytics />
         <SpeedInsights />
       </body>

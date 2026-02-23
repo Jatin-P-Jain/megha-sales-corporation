@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useAuth } from "@/context/useAuth";
+import { useAuthActions, useAuthState } from "@/context/useAuth";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -134,9 +134,9 @@ function AccountStatusBadge({
 
 export default function AuthButtons() {
   const { deferredPrompt, promptToInstall, isPwa } = usePwaPrompt();
-  const auth = useAuth();
-  const { clientUser, clientUserLoading, logout, currentUser, isLoggingOut } =
-    auth;
+  const { clientUser, clientUserLoading, currentUser, isLoggingOut } =
+    useAuthState();
+  const { logout } = useAuthActions();
 
   const [helpOpen, setHelpOpen] = useState(false);
 
