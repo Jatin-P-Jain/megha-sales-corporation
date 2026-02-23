@@ -60,6 +60,7 @@ export type AuthActions = {
   ) => Promise<User | undefined>;
 
   setClientUser: React.Dispatch<React.SetStateAction<UserData | null>>;
+  refreshClientUser: () => Promise<UserData | null>;
 };
 
 const AuthStateContext = createContext<AuthState | null>(null);
@@ -105,6 +106,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [],
   );
 
+  const refreshClientUser = useCallback(async () => {
+    const u = auth.currentUser;
+    if (!u) return null;
+
+    setClientUserLoading(true);
+    try {
+      const userDocRef = doc(firestore, "users", u.uid);
+      const snap = await getDoc(userDocRef);
+      const next = snap.exists() ? mapDbUserToClientUser(snap.data()) : null;
+      setClientUser(next);
+      return next;
+    } catch (e) {
+      console.error("refreshClientUser failed", e);
+      return null;
+    } finally {
+      setClientUserLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     let unsubscribeSnapshot: undefined | (() => void);
 
@@ -146,9 +166,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         userId: finalUserId,
         email: user.email ?? null,
         phone: user.phoneNumber?.slice(3) ?? null,
-        displayName: user.displayName ?? null,
-        userType: tokenResult.claims.admin ? "admin" : null,
-        photoUrl: user.photoURL,
+        displayName: user.displayName ?? "",
+        userType: tokenResult.claims.admin ? "admin" : "",
+        photoUrl: user.photoURL ?? "",
         firebaseAuth: tokenResult.claims.firebase
           ? {
               identities: tokenResult.claims.firebase.identities ?? {},
@@ -203,6 +223,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       handleSendOTP,
       verifyOTP,
       setClientUser,
+      refreshClientUser,
     }),
     [
       logout,
@@ -210,6 +231,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       loginWithEmailAndPassword,
       handleSendOTP,
       verifyOTP,
+      refreshClientUser,
     ],
   );
 

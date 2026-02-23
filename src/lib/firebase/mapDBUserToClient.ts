@@ -11,6 +11,7 @@ export function mapDbUserToClientUser(
     phone: dbUser?.phone || null,
     displayName: dbUser?.displayName || null,
     businessType: dbUser?.businessType || null,
+    businessIdType: dbUser?.businessIdType || null,
     panNumber: dbUser?.panNumber || undefined,
     firmName: dbUser?.firmName || undefined,
     gstNumber: dbUser?.gstNumber || undefined,

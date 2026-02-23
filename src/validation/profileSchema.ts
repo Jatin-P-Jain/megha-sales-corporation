@@ -14,7 +14,24 @@ export const userProfileDataSchema = z
     gstNumber: z.string().optional(), // ✅ Kept optional
     phone: z
       .string()
-      .regex(/^[6-9]\d{9}$/, { message: "Invalid mobile number" }),
+      .trim()
+      .superRefine((val, ctx) => {
+        if (!val) return; // allow empty
+        if (val.length < 10) return;
+        if (val.length > 10) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Mobile number must be 10 digits",
+          });
+          return;
+        }
+        if (!/^[6-9]\d{9}$/.test(val)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Invalid mobile number",
+          });
+        }
+      }),
     photoUrl: z.string().optional(),
     businessType: z
       .enum(["retailer", "wholesaler", "distributor", "other"])
@@ -29,37 +46,6 @@ export const userProfileDataSchema = z
     message: "You must specify your business type.",
     path: ["otherBusinessType"],
   })
-  // ✅ NEW: Self-validation for PAN - only triggers after exactly 10 chars
-  .refine(
-    (data) => {
-      const displayName = data.displayName;
-      return !displayName || displayName.length >= 2;
-    },
-    {
-      message: "Name must be at least 2 characters",
-      path: ["displayName"],
-    }
-  )
-  .refine(
-    (data) => {
-      const email = data.email;
-      return !email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    },
-    {
-      message: "Invalid email format",
-      path: ["email"],
-    }
-  )
-  .refine(
-    (data) => {
-      const phone = data.phone;
-      return !phone || phone.length !== 10 || /^[6-9]\d{9}$/.test(phone);
-    },
-    {
-      message: "Invalid phone format (must be like 9876543210)",
-      path: ["phone"],
-    }
-  )
   .refine(
     (data) => {
       const pan = data.panNumber;
@@ -96,16 +82,28 @@ export const userProfileDataSchema = z
     }
   );
 
-export const mobileOtpSchema = z
-  .object({
-    otp: z
-      .string()
-      .regex(/^\d{6}$/, { message: "Invalid OTP" })
-      .optional(),
-  })
-  .refine((data) => !data.otp || /^\d{6}$/.test(data.otp), {
-    message: "Invalid OTP format",
-    path: ["otp"],
-  });
+export const mobileOtpSchema = z.object({
+  otp: z
+    .string()
+    .trim()
+    .optional()
+    .superRefine((val, ctx) => {
+      if (!val) return; // allow empty
+      if (val.length < 6) return; // don't error while typing
+      if (val.length > 6) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "OTP must be 6 digits",
+        });
+        return;
+      }
+      if (!/^\d{6}$/.test(val)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Invalid OTP",
+        });
+      }
+    }),
+});
 
 export const userProfileSchema = userProfileDataSchema.and(mobileOtpSchema);

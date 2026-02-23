@@ -23,18 +23,19 @@ export type UserType =
 export type UserData = {
   uuid: string;
   userId: string;
-  userType: UserType | string | null;
-  businessType?: BusinessType | string | null;
+  userType: UserType | string;
+  businessType?: BusinessType | string;
   email: string | null;
   phone: string | null;
-  displayName: string | null;
+  displayName: string;
+  businessIdType?: "pan" | "gst";
   gstNumber?: string;
   panNumber?: string;
   firmName?: string;
-  photoUrl?: string | null;
-  businessProfile?: BusinessProfile | null;
+  photoUrl?: string;
+  businessProfile?: BusinessProfile;
   profileComplete?: boolean;
   accountStatus?: AccountStatus;
-  rejectionReason?: string | null;
+  rejectionReason?: string;
   firebaseAuth?: FirebaseAuthData;
 };
