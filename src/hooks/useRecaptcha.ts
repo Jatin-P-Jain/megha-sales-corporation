@@ -61,24 +61,36 @@ export function useRecaptcha({
 
     const s = window.__firebaseRecaptchaSingleton;
 
-    // If caller changed containerId, update it (but keep singleton verifier).
+    // Make sure the container exists before doing anything
+    const el = document.getElementById(containerId);
+    if (!el) throw new Error(`reCAPTCHA container #${containerId} not found`);
+
+    // If we already have a verifier:
+    // - If same container, REUSE it (do not re-render into same element) [web:595]
+    // - If different container, clear and recreate
+    if (s.verifier) {
+      if (s.containerId !== containerId) {
+        try {
+          s.verifier.clear(); // destroy old widget instance
+        } catch {
+          // ignore
+        }
+        s.verifier = null;
+        s.widgetId = null;
+        s.renderPromise = null;
+      } else {
+        // Same container: ensure render finished, reset, return existing
+        if (s.renderPromise) await s.renderPromise;
+        reset();
+        setVerifier(s.verifier);
+        return s.verifier;
+      }
+    }
+
+    // New container or no existing verifier => create & render once
     s.containerId = containerId;
 
-    // If verifier already exists, just ensure render finished.
-    if (s.verifier) {
-      if (s.renderPromise) await s.renderPromise;
-      reset();
-      setVerifier(s.verifier);
-      return s.verifier;
-    }
-
-    const el = document.getElementById(containerId);
-    if (!el) {
-      // Firebase requires container to exist in DOM at init time. [web:138]
-      throw new Error(`reCAPTCHA container #${containerId} not found`);
-    }
-
-    // For invisible, we can mount into an existing div; keep it empty at init.
+    // Important: don't keep old markup
     el.innerHTML = "";
 
     const v = new RecaptchaVerifier(auth, el, {
@@ -88,18 +100,16 @@ export function useRecaptcha({
     });
 
     s.verifier = v;
-    setVerifier(v);
 
-    s.renderPromise =
-      s.renderPromise ??
-      v.render().then((id) => {
-        s.widgetId = id;
-        return id;
-      });
+    s.renderPromise = v.render().then((id) => {
+      s.widgetId = id;
+      return id;
+    });
 
     await s.renderPromise;
     reset();
 
+    setVerifier(v);
     return v;
   }, [enabled, containerId, reset]);
 
@@ -107,14 +117,11 @@ export function useRecaptcha({
     if (typeof window === "undefined") return;
 
     if (!enabled) {
-      // When disabled, do NOT clear singleton (prevents re-init races).
-      // Just reset best-effort.
       reset();
-      setVerifier(window.__firebaseRecaptchaSingleton?.verifier ?? null);
       return;
     }
 
-    // Eager init so clicking "Send OTP" doesn't race render.
+    // Eager init to avoid race on "Send OTP" click (optional)
     ensureReady().catch((e) => {
       console.error("Recaptcha init failed:", e);
     });

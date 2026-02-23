@@ -57,7 +57,10 @@ export async function updateUserAccountStatus({
   }
 }
 
-export const updateUserFirebaseMethods = async () => {
+export const updateUserFirebaseMethods = async (
+  email?: string,
+  photoUrl?: string
+) => {
   const cookieStore = await cookies();
   const token = cookieStore.get("firebaseAuthToken")?.value;
 
@@ -70,7 +73,12 @@ export const updateUserFirebaseMethods = async () => {
   await fireStore
     .collection("users")
     .doc(uid)
-    .update({ firebaseAuth: decodedToken.firebase, updatedAt: new Date() });
+    .update({
+      firebaseAuth: decodedToken.firebase,
+      email: email || decodedToken.email,
+      photoUrl: photoUrl || null,
+      updatedAt: new Date(),
+    });
 
   return { success: true };
 };

@@ -1,4 +1,3 @@
-"use client";
 import GoogleLoginButton from "@/components/custom/google-login-button";
 
 import { MobileAuthWrapper } from "./mobile-auth/mobile-auth-wrapper";

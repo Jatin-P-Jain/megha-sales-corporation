@@ -93,8 +93,16 @@ export default function ProfileForm() {
     onToken: async (idToken, refreshToken) => {
       await setToken(idToken, refreshToken);
     },
-    onLinked: async () => {
-      await updateUserFirebaseMethods();
+    onLinked: async ({ user }) => {
+      console.log({ user });
+      const photoUrl = user?.providerData.find(
+        (p) => p.providerId === "google.com",
+      )?.photoURL;
+
+      await updateUserFirebaseMethods(
+        user?.email ?? undefined,
+        photoUrl ?? undefined,
+      );
       await refreshClientUser();
     },
     toast,
@@ -190,6 +198,21 @@ export default function ProfileForm() {
     );
     setDidInit(true);
   }, [clientUser, didInit, form, pathname, router, searchParams]);
+  useEffect(() => {
+    if (!clientUser?.email) return;
+
+    const current = form.getValues("email") || "";
+    const next = clientUser.email || "";
+
+    // Only patch if it's actually different (and don't overwrite while user is typing)
+    if (current !== next && !form.getFieldState("email").isDirty) {
+      form.setValue("email", next, {
+        shouldDirty: false,
+        shouldTouch: false,
+        shouldValidate: true,
+      });
+    }
+  }, [clientUser?.email, form]);
 
   const { otpReset, otpSent, sendingOtp, isVerifying, sendOtp, verifyOtp } =
     useMobileOtp({
@@ -461,18 +484,22 @@ export default function ProfileForm() {
                     )}
                   />
 
-                  <div className="flex flex-col">
+                  <div className="flex w-full flex-col">
                     <FormField
                       control={form.control}
                       name="email"
                       render={({ field }) => (
-                        <FormItem className="flex flex-col gap-1">
-                          <div className="flex w-full flex-col items-center justify-center gap-1 md:flex-row md:items-end md:gap-4">
-                            <div className="flex w-full flex-col gap-1">
+                        <FormItem className="flex w-full flex-col gap-1">
+                          <div className="grid grid-cols-1 items-end justify-center gap-2 md:grid-cols-[minmax(0,1fr)_max-content] md:gap-4">
+                            <div
+                              className={clsx("flex min-w-0 flex-col gap-1", {
+                                ["md:col-span-2"]: clientUser?.email,
+                              })}
+                            >
                               <FormLabel className="flex items-start gap-1">
                                 Your email
                               </FormLabel>
-                              <FormControl className="w-full">
+                              <FormControl className="">
                                 <Input
                                   {...field}
                                   placeholder="Your email"
@@ -483,16 +510,22 @@ export default function ProfileForm() {
                                 />
                               </FormControl>
                               <FormMessage className="text-xs" />
+                              {clientUser?.email && (
+                                <div className="inline-flex w-fit gap-1 text-xs font-semibold text-green-700">
+                                  <CheckCircle2 className="size-4 text-green-700" />
+                                  Verified {isPhoneLinked && "and linked."}
+                                </div>
+                              )}
                             </div>
 
                             {!clientUser?.email && (
-                              <div className="flex flex-col md:flex-row">
-                                <span className="text-muted-foreground flex justify-center text-sm md:mb-2">
-                                  or
+                              <div className="flex flex-col items-center justify-between gap-2 md:flex-row md:gap-4">
+                                <span className="text-muted-foreground flex justify-center text-sm">
+                                  -- or --
                                 </span>
                                 <Button
                                   type="button"
-                                  className="w-full cursor-pointer rounded-full shadow-md md:w-auto"
+                                  className="w-auto cursor-pointer rounded-full shadow-md"
                                   variant="outline"
                                   onClick={linkGoogle}
                                 >
@@ -820,14 +853,17 @@ export default function ProfileForm() {
 
                               {loadingGst && (
                                 <div className="mt-3">
-                                  <GstDetails data={null} loading />
+                                  <GstDetails
+                                    data={null}
+                                    loading={loadingGst}
+                                  />
                                 </div>
                               )}
                               {gstDetails && (
                                 <div className="mt-3">
                                   <GstDetails
                                     data={gstDetails}
-                                    loading={false}
+                                    loading={loadingGst}
                                   />
                                 </div>
                               )}

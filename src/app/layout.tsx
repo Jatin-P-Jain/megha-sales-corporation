@@ -94,12 +94,12 @@ export default async function RootLayout({
         <Providers>
           <RouteProgress />
           <NavBar />
-          <div className="mx-auto max-w-screen-lg pt-28">{children}</div>
+          <div className="mx-auto max-w-screen-lg md:p-8 md:pt-28 px-4 pt-20 pb-8">{children}</div>
         </Providers>
 
         <Footer />
         <NetworkBanner />
-        <div id="recaptcha-container" className="opacity-0" />
+        
 
         <Analytics />
         <SpeedInsights />

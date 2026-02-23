@@ -1,41 +1,56 @@
+// app/(auth)/google-one-tap-wrapper.tsx
 "use client";
 
 import GoogleOneTap from "@/components/custom/google-one-tap";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { useAuth } from "@/context/useAuth";
+import { useAuthState } from "@/context/useAuth";
 import { Loader2Icon } from "lucide-react";
-import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
+
+const AUTH_PAGES = new Set([
+  "/login",
+  "/signup",
+  "/forgot-password",
+  "/reset-password",
+]);
 
 export default function GoogleOneTapWrapper() {
-  const auth = useAuth();
+  const { clientUser, clientUserLoading } = useAuthState(); // ✅ state only
+
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [signingIn, setSigningIn] = useState(false);
   const [loginSuccess, setLoginSuccess] = useState(false);
-  const searchParams = useSearchParams();
+  const redirectedRef = useRef(false);
+
+  const shouldShowOneTap = useMemo(() => {
+    if (AUTH_PAGES.has(pathname)) return false;
+    if (clientUserLoading) return false;
+    if (clientUser) return false;
+    return true;
+  }, [pathname, clientUserLoading, clientUser]);
 
   const redirect = searchParams.get("redirect") || undefined;
 
   const nextPath = useMemo(() => {
-    if (!auth.clientUser) return null;
-    const profileComplete = auth.clientUser.profileComplete;
-    if (!profileComplete) return "/account/profile?from=login";
+    if (!clientUser) return null;
+    if (!clientUser.profileComplete) return "/account/profile?from=login";
     return redirect ?? "/";
-  }, [auth.clientUser, redirect]);
+  }, [clientUser, redirect]);
 
-  // ✅ Wait for clientUser to be loaded after login before redirecting
   useEffect(() => {
     if (!loginSuccess) return;
-    if (auth.clientUserLoading) return;
+    if (clientUserLoading) return;
     if (!nextPath) return;
+    if (redirectedRef.current) return;
 
-    // IMPORTANT: do a full navigation so middleware sees the new cookies immediately
+    redirectedRef.current = true;
     window.location.assign(nextPath);
+  }, [loginSuccess, clientUserLoading, nextPath]);
 
-    // Reset the flag (won't usually run because of navigation, but safe)
-    setLoginSuccess(false);
-  }, [loginSuccess, auth.clientUserLoading, nextPath]);
-
-  if (signingIn)
+  if (signingIn) {
     return (
       <Dialog open>
         <DialogContent
@@ -53,6 +68,9 @@ export default function GoogleOneTapWrapper() {
         </DialogContent>
       </Dialog>
     );
+  }
+
+  if (!shouldShowOneTap) return null;
 
   return (
     <GoogleOneTap
