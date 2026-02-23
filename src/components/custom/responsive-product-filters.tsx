@@ -12,6 +12,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Separator } from "../ui/separator";
 import { FilterOptions } from "@/types/filterOptions";
 import { SortBySelect } from "./sort-products";
+import Link from "next/link";
 
 const ResponsiveProductFilters: React.FC<{
   isAdmin: boolean;
@@ -59,7 +60,7 @@ const ResponsiveProductFilters: React.FC<{
   const applySorting = (newValue: string) => {
     params.set("sort", newValue);
     params.set("page", "1");
-    router.push(`/products-list?${params.toString()}`);
+    router.replace(`/products-list?${params.toString()}`);
   };
 
   return (
@@ -91,11 +92,14 @@ const ResponsiveProductFilters: React.FC<{
                   <Button
                     variant={"secondary"}
                     className="text-red-800"
-                    onClick={() => {
-                      router.push(`/products-list?page=1`);
-                    }}
+                    asChild
                   >
-                    <XCircle />
+                    <Link
+                      href={`/products-list?page=1`}
+                      className="flex items-center gap-1"
+                    >
+                      <XCircle />
+                    </Link>
                   </Button>
                 )}
                 <SortBySelect value={sortValue} onChange={applySorting} />
@@ -127,11 +131,14 @@ const ResponsiveProductFilters: React.FC<{
                   <Button
                     variant={"secondary"}
                     className="text-red-800"
-                    onClick={() => {
-                      router.push(`/products-list?page=1`);
-                    }}
+                    asChild
                   >
-                    <XCircle />
+                    <Link
+                      href={`/products-list?page=1`}
+                      className="flex items-center gap-1"
+                    >
+                      <XCircle />
+                    </Link>
                   </Button>
                 )}
                 <SortBySelect value={sortValue} onChange={applySorting} />
@@ -166,14 +173,13 @@ const ResponsiveProductFilters: React.FC<{
               />
             </div>
             {isFilterApplied && (
-              <Button
-                variant={"secondary"}
-                className="text-red-800"
-                onClick={() => {
-                  router.push(`/products-list?page=1`);
-                }}
-              >
-                <XCircle /> Clear
+              <Button variant={"secondary"} className="text-red-800" asChild>
+                <Link
+                  href={`/products-list?page=1`}
+                  className="flex items-center gap-1"
+                >
+                  <XCircle /> Clear
+                </Link>
               </Button>
             )}
           </div>
@@ -199,14 +205,13 @@ const ResponsiveProductFilters: React.FC<{
                 />
               </div>
               {isFilterApplied && (
-                <Button
-                  variant={"secondary"}
-                  className="text-red-800"
-                  onClick={() => {
-                    router.push(`/products-list?page=1`);
-                  }}
-                >
-                  <XCircle /> Clear
+                <Button variant={"secondary"} className="text-red-800" asChild>
+                  <Link
+                    href={`/products-list?page=1`}
+                    className="flex items-center gap-1"
+                  >
+                    <XCircle /> Clear
+                  </Link>
                 </Button>
               )}
               <SortBySelect value={sortValue} onChange={applySorting} />

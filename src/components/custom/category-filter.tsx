@@ -51,7 +51,7 @@ export default function CategoryMultiSelect({
     qp.set("page", "1");
 
     startTransition(() => {
-      router.push(`/products-list?${qp.toString()}`, { scroll: false });
+      router.replace(`/products-list?${qp.toString()}`, { scroll: false });
     });
   }
 

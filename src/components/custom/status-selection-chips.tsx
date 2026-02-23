@@ -42,7 +42,7 @@ export default function StatusChips() {
     qp.set("page", "1");
 
     startTransition(() => {
-      router.push(`/products-list?${qp.toString()}`);
+      router.replace(`/products-list?${qp.toString()}`);
     });
   }
 
@@ -55,7 +55,7 @@ export default function StatusChips() {
     qp.set("page", "1");
 
     startTransition(() => {
-      router.push(`/products-list?${qp.toString()}`);
+      router.replace(`/products-list?${qp.toString()}`);
     });
   }
 

@@ -11,6 +11,7 @@ import InstallPWAButton from "@/components/custom/install-pwa-button";
 import NetworkBanner from "@/components/custom/network-banner";
 import { Footer } from "@/components/custom/footer";
 import { NavBar } from "@/components/custom/navbar/nav-bar";
+import RouteProgress from "@/components/custom/route-progress";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -91,8 +92,9 @@ export default async function RootLayout({
         <InstallPWAButton />
 
         <Providers>
+          <RouteProgress />
           <NavBar />
-          <div className="mx-auto mt-24 max-w-screen-lg">{children}</div>
+          <div className="mx-auto max-w-screen-lg pt-24">{children}</div>
         </Providers>
 
         <Footer />

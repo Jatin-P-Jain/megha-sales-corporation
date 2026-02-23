@@ -55,7 +55,7 @@ export default async function Home({
   });
 
   return (
-    <main className="mx-auto flex h-full max-w-screen-lg flex-col items-center justify-center p-4 px-4 pb-8 md:p-8 lg:p-10">
+    <main className="mx-auto flex max-w-screen-lg flex-col items-center justify-center">
       <HomePage brandsPromise={brandsPromise} />
     </main>
   );
