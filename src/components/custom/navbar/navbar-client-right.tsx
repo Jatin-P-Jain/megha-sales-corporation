@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import SearchProducts from "../search-products";
+import SearchProducts from "../search-products/search-products";
 import AuthButtons from "../auth-buttons";
 
 export default function NavBarClientRight() {
