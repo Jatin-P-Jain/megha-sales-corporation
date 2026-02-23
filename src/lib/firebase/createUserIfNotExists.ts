@@ -19,6 +19,7 @@ export const createUserIfNotExists = async (user: UserData) => {
       ...user,
       profileComplete: false,
       userType: isAdmin ? "admin" : null,
+      accountStatus: isAdmin ? "approved" : "pending",
       createdAt: new Date(),
       updatedAt: new Date(),
     };
