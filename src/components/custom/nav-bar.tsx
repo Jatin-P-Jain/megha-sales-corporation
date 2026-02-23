@@ -1,4 +1,3 @@
-"use client";
 import React, { ReactNode, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -49,24 +48,6 @@ export default function NavBar({ children }: NavBarProps) {
                   className="block h-full w-full object-contain"
                 />
               </div>
-              {/* <div className="relative h-10 w-7 md:h-12 md:w-9 bg-white rounded-sm">
-                <Image
-                  src={JinendraLogo}
-                  alt="Jai Jinendra Logo"
-                  width={100}
-                  height={100}
-                  className="object-center"
-                />
-              </div>
-              <div className="relative h-10 w-8 md:h-10 md:w-9">
-                <Image
-                  src={BrandLogo}
-                  alt="Megha Sales Corporation Logo"
-                  width={60}
-                  height={60}
-                  className="object-fill"
-                />
-              </div> */}
               <div className="my-auto flex flex-col text-sm md:text-lg md:tracking-[2px]">
                 <span className="font-semibold">Megha Sales</span>
                 <span className="flex items-center justify-center text-xs tracking-[2px] md:text-sm md:tracking-[4px]">
@@ -86,15 +67,7 @@ export default function NavBar({ children }: NavBarProps) {
           </div>
         </nav>
 
-        <div className="py-18 pb-2">{children}</div>
-        {/* {isMobile && (
-          <div className="fixed bottom-5 z-50 mx-auto w-full px-4">
-            <SearchProducts
-              variant="default"
-              buttonClassName="rounded-md h-12 w-full"
-            />
-          </div>
-        )} */}
+        <div className="mt-24">{children}</div>
       </CartProvider>
 
       <Toaster
