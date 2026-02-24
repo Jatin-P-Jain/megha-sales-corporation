@@ -1,11 +1,9 @@
 export const dynamic = "force-dynamic";
-
-import { cookies } from "next/headers";
-import { auth } from "@/firebase/server";
 import OrdersList from "./orders-list";
 import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
 import OrderStatusChips from "@/components/custom/order-status-chips";
 import clsx from "clsx";
+import { requireProfileCompleteOrRedirect } from "@/lib/auth/gaurds";
 
 export default async function OrderHistoryPage({
   searchParams,
@@ -13,11 +11,9 @@ export default async function OrderHistoryPage({
   searchParams: Promise<{ page?: string; orderId?: string; status?: string }>;
 }) {
   // 1) auth
-  const cookieStore = await cookies();
-  const token = cookieStore.get("firebaseAuthToken")?.value;
-  const verified = token ? await auth.verifyIdToken(token) : null;
-  const isAdmin = Boolean(verified?.admin);
-  const isUser = Boolean(verified);
+  const { decoded, user } = await requireProfileCompleteOrRedirect("/cart");
+  const isAdmin = Boolean(decoded.admin);
+  const isUser = Boolean(user);
 
   const searchParamValues = await searchParams;
   const requestedOrderId = searchParamValues.orderId ?? "";
@@ -79,7 +75,7 @@ export default async function OrderHistoryPage({
           isUser ? "pt-30 md:pt-35" : "pt-20"
         }`}
       >
-        <OrdersList isAdmin={isAdmin} userId={verified?.uid} />
+        <OrdersList isAdmin={isAdmin} userId={user?.uuid} />
       </div>
     </div>
   );

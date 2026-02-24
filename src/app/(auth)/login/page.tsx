@@ -39,10 +39,10 @@ export default async function Login({
         </CardTitle>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="">
         {sessionExpired && (
-          <div className="mx-auto mb-4 flex w-fit items-center justify-center gap-2 rounded-lg bg-amber-100 p-2 text-center text-xs text-amber-700 italic">
-            <InfoIcon className="size-4" />
+          <div className="mx-auto mb-4 flex w-fit items-center justify-center gap-2 rounded-lg bg-amber-100 p-2 text-left text-xs text-amber-700 italic">
+            <InfoIcon className="size-6 md:size-4" />
             Your session has expired due to inactivity. Please log in again.
           </div>
         )}

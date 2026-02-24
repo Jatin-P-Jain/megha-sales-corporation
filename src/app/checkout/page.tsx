@@ -1,14 +1,11 @@
 import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
-import { auth } from "@/firebase/server";
-import { cookies } from "next/headers";
 import { CheckoutItems } from "./checkout-items";
 import CheckoutFooter from "@/app/checkout/checkout-footer";
+import { requireProfileCompleteOrRedirect } from "@/lib/auth/gaurds";
 
 export default async function CheckoutPage() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("firebaseAuthToken")?.value;
-  const verifiedToken = token ? await auth.verifyIdToken(token) : null;
-  const isAdmin = verifiedToken?.admin;
+  const { decoded } = await requireProfileCompleteOrRedirect("/cart");
+  const isAdmin = Boolean(decoded.admin);
   return (
     <div className="mx-auto flex max-w-screen-lg flex-col gap-4">
       <div

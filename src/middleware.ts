@@ -52,7 +52,6 @@ export async function middleware(request: NextRequest) {
   // 4) Decode your token (admin, exp, profileComplete from custom claim)
   let admin: boolean | undefined;
   let exp: number | undefined;
-  let profileComplete: boolean | undefined;
 
   try {
     const decoded = decodeJwt(token) as {
@@ -61,11 +60,9 @@ export async function middleware(request: NextRequest) {
       user_id?: string;
       profileComplete?: boolean;
     };
-    console.log({ decoded });
 
     admin = decoded.admin;
     exp = decoded.exp;
-    profileComplete = decoded.profileComplete;
   } catch (error) {
     console.error("Failed to decode JWT:", error);
     const redirectUrl = new URL("/login", origin);
@@ -90,22 +87,6 @@ export async function middleware(request: NextRequest) {
       const url = request.nextUrl.clone();
       url.pathname = "/admin-dashboard";
       url.searchParams.set("unlock", "users");
-      return NextResponse.redirect(url);
-    }
-  }
-
-  // 7) Profile-complete guard (using custom claim, no fetch)
-  //    Only enforce on specific routes, and skip the profile page itself.
-  const profileRequiredPaths = ["/cart", "/checkout", "/order-history"];
-
-  const requiresProfile = profileRequiredPaths.some(
-    (p) => pathname === p || pathname.startsWith(p + "/")
-  );
-
-  if (requiresProfile && pathname !== "/account/profile") {
-    if (!profileComplete) {
-      const url = new URL("/account/profile", origin);
-      url.searchParams.set("redirect", pathname + request.nextUrl.search);
       return NextResponse.redirect(url);
     }
   }

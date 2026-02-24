@@ -1,14 +1,12 @@
-import { cookies } from "next/headers";
-import { auth } from "@/firebase/server";
 import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
 import { CartItems } from "./cart-items";
 import CartSummary from "@/components/custom/cart-summary";
+import { requireProfileCompleteOrRedirect } from "@/lib/auth/gaurds";
 
 export default async function Cart() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("firebaseAuthToken")?.value;
-  const verifiedToken = token ? await auth.verifyIdToken(token) : null;
-  const isAdmin = verifiedToken?.admin;
+  const { decoded, user } = await requireProfileCompleteOrRedirect("/cart");
+
+  const isAdmin = Boolean(decoded.admin);
 
   return (
     <div className="mx-auto flex max-w-screen-lg flex-col gap-4">
@@ -29,7 +27,7 @@ export default async function Cart() {
           <h1 className="py-2 text-xl font-[600] tracking-wide text-cyan-950 md:text-2xl">
             Your Cart
           </h1>
-          <CartSummary isUser={!!verifiedToken} />
+          <CartSummary isUser={!!user} />
         </div>
       </div>
       <div className={`flex h-[100%] flex-1 pt-38 pb-4 md:pt-38`}>

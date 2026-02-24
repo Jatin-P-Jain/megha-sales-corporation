@@ -42,12 +42,6 @@ export const updateUserProfile = async (
       .doc(uid)
       .update({ ...userData, updatedAt: new Date() });
 
-    const userRecord = await auth.getUser(uid);
-    await auth.setCustomUserClaims(uid, {
-      ...(userRecord.customClaims || {}),
-      profileComplete,
-    });
-
     return { success: true };
   } catch (error) {
     console.error("Update profile error:", error);

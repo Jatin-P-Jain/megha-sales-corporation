@@ -315,10 +315,6 @@ export default function ProfileForm() {
           );
         }
 
-        const token = (await currentUser?.getIdToken(true)) || "";
-        const refreshToken = currentUser?.refreshToken || "";
-        await setToken(token, refreshToken);
-
         const freshClientUser = await refreshClientUser();
 
         // If you want to guarantee latest values for WA payload,
