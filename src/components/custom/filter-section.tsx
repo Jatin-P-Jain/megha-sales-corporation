@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -19,7 +20,7 @@ interface FilterOptions {
   categories: string[];
 }
 
-interface FilterSection {
+interface FilterSectionProps {
   filterType: FilterType;
   filterOptions?: FilterOptions;
   selections: Record<string, string[]>;
@@ -35,22 +36,23 @@ export function FilterSection({
   selections,
   setSelections,
   toggleSelection,
-}: FilterSection) {
+}: FilterSectionProps) {
   const [searchTerm, setSearchTerm] = useState("");
   useEffect(() => setSearchTerm(""), [filterType.key]);
 
   if (!filterOptions) return <div>Loading filters...</div>;
 
-  // Handle price specially
+  // Handle price specially: selections.price = ["min,max"]
   if (filterType.key === "price") {
-    const [currentMinPrice, currentMaxPrice] = selections[filterType.key];
-    const min = parseInt(currentMinPrice) || filterOptions.prices.min;
-    const max = parseInt(currentMaxPrice) || filterOptions.prices.max;
+    const raw = selections[filterType.key]?.[0] ?? "";
+    const [rawMin, rawMax] = raw.split(",");
+    const min = rawMin ? parseInt(rawMin, 10) : filterOptions.prices.min;
+    const max = rawMax ? parseInt(rawMax, 10) : filterOptions.prices.max;
 
     return (
       <PriceFilterSection
-        min={min}
-        max={max}
+        min={Number.isFinite(min) ? min : filterOptions.prices.min}
+        max={Number.isFinite(max) ? max : filterOptions.prices.max}
         onPriceChange={(minPrice, maxPrice) => {
           setSelections((sel) => ({
             ...sel,
@@ -61,15 +63,17 @@ export function FilterSection({
     );
   }
 
+  // Handle discount specially: selections.discount = ["min,max"]
   if (filterType.key === "discount") {
-    const [currentMinDiscount, currentMaxDiscount] = selections[filterType.key];
-    const min = parseInt(currentMinDiscount) || filterOptions.discount.min;
-    const max = parseInt(currentMaxDiscount) || filterOptions.discount.max;
+    const raw = selections[filterType.key]?.[0] ?? "";
+    const [rawMin, rawMax] = raw.split(",");
+    const min = rawMin ? parseInt(rawMin, 10) : filterOptions.discount.min;
+    const max = rawMax ? parseInt(rawMax, 10) : filterOptions.discount.max;
 
     return (
       <DiscountFilterSection
-        min={min}
-        max={max}
+        min={Number.isFinite(min) ? min : filterOptions.discount.min}
+        max={Number.isFinite(max) ? max : filterOptions.discount.max}
         onDiscountChange={(minDiscount, maxDiscount) => {
           setSelections((sel) => ({
             ...sel,
@@ -80,7 +84,10 @@ export function FilterSection({
     );
   }
 
-  // All other types: fetch options
+  const selectedValues = selections[filterType.key] || [];
+  const lower = searchTerm.toLowerCase();
+
+  // Options
   const brandOptionsArray = filterOptions.brands.map((b) => ({
     key: b.id,
     name: b.name,
@@ -92,13 +99,17 @@ export function FilterSection({
   };
 
   const brandOptions = brandOptionsArray.filter((opt) =>
-    opt.name.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
-  const otherOptions = (optionsMap[filterType.key] || []).filter((opt) =>
-    opt.toLowerCase().includes(searchTerm.toLowerCase()),
+    opt.name.toLowerCase().includes(lower),
   );
 
-  const selectedValues = selections[filterType.key] || [];
+  const otherOptions = (optionsMap[filterType.key] || []).filter((opt) =>
+    opt.toLowerCase().includes(lower),
+  );
+
+  const nothingFound =
+    filterType.key === "brand"
+      ? brandOptions.length === 0
+      : otherOptions.length === 0;
 
   return (
     <div className="flex h-full w-full flex-col gap-2 p-4">
@@ -107,14 +118,16 @@ export function FilterSection({
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
+
       <div className="flex h-full flex-col gap-2 overflow-auto">
-        {brandOptions.length === 0 && otherOptions.length === 0 && (
+        {nothingFound && (
           <div className="text-xs">
             No {filterType.label} with name &quot;
             <span className="font-semibold">{searchTerm}</span>
             &quot; found.
           </div>
         )}
+
         {filterType.key === "brand"
           ? brandOptions.map((opt) => (
               <label
@@ -123,7 +136,9 @@ export function FilterSection({
               >
                 <Checkbox
                   checked={selectedValues.includes(opt.key)}
-                  onClick={() => toggleSelection(filterType.key, opt.key)}
+                  onCheckedChange={() =>
+                    toggleSelection(filterType.key, opt.key)
+                  }
                   className="size-5 cursor-pointer"
                 />
                 <span>{opt.name}</span>
@@ -136,7 +151,7 @@ export function FilterSection({
               >
                 <Checkbox
                   checked={selectedValues.includes(opt)}
-                  onClick={() => toggleSelection(filterType.key, opt)}
+                  onCheckedChange={() => toggleSelection(filterType.key, opt)}
                   className="size-5 cursor-pointer"
                 />
                 <span>{opt}</span>

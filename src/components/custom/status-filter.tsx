@@ -22,31 +22,28 @@ export default function StatusSelect() {
   const [pendingKey, setPendingKey] = useState<string | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
-  // read selected
   const selected = params.get("status") || "";
-  const currentSelections = selected.split(",").filter((s) => s);
+  const currentSelections = selected.split(",").filter(Boolean);
 
-  // toggle handler
   function toggle(status: string) {
     setPendingKey(status);
+
     const qp = new URLSearchParams(Array.from(params.entries()));
     const next = currentSelections.includes(status)
       ? currentSelections.filter((s) => s !== status)
       : [...currentSelections, status];
 
     qp.delete("status");
-    if (next.length > 0) {
-      qp.set("status", next.join(","));
-    }
+    if (next.length > 0) qp.set("status", next.join(","));
 
+    // ✅ always reset page on filter changes
     qp.set("page", "1");
 
     startTransition(() => {
-      router.push(`/products-list?${qp}`, { scroll: false });
+      router.replace(`/products-list?${qp.toString()}`, { scroll: false });
     });
   }
 
-  // clear pendingKey
   useEffect(() => {
     if (!isPending) setPendingKey(null);
   }, [isPending]);
@@ -63,7 +60,7 @@ export default function StatusSelect() {
           selected.length > 0 && "pr-2",
         )}
       >
-        <PopoverTrigger asChild className="">
+        <PopoverTrigger asChild>
           <Button
             variant="ghost"
             className={clsx(
@@ -72,30 +69,26 @@ export default function StatusSelect() {
             )}
             ref={triggerRef}
           >
-            {/* truncate here */}
-            <span className={clsx("", selected.length == 0 && "")}>Status</span>
+            <span>Status</span>
             {isPending && pendingKey !== null && (
               <Loader2Icon className="h-4 w-4 animate-spin" />
             )}
-            <ChevronDown className="" />
+            <ChevronDown />
           </Button>
         </PopoverTrigger>
+
         <div className="no-scrollbar flex overflow-x-auto">
-          {currentSelections.length > 0 &&
-            currentSelections.map((s, i) => {
-              return (
-                <Badge
-                  key={i}
-                  className="bg-primary-foreground text-primary border-primary ml-2 flex h-fit border-1 py-1 text-[8px] md:text-xs"
-                >
-                  {valueToLabel[s] ?? s}
-                </Badge>
-              );
-            })}
+          {currentSelections.map((s, i) => (
+            <Badge
+              key={i}
+              className="bg-primary-foreground text-primary border-primary ml-2 flex h-fit border-1 py-1 text-[8px] md:text-xs"
+            >
+              {valueToLabel[s] ?? s}
+            </Badge>
+          ))}
         </div>
       </div>
 
-      {/* fixed width popover */}
       <PopoverContent
         className="p-0"
         collisionBoundary={
@@ -105,10 +98,9 @@ export default function StatusSelect() {
         side="bottom"
         align="start"
         sideOffset={4}
-        avoidCollisions={true}
+        avoidCollisions
       >
         <Command>
-          {/* full-width input */}
           <CommandGroup className="max-h-35 overflow-auto">
             {PRODUCT_STATUS.map(({ label, value }) => {
               const isSel = selected.includes(value);

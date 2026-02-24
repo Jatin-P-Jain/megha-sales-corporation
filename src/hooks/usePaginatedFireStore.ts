@@ -11,8 +11,11 @@ import {
   getCountFromServer,
   QueryDocumentSnapshot,
   DocumentData,
+  onSnapshot,
+  Unsubscribe,
+  Query,
 } from "firebase/firestore";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { firestore } from "@/firebase/client";
 import { Product } from "@/types/product";
 import { UserData } from "@/types/user";
@@ -28,127 +31,243 @@ type UsePaginatedFirestoreOptions = {
   }[];
   orderByField?: string;
   orderDirection?: "asc" | "desc";
+
+  // ✅ new: realtime updates for currently loaded page
+  realtime?: boolean;
+
+  // ✅ new: caller can pass stable key to avoid stringify deps footguns
+  queryKey?: string;
+
+  // ✅ new: optional count refresh interval (tradeoff)
+  countRefreshMs?: number;
 };
 
-export const usePaginatedFirestore = <T extends Product | UserData |Order>({
+export const usePaginatedFirestore = <T extends Product | UserData | Order>({
   collectionPath,
   pageSize = 10,
   filters = [],
   orderByField = "updated",
   orderDirection = "desc",
+  realtime = false,
+  queryKey,
+  countRefreshMs,
 }: UsePaginatedFirestoreOptions) => {
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  const [countLoading, setCountLoading] = useState(false);
 
   const cursors = useRef<(QueryDocumentSnapshot<DocumentData> | null)[]>([
     null,
   ]);
   const prevQueryKey = useRef("");
 
-  const loadPage = async (targetPage: number) => {
-    if (!hasMore && targetPage > currentPage) return;
-    setLoading(true);
+  // active realtime subscription (only for current page)
+  const unsubRef = useRef<Unsubscribe | null>(null);
+
+  const effectiveQueryKey = useMemo(() => {
+    return (
+      queryKey ??
+      JSON.stringify({
+        collectionPath,
+        filters,
+        orderByField,
+        orderDirection,
+        pageSize,
+      })
+    );
+  }, [
+    queryKey,
+    collectionPath,
+    filters,
+    orderByField,
+    orderDirection,
+    pageSize,
+  ]);
+
+  const buildQueryBase = useCallback(() => {
+    let q = query(collection(firestore, collectionPath));
+
+    if (collectionPath === "users") {
+      q = query(q, orderBy("updatedAt", "desc"));
+    } else {
+      q = query(q, orderBy(orderByField, orderDirection));
+    }
+
+    filters.forEach((f) => {
+      q = query(q, where(f.field, f.op, f.value));
+    });
+
+    return q;
+  }, [collectionPath, filters, orderByField, orderDirection]);
+
+  const mapDocs = useCallback(
+    (docs: QueryDocumentSnapshot<DocumentData>[]) => {
+      return docs.map((d) => {
+        const docData = d.data();
+
+        if (collectionPath === "users") {
+          return { uuid: d.id, ...docData } as T;
+        }
+        return { id: d.id, ...docData } as T;
+      });
+    },
+    [collectionPath]
+  );
+
+  const stopRealtime = useCallback(() => {
+    if (unsubRef.current) {
+      unsubRef.current();
+      unsubRef.current = null;
+    }
+  }, []);
+
+  const fetchCount = useCallback(async () => {
+    setCountLoading(true);
     try {
-      // Find nearest previous page with a cursor
-      let basePage = 1;
-      for (let i = targetPage - 1; i >= 1; i--) {
-        if (cursors.current[i]) {
-          basePage = i + 1; // we already have cursor for page i, so basePage is i+1
-          break;
-        }
-      }
+      let countQuery = query(collection(firestore, collectionPath));
+      filters.forEach((f) => {
+        countQuery = query(countQuery, where(f.field, f.op, f.value));
+      });
+      const snapshot = await getCountFromServer(countQuery);
+      setTotalItems(snapshot.data().count);
+    } catch (error) {
+      console.error("Failed to fetch count:", error);
+      setTotalItems(0);
+    } finally {
+      setCountLoading(false);
+    }
+  }, [collectionPath, filters]);
 
-      // If basePage is not targetPage, we need to step through pages to build cursors
-      for (let page = basePage; page <= targetPage; page++) {
-        let q = query(collection(firestore, collectionPath));
-        if(collectionPath === "users") {
-          q = query(q, orderBy("updatedAt", "desc"));
-        } else {
-          q = query(q, orderBy(orderByField, orderDirection));
-        }
-        filters.forEach((f) => {
-          q = query(q, where(f.field, f.op, f.value));
-        });
+  const resetPagination = useCallback(() => {
+    stopRealtime();
+    cursors.current = [null];
+    setData([]);
+    setCurrentPage(1);
+    setHasMore(true);
+  }, [stopRealtime]);
 
-        const cursor = cursors.current[page - 1];
+  // Build missing cursors up to targetPage-1 (only if needed)
+  const ensureCursorForPrevPage = useCallback(
+    async (targetPage: number) => {
+      if (targetPage <= 1) return;
 
-        if (cursor) {
-          q = query(q, startAfter(cursor));
+      // if we already have cursor for previous page, we are good
+      if (cursors.current[targetPage - 1]) return;
+
+      // build sequentially until we have cursor for targetPage-1
+      for (let page = 1; page < targetPage; page++) {
+        if (cursors.current[page]) continue;
+
+        let q = buildQueryBase();
+        const prevCursor = cursors.current[page - 1];
+
+        if (prevCursor) {
+          q = query(q, startAfter(prevCursor));
         }
 
         q = query(q, limit(pageSize));
         const snapshot = await getDocs(q);
 
-        // Map documents with proper typing
-        const docs = snapshot.docs.map((doc) => {
-
-          const docData = doc.data();
-
-          // For UserData, use userId; for Product, use id
-          if (collectionPath === "users") {
-            return { uuid: doc.id, ...docData } as T;
-          }
-          return { id: doc.id, ...docData } as T;
-        });
-
-        // Save cursor for this page
         cursors.current[page] = snapshot.docs.at(-1) ?? null;
 
-        // When this is the final target page, update UI state
-        if (page === targetPage) {
-          setHasMore(snapshot.docs.length === pageSize);
-          setData(docs);
-          setCurrentPage(page);
-        }
+        // If this page is not full, there are no further pages
+        if (snapshot.docs.length < pageSize) break;
       }
-    } catch (err) {
-      console.error("Pagination fetch error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [buildQueryBase, pageSize]
+  );
 
-  const resetPagination = () => {
-    cursors.current = [null];
-    setData([]);
-    setCurrentPage(1);
-    setHasMore(true);
-  };
+  const loadPage = useCallback(
+    async (targetPage: number) => {
+      if (targetPage < 1) return;
+      if (!hasMore && targetPage > currentPage) return;
+
+      setLoading(true);
+
+      try {
+        // stop existing listener before switching page
+        stopRealtime();
+
+        // build cursors only if missing
+        await ensureCursorForPrevPage(targetPage);
+
+        const cursor = cursors.current[targetPage - 1] ?? null;
+
+        let q = buildQueryBase();
+        if (cursor) q = query(q, startAfter(cursor));
+        q = query(q, limit(pageSize));
+
+        if (realtime) {
+          // realtime listener for this page
+          unsubRef.current = onSnapshot(
+            q as Query<DocumentData>,
+            (snapshot) => {
+              const docs = mapDocs(snapshot.docs);
+              cursors.current[targetPage] = snapshot.docs.at(-1) ?? null;
+
+              setHasMore(snapshot.docs.length === pageSize);
+              setData(docs);
+              setCurrentPage(targetPage);
+              setLoading(false);
+            },
+            (err) => {
+              console.error("Realtime pagination error:", err);
+              setLoading(false);
+            }
+          );
+          return;
+        }
+
+        // non-realtime (your original behavior)
+        const snapshot = await getDocs(q);
+        const docs = mapDocs(snapshot.docs);
+
+        cursors.current[targetPage] = snapshot.docs.at(-1) ?? null;
+
+        setHasMore(snapshot.docs.length === pageSize);
+        setData(docs);
+        setCurrentPage(targetPage);
+      } catch (err) {
+        console.error("Pagination fetch error:", err);
+      } finally {
+        if (!realtime) setLoading(false);
+      }
+    },
+    [
+      buildQueryBase,
+      currentPage,
+      ensureCursorForPrevPage,
+      hasMore,
+      mapDocs,
+      pageSize,
+      realtime,
+      stopRealtime,
+    ]
+  );
 
   useEffect(() => {
-    const queryKey = JSON.stringify({
-      collectionPath,
-      filters,
-      orderByField,
-      orderDirection,
-    });
-    if (prevQueryKey.current !== queryKey) {
-      prevQueryKey.current = queryKey;
+    if (prevQueryKey.current !== effectiveQueryKey) {
+      prevQueryKey.current = effectiveQueryKey;
+
       resetPagination();
       loadPage(1);
-
-      // Fetch total item count
-      const fetchCount = async () => {
-        try {
-          let countQuery = query(collection(firestore, collectionPath));
-          filters.forEach((f) => {
-            countQuery = query(countQuery, where(f.field, f.op, f.value));
-          });
-          const snapshot = await getCountFromServer(countQuery);
-          setTotalItems(snapshot.data().count);
-        } catch (error) {
-          console.error("Failed to fetch count:", error);
-          setTotalItems(0);
-        }
-      };
-
       fetchCount();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [collectionPath, JSON.stringify(filters), orderByField, orderDirection]);
+
+    return () => {
+      stopRealtime();
+    };
+  }, [effectiveQueryKey, fetchCount, loadPage, resetPagination, stopRealtime]);
+
+  // optional periodic count refresh
+  useEffect(() => {
+    if (!countRefreshMs) return;
+    const t = setInterval(fetchCount, countRefreshMs);
+    return () => clearInterval(t);
+  }, [countRefreshMs, fetchCount]);
 
   return {
     data,
@@ -156,7 +275,9 @@ export const usePaginatedFirestore = <T extends Product | UserData |Order>({
     hasMore,
     currentPage,
     totalItems,
+    countLoading,
     loadPage,
     resetPagination,
+    refreshCount: fetchCount,
   };
 };
