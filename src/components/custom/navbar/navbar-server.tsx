@@ -9,7 +9,7 @@ import NavBarClientRight from "./navbar-client-right";
 export default function NavBarServer() {
   return (
     <nav className="fixed top-0 right-0 left-0 z-50 flex flex-wrap items-center justify-between bg-cyan-950 p-3 px-4 text-white shadow-md md:px-6 lg:px-10">
-      <div className="flex flex-wrap items-center justify-center gap-2 md:gap-6">
+      <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4">
         <Link
           href="/"
           className="flex items-center justify-center gap-1 text-lg tracking-wider uppercase md:gap-4 md:text-2xl"

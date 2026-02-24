@@ -17,7 +17,9 @@ export default function BrandCard({ brand }: { brand: Brand }) {
         <CardHeader className="flex w-full items-center justify-between p-0">
           <div className="relative flex h-25 w-full flex-col items-center justify-center">
             <BrandLogo brandLogo={brand?.brandLogo} />
-            <div className="text-sm md:text-base">{brand.brandName}</div>
+            <div className="text-sm font-medium md:text-base">
+              {brand.brandName}
+            </div>
           </div>
         </CardHeader>
       </Card>

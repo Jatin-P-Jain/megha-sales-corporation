@@ -62,7 +62,7 @@ export default async function ProductsList({
       <div
         className={`fixed inset-x-0 top-0 z-30 mx-auto flex w-full max-w-screen-lg flex-col items-end justify-end rounded-lg bg-white px-4 shadow-md ${
           !isAdmin ? "h-60 md:h-70" : "h-48 md:h-55"
-        } ${!isUser && "!h-45 md:!h-50"}`}
+        } ${!isUser && "!h-45 md:!h-52"}`}
       >
         <div className="mx-auto flex w-full max-w-screen-lg flex-col pb-2">
           <EllipsisBreadCrumbs items={breadcrumbs} />
@@ -84,9 +84,9 @@ export default async function ProductsList({
       </div>
 
       <div
-        className={`flex-1 overflow-auto px-4 ${
+        className={`flex-1 overflow-auto ${
           !isAdmin ? "pt-42 md:pt-45" : "pt-30"
-        } ${!isUser && "!pt-30 md:!pt-34"} pb-4 md:pb-0`}
+        } ${!isUser && "!pt-28"} pb-4 md:pb-0`}
       >
         <ProductListShell isAdmin={isAdmin} />
       </div>
