@@ -14,9 +14,8 @@ import type {
   RecaptchaVerifier,
   User,
 } from "firebase/auth";
-import { doc, getDoc, onSnapshot } from "firebase/firestore";
 
-import { auth, firestore } from "@/firebase/client";
+import { auth } from "@/firebase/client";
 
 import {
   loginWithEmailAndPass,
@@ -28,19 +27,12 @@ import {
 
 import { removeToken } from "./actions";
 
-import { createUserIfNotExists } from "@/lib/firebase/createUserIfNotExists";
-import { mapDbUserToClientUser } from "@/lib/firebase/mapDBUserToClient";
-import { generateSequenceId } from "@/lib/firebase/generateSequenceId";
-import type { UserData } from "@/types/user";
-
 export type AuthState = {
-  loading: boolean;
+  authLoading: boolean;
   currentUser: User | null;
-
-  clientUserLoading: boolean;
-  clientUser: UserData | null;
-
   isLoggingOut: boolean;
+  isAdmin: boolean;
+  userRole?: string;
 };
 
 export type AuthActions = {
@@ -58,22 +50,17 @@ export type AuthActions = {
     otp: string,
     confirmationResult: ConfirmationResult,
   ) => Promise<User | undefined>;
-
-  setClientUser: React.Dispatch<React.SetStateAction<UserData | null>>;
-  refreshClientUser: () => Promise<UserData | null>;
 };
 
 const AuthStateContext = createContext<AuthState | null>(null);
 const AuthActionsContext = createContext<AuthActions | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [loading, setLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-
-  const [clientUser, setClientUser] = useState<UserData | null>(null);
-  const [clientUserLoading, setClientUserLoading] = useState(true);
-
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [userRole, setUserRole] = useState<string | undefined>(undefined);
 
   const logout = useCallback(async () => {
     setIsLoggingOut(true);
@@ -87,7 +74,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const loginWithGoogle = useCallback(() => loginWithGoogleFn(), []);
-
   const loginWithEmailAndPassword = useCallback(
     ({ email, password }: { email: string; password: string }) =>
       loginWithEmailAndPass(email, password),
@@ -106,113 +92,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [],
   );
 
-  const refreshClientUser = useCallback(async () => {
-    const u = auth.currentUser;
-    if (!u) return null;
-
-    setClientUserLoading(true);
-    try {
-      const userDocRef = doc(firestore, "users", u.uid);
-      const snap = await getDoc(userDocRef);
-      const next = snap.exists() ? mapDbUserToClientUser(snap.data()) : null;
-      setClientUser(next);
-      return next;
-    } catch (e) {
-      console.error("refreshClientUser failed", e);
-      return null;
-    } finally {
-      setClientUserLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
-    let unsubscribeSnapshot: undefined | (() => void);
-
     const unsubscribeAuth = auth.onAuthStateChanged(async (user) => {
-      if (unsubscribeSnapshot) {
-        unsubscribeSnapshot();
-        unsubscribeSnapshot = undefined;
-      }
-
       if (!user) {
         await removeToken();
         setCurrentUser(null);
-        setClientUser(null);
-        setClientUserLoading(false);
-        setLoading(false);
+        setAuthLoading(false);
         return;
       }
 
       setCurrentUser(user);
-      setLoading(false);
-      setClientUserLoading(true);
-
-      const tokenResult = await user.getIdTokenResult(false);
-
-      // FIRST-TIME userId logic:
-      // 1) Check if user doc exists and already has userId.
-      // 2) Only generate sequence id if doc missing (or missing userId).
-      const userDocRef = doc(firestore, "users", user.uid);
-      const existingSnap = await getDoc(userDocRef);
-
-      const existingData = existingSnap.exists() ? existingSnap.data() : null;
-      const existingUserId =
-        existingData && existingData.userId ? existingData.userId : null;
-
-      const finalUserId = existingUserId ?? (await generateSequenceId("users"));
-
-      const safeUser: UserData = {
-        uuid: user.uid,
-        userId: finalUserId,
-        email: user.email ?? null,
-        phone: user.phoneNumber?.slice(3) ?? null,
-        displayName: user.displayName ?? "",
-        userType: tokenResult.claims.admin ? "admin" : "",
-        photoUrl: user.photoURL ?? "",
-        firebaseAuth: tokenResult.claims.firebase
-          ? {
-              identities: tokenResult.claims.firebase.identities ?? {},
-              sign_in_provider:
-                tokenResult.claims.firebase.sign_in_provider ?? "",
-            }
-          : undefined,
-      };
-
-      await createUserIfNotExists(safeUser);
-
-      // Realtime user doc for UI state
-      unsubscribeSnapshot = onSnapshot(
-        userDocRef,
-        (snap) => {
-          if (snap.exists()) {
-            setClientUser(mapDbUserToClientUser(snap.data()));
-          } else {
-            setClientUser(null);
-          }
-          setClientUserLoading(false);
-        },
-        (error) => {
-          console.error("Error listening to user document:", error);
-          setClientUserLoading(false);
-        },
-      );
+      try {
+        const tokenResult = await user.getIdTokenResult(false);
+        setIsAdmin(!!tokenResult.claims.admin);
+        setUserRole((tokenResult.claims.role as string) ?? "Customer");
+      } catch (e) {
+        console.error("getIdTokenResult failed", e);
+        setIsAdmin(false);
+      } finally {
+        setAuthLoading(false);
+      }
     });
 
-    return () => {
-      if (unsubscribeSnapshot) unsubscribeSnapshot();
-      unsubscribeAuth();
-    };
+    return () => unsubscribeAuth();
   }, []);
 
   const stateValue = useMemo<AuthState>(
     () => ({
-      loading,
+      authLoading,
       currentUser,
-      clientUserLoading,
-      clientUser,
       isLoggingOut,
+      isAdmin,
+      userRole,
     }),
-    [loading, currentUser, clientUserLoading, clientUser, isLoggingOut],
+    [authLoading, currentUser, isLoggingOut, isAdmin, userRole],
   );
 
   const actionsValue = useMemo<AuthActions>(
@@ -222,8 +135,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       loginWithEmailAndPassword,
       handleSendOTP,
       verifyOTP,
-      setClientUser,
-      refreshClientUser,
     }),
     [
       logout,
@@ -231,7 +142,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       loginWithEmailAndPassword,
       handleSendOTP,
       verifyOTP,
-      refreshClientUser,
     ],
   );
 

@@ -6,31 +6,50 @@ import {
   TriangleAlert,
   XCircle,
 } from "lucide-react";
+
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import UserUnlockDialog from "@/components/custom/user-unlock-dialog";
 import { Button } from "@/components/ui/button";
 import { PushHandler } from "@/lib/firebase/push-handler";
+
 import { useAuthState } from "@/context/useAuth";
+import { useUserGate } from "@/context/UserGateProvider";
+import { useRequireUserProfile } from "@/hooks/useUserProfile";
+import { useUserProfileState } from "@/context/UserProfileProvider";
 
 export default function HomeUserBar() {
-  const { clientUser, clientUserLoading, currentUser } = useAuthState();
+  // Home needs the full profile
+  useRequireUserProfile(true);
 
+  const { currentUser } = useAuthState();
+  const { gate, gateLoading, gateSyncing } = useUserGate();
+
+  // NOTE: this assumes your UserProfileManagerProvider exports { user, loading }
+  // If your state shape is different, rename accordingly.
+  const { clientUser, clientUserLoading } = useUserProfileState();
+
+  // Greeting: best-effort (don’t block UI)
   const userName = clientUser?.displayName;
   const userPhone = clientUser?.phone;
-  const isAdmin = clientUser?.userType === "admin";
-  const accountStatus = clientUser?.accountStatus;
-  const rejectionReason = clientUser?.rejectionReason;
-  const profileComplete = !!clientUser?.profileComplete;
+
+  // Gate-driven (fast, global)
+  const isAdmin = gate?.userType === "admin";
+  const accountStatus = gate?.accountStatus;
+  const rejectionReason = gate?.rejectionReason;
+  const profileComplete = !!gate?.profileComplete;
+
+  // Only show blocking loader when user is logged in BUT gate not resolved at all yet
+  const showBlockingLoader = !!currentUser && gateLoading && !gate;
 
   return (
     <>
       <PushHandler />
 
-      {currentUser && clientUserLoading ? (
+      {showBlockingLoader ? (
         <div className="bg-muted text-muted-foreground mx-auto flex h-full flex-col items-center justify-center gap-4 rounded-lg p-4">
           <Loader2Icon className="size-5 animate-spin" />
           <span className="text-sm font-semibold">
-            We are fetching your account details...
+            Loading your access status…
           </span>
         </div>
       ) : (
@@ -40,6 +59,16 @@ export default function HomeUserBar() {
             <span className="text-base font-bold md:text-xl">
               {userName || userPhone || "Guest"}
             </span>
+            {currentUser && gateSyncing && (
+              <span className="text-muted-foreground ml-2 text-xs font-medium">
+                Syncing…
+              </span>
+            )}
+            {currentUser && clientUserLoading && (
+              <span className="text-muted-foreground ml-2 text-xs font-medium">
+                Loading profile…
+              </span>
+            )}
           </h1>
 
           {profileComplete && !isAdmin && accountStatus === "pending" && (

@@ -38,6 +38,9 @@ import { usePwaPrompt } from "@/hooks/usePwaPrompt";
 import { useState } from "react";
 import HelpDialog from "./help-dialog";
 import clsx from "clsx";
+import { useRequireUserProfile } from "@/hooks/useUserProfile";
+import { useUserProfileState } from "@/context/UserProfileProvider";
+import { useUserGate } from "@/context/UserGateProvider";
 
 type AccountStatusUI =
   | "pending"
@@ -134,16 +137,14 @@ function AccountStatusBadge({
 
 export default function AuthButtons() {
   const { deferredPrompt, promptToInstall, isPwa } = usePwaPrompt();
-  const { clientUser, clientUserLoading, currentUser, isLoggingOut } =
-    useAuthState();
+
+  const { currentUser, isAdmin, isLoggingOut, userRole } = useAuthState();
   const { logout } = useAuthActions();
+  const { profileComplete, accountStatus } = useUserGate();
+  useRequireUserProfile(true);
+  const { clientUser, clientUserLoading } = useUserProfileState();
 
   const [helpOpen, setHelpOpen] = useState(false);
-
-  const isAdmin = clientUser?.userType === "admin";
-  const accountStatus = clientUser?.accountStatus;
-  const profileComplete = clientUser?.profileComplete;
-
   // 1) Loading state
   if (currentUser && clientUserLoading) {
     return (
@@ -222,9 +223,9 @@ export default function AuthButtons() {
               )}
 
               <div className="flex w-full flex-col justify-between gap-2 md:flex-row md:items-center">
-                {clientUser.userType && (
+                {userRole && (
                   <span className="bg-muted w-fit rounded-full px-2 py-0.5 text-xs font-semibold">
-                    {toTitleCase(clientUser.userType)}
+                    {toTitleCase(userRole)}
                   </span>
                 )}
 

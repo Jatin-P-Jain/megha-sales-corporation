@@ -1,18 +1,10 @@
-"use client";
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApps, FirebaseApp } from "firebase/app";
-import {
-  initializeAuth,
-  Auth,
-  RecaptchaVerifier,
-  indexedDBLocalPersistence,
-  browserLocalPersistence,
-  browserSessionPersistence,
-  browserPopupRedirectResolver,
-  getAuth,
-} from "firebase/auth";
+import { getAuth, Auth, RecaptchaVerifier } from "firebase/auth";
 import { getStorage, FirebaseStorage } from "firebase/storage";
 import { Firestore, getFirestore } from "firebase/firestore";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -27,52 +19,23 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const currentApps = getApps();
-
 let app: FirebaseApp;
 let auth: Auth;
 let storage: FirebaseStorage;
 let firestore: Firestore;
-
 if (!currentApps.length) {
   app = initializeApp(firebaseConfig);
-
-  // Recommended: set persistence at Auth initialization with fallbacks. [web:311]
-  // - indexedDBLocalPersistence is best when available
-  // - browserLocalPersistence falls back to localStorage
-  // - browserSessionPersistence is last fallback (e.g., if storage is blocked)
-  auth = initializeAuth(app, {
-    persistence: [
-      indexedDBLocalPersistence,
-      browserLocalPersistence,
-      browserSessionPersistence,
-    ],
-    popupRedirectResolver: browserPopupRedirectResolver,
-  });
-
+  auth = getAuth(app);
   storage = getStorage(app);
   firestore = getFirestore(app);
 } else {
   app = currentApps[0];
-
-  // If Auth was already initialized for this app, initializeAuth will throw,
-  // so we reuse the existing auth instance by calling initializeAuth in a try/catch.
-  // Easiest safe approach: just call initializeAuth again in try/catch.
-  try {
-    auth = initializeAuth(app, {
-      persistence: [
-        indexedDBLocalPersistence,
-        browserLocalPersistence,
-        browserSessionPersistence,
-      ],
-      popupRedirectResolver: browserPopupRedirectResolver,
-    });
-  } catch {
-    // Fallback if already initialized elsewhere:
-    auth = getAuth(app);
-  }
-
+  auth = getAuth(app);
   storage = getStorage(app);
   firestore = getFirestore(app);
 }
+// if (process.env.NODE_ENV === "development") {
+//   connectAuthEmulator(auth, "http://localhost:3000", { disableWarnings: true });
+// }
 
 export { app, auth, storage, firestore, RecaptchaVerifier };

@@ -1,20 +1,13 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  type ChangeEvent,
-} from "react";
+import { useCallback, useEffect, useState, type ChangeEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { ref, uploadBytesResumable } from "firebase/storage";
 
 import { storage } from "@/firebase/client";
 import imageUrlFormatter from "@/lib/image-urlFormatter";
-import { useAuthActions, useAuthState } from "@/context/useAuth";
-import type { AccountStatus, UserData } from "@/types/user";
+import { useAuthState } from "@/context/useAuth";
 
 import { useRecaptcha } from "@/hooks/useRecaptcha";
 import { useLinkAuthProviders } from "@/hooks/useLinkAuthProviders";
@@ -22,15 +15,23 @@ import { setToken } from "@/context/actions";
 import { updateUserFirebaseMethods, updateUserPhoto } from "./actions";
 import AccountView from "./account-view";
 import Loading from "./loading";
-
-type AccountStatusUI = Exclude<AccountStatus, never>;
+import { useUserGate } from "@/context/UserGateProvider";
+import {
+  useUserProfileActions,
+  useUserProfileState,
+} from "@/context/UserProfileProvider";
+import { useRequireUserProfile } from "@/hooks/useUserProfile";
 
 export default function AccountPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const { clientUser, clientUserLoading, currentUser } = useAuthState();
-  const { setClientUser, refreshClientUser } = useAuthActions();
+  useRequireUserProfile(true);
+
+  const { currentUser, isAdmin } = useAuthState();
+  const { refreshUser } = useUserProfileActions();
+  const { clientUser, clientUserLoading } = useUserProfileState();
+  const { accountStatus } = useUserGate();
 
   const [uploading, setUploading] = useState(false);
   const [uploadPercent, setUploadPercent] = useState<number>(0);
@@ -46,7 +47,7 @@ export default function AccountPage() {
     },
     onLinked: async () => {
       await updateUserFirebaseMethods();
-      await refreshClientUser();
+      await refreshUser();
     },
     toast,
   });
@@ -54,13 +55,6 @@ export default function AccountPage() {
   useEffect(() => {
     if (clientUser?.photoUrl) setPhoto(clientUser.photoUrl);
   }, [clientUser?.photoUrl]);
-
-  const isAdmin = clientUser?.userType === "admin";
-
-  const accountStatus: AccountStatusUI = useMemo(
-    () => (clientUser?.accountStatus ?? "pending") as AccountStatusUI,
-    [clientUser?.accountStatus],
-  );
 
   const onGoToProfile = useCallback(() => {
     const redirectTo = searchParams.get("redirect") ?? "/account";
@@ -81,7 +75,7 @@ export default function AccountPage() {
 
   const onPhotoChange = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
-      if (!clientUser?.uuid) return;
+      if (!clientUser?.uid) return;
 
       const file = event.target.files?.[0];
       if (!file) return;
@@ -116,13 +110,11 @@ export default function AccountPage() {
           );
         });
 
-        await updateUserPhoto({ userId: clientUser.uuid, photoUrl: imagePath });
+        await updateUserPhoto({ userId: clientUser.uid, photoUrl: imagePath });
 
         const formatted = imageUrlFormatter(imagePath);
         setPhoto(formatted);
-        setClientUser((prev) =>
-          prev ? ({ ...prev, photoUrl: formatted } as UserData) : prev,
-        );
+        updateUserPhoto({ userId: clientUser.uid, photoUrl: formatted });
 
         toast.success("Profile updated!", {
           description: "New profile picture is set for your account.",
@@ -137,7 +129,7 @@ export default function AccountPage() {
         setUploading(false);
       }
     },
-    [clientUser, setClientUser],
+    [clientUser],
   );
 
   if (clientUserLoading || !clientUser) {

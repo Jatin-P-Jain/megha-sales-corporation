@@ -52,13 +52,19 @@ import { useMobileOtp } from "@/hooks/useMobileOtp";
 import { useLinkAuthProviders } from "@/hooks/useLinkAuthProviders";
 
 import { setToken } from "@/context/actions";
-import { useAuthActions, useAuthState } from "@/context/useAuth";
+import { useAuthState } from "@/context/useAuth";
 
 import { updateUserProfile } from "./action";
 import { updateUserFirebaseMethods } from "../actions";
 
 import { userProfileSchema } from "@/validation/profileSchema";
 import { loginUserMobileSchema } from "@/validation/loginUser";
+import { useRequireUserProfile } from "@/hooks/useUserProfile";
+import {
+  useUserProfileActions,
+  useUserProfileState,
+} from "@/context/UserProfileProvider";
+import { updateGateProfileComplete } from "@/lib/firebase/updateGateProfileComplete";
 
 type FormValues = z.infer<typeof userProfileSchema>;
 
@@ -67,8 +73,13 @@ export default function ProfileForm() {
   const pathname = usePathname();
   const router = useRouter();
 
-  const { loading: authLoading, currentUser, clientUser } = useAuthState();
-  const { refreshClientUser } = useAuthActions();
+  useRequireUserProfile(true);
+
+  const { currentUser, isAdmin, authLoading } = useAuthState();
+  const { refreshUser } = useUserProfileActions();
+  const { clientUser, clientUserLoading } = useUserProfileState();
+
+  const pageLoading = authLoading || (currentUser ? clientUserLoading : false);
 
   const recaptchaVerifier = useRecaptcha({ enabled: true });
 
@@ -84,8 +95,6 @@ export default function ProfileForm() {
   const [idType, setIdType] = useState<"pan" | "gst">("gst");
 
   const [didInit, setDidInit] = useState(false);
-
-  const isAdmin = clientUser?.userType === "admin";
 
   const { linkGoogle, linkingGoogle } = useLinkAuthProviders({
     user: currentUser,
@@ -103,7 +112,7 @@ export default function ProfileForm() {
         user?.email ?? undefined,
         photoUrl ?? undefined,
       );
-      await refreshClientUser();
+      await refreshUser();
     },
     toast,
   });
@@ -219,12 +228,8 @@ export default function ProfileForm() {
       onSuccess: async () => {
         setIsVerified(true);
         setIsPhoneLinked(true);
-
-        await updateUserProfile(
-          { phone: phoneNumber },
-          { profileComplete: false },
-        );
-        await refreshClientUser();
+        await updateUserProfile({ phone: phoneNumber });
+        await refreshUser();
       },
       appVerifier: recaptchaVerifier.verifier,
       ensureRecaptcha: recaptchaVerifier.ensureReady,
@@ -268,18 +273,15 @@ export default function ProfileForm() {
         const { otp: _otp, otherBusinessType, ...rest } = data;
 
         if (isAdmin) {
-          await updateUserProfile(
-            {
-              displayName: rest.displayName,
-              email: rest.email,
-              phone: rest.phone,
-              photoUrl: rest.photoUrl,
-              userType: "admin",
-              businessType: "",
-              businessProfile: null,
-            },
-            { profileComplete: true },
-          );
+          await updateUserProfile({
+            displayName: rest.displayName,
+            email: rest.email,
+            phone: rest.phone,
+            photoUrl: rest.photoUrl,
+            businessType: "",
+            businessProfile: null,
+          });
+          await updateGateProfileComplete(true);
         } else {
           const finalBusinessType =
             rest.businessType === "other" && otherBusinessType
@@ -304,21 +306,18 @@ export default function ProfileForm() {
                 }
               : null;
 
-          await updateUserProfile(
-            {
-              ...rest,
-              userType: "customer",
-              businessType: finalBusinessType,
-              businessProfile,
-            },
-            { profileComplete: true },
-          );
+          await updateUserProfile({
+            ...rest,
+            businessType: finalBusinessType,
+            businessProfile,
+          });
+          await updateGateProfileComplete(true);
         }
 
-        const freshClientUser = await refreshClientUser();
+        const freshClientUser = await refreshUser();
 
         // If you want to guarantee latest values for WA payload,
-        // change refreshClientUser() to return UserData | null.
+        // change refreshUser() to return UserData | null.
         if (freshClientUser) {
           await fetch("/api/wa-send-message", {
             method: "POST",
@@ -353,7 +352,7 @@ export default function ProfileForm() {
       gstDetails,
       idType,
       isAdmin,
-      refreshClientUser,
+      refreshUser,
       router,
       searchParams,
     ],
@@ -442,7 +441,7 @@ export default function ProfileForm() {
 
         <CardContent className="py-2">
           <div className="relative">
-            {authLoading && (
+            {pageLoading && (
               <div className="absolute top-0 z-30 flex h-full w-full items-center justify-center gap-2 bg-zinc-400/10">
                 <div className="flex h-1/8 w-3/4 items-center justify-center gap-2 rounded-lg border-1 bg-white">
                   <Loader2 className="animate-spin" />

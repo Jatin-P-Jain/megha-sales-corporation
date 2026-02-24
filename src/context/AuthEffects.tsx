@@ -4,7 +4,8 @@ import { useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import { getMessaging, getToken } from "firebase/messaging";
 
-import { useAuthState } from "./auth-context";
+import { useAuthState } from "./auth-context"; // adjust import
+import { useUserGate } from "@/context/UserGateProvider";
 import useMonitorInactivity from "@/hooks/useMonitorInactivity";
 
 import { getDeviceMetadata } from "@/lib/utils";
@@ -19,24 +20,51 @@ type AccountStatusUI =
   | "incomplete";
 
 export default function AuthEffects() {
-  const { currentUser, clientUser } = useAuthState();
+  const { currentUser } = useAuthState();
 
-  // Inactivity limit (derived from userType, but if you prefer claims-based, we can move it here too)
+  // Gate is always-on: use this for access/status logic + toasts
+  const { gate, gateLoading, gateSyncing } = useUserGate();
+
+  // Inactivity limit should prefer gate.userType (fast, global)
+  const userType = gate?.userType;
+
   const inactivityLimit =
-    clientUser?.userType === "admin"
+    userType === "admin"
       ? parseInt(process.env.NEXT_PUBLIC_ADMIN_INACTIVITY_LIMIT || "0", 10)
       : parseInt(process.env.NEXT_PUBLIC_USER_INACTIVITY_LIMIT || "0", 10);
 
   useMonitorInactivity(currentUser, inactivityLimit);
 
-  // Toast on account status transitions (NOT on first load)
-  const prevStatusRef = useRef<string | undefined>(undefined);
+  // Toast on account status transitions (NOT on first stable load)
+  const prevStatusRef = useRef<AccountStatusUI | undefined>(undefined);
+  const didInitRef = useRef(false);
 
   useEffect(() => {
-    const currentStatus = (clientUser?.accountStatus ?? undefined) as
+    if (!currentUser) {
+      didInitRef.current = false;
+      prevStatusRef.current = undefined;
+      return;
+    }
+
+    if (gateLoading) return;
+
+    const currentStatus = (gate?.accountStatus ?? undefined) as
       | AccountStatusUI
       | undefined;
     const previousStatus = prevStatusRef.current;
+
+    // First stable value: baseline, no toast
+    if (!didInitRef.current) {
+      didInitRef.current = true;
+      prevStatusRef.current = currentStatus;
+      return;
+    }
+
+    // Optional: avoid cache-only flip noise; wait for server-confirmed snapshot
+    if (gateSyncing) {
+      prevStatusRef.current = currentStatus;
+      return;
+    }
 
     if (
       previousStatus !== undefined &&
@@ -52,7 +80,7 @@ export default function AuthEffects() {
       } else if (currentStatus === "rejected") {
         toast.error("Account Rejected", {
           description:
-            clientUser?.rejectionReason ||
+            gate?.rejectionReason ||
             "Please contact support for more information.",
           duration: 5000,
         });
@@ -70,7 +98,13 @@ export default function AuthEffects() {
     }
 
     prevStatusRef.current = currentStatus;
-  }, [clientUser]);
+  }, [
+    currentUser,
+    gateLoading,
+    gateSyncing,
+    gate?.accountStatus,
+    gate?.rejectionReason,
+  ]);
 
   // FCM refresh/save when logged in
   const refreshAndSaveFcmToken = useCallback(async () => {

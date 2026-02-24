@@ -1,33 +1,42 @@
-// wherever your LoginForm component lives
 "use client";
 
-import LoginForm from "@/components/custom/login-form";
-import { useAuthState } from "@/context/useAuth";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-export default function LoginClient({ redirect }: { redirect?: string }) {
-  const { clientUser, clientUserLoading } = useAuthState(); // ✅ lighter [web:512]
+import LoginForm from "@/components/custom/login-form";
+import { useAuthState } from "@/context/auth-context";
+import { useUserGate } from "@/context/UserGateProvider";
 
+export default function LoginClient({ redirect }: { redirect?: string }) {
+  const { currentUser } = useAuthState();
+  const { gate, gateLoading } = useUserGate();
+  
   const [loginSuccess, setLoginSuccess] = useState(false);
   const redirectedRef = useRef(false);
 
   const nextPath = useMemo(() => {
-    if (!clientUser) return null;
-    if (!clientUser.profileComplete) return "/account/profile?from=login";
+    // If not logged in yet, don't decide.
+    if (!currentUser) return null;
+
+    // If gate not loaded yet, don't decide.
+    if (gateLoading) return null;
+
+    // If gate doc missing, treat as incomplete (or send to a safe default).
+    if (!gate) return "/account/profile?from=login";
+
+    if (!gate.profileComplete) return "/account/profile?from=login";
     return redirect ?? "/";
-  }, [clientUser, redirect]);
+  }, [currentUser, gateLoading, gate, redirect]);
 
   useEffect(() => {
     if (!loginSuccess) return;
-    if (clientUserLoading) return;
     if (!nextPath) return;
     if (redirectedRef.current) return;
 
     redirectedRef.current = true;
 
-    // Use full navigation if middleware/cookies must be applied immediately
+    // Full navigation so server cookies/middleware take effect immediately
     window.location.assign(nextPath);
-  }, [loginSuccess, clientUserLoading, nextPath]);
+  }, [loginSuccess, nextPath]);
 
   return (
     <LoginForm
