@@ -9,7 +9,7 @@ import {
 } from "firebase/auth";
 import { markOneTapAsFinished } from "@/hooks/useOneTapReady";
 import { setToken } from "@/context/actions";
-import { useAuth } from "@/context/useAuth";
+import { useAuthState } from "@/context/useAuth";
 
 export default function GoogleOneTap({
   setSigningIn,
@@ -18,7 +18,7 @@ export default function GoogleOneTap({
   setSigningIn: (signingIn: boolean) => void;
   setLoginSuccess: (loginSuccess: boolean) => void;
 }) {
-  const { currentUser, loading } = useAuth();
+  const { currentUser, loading } = useAuthState();
 
   useEffect(() => {
     if (typeof window === "undefined") return;

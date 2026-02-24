@@ -4,11 +4,10 @@ import { useEffect } from "react";
 import { getMessaging, onMessage, isSupported } from "firebase/messaging";
 import { app } from "@/firebase/client";
 import { toast } from "sonner";
-import { useAuth } from "@/context/useAuth";
+import { useAuthState } from "@/context/auth-context";
 
 export const PushHandler = () => {
-  const auth = useAuth();
-
+  const { clientUser } = useAuthState();
   useEffect(() => {
     const setup = async () => {
       console.log("sw:", "serviceWorker" in navigator);
@@ -32,7 +31,7 @@ export const PushHandler = () => {
         const body =
           payload.notification?.body ?? payload.data?.body ?? "No body";
 
-        if (payload?.data?.uuid === auth.clientUser?.uuid) {
+        if (payload?.data?.uuid === clientUser?.uuid) {
           // Show toast only if the message is intended for the current user
           toast.success(title, { description: body });
         }

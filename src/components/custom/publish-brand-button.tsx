@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button"; // Adjust the import path as needed
 import { Loader2, SendIcon } from "lucide-react";
-import { useAuth } from "@/context/useAuth";
+import { useAuthState } from "@/context/useAuth";
 import { BrandStatus } from "@/types/brandStatus";
 import { toast } from "sonner";
 import { updateStatus } from "@/app/admin-dashboard/users/action";
@@ -14,11 +14,11 @@ const PublishBrandButton = ({
   brandId: string;
   newStatus: BrandStatus;
 }) => {
-  const auth = useAuth();
+  const { currentUser } = useAuthState();
   const [isPublishing, setIsPublishing] = useState(false);
   const handlePublish = async () => {
     setIsPublishing(true);
-    const token = await auth?.currentUser?.getIdToken();
+    const token = await currentUser?.getIdToken();
     if (!token) {
       setIsPublishing(false);
       return;

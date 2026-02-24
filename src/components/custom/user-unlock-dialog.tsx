@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { AlertCircle, ChevronsRight, MessageCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useAuth } from "@/context/useAuth";
+import { useAuthState } from "@/context/useAuth";
 import { getBaseUrl } from "@/lib/utils";
 import { formatBusinessProfile } from "@/lib/business-profile-formatter";
 import { useRouter } from "next/navigation";
@@ -23,8 +23,8 @@ interface UserUnlockDialogProps {
 
 export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
   const router = useRouter();
-  const auth = useAuth();
-  const { profileComplete } = auth.clientUser || {};
+  const { clientUser } = useAuthState();
+  const { profileComplete } = clientUser || {};
   const [open, setOpen] = useState(false);
   const [sending, setSending] = useState(false);
 
@@ -39,11 +39,11 @@ export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           templateKey: "account_approval_reminder_to_admin",
-          customerUserId: auth.clientUser?.userId,
-          customerName: auth.clientUser?.displayName || "User",
-          customerPhone: auth.clientUser?.phone || "Not provided",
-          customerEmail: auth.clientUser?.email || "Not provided",
-          customerBusinessProfile: formatBusinessProfile(auth.clientUser),
+          customerUserId: clientUser?.userId,
+          customerName: clientUser?.displayName || "User",
+          customerPhone: clientUser?.phone || "Not provided",
+          customerEmail: clientUser?.email || "Not provided",
+          customerBusinessProfile: formatBusinessProfile(clientUser),
         }),
       });
 
@@ -55,7 +55,7 @@ export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          uuid: auth.clientUser?.uuid,
+          uuid: clientUser?.uuid,
           title: "🛎️ Approval Request Sent",
           body: `Your approval request has been sent to the admin.`,
           url: `${getBaseUrl()}/account`,

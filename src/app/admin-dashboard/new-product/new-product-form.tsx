@@ -5,7 +5,7 @@ import { productSchema } from "@/validation/productSchema";
 
 import { z } from "zod";
 import { Loader2, PlusCircleIcon } from "lucide-react";
-import { useAuth } from "@/context/useAuth";
+import { useAuthState } from "@/context/useAuth";
 
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -17,7 +17,7 @@ import { useEffect, useState } from "react";
 import { updateBrandProcuctCount } from "../brands/action";
 
 export default function NewProductForm({ brand }: { brand?: Brand | Brand[] }) {
-  const auth = useAuth();
+  const { currentUser } = useAuthState();
   const router = useRouter();
   const [progressMap, setProgressMap] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -32,7 +32,7 @@ export default function NewProductForm({ brand }: { brand?: Brand | Brand[] }) {
 
   const handleSubmit = async (data: z.infer<typeof productSchema>) => {
     setIsLoading(true);
-    const token = await auth?.currentUser?.getIdToken();
+    const token = await currentUser?.getIdToken();
     if (!token) {
       setIsLoading(false);
       return;

@@ -16,7 +16,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { deleteProduct } from "./actions";
-import { useAuth } from "@/context/useAuth";
+import { useAuthState } from "@/context/useAuth";
 import { updateBrandProcuctCount } from "@/app/admin-dashboard/brands/action";
 
 export default function DeleteProductButton({
@@ -31,11 +31,11 @@ export default function DeleteProductButton({
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
   const [open, setOpen] = useState(false);
-  const auth = useAuth();
+  const { currentUser } = useAuthState();
 
   const deleteHandler = async () => {
     setIsDeleting(true);
-    const token = await auth?.currentUser?.getIdToken();
+    const token = await currentUser?.getIdToken();
     if (!token) {
       setIsDeleting(false);
       return;

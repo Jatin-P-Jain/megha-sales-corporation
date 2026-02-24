@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import React, { useEffect, useRef, useState } from "react";
 import { Loader2Icon, SendIcon, CheckCircle2 } from "lucide-react";
-import { useAuth } from "@/context/useAuth";
+import { useAuthState } from "@/context/useAuth";
 import { toast } from "sonner";
 import { saveEnquiry } from "@/app/admin-dashboard/enquires/actions";
 import { generateSequenceId } from "@/lib/firebase/generateSequenceId";
@@ -32,17 +32,17 @@ export function EnquiryDialog({ trigger }: EnquiryDialogProps) {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
 
-  const auth = useAuth();
   const nameInputRef = useRef<HTMLInputElement | null>(null);
   const messageRef = useRef<HTMLTextAreaElement | null>(null);
 
-  const isLoggedIn = !!auth.clientUser;
+  const { clientUser } = useAuthState();
+  const isLoggedIn = !!clientUser;
 
   useEffect(() => {
     if (isOpen && isLoggedIn) {
-      setName(auth.clientUser?.displayName ?? "");
-      setPhone(auth.clientUser?.phone ?? "");
-      setEmail(auth.clientUser?.email ?? "");
+      setName(clientUser?.displayName ?? "");
+      setPhone(clientUser?.phone ?? "");
+      setEmail(clientUser?.email ?? "");
     } else if (!isLoggedIn) {
       setName("");
       setPhone("");
@@ -91,7 +91,7 @@ export function EnquiryDialog({ trigger }: EnquiryDialogProps) {
         const savedEnquiryResponse = await saveEnquiry({
           id: customEnquiryId,
           enquiryText: message,
-          sentBy: auth.clientUser || {
+          sentBy: clientUser || {
             name: name,
             phone: phone,
             email: email,
