@@ -39,14 +39,14 @@ export default async function CheckoutPage() {
         </div>
       </div>
       <div
-        className={`flex h-[100vh] flex-1 overflow-auto scroll-auto px-4 pt-30 md:pt-38`}
+        className={`flex h-[100vh] flex-1 overflow-auto scroll-auto px-4 pt-30 md:pt-28`}
       >
-        <div className="no-scrollbar mb-25 flex h-full max-h-[430px] w-full overflow-auto">
+        <div className="no-scrollbar mb-20 flex h-full max-h-[450px] w-full overflow-auto">
           <CheckoutItems />
         </div>
       </div>
       <div
-        className={`fixed inset-x-0 bottom-0 z-30 mx-auto flex h-fit w-full max-w-screen-lg flex-col items-end justify-end rounded-t-lg bg-white px-4 py-1 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]`}
+        className={`fixed inset-x-0 bottom-0 z-30 mx-auto flex h-fit w-full max-w-screen-lg flex-col items-end justify-end rounded-t-lg bg-white px-4 py-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]`}
       >
         <CheckoutFooter />
       </div>

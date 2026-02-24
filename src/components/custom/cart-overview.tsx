@@ -3,16 +3,15 @@
 import React from "react";
 import { Button } from "../ui/button";
 import { ShoppingCartIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
 import currencyFormatter from "@/lib/currency-formatter";
 import { Skeleton } from "../ui/skeleton";
 import clsx from "clsx";
 import { useAuthState } from "@/context/useAuth";
 import { useCartState } from "@/context/cartContext";
+import Link from "next/link";
 
 export default function CartOverview() {
   const { clientUser } = useAuthState();
-  const router = useRouter();
   const { loading, cartTotals } = useCartState();
 
   const accountStatus = clientUser?.accountStatus;
@@ -43,7 +42,6 @@ export default function CartOverview() {
           (after discount &amp; GST)
         </span>
       </div>
-
       <div className="mx-auto flex flex-col items-center justify-center md:w-fit">
         <div className="flex w-full flex-col justify-between gap-0 px-2 py-0">
           <div className="flex items-center gap-5">
@@ -71,18 +69,26 @@ export default function CartOverview() {
           </div>
         </div>
       </div>
-
-      <Button
-        className={clsx(
-          "flex w-full items-center justify-center",
-          !isAccountApproved && "cursor-not-allowed ring-2 ring-yellow-700",
-        )}
-        onClick={() => router.push("/cart")}
-        disabled={isAccountApproved === false}
-      >
-        <span>Cart</span>
-        <ShoppingCartIcon className="size-5" />
-      </Button>
+      {!isAccountApproved ? (
+        <Button
+          className={clsx(
+            "flex w-full items-center justify-center",
+            "cursor-not-allowed ring-2 ring-yellow-700",
+          )}
+          disabled
+          type="button"
+        >
+          <span>Cart</span>
+          <ShoppingCartIcon className="size-5" />
+        </Button>
+      ) : (
+        <Button asChild className="flex w-full items-center justify-center">
+          <Link href="/cart" className="flex items-center gap-2">
+            <span>Cart</span>
+            <ShoppingCartIcon className="size-5" />
+          </Link>
+        </Button>
+      )}
     </div>
   );
 }

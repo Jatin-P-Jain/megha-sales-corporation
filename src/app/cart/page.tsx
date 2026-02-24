@@ -32,7 +32,7 @@ export default async function Cart() {
           <CartSummary isUser={!!verifiedToken} />
         </div>
       </div>
-      <div className={`flex h-[100%] flex-1 px-4 pt-43 md:pt-48 pb-4`}>
+      <div className={`flex h-[100%] flex-1 pt-38 pb-4 md:pt-38`}>
         <CartItems />
       </div>
     </div>
