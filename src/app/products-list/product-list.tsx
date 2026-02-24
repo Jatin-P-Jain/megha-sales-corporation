@@ -1,4 +1,3 @@
-// app/products-list/product-list.tsx
 "use client";
 
 import ProductCard from "@/components/custom/product-card";
@@ -16,7 +15,7 @@ import { usePaginatedFirestore } from "@/hooks/usePaginatedFireStore";
 import { Product } from "@/types/product";
 import clsx from "clsx";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 
 export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
   const { clientUser } = useAuthState();
@@ -29,7 +28,6 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // ----- Read URL params (primitives) -----
   const pageParam = searchParams.get("page") || "1";
   const pageFromUrl = Math.max(parseInt(pageParam, 10) || 1, 1);
 
@@ -50,7 +48,6 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
     ];
   }, [sortValue]);
 
-  // ----- Parse filters (memoized) -----
   const filters = useMemo(() => {
     const brandIds = brandIdValue
       ? brandIdValue.split(",").filter(Boolean)
@@ -128,7 +125,6 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
     isAdmin,
   ]);
 
-  // ✅ Stable queryKey: hook resets only when filters/sort change (not on page change)
   const queryKey = useMemo(() => {
     return JSON.stringify({
       brandIdValue,
@@ -171,26 +167,74 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
     filters,
     realtime: true,
     queryKey,
-    // optional: keep count slightly fresh
     countRefreshMs: 30000,
   });
 
-  // ✅ When URL page changes, load that page.
   useEffect(() => {
     loadPage(pageFromUrl);
   }, [pageFromUrl, loadPage]);
 
-  const handlePageChange = (page: number) => {
-    const sp = new URLSearchParams(searchParams.toString());
-    sp.set("page", String(page));
-    router.replace(`/products-list?${sp.toString()}`);
-    // loadPage will run from the effect above
-  };
+  const handlePageChange = useCallback(
+    (page: number) => {
+      const sp = new URLSearchParams(searchParams.toString());
+      sp.set("page", String(page));
+      router.replace(`/products-list?${sp.toString()}`, { scroll: false });
+    },
+    [router, searchParams],
+  );
 
   const start = totalItems === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
   const end =
     totalItems === 0 ? 0 : Math.min(currentPage * PAGE_SIZE, totalItems);
   const totalPages = Math.max(Math.ceil(totalItems / PAGE_SIZE), 1);
+
+  const pageLinks = useMemo(() => {
+    const nodes: React.ReactNode[] = [];
+    const visiblePages = new Set<number>();
+
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) visiblePages.add(i);
+    } else {
+      visiblePages.add(1);
+      visiblePages.add(totalPages);
+      for (let i = currentPage - 2; i <= currentPage + 2; i++) {
+        if (i > 1 && i < totalPages) visiblePages.add(i);
+      }
+    }
+
+    let prev: number | null = null;
+    for (let i = 1; i <= totalPages; i++) {
+      if (!visiblePages.has(i)) continue;
+
+      if (prev !== null && i - prev > 1) {
+        nodes.push(
+          <PaginationItem key={`ellipsis-${i}`}>
+            <span className="text-muted-foreground px-2">...</span>
+          </PaginationItem>,
+        );
+      }
+
+      const isCurrent = i === currentPage;
+      nodes.push(
+        <PaginationItem key={i}>
+          <PaginationLink
+            onClick={() => handlePageChange(i)}
+            isActive={isCurrent}
+            className={clsx(
+              isCurrent && "bg-primary font-bold text-white",
+              "cursor-pointer",
+            )}
+          >
+            {i}
+          </PaginationLink>
+        </PaginationItem>,
+      );
+
+      prev = i;
+    }
+
+    return nodes;
+  }, [currentPage, totalPages, handlePageChange]);
 
   if (loading) {
     return (
@@ -239,53 +283,7 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
               </PaginationItem>
             )}
 
-            {(() => {
-              const pageLinks: React.ReactNode[] = [];
-              const visiblePages = new Set<number>();
-
-              if (totalPages <= 7) {
-                for (let i = 1; i <= totalPages; i++) visiblePages.add(i);
-              } else {
-                visiblePages.add(1);
-                visiblePages.add(totalPages);
-                for (let i = currentPage - 2; i <= currentPage + 2; i++) {
-                  if (i > 1 && i < totalPages) visiblePages.add(i);
-                }
-              }
-
-              let prev: number | null = null;
-              for (let i = 1; i <= totalPages; i++) {
-                if (!visiblePages.has(i)) continue;
-
-                if (prev !== null && i - prev > 1) {
-                  pageLinks.push(
-                    <PaginationItem key={`ellipsis-${i}`}>
-                      <span className="text-muted-foreground px-2">...</span>
-                    </PaginationItem>,
-                  );
-                }
-
-                const isCurrent = i === currentPage;
-                pageLinks.push(
-                  <PaginationItem key={i}>
-                    <PaginationLink
-                      onClick={() => handlePageChange(i)}
-                      isActive={isCurrent}
-                      className={clsx(
-                        isCurrent && "bg-primary font-bold text-white",
-                        "cursor-pointer",
-                      )}
-                    >
-                      {i}
-                    </PaginationLink>
-                  </PaginationItem>,
-                );
-
-                prev = i;
-              }
-
-              return pageLinks;
-            })()}
+            {pageLinks}
 
             {hasMore && currentPage < totalPages && (
               <PaginationItem>

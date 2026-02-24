@@ -1,8 +1,8 @@
 // app/products-list/responsive-product-filters.server.tsx
-import ResponsiveProductFilters from "@/components/custom/responsive-product-filters";
 import { getBrands } from "@/data/brands";
 import { FilterOptions } from "@/types/filterOptions";
 import { BrandStatus } from "@/types/brandStatus";
+import ProductFiltersShell from "@/components/custom/product-filters-shell";
 
 export default async function ResponsiveProductFiltersServer({
   isAdmin,
@@ -43,7 +43,7 @@ export default async function ResponsiveProductFiltersServer({
   ).sort();
 
   return (
-    <ResponsiveProductFilters
+    <ProductFiltersShell
       isAdmin={isAdmin}
       isUser={isUser}
       filterOptions={filterOptions}
