@@ -75,7 +75,7 @@ export default async function OrderHistoryPage({
           isUser ? "pt-30 md:pt-35" : "pt-20"
         }`}
       >
-        <OrdersList isAdmin={isAdmin} userId={user?.uuid} />
+        <OrdersList isAdmin={isAdmin} userId={user?.uid} />
       </div>
     </div>
   );

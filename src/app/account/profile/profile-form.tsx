@@ -150,6 +150,10 @@ export default function ProfileForm() {
     control: form.control,
     name: "businessType",
   });
+  const otherBusinessType = useWatch({
+    control: form.control,
+    name: "otherBusinessType",
+  });
   const phoneNumber = useWatch({ control: form.control, name: "phone" });
   const otp = useWatch({ control: form.control, name: "otp" });
   const panNumber = useWatch({ control: form.control, name: "panNumber" });
@@ -383,6 +387,12 @@ export default function ProfileForm() {
         form.formState.isValid
       );
     }
+    // businessType must be selected (default is "")
+    if (!selectedBusinessType?.trim()) return false;
+
+    // if "other", otherBusinessType must be provided
+    if (selectedBusinessType === "other" && !otherBusinessType?.trim())
+      return false;
 
     if (idType === "gst") {
       return !loadingGst && form.formState.isValid && gstDetails !== null;
@@ -395,8 +405,6 @@ export default function ProfileForm() {
     displayName,
     email,
     phoneNumber,
-    form.formState.isSubmitting,
-    form.formState.isValid,
     gstDetails,
     idType,
     isAdmin,
@@ -404,6 +412,10 @@ export default function ProfileForm() {
     loadingGst,
     panNumber,
     firmName,
+    selectedBusinessType,
+    otherBusinessType,
+    form.formState.isSubmitting,
+    form.formState.isValid,
   ]);
 
   const onSubmit = (e: React.FormEvent) => {
@@ -699,7 +711,7 @@ export default function ProfileForm() {
                         render={({ field }) => (
                           <FormItem className="flex flex-col justify-between gap-2 md:flex-row md:items-center md:gap-4">
                             <FormLabel className="min-w-max text-sm font-normal whitespace-nowrap">
-                              Enter One Time Password (OTP)
+                              Enter OTP
                             </FormLabel>
                             <FormControl>
                               <Controller

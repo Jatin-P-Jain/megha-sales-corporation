@@ -86,7 +86,7 @@ export default function OrdersList({
     // If not admin, scope to user
     if (!isAdmin) {
       f.push({
-        field: "user.uuid",
+        field: "user.uid",
         op: "==",
         value: userId ?? "__missing__",
       });

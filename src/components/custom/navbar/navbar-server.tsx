@@ -8,7 +8,7 @@ import NavBarClientRight from "./navbar-client-right";
 
 export default function NavBarServer() {
   return (
-    <nav className="fixed top-0 right-0 left-0 z-50 flex flex-wrap items-center justify-between bg-cyan-950 p-3 px-4 text-white shadow-md md:px-6 lg:px-10">
+    <nav className="fixed top-0 right-0 left-0 z-50 flex flex-wrap items-center justify-between bg-cyan-950 p-3 px-4 text-white shadow-md lg:px-8">
       <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4">
         <Link
           href="/"
@@ -34,9 +34,9 @@ export default function NavBarServer() {
             />
           </div>
 
-          <div className="my-auto flex flex-col text-sm md:text-lg md:tracking-[2px]">
+          <div className="my-auto flex flex-col text-base md:text-lg md:tracking-[2px]">
             <span className="font-semibold">Megha Sales</span>
-            <span className="flex items-center justify-center text-xs tracking-[2px] md:text-sm md:tracking-[4px]">
+            <span className="flex items-center justify-center text-sm tracking-[2px] md:text-base md:tracking-[4px]">
               Corporation
             </span>
           </div>

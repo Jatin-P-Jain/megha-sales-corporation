@@ -109,7 +109,7 @@ export const usePaginatedFirestore = <T extends Product | UserData | Order>({
         const docData = d.data();
 
         if (collectionPath === "users") {
-          return { uuid: d.id, ...docData } as T;
+          return { uid: d.id, ...docData } as T;
         }
         return { id: d.id, ...docData } as T;
       });

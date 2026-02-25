@@ -57,7 +57,7 @@ export default function Orders({
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        uuid: order.user?.uuid,
+        uid: order.user?.uid,
         title: "🛒 Order Update",
         body: getStatusMessage(order.id, newStatus),
         url: `${getBaseUrl()}/order-history/${order.id}`,

@@ -21,7 +21,7 @@ export default function HomeUserBar() {
   // Home needs the full profile
   useRequireUserProfile(true);
 
-  const { currentUser } = useAuthState();
+  const { currentUser, isAdmin } = useAuthState();
   const { gate, gateLoading, gateSyncing } = useUserGate();
 
   // NOTE: this assumes your UserProfileManagerProvider exports { user, loading }
@@ -32,8 +32,6 @@ export default function HomeUserBar() {
   const userName = clientUser?.displayName;
   const userPhone = clientUser?.phone;
 
-  // Gate-driven (fast, global)
-  const isAdmin = gate?.userType === "admin";
   const accountStatus = gate?.accountStatus;
   const rejectionReason = gate?.rejectionReason;
   const profileComplete = !!gate?.profileComplete;
@@ -56,7 +54,7 @@ export default function HomeUserBar() {
         <div className="flex w-full items-center justify-between gap-4">
           <h1 className="w-full text-sm font-semibold md:text-lg">
             Hello,{" "}
-            <span className="text-base font-bold md:text-xl">
+            <span className="text-lg font-bold md:text-xl">
               {userName || userPhone || "Guest"}
             </span>
             {currentUser && gateSyncing && (

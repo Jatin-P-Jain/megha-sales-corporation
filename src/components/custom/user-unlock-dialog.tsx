@@ -12,10 +12,12 @@ import { Button } from "@/components/ui/button";
 import { AlertCircle, ChevronsRight, MessageCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useAuthState } from "@/context/useAuth";
 import { getBaseUrl } from "@/lib/utils";
 import { formatBusinessProfile } from "@/lib/business-profile-formatter";
 import { useRouter } from "next/navigation";
+import { useUserGate } from "@/context/UserGateProvider";
+import { useRequireUserProfile } from "@/hooks/useUserProfile";
+import { useUserProfileState } from "@/context/UserProfileProvider";
 
 interface UserUnlockDialogProps {
   children: React.ReactNode;
@@ -23,8 +25,9 @@ interface UserUnlockDialogProps {
 
 export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
   const router = useRouter();
-  const { clientUser } = useAuthState();
-  const { profileComplete } = clientUser || {};
+  const { profileComplete } = useUserGate();
+  useRequireUserProfile(true); // Ensure profile is loaded and complete status is accurate
+  const { clientUser } = useUserProfileState();
   const [open, setOpen] = useState(false);
   const [sending, setSending] = useState(false);
 
@@ -55,7 +58,7 @@ export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          uuid: clientUser?.uuid,
+          uid: clientUser?.uid,
           title: "🛎️ Approval Request Sent",
           body: `Your approval request has been sent to the admin.`,
           url: `${getBaseUrl()}/account`,

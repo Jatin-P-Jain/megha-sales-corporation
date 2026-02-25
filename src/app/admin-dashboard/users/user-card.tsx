@@ -86,7 +86,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
     setIsApproving(true);
     try {
       await updateUserAccountStatus({
-        userId: user.uuid,
+        userId: user.uid,
         accountStatus: "approved",
         rejectionReason: "",
       });
@@ -118,7 +118,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
     setIsRejecting(true);
     try {
       await updateUserAccountStatus({
-        userId: user.uuid,
+        userId: user.uid,
         accountStatus: "rejected",
         rejectionReason: rejectionReason.trim(),
       });
@@ -148,7 +148,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
     setIsSuspending(true);
     try {
       await updateUserAccountStatus({
-        userId: user.uuid,
+        userId: user.uid,
         accountStatus: "suspended",
         rejectionReason: "",
       });
@@ -177,7 +177,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
     setIsDeleting(true);
     try {
       await updateUserAccountStatus({
-        userId: user.uuid,
+        userId: user.uid,
         accountStatus: "deactivated",
         rejectionReason: "",
       });

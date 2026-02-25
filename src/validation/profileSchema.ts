@@ -35,8 +35,7 @@ export const userProfileDataSchema = z
     photoUrl: z.string().optional(),
     businessType: z
       .enum(["retailer", "wholesaler", "distributor", "other"])
-      .or(z.string())
-      .optional(),
+      .or(z.string()),
     otherBusinessType: z
       .string()
       .min(2, "You must specify your business type.")
