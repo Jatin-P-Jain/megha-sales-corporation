@@ -3,11 +3,11 @@
 import { useCallback } from "react";
 // Important: this is the wrapper that triggers NextTopLoader on push/replace in App Router
 import { useRouter as useTopLoaderRouter } from "nextjs-toploader/app";
-import { useNavLock } from "@/context/navigation-lock-provider";
+import { useNavigationLock } from "@/context/navigation-lock-provider";
 
 export function useSafeRouter() {
   const router = useTopLoaderRouter();
-  const { isNavigating, lock } = useNavLock();
+  const { isNavigating, lock } = useNavigationLock();
 
   const push = useCallback(
     (href: string, opts?: { allowDuringNav?: boolean }) => {

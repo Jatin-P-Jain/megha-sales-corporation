@@ -1,6 +1,6 @@
 "use client";
 
-import { useNavLock } from "@/context/navigation-lock-provider";
+import { useNavigationLock } from "@/context/navigation-lock-provider";
 import Link from "next/link";
 import React, { useCallback } from "react";
 
@@ -13,7 +13,7 @@ export function SafeLink({
   onClick,
   ...props
 }: SafeLinkProps) {
-  const { isNavigating, lock } = useNavLock();
+  const { isNavigating, lock } = useNavigationLock();
 
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>) => {

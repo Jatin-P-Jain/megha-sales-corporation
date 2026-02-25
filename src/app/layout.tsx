@@ -89,21 +89,21 @@ export default async function RootLayout({
       <body
         className={`${poppins.className} max-h-screen min-h-[100dvh] antialiased`}
       >
-        <ServiceWorkerRegister />
-        <InstallPWAButton />
-
         <Providers>
-          <RouteProgress />
+          <ServiceWorkerRegister />
           <NavigationLockProvider>
+            <InstallPWAButton />
+
+            <RouteProgress />
             <NavBar />
             <div className="mx-auto max-w-screen-lg px-4 pt-20 pb-8 md:p-8 md:pt-28">
               {children}
             </div>
+
+            <Footer />
+            <NetworkBanner />
           </NavigationLockProvider>
         </Providers>
-
-        <Footer />
-        <NetworkBanner />
 
         <Analytics />
         <SpeedInsights />

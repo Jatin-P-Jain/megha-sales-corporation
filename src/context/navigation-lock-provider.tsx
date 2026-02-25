@@ -10,13 +10,13 @@ import React, {
 } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
-type NavLockContextValue = {
+type NavigationLockContextValue = {
   isNavigating: boolean;
   lock: () => void;
   unlock: () => void;
 };
 
-const NavLockContext = createContext<NavLockContextValue | null>(null);
+const NavigationLockContext = createContext<NavigationLockContextValue | null>(null);
 
 export function NavigationLockProvider({
   children,
@@ -40,7 +40,7 @@ export function NavigationLockProvider({
     setIsNavigating(false);
   }, [pathname, searchParams]);
 
-  const value = useMemo<NavLockContextValue>(
+  const value = useMemo<NavigationLockContextValue>(
     () => ({
       isNavigating,
       lock: () => setIsNavigating(true),
@@ -50,13 +50,13 @@ export function NavigationLockProvider({
   );
 
   return (
-    <NavLockContext.Provider value={value}>{children}</NavLockContext.Provider>
+    <NavigationLockContext.Provider value={value}>{children}</NavigationLockContext.Provider>
   );
 }
 
-export function useNavLock() {
-  const ctx = useContext(NavLockContext);
+export function useNavigationLock() {
+  const ctx = useContext(NavigationLockContext);
   if (!ctx)
-    throw new Error("useNavLock must be used inside <NavLockProvider />");
+    throw new Error("useNavigationLock must be used inside <NavigationLockProvider />");
   return ctx;
 }

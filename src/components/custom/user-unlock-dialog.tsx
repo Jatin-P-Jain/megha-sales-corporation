@@ -9,7 +9,14 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, ChevronsRight, MessageCircle } from "lucide-react";
+import {
+  AlertCircle,
+  ChevronsRight,
+  PackageCheck,
+  Send,
+  ShoppingCart,
+  Tags,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { getBaseUrl } from "@/lib/utils";
@@ -83,7 +90,7 @@ export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
       <DialogTrigger asChild>{children}</DialogTrigger>
 
       {profileComplete ? (
-        <DialogContent className="p-2 md:p-4">
+        <DialogContent className="p-4">
           <DialogHeader className="p-2">
             <div className="flex items-center gap-2">
               <AlertCircle className="h-6 w-6 text-yellow-600" />
@@ -92,7 +99,7 @@ export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
               </DialogTitle>
             </div>
 
-            <DialogDescription className="text-xs md:text-base">
+            <DialogDescription className="text-xs text-left">
               To give you the best pricing and protect our business network, we
               review new accounts before enabling full access. Once approved,
               everything unlocks automatically.
@@ -101,13 +108,21 @@ export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
 
           <div className="flex flex-col gap-3 rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-sm">
             <h4 className="text-sm font-semibold text-yellow-800">
-              What&apos;s temporarily unavailable (until approval)
+              What&apos;s temporarily unavailable (until approval)?
             </h4>
 
             <ul className="space-y-1 text-sm text-yellow-700">
-              <li>• Viewing product discounts and special pricing</li>
-              <li>• Adding items to the cart / building a cart</li>
-              <li>• Placing orders (checkout)</li>
+              <li className="flex md:items-center gap-2">
+                <Tags className="size-4" /> Viewing product discounts and
+                special pricing
+              </li>
+              <li className="flex md:items-center gap-2">
+                <ShoppingCart className="size-4" /> Adding items to the cart /
+                building a cart
+              </li>
+              <li className="flex md:items-center gap-2">
+                <PackageCheck className="size-4" /> Placing orders (checkout)
+              </li>
             </ul>
 
             <p className="text-xs text-yellow-700 italic">
@@ -129,8 +144,8 @@ export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
                 </>
               ) : (
                 <>
-                  <MessageCircle className="mr-2 h-4 w-4" />
-                  Request approval on WhatsApp
+                  <Send className="size-4" />
+                  Send request approval
                 </>
               )}
             </Button>
@@ -154,7 +169,7 @@ export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
               </DialogTitle>
             </div>
 
-            <DialogDescription className="text-xs md:text-base">
+            <DialogDescription className="text-xs">
               Please complete your profile information before requesting account
               approval. This helps us verify your details and speeds up the
               approval process.
@@ -163,13 +178,21 @@ export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
 
           <div className="flex flex-col gap-3 rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-sm">
             <h4 className="text-sm font-semibold text-yellow-800">
-              What&apos;s temporarily unavailable
+              What&apos;s temporarily unavailable?
             </h4>
 
             <ul className="space-y-1 text-sm text-yellow-700">
-              <li>• Viewing product discounts and special pricing</li>
-              <li>• Adding items to the cart / building a cart</li>
-              <li>• Placing orders (checkout)</li>
+              <li className="flex items-center gap-2">
+                <Tags className="size-4" /> Viewing product discounts and
+                special pricing
+              </li>
+              <li className="flex items-center gap-2">
+                <ShoppingCart className="size-4" /> Adding items to the cart /
+                building a cart
+              </li>
+              <li className="flex items-center gap-2">
+                <PackageCheck className="size-4" /> Placing orders (checkout)
+              </li>
             </ul>
 
             <p className="text-xs text-yellow-700 italic">

@@ -3,6 +3,8 @@
 import {
   Loader2Icon,
   OctagonAlert,
+  RefreshCw,
+  Repeat2,
   TriangleAlert,
   XCircle,
 } from "lucide-react";
@@ -52,18 +54,20 @@ export default function HomeUserBar() {
         </div>
       ) : (
         <div className="flex w-full items-center justify-between gap-4">
-          <h1 className="w-full text-sm font-semibold md:text-lg">
+          <h1 className="flex w-full items-center gap-2 text-sm font-semibold md:text-lg">
             Hello,{" "}
             <span className="text-lg font-bold md:text-xl">
               {userName || userPhone || "Guest"}
             </span>
             {currentUser && gateSyncing && (
-              <span className="text-muted-foreground ml-2 text-xs font-medium">
+              <span className="text-muted-foreground ml-2 flex animate-pulse gap-2 text-xs font-medium">
+                <Repeat2 className="size-4 animate-spin" />
                 Syncing…
               </span>
             )}
             {currentUser && clientUserLoading && (
-              <span className="text-muted-foreground ml-2 text-xs font-medium">
+              <span className="text-muted-foreground ml-2 flex gap-2 text-xs font-medium">
+                <RefreshCw className="size-4 animate-spin" />
                 Loading profile…
               </span>
             )}
