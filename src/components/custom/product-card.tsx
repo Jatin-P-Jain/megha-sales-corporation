@@ -5,7 +5,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronsRight, EyeIcon, PencilIcon, TagIcon } from "lucide-react";
 import { formatINR } from "@/lib/utils";
-import { Product, ProductSize } from "@/types/product";
+import { Product, ProductSize, ProductStatus } from "@/types/product";
 import ProductImage from "./product-image";
 import CartControls from "./cart-controls";
 import SizeChips from "./size-selection-chips";
@@ -21,6 +21,33 @@ import {
 import { useUserGate } from "@/context/UserGateProvider";
 import { SafeLink } from "./utility/SafeLink";
 import { useSafeRouter } from "@/hooks/useSafeRouter";
+import clsx from "clsx";
+
+const STATUS_META: Record<
+  ProductStatus,
+  {
+    label: string;
+    className: string;
+  }
+> = {
+  draft: {
+    label: "Draft",
+    className: "border-amber-500 bg-amber-500/10 text-amber-700",
+  },
+  "for-sale": {
+    label: "For sale",
+    className: "border-green-500 bg-green-500/10 text-green-700",
+  },
+  discontinued: {
+    label: "Discontinued",
+    className: "border-red-500 bg-red-500/10 text-red-700",
+  },
+  "out-of-stock": {
+    label: "Out of stock",
+    className:
+      "border-muted bg-muted text-muted-foreground ",
+  },
+};
 
 type ProductCardProps = {
   product: Product;
@@ -194,7 +221,7 @@ export default function ProductCard({
                 <span className="text-muted-foreground text-[8px] font-normal italic md:text-xs">
                   Select a size
                 </span>
-              ) : isAccountApproved ? (
+              ) : isAccountApproved || isAdmin ? (
                 <span className="font-semibold">
                   {selectedSize?.discount ?? product.discount}%
                 </span>
@@ -248,8 +275,19 @@ export default function ProductCard({
         <div className="flex w-full items-center justify-end gap-2">
           {isAdmin ? (
             <div className="flex w-full flex-col">
-              {/* unchanged admin UI */}
-              <Button variant="outline" asChild className="rounded-t-none">
+              <div
+                className={clsx(
+                  "inline-flex w-full items-center justify-center rounded-md rounded-b-none border px-2 py-1 text-center text-xs md:text-sm font-medium",
+                  STATUS_META[product.status].className,
+                )}
+              >
+                {STATUS_META[product.status].label}
+              </div>
+              <Button
+                variant="outline"
+                asChild
+                className="text-primary border-primary rounded-t-none"
+              >
                 <SafeLink
                   href={`/admin-dashboard/edit-product/${product.brandId}/${product.id}`}
                 >
