@@ -4,7 +4,7 @@ import CheckoutFooter from "@/app/checkout/checkout-footer";
 import { requireProfileCompleteOrRedirect } from "@/lib/auth/gaurds";
 
 export default async function CheckoutPage() {
-  const { decoded } = await requireProfileCompleteOrRedirect("/cart");
+  const decoded = await requireProfileCompleteOrRedirect("/checkout");
   const isAdmin = Boolean(decoded.admin);
   return (
     <div className="mx-auto flex max-w-screen-lg flex-col gap-4">

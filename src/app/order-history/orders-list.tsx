@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/pagination";
 import clsx from "clsx";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { usePaginatedFirestore } from "@/hooks/usePaginatedFireStore";
 import type { Order } from "@/types/order";
 import { useSafeRouter } from "@/hooks/useSafeRouter";
@@ -132,13 +132,6 @@ export default function OrdersList({
     orderDirection: "desc",
   });
 
-  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
-
-  // after loading becomes false
-  useEffect(() => {
-    if (!loading) setHasLoadedOnce(true);
-  }, [loading]);
-
   // Keep hook in sync with URL page
   useEffect(() => {
     loadPage(page);
@@ -147,12 +140,17 @@ export default function OrdersList({
 
   // Reset to page 1 if filters change (same logic as ProductList)
   useEffect(() => {
-    if (previousFiltersRef.current !== filterKey) {
-      previousFiltersRef.current = filterKey;
-      const sp = new URLSearchParams(searchParams.toString());
-      sp.set("page", "1");
-      router.replace(`/order-history?${sp.toString()}`);
-    }
+    if (previousFiltersRef.current === filterKey) return;
+
+    previousFiltersRef.current = filterKey;
+
+    const currentPageInUrl = searchParams.get("page") ?? "1";
+    if (currentPageInUrl === "1") return;
+
+    const sp = new URLSearchParams(searchParams.toString());
+    sp.set("page", "1");
+    router.replace(`/order-history?${sp.toString()}`);
+    // do NOT call loadPage here; your page effect will run when URL updates
   }, [filterKey, router, searchParams]);
 
   const handlePageChange = (nextPage: number) => {
@@ -161,34 +159,35 @@ export default function OrdersList({
     // when paging, don’t keep orderId pinned
     sp.delete("orderId");
     router.replace(`/order-history?${sp.toString()}`);
-    loadPage(nextPage);
   };
 
   const start = (currentPage - 1) * PAGE_SIZE + 1;
   const end = Math.min(currentPage * PAGE_SIZE, totalItems);
   const totalPages = Math.max(Math.ceil(totalItems / PAGE_SIZE), 1);
 
-  if (loading || !hasLoadedOnce) {
+  if (loading) {
     return <OrdersSkeleton />;
   }
 
-  if (!loading && hasLoadedOnce && data.length === 0) {
+  if (!loading && data.length === 0) {
     return (
       <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 items-center justify-center">
         <p className="text-muted-foreground">
           {requestedOrderId
             ? `No Order found with Order ID: ${requestedOrderId}`
-            : "No Orders!"}
+            : "You have no orders yet!"}
         </p>
       </div>
     );
   }
 
   return (
-    <div className="relative mx-auto flex max-w-screen-lg flex-col">
-      <p className="text-muted-foreground sticky top-0 z-10 w-full px-4 py-1 text-center text-xs md:text-sm">
-        Page {currentPage} • Showing {start}–{end} of {totalItems} results
-      </p>
+    <div className={clsx("relative mx-auto flex max-w-screen-lg flex-col",requestedOrderId && "-mt-10")}>
+      {!requestedOrderId && (
+        <p className="text-muted-foreground sticky top-0 z-10 w-full px-4 py-1 text-center text-xs md:text-sm">
+          Page {currentPage} • Showing {start}–{end} of {totalItems} results
+        </p>
+      )}
 
       {data.length > 0 && (
         <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col justify-between gap-4 py-2">

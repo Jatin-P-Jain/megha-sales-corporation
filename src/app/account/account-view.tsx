@@ -37,12 +37,11 @@ import {
 
 import DefaultUserIcon from "@/assets/icons/user.png";
 
-import type { AccountStatus, UserData } from "@/types/user";
+import type { UserData } from "@/types/user";
 import type { BusinessProfile } from "@/data/businessProfile";
 
 import FirebaseAuthMethods from "./firebase-auth-methods";
-
-type AccountStatusUI = Exclude<AccountStatus, never>;
+import { AccountStatus } from "@/components/custom/user-search-filters";
 
 function formatDate(dateString?: string) {
   if (!dateString) return "N/A";
@@ -75,7 +74,10 @@ function formatValue(value: unknown) {
   return String(value);
 }
 
-function getAccountStatusInfo(status: AccountStatusUI, reason?: string) {
+function getAccountStatusInfo(
+  status: AccountStatus | null,
+  reason?: string | null,
+) {
   const r = reason?.trim();
 
   switch (status) {
@@ -122,7 +124,6 @@ function getAccountStatusInfo(status: AccountStatusUI, reason?: string) {
           : "Your account is currently inactive.",
       };
     case "pending":
-    default:
       return {
         icon: Clock,
         color: "text-yellow-700",
@@ -132,6 +133,8 @@ function getAccountStatusInfo(status: AccountStatusUI, reason?: string) {
         description:
           "Your account is under review. You'll be notified once approved.",
       };
+    default:
+      return null;
   }
 }
 
@@ -221,8 +224,11 @@ function BusinessProfileCard({
 
 function AccountViewInner({
   clientUser,
+  profileComplete,
+  userRole,
   isAdmin,
   accountStatus,
+  rejectionReason,
   moreOpen,
   setMoreOpen,
   photo,
@@ -235,8 +241,11 @@ function AccountViewInner({
   onLinkPhone,
 }: {
   clientUser: UserData;
+  profileComplete: boolean | null;
+  userRole?: string;
   isAdmin: boolean;
-  accountStatus: AccountStatusUI;
+  accountStatus: AccountStatus | null;
+  rejectionReason?: string | null;
   moreOpen: boolean;
   setMoreOpen: (v: boolean) => void;
   photo: string;
@@ -248,11 +257,7 @@ function AccountViewInner({
   onLinkGoogle: () => Promise<void> | void;
   onLinkPhone: () => Promise<void> | void;
 }) {
-  const profileComplete = !!clientUser.profileComplete;
-  const statusInfo = getAccountStatusInfo(
-    accountStatus,
-    clientUser?.rejectionReason,
-  );
+  const statusInfo = getAccountStatusInfo(accountStatus, rejectionReason);
 
   return (
     <Card className="mx-auto w-full max-w-screen-lg p-2 py-4 md:p-4 md:py-6">
@@ -261,23 +266,23 @@ function AccountViewInner({
           My Account
         </CardTitle>
 
-        {!isAdmin && clientUser.profileComplete && (
+        {!isAdmin && profileComplete && (
           <div className="space-y-2">
             <Alert
               className={clsx(
-                statusInfo.bgColor,
-                statusInfo.borderColor,
+                statusInfo?.bgColor,
+                statusInfo?.borderColor,
                 "items-start p-2",
               )}
             >
               <AlertDescription
-                className={clsx("ml-2 text-sm", statusInfo.color)}
+                className={clsx("ml-2 text-sm", statusInfo?.color)}
               >
-                <div className="flex flex-col gap-1 text-xs md:flex-row md:items-center md:justify-between">
-                  <span className="text-center text-sm font-semibold">
-                    {statusInfo.title}
+                <div className="flex w-full flex-col items-center gap-1 text-xs md:flex-row justify-center">
+                  <span className="text-sm font-semibold">
+                    {statusInfo?.title}
                   </span>{" "}
-                  {statusInfo.description}
+                  {statusInfo?.description}
                 </div>
               </AlertDescription>
             </Alert>
@@ -354,7 +359,7 @@ function AccountViewInner({
           <div className="bg-muted text-muted-foreground flex flex-col items-center justify-center rounded-md p-2 text-sm">
             You have user access under role:
             <span className="text-primary text-lg font-semibold first-letter:uppercase">
-              {clientUser.userType || "GUEST"}
+              {userRole || "GUEST"}
             </span>
           </div>
         )}

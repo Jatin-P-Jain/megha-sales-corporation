@@ -3,7 +3,6 @@ import "server-only";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth, fireStore } from "@/firebase/server";
-import { mapDbUserToClientUser } from "../firebase/mapDBUserToClient";
 
 export async function getVerifiedTokenOrRedirect() {
   const cookieStore = await cookies();
@@ -17,13 +16,11 @@ export async function getVerifiedTokenOrRedirect() {
 export async function requireProfileCompleteOrRedirect(redirectTo: string) {
   const decoded = await getVerifiedTokenOrRedirect();
 
-  const snap = await fireStore.collection("users").doc(decoded.uid).get();
-  const user = snap.exists ? mapDbUserToClientUser(snap.data()) : null;
-  console.log({ user });
-
-  if (!user?.profileComplete) {
+  const snap = await fireStore.collection("usersGate").doc(decoded.uid).get();
+  const user = snap.exists ? snap.data() : null;
+  if (user?.profileComplete === false) {
     redirect(`/account/profile?redirect=${encodeURIComponent(redirectTo)}`);
   }
 
-  return { decoded, user };
+  return decoded;
 }

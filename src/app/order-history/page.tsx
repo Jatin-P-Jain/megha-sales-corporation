@@ -11,9 +11,9 @@ export default async function OrderHistoryPage({
   searchParams: Promise<{ page?: string; orderId?: string; status?: string }>;
 }) {
   // 1) auth
-  const { decoded, user } = await requireProfileCompleteOrRedirect("/cart");
-  const isAdmin = Boolean(decoded.admin);
-  const isUser = Boolean(user);
+  const verifiedToken =
+    await requireProfileCompleteOrRedirect("/order-history");
+  const isAdmin = Boolean(verifiedToken?.admin);
 
   const searchParamValues = await searchParams;
   const requestedOrderId = searchParamValues.orderId ?? "";
@@ -70,12 +70,8 @@ export default async function OrderHistoryPage({
       </div>
 
       {/* content area */}
-      <div
-        className={`flex-1 overflow-y-auto px-4 ${
-          isUser ? "pt-30 md:pt-35" : "pt-20"
-        }`}
-      >
-        <OrdersList isAdmin={isAdmin} userId={user?.uid} />
+      <div className={`flex-1 overflow-y-auto pt-25`}>
+        <OrdersList isAdmin={isAdmin} userId={verifiedToken?.uid} />
       </div>
     </div>
   );

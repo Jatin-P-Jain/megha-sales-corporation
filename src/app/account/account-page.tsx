@@ -29,10 +29,10 @@ export default function AccountPage() {
 
   useRequireUserProfile(true);
 
-  const { currentUser, isAdmin } = useAuthState();
+  const { currentUser, isAdmin, userRole } = useAuthState();
   const { refreshUser } = useUserProfileActions();
   const { clientUser, clientUserLoading } = useUserProfileState();
-  const { accountStatus } = useUserGate();
+  const { accountStatus, rejectionReason, profileComplete } = useUserGate();
 
   const [uploading, setUploading] = useState(false);
   const [uploadPercent, setUploadPercent] = useState<number>(0);
@@ -141,8 +141,11 @@ export default function AccountPage() {
   return (
     <AccountView
       clientUser={clientUser}
+      profileComplete={profileComplete}
+      userRole={userRole}
       isAdmin={!!isAdmin}
       accountStatus={accountStatus}
+      rejectionReason={rejectionReason}
       moreOpen={moreOpen}
       setMoreOpen={setMoreOpen}
       photo={photo}

@@ -58,7 +58,6 @@ export async function middleware(request: NextRequest) {
       admin?: boolean;
       exp?: number;
       user_id?: string;
-      profileComplete?: boolean;
     };
 
     admin = decoded.admin;

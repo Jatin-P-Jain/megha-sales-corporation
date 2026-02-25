@@ -53,7 +53,7 @@ function CartSummary({ isUser }: { isUser: boolean }) {
         </div>
       </div>
 
-      {loading ? (
+      {loading || totalAmount === 0 ? (
         <Button
           className="flex w-full items-center justify-center"
           onClick={() => router.push("/checkout")}
