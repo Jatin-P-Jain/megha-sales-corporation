@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ConfirmationResult,
   linkWithCredential,
@@ -19,15 +19,17 @@ export function useMobileOtp({
   ensureRecaptcha,
   resetRecaptcha,
   linkPhone = false,
+  resendSeconds = 30,
 }: {
   onSuccess?: (() => void) | undefined;
   appVerifier: RecaptchaVerifier | null;
   ensureRecaptcha?: () => Promise<RecaptchaVerifier>;
   resetRecaptcha?: () => void;
   linkPhone?: boolean;
+  resendSeconds?: number;
 }) {
-  const { handleSendOTP, verifyOTP } = useAuthActions(); // ✅ actions-only
-  const { currentUser } = useAuthState(); // ✅ only state you need (for linkPhone)
+  const { handleSendOTP, verifyOTP } = useAuthActions();
+  const { currentUser } = useAuthState();
 
   const [mobileNumber, setMobileNumber] = useState("");
   const [otpReset, setOtpReset] = useState(false);
@@ -37,11 +39,38 @@ export function useMobileOtp({
   const [confirmationResult, setConfirmationResult] =
     useState<ConfirmationResult | null>(null);
 
+  // ✅ resend countdown state
+  const [resendIn, setResendIn] = useState(0);
+
   const resetOtp = useCallback(() => {
     setOtpSent(false);
     setOtpReset(true);
     setConfirmationResult(null);
+    setMobileNumber("");
+    setResendIn(0);
   }, []);
+
+  const lockMobileInput = useMemo(() => otpSent, [otpSent]);
+  const canResend = useMemo(
+    () => otpSent && resendIn === 0 && !sendingOtp,
+    [otpSent, resendIn, sendingOtp]
+  );
+
+  // ✅ countdown starts when otpSent becomes true, stops when resetOtp() called
+  useEffect(() => {
+    if (!otpSent) {
+      setResendIn(0);
+      return;
+    }
+
+    setResendIn((v) => (v > 0 ? v : resendSeconds));
+
+    const t = window.setInterval(() => {
+      setResendIn((s) => (s <= 1 ? 0 : s - 1));
+    }, 1000);
+
+    return () => window.clearInterval(t);
+  }, [otpSent, resendSeconds]);
 
   const sendOtp = useCallback(
     async (mobile: string, isResent: boolean = false) => {
@@ -81,6 +110,21 @@ export function useMobileOtp({
     },
     [appVerifier, ensureRecaptcha, handleSendOTP, resetRecaptcha]
   );
+
+  // ✅ resend uses the last mobileNumber by default (no UI coupling)
+  const resendOtp = useCallback(async () => {
+    const mobile = (mobileNumber || "").trim();
+    if (!mobile) return;
+    if (!canResend) return;
+    await sendOtp(mobile, true);
+    // restart countdown after resend
+    setResendIn(resendSeconds);
+  }, [mobileNumber, canResend, resendSeconds, sendOtp]);
+
+  // ✅ edit mobile: reset the OTP flow (consumer can clear form fields)
+  const editMobile = useCallback(() => {
+    resetOtp();
+  }, [resetOtp]);
 
   const verifyOtp = useCallback(
     async (otp: string) => {
@@ -134,6 +178,7 @@ export function useMobileOtp({
   );
 
   return {
+    // existing
     mobileNumber,
     otpReset,
     otpSent,
@@ -142,5 +187,12 @@ export function useMobileOtp({
     sendOtp,
     verifyOtp,
     resetOtp,
+
+    // ✅ new
+    resendIn,
+    canResend,
+    resendOtp,
+    editMobile,
+    lockMobileInput,
   };
 }

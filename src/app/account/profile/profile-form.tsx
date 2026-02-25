@@ -11,12 +11,16 @@ import { Controller, useForm, useWatch } from "react-hook-form";
 import clsx from "clsx";
 import {
   CheckCircle2,
+  CheckCircleIcon,
   CircleUserRound,
   CloudDownload,
   Info,
   Loader2,
   Loader2Icon,
+  PencilIcon,
+  Repeat,
   SaveIcon,
+  Send,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -207,6 +211,7 @@ export default function ProfileForm() {
     );
     setDidInit(true);
   }, [clientUser, didInit, form, pathname, router, searchParams]);
+
   useEffect(() => {
     if (!clientUser?.email) return;
 
@@ -223,19 +228,30 @@ export default function ProfileForm() {
     }
   }, [clientUser?.email, form]);
 
-  const { otpReset, otpSent, sendingOtp, isVerifying, sendOtp, verifyOtp } =
-    useMobileOtp({
-      onSuccess: async () => {
-        setIsVerified(true);
-        setIsPhoneLinked(true);
-        await updateUserProfile({ phone: phoneNumber });
-        await refreshUser();
-      },
-      appVerifier: recaptchaVerifier.verifier,
-      ensureRecaptcha: recaptchaVerifier.ensureReady,
-      resetRecaptcha: recaptchaVerifier.reset,
-      linkPhone: true,
-    });
+  const {
+    otpReset,
+    otpSent,
+    sendingOtp,
+    isVerifying,
+    sendOtp,
+    verifyOtp,
+    resendIn,
+    resendOtp,
+    editMobile,
+    lockMobileInput,
+  } = useMobileOtp({
+    onSuccess: async () => {
+      setIsVerified(true);
+      setIsPhoneLinked(true);
+      await updateUserProfile({ phone: phoneNumber });
+      await refreshUser();
+    },
+    appVerifier: recaptchaVerifier.verifier,
+    ensureRecaptcha: recaptchaVerifier.ensureReady,
+    resetRecaptcha: recaptchaVerifier.reset,
+    linkPhone: true,
+    resendSeconds: 30,
+  });
 
   useEffect(() => {
     if (otpReset) form.resetField("otp");
@@ -316,8 +332,6 @@ export default function ProfileForm() {
 
         const freshClientUser = await refreshUser();
 
-        // If you want to guarantee latest values for WA payload,
-        // change refreshUser() to return UserData | null.
         if (freshClientUser) {
           await fetch("/api/wa-send-message", {
             method: "POST",
@@ -347,14 +361,13 @@ export default function ProfileForm() {
       }
     },
     [
-      clientUser,
-      currentUser,
       gstDetails,
       idType,
       isAdmin,
       refreshUser,
       router,
       searchParams,
+      updateGateProfileComplete,
     ],
   );
 
@@ -420,6 +433,9 @@ export default function ProfileForm() {
 
     form.handleSubmit(handleSubmit)(e);
   };
+
+  const lockPhoneInput =
+    !!clientUser?.phone || otpSent || isVerified || lockMobileInput; // keep existing behavior + lock after OTP sent
 
   return (
     <>
@@ -574,15 +590,30 @@ export default function ProfileForm() {
                               Your mobile number
                             </FormLabel>
                             <FormControl>
-                              <div className="flex w-full gap-2">
+                              <div className="flex w-full flex-row gap-2 md:items-center md:gap-4">
                                 <Input
                                   {...field}
                                   placeholder="Mobile Number"
-                                  readOnly={!!clientUser?.phone || otpSent}
+                                  inputMode="numeric"
+                                  maxLength={10}
+                                  onChange={(e) => {
+                                    if (!isNaN(Number(e.target.value)))
+                                      field.onChange(e);
+                                  }}
+                                  readOnly={
+                                    !!clientUser?.phone ||
+                                    lockPhoneInput ||
+                                    isVerified
+                                  }
                                   className={clsx(
-                                    !!clientUser?.phone && "font-semibold",
+                                    !!clientUser?.phone ||
+                                      lockPhoneInput ||
+                                      isVerified
+                                      ? "font-semibold"
+                                      : "",
                                   )}
                                 />
+
                                 {!otpSent && !isVerified && (
                                   <Button
                                     disabled={!isPhoneValid}
@@ -595,15 +626,49 @@ export default function ProfileForm() {
                                         Sending OTP
                                       </>
                                     ) : (
-                                      "Verify"
+                                      <>
+                                        <Send className="size-4" /> Send OTP
+                                      </>
                                     )}
                                   </Button>
+                                )}
+
+                                {otpSent && !isVerified && (
+                                  <>
+                                    <Button
+                                      type="button"
+                                      variant="link"
+                                      onClick={() => {
+                                        // reset hook state
+                                        editMobile();
+                                        // reset form otp field + allow editing phone again
+                                        form.resetField("otp");
+                                        setIsVerified(false);
+                                        setIsPhoneLinked(false);
+                                      }}
+                                    >
+                                      <PencilIcon className="size-4" />{" "}
+                                      <span className="hidden md:inline-flex">
+                                        Edit Mobile Number
+                                      </span>
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      disabled={sendingOtp || resendIn > 0}
+                                      onClick={resendOtp}
+                                      className="hidden md:inline-flex"
+                                    >
+                                      <Repeat className="size-4" />{" "}
+                                      {resendIn > 0
+                                        ? `Resend in ${resendIn}s`
+                                        : "Resend"}
+                                    </Button>
+                                  </>
                                 )}
                               </div>
                             </FormControl>
 
-                            {/* Optional: gate error display until 10 digits */}
-                            {/* {(phoneNumber ?? "").trim().length >= 10 ? <FormMessage /> : null} */}
                             <FormMessage />
                           </FormItem>
                         )}
@@ -627,14 +692,14 @@ export default function ProfileForm() {
                   </div>
 
                   {otpSent && !isVerified && (
-                    <div className="grid grid-cols-1 items-end justify-center gap-4 md:grid-cols-[8fr_1fr] md:gap-4">
+                    <div className="grid grid-cols-1 items-end justify-center gap-4 md:grid-cols-[1fr_auto]">
                       <FormField
                         control={form.control}
                         name="otp"
                         render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="flex items-start gap-1">
-                              Enter OTP
+                          <FormItem className="flex flex-col justify-between gap-2 md:flex-row md:items-center md:gap-4">
+                            <FormLabel className="min-w-max text-sm font-normal whitespace-nowrap">
+                              Enter One Time Password (OTP)
                             </FormLabel>
                             <FormControl>
                               <Controller
@@ -650,32 +715,47 @@ export default function ProfileForm() {
                               />
                             </FormControl>
 
-                            {/* Optional: gate error display until 6 digits */}
-                            {/* {(otp ?? "").trim().length >= 6 ? <FormMessage /> : null} */}
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-
-                      <Button
-                        disabled={isVerifying}
-                        type="button"
-                        className="w-full"
-                        onClick={async () => {
-                          const code = (otp ?? "").trim();
-                          if (!code) return;
-                          await verifyOtp(code);
-                        }}
-                      >
-                        {isVerifying ? (
-                          <>
-                            <Loader2 className="size-4 animate-spin" />
-                            Verifying OTP
-                          </>
-                        ) : (
-                          "Verify OTP"
-                        )}
-                      </Button>
+                      <div className="flex items-center justify-between gap-4">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          disabled={sendingOtp || resendIn > 0}
+                          onClick={resendOtp}
+                          className="inline-flex min-w-max text-xs md:hidden"
+                          size={"sm"}
+                        >
+                          <Repeat className="size-4" />{" "}
+                          {resendIn > 0
+                            ? `Resend OTP in ${resendIn}s`
+                            : "Resend OTP"}
+                        </Button>
+                        <Button
+                          disabled={isVerifying}
+                          type="button"
+                          className="flex-1"
+                          onClick={async () => {
+                            const code = (otp ?? "").trim();
+                            if (!code) return;
+                            await verifyOtp(code);
+                          }}
+                        >
+                          {isVerifying ? (
+                            <>
+                              <Loader2 className="size-4 animate-spin" />
+                              Verifying OTP
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircleIcon className="size-4" />
+                              Verify OTP
+                            </>
+                          )}
+                        </Button>
+                      </div>
                     </div>
                   )}
 
@@ -763,8 +843,6 @@ export default function ProfileForm() {
                             form.setValue("businessIdType", value, {
                               shouldValidate: true,
                             });
-                            // with shouldUnregister=true, the hidden section won't block validation,
-                            // but we still clear to keep your data clean
                             form.setValue("gstNumber", "", {
                               shouldValidate: true,
                             });

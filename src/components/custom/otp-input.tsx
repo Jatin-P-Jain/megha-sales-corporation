@@ -46,7 +46,7 @@ const OTPInput: FC<OTPInputProps> = ({ length = 6, value, onChange }) => {
   };
 
   return (
-    <div className="mx-auto flex w-full items-center justify-center gap-3 md:w-3/4 md:gap-4">
+    <div className="mx-auto flex w-full items-center justify-center gap-2 md:gap-4">
       {Array.from({ length }).map((_, i) => (
         <Input
           key={i}
