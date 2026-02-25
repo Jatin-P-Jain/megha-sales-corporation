@@ -73,7 +73,7 @@ export default function CategoryMultiSelect({
           <Button
             variant="ghost"
             className={clsx(
-              "min-w-0 shrink-0 items-center justify-between gap-1 rounded-none hover:bg-transparent",
+              "w-full min-w-0 shrink-0 items-center justify-between gap-1 rounded-none hover:bg-transparent",
               selected.length > 0 && "border-r-1",
             )}
             ref={triggerRef}
@@ -82,7 +82,12 @@ export default function CategoryMultiSelect({
             <span
               className={clsx("text-xs md:text-sm", selected.length == 0 && "")}
             >
-              Category
+              Category{" "}
+              <span className="text-xs font-semibold">
+                {currentSelections.length > 0
+                  ? `(${currentSelections.length})`
+                  : ""}
+              </span>
             </span>
             {isPending && pendingKey !== null && (
               <Loader2Icon className="h-4 w-4 animate-spin" />

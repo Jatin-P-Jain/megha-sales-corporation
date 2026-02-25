@@ -31,16 +31,9 @@ export default async function ResponsiveProductFiltersServer({
       name: b.brandName,
       logo: b.brandLogo,
       categories: b.partCategories,
+      vehicleCompanies: b.vehicleCompanies,
     }))
     .sort((a, b) => (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1));
-
-  filterOptions.vehicleCompanies = Array.from(
-    new Set(brands?.data?.flatMap((b) => [...(b.vehicleCompanies || [])])),
-  ).sort();
-
-  filterOptions.categories = Array.from(
-    new Set(brands?.data?.flatMap((b) => b.partCategories || [])),
-  ).sort();
 
   return (
     <ProductFiltersShell

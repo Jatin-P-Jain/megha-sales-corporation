@@ -221,19 +221,26 @@ export default function AuthButtons() {
                 </span>
               )}
 
-              <div className="flex w-full flex-col justify-between gap-2 md:flex-row md:items-center">
-                {userRole && (
-                  <span className="bg-muted w-fit rounded-full px-2 py-0.5 text-xs font-semibold">
-                    {toTitleCase(userRole)}
-                  </span>
-                )}
+              {isAdmin && (
+                <span className="w-fit rounded-full bg-green-50 px-2 py-0.5 text-xs font-semibold text-green-700">
+                  Admin Account
+                </span>
+              )}
 
+              <div className="flex w-full flex-col justify-between gap-2 md:flex-row md:items-center">
                 {!isAdmin ? (
-                  !profileComplete ? (
-                    <AccountStatusBadge status={"incomplete"} />
-                  ) : (
-                    <AccountStatusBadge status={accountStatus} />
-                  )
+                  <>
+                    {userRole && (
+                      <span className="bg-muted w-fit rounded-full px-2 py-0.5 text-xs font-semibold">
+                        {toTitleCase(userRole)}
+                      </span>
+                    )}
+                    {!profileComplete ? (
+                      <AccountStatusBadge status={"incomplete"} />
+                    ) : (
+                      <AccountStatusBadge status={accountStatus} />
+                    )}
+                  </>
                 ) : null}
               </div>
 

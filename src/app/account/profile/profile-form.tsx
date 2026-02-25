@@ -381,12 +381,7 @@ export default function ProfileForm() {
     if (!isVerified) return false;
 
     if (isAdmin) {
-      return (
-        !!displayName?.trim() &&
-        !!email?.trim() &&
-        !!phoneNumber?.trim() &&
-        form.formState.isValid
-      );
+      return !!displayName?.trim() && !!email?.trim() && !!phoneNumber?.trim();
     }
     // businessType must be selected (default is "")
     if (!selectedBusinessType?.trim()) return false;

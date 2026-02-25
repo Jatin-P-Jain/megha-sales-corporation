@@ -43,47 +43,35 @@ function FilterRow({
   mobileMode,
 }: CommonUIProps) {
   // Admin quick filters differ from user quick filters
-  const leftLabel = adminMode ? "Filter by :" : "Filter by :";
-
-  // Mobile grid is same shape in your code for admin/user
-  const mobileGrid =
-    "grid w-full grid-cols-[fit-content(3ch)_fit-content(30ch)_max-content_max-content_fit-content(5ch)] items-center gap-2";
 
   if (mobileMode) {
     return (
       <div className="flex flex-col gap-1 pb-2">
-        <div className={mobileGrid}>
-          <span className="text-muted-foreground text-xs text-wrap">
-            {leftLabel}
-          </span>
-
-          <div className="w-fit max-w-[100%] min-w-0 shrink-0">
-            {adminMode ? (
+        <div className={"flex justify-between gap-3"}>
+          {/* {adminMode && (
+            <div className="w-fit max-w-[100%] min-w-0 shrink-0 flex items-center gap-2">
+              <span className="text-xs whitespace-nowrap">Quick Filter:</span>
               <StatusSelect />
-            ) : (
-              <CategoryFilter categories={categories} />
-            )}
-          </div>
+            </div>
+          )} */}
 
-          <div className="flex h-full items-center justify-center gap-2">
-            <Separator orientation="vertical" className="bg-muted h-full" />
+          <div className="flex h-full w-full items-center justify-center gap-2">
             <MoreFilters
-              showText={false}
               filterOptions={filterOptions}
               filterActive={isFilterApplied}
+              isAdmin={adminMode}
             />
+            {isFilterApplied && (
+              <Button
+                type="button"
+                variant="secondary"
+                className="text-red-800"
+                onClick={onClearAll}
+              >
+                <XCircle />
+              </Button>
+            )}
           </div>
-
-          {isFilterApplied && (
-            <Button
-              type="button"
-              variant="secondary"
-              className="text-red-800"
-              onClick={onClearAll}
-            >
-              <XCircle />
-            </Button>
-          )}
 
           <SortBySelect value={sortValue} onChange={onSortChange} />
         </div>
@@ -96,20 +84,18 @@ function FilterRow({
     return (
       <div
         className={clsx(
-          "inline-grid w-fit max-w-full grid-cols-[max-content_fit-content(40ch)_fit-content(40ch)_max-content] items-center gap-2 pb-4",
-          isFilterApplied &&
-            "grid-cols-[max-content_fit-content(40ch)_fit-content(40ch)_max-content_max-content]",
+          "inline-grid w-fit max-w-full grid-cols-[auto_1fr_1fr_auto_auto] items-center gap-2 pb-4",
         )}
       >
         <div className="text-muted-foreground shrink-0 text-xs">
           Quick Filters :
         </div>
 
-        <div className="w-fit max-w-[100%] min-w-0 shrink-0">
+        <div className="w-full max-w-[100%] min-w-0 shrink-0">
           <StatusSelect />
         </div>
 
-        <div className="w-fit max-w-[100%] min-w-0 shrink-0">
+        <div className="w-full max-w-[100%] min-w-0 shrink-0">
           <CategoryFilter categories={categories} />
         </div>
 
@@ -118,19 +104,21 @@ function FilterRow({
           <MoreFilters
             filterOptions={filterOptions}
             filterActive={isFilterApplied}
+            isAdmin={adminMode}
           />
+          {isFilterApplied && (
+            <Button
+              type="button"
+              variant="secondary"
+              className="text-red-800"
+              onClick={onClearAll}
+            >
+              <XCircle /> Clear
+            </Button>
+          )}
         </div>
 
-        {isFilterApplied && (
-          <Button
-            type="button"
-            variant="secondary"
-            className="text-red-800"
-            onClick={onClearAll}
-          >
-            <XCircle /> Clear
-          </Button>
-        )}
+        <SortBySelect value={sortValue} onChange={onSortChange} />
       </div>
     );
   }
@@ -140,36 +128,34 @@ function FilterRow({
     <div className="flex flex-col gap-2 pb-2">
       <div
         className={clsx(
-          "grid w-full items-center justify-start gap-4",
-          isFilterApplied
-            ? "grid-cols-[minmax(min-content,1fr)_max-content_fit-content(40ch)_max-content_max-content_max-content]"
-            : "grid-cols-[minmax(min-content,1fr)_max-content_fit-content(40ch)_max-content_max-content]",
+          "grid w-full grid-cols-[auto_1fr_auto_auto] items-center justify-start gap-4",
         )}
       >
-        <span className="text-muted-foreground text-xs">Filter by :</span>
+        <span className="text-muted-foreground text-xs whitespace-nowrap">
+          Filter by :
+        </span>
 
-        <div className="w-fit max-w-[100%] min-w-0 shrink-0">
+        <div className="w-fit max-w-[100%] min-w-0 shrink-0 justify-end">
           <CategoryFilter categories={categories} />
         </div>
 
-        <div className="flex h-full items-center justify-center gap-4">
-          <Separator orientation="vertical" className="bg-muted h-full" />
+        <div className="flex h-full w-auto items-center justify-center gap-3">
           <MoreFilters
             filterOptions={filterOptions}
             filterActive={isFilterApplied}
+            isAdmin={adminMode}
           />
+          {isFilterApplied && (
+            <Button
+              type="button"
+              variant="secondary"
+              className="text-red-800"
+              onClick={onClearAll}
+            >
+              <XCircle />
+            </Button>
+          )}
         </div>
-
-        {isFilterApplied && (
-          <Button
-            type="button"
-            variant="secondary"
-            className="text-red-800"
-            onClick={onClearAll}
-          >
-            <XCircle /> Clear
-          </Button>
-        )}
 
         <SortBySelect value={sortValue} onChange={onSortChange} />
       </div>
@@ -201,6 +187,26 @@ export default function ResponsiveProductFilters({
 
     return Array.from(new Set(cats)).sort();
   }, [brandId, filterOptions.brands]);
+
+  const vehicleCompanies = useMemo(() => {
+    let vcs: string[] = [];
+
+    if (brandId) {
+      const brandIds = brandId.split(",").filter(Boolean);
+      const brandArr = filterOptions.brands.filter((b) =>
+        brandIds.includes(b.id),
+      );
+      if (brandArr.length > 0)
+        vcs = brandArr.flatMap((b) => b.vehicleCompanies || []);
+    } else {
+      vcs = filterOptions.brands.flatMap((b) => b.vehicleCompanies || []);
+    }
+
+    return Array.from(new Set(vcs)).sort();
+  }, [brandId, filterOptions.brands]);
+
+  filterOptions.vehicleCompanies = vehicleCompanies;
+  filterOptions.categories = categories;
 
   const brandIdValue = searchParams.get("brandId") || "";
   const statusValue = searchParams.get("status") || "";

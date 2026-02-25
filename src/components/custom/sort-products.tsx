@@ -57,17 +57,17 @@ export function SortBySelect({
   const isMobile = useIsMobile();
   const selectedOption = SORT_OPTIONS.find((opt) => opt.value === value);
   return (
-    <div className="flex w-full items-center justify-center gap-2 text-xs">
+    <div className="flex w-auto items-center justify-center gap-2 text-xs">
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger
           className={clsx(
-            "text-xs font-semibold",
+            "w-full text-xs font-semibold",
             selectedOption && "border-primary border-2",
           )}
         >
           {!selectedOption ? (
-            <span className="text-muted-foreground flex items-center gap-1">
-              <ArrowUpDownIcon className="size-4" /> Sort By
+            <span className="flex items-center gap-1 text-foreground font-normal">
+              <ArrowUpDownIcon className="size-4 text-foreground" /> Sort By
             </span>
           ) : (
             <div className="flex w-full gap-2">

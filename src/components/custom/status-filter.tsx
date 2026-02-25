@@ -65,12 +65,19 @@ export default function StatusSelect() {
           <Button
             variant="ghost"
             className={clsx(
-              "min-w-0 items-center justify-between gap-1 rounded-none hover:bg-transparent",
+              "min-w-0 items-center justify-between gap-1 rounded-none hover:bg-transparent w-full",
               selected.length > 0 && "border-r-1",
             )}
             ref={triggerRef}
           >
-            <span>Status</span>
+            <span>
+              Status{" "}
+              <span className="text-xs font-semibold">
+                {currentSelections.length > 0
+                  ? `(${currentSelections.length})`
+                  : ""}
+              </span>
+            </span>
             {isPending && pendingKey !== null && (
               <Loader2Icon className="h-4 w-4 animate-spin" />
             )}

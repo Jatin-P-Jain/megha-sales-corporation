@@ -20,7 +20,7 @@ export default function CartOverview() {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-[2fr_4fr_2fr] items-center justify-center rounded-lg border p-1 text-sm md:px-4">
+      <div className="grid grid-cols-[3fr_4fr_2fr] items-center justify-center rounded-lg border p-1 text-sm md:px-4">
         <div className="text-muted-foreground flex w-full flex-col text-xs md:text-sm">
           Cart Overview
           <span className="text-muted-foreground text-[8px]">
@@ -34,8 +34,8 @@ export default function CartOverview() {
   }
 
   return (
-    <div className="grid grid-cols-[2fr_4fr_2fr] items-center justify-center rounded-lg border p-1 text-sm md:px-4">
-      <div className="text-muted-foreground flex w-full flex-col text-xs md:text-sm">
+    <div className="grid grid-cols-[3fr_4fr_2fr] items-center justify-center rounded-lg border p-1 text-sm md:px-4">
+      <div className="text-muted-foreground flex w-full flex-col text-xs md:text-sm ">
         Cart Overview
         <span className="text-muted-foreground text-[8px]">
           (after discount &amp; GST)
