@@ -1,8 +1,9 @@
 import React from "react";
-import Link from "next/link";
+
 import { BadgeCheckIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BankDetails from "@/components/custom/bank-details";
+import { SafeLink } from "@/components/custom/utility/SafeLink";
 
 export default async function OrderPlacedPage({
   params,
@@ -37,9 +38,9 @@ export default async function OrderPlacedPage({
             </div>
           </div>
           <Button asChild className="w-full">
-            <Link href={`/order-history?${newSearchParams.toString()}`}>
+            <SafeLink href={`/order-history?${newSearchParams.toString()}`}>
               View order details
-            </Link>
+            </SafeLink>
           </Button>
           <BankDetails />
         </div>
@@ -53,10 +54,10 @@ export default async function OrderPlacedPage({
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Button asChild variant="outline" className="w-full">
-              <Link href="/products-list">Explore products</Link>
+              <SafeLink href="/products-list">Explore products</SafeLink>
             </Button>
             <Button asChild variant="outline" className="w-full">
-              <Link href="/">Go to home</Link>
+              <SafeLink href="/">Go to home</SafeLink>
             </Button>
           </div>
         </div>

@@ -8,17 +8,17 @@ import { Loader2, PlusCircleIcon } from "lucide-react";
 import { useAuthState } from "@/context/useAuth";
 
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { ref, uploadBytesResumable, UploadTask } from "firebase/storage";
 import { storage } from "@/firebase/client";
 import { createProduct, saveProductMedia } from "./actions";
 import { Brand } from "@/types/brand";
 import { useEffect, useState } from "react";
 import { updateBrandProcuctCount } from "../brands/action";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
 
 export default function NewProductForm({ brand }: { brand?: Brand | Brand[] }) {
   const { currentUser } = useAuthState();
-  const router = useRouter();
+  const router = useSafeRouter();
   const [progressMap, setProgressMap] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [brandSelected, setBrandSelected] = useState<Brand | undefined>(

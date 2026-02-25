@@ -3,7 +3,6 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { ChevronsRight, EyeIcon, PencilIcon, TagIcon } from "lucide-react";
 import { formatINR } from "@/lib/utils";
 import { Product, ProductSize } from "@/types/product";
@@ -14,13 +13,14 @@ import { Skeleton } from "../ui/skeleton";
 import useIsMobile from "@/hooks/useIsMobile";
 import UserUnlockDialog from "./user-unlock-dialog";
 import { useAuthState } from "@/context/useAuth";
-import { useRouter } from "next/navigation";
 import {
   getCartItemKey,
   useCartItem,
   useCartState,
 } from "@/context/cartContext";
 import { useUserGate } from "@/context/UserGateProvider";
+import { SafeLink } from "./utility/SafeLink";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
 
 type ProductCardProps = {
   product: Product;
@@ -38,7 +38,7 @@ export default function ProductCard({
   const { loading: cartLoading } = useCartState();
   const { currentUser } = useAuthState();
   const { profileComplete } = useUserGate();
-  const router = useRouter();
+  const router = useSafeRouter();
 
   const isUser = !!currentUser;
 
@@ -94,12 +94,12 @@ export default function ProductCard({
         <div className="flex w-full flex-col md:gap-2">
           <div className="text-primary flex w-full items-center justify-between font-semibold">
             <span className="text-sm font-normal">Brand :</span>
-            <Link
+            <SafeLink
               href={`/brands/${product.brandId}`}
               className="cursor-pointer underline"
             >
               {product.brandName}
-            </Link>
+            </SafeLink>
           </div>
 
           <div className="text-primary flex w-full items-center justify-between font-semibold">
@@ -199,7 +199,7 @@ export default function ProductCard({
                   {selectedSize?.discount ?? product.discount}%
                 </span>
               ) : !currentUser ? (
-                <Link
+                <SafeLink
                   href="/login"
                   className="flex cursor-pointer items-center justify-between gap-2 transition-all hover:opacity-80"
                 >
@@ -207,7 +207,7 @@ export default function ProductCard({
                     *****
                   </span>
                   <EyeIcon className="size-5 text-yellow-600" />
-                </Link>
+                </SafeLink>
               ) : (
                 <UserUnlockDialog>
                   <div className="flex cursor-pointer items-center justify-between gap-2 transition-all hover:opacity-80">
@@ -250,23 +250,23 @@ export default function ProductCard({
             <div className="flex w-full flex-col">
               {/* unchanged admin UI */}
               <Button variant="outline" asChild className="rounded-t-none">
-                <Link
+                <SafeLink
                   href={`/admin-dashboard/edit-product/${product.brandId}/${product.id}`}
                 >
                   <PencilIcon />
                   Edit Product
-                </Link>
+                </SafeLink>
               </Button>
             </div>
           ) : !isUser ? (
             <div className="inline-flex w-full items-center justify-center gap-1 rounded-md border border-yellow-600 bg-yellow-50 p-1 px-2 text-center text-xs whitespace-nowrap text-yellow-600">
               Please{" "}
-              <Link
+              <SafeLink
                 href="/login"
                 className="cursor-pointer font-semibold underline hover:text-yellow-800"
               >
                 Login
-              </Link>{" "}
+              </SafeLink>{" "}
               to add products to your cart.
             </div>
           ) : !profileComplete ? (

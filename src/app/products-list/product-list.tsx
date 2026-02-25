@@ -12,9 +12,10 @@ import {
 } from "@/components/ui/pagination";
 import { useUserGate } from "@/context/UserGateProvider";
 import { usePaginatedFirestore } from "@/hooks/usePaginatedFireStore";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
 import { Product } from "@/types/product";
 import clsx from "clsx";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import React, { useCallback, useEffect, useMemo } from "react";
 
 export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
@@ -24,7 +25,7 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
     ? parseInt(process.env.NEXT_PUBLIC_PAGE_SIZE, 10)
     : 10;
 
-  const router = useRouter();
+  const router = useSafeRouter();
   const searchParams = useSearchParams();
 
   const pageParam = searchParams.get("page") || "1";

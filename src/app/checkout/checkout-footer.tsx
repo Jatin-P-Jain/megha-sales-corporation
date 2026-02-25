@@ -9,10 +9,10 @@ import { createOrder } from "./actions";
 import { useAuthState } from "@/context/useAuth";
 import { toast } from "sonner";
 import { OrderData } from "@/types/order";
-import { useRouter } from "next/navigation";
 import { getBaseUrl } from "@/lib/utils";
 import { useRequireUserProfile } from "@/hooks/useUserProfile";
 import { useUserProfileState } from "@/context/UserProfileProvider";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
 
 function buildOrderData(params: {
   cartProducts: OrderData["products"];
@@ -31,7 +31,7 @@ function buildOrderData(params: {
 }
 
 export default function CheckoutFooter() {
-  const router = useRouter();
+  const router = useSafeRouter();
 
   useRequireUserProfile(true);
 

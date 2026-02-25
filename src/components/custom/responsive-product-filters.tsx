@@ -8,10 +8,11 @@ import MoreFilters from "./more-filters";
 import StatusSelect from "./status-filter";
 import { Button } from "../ui/button";
 import { XCircle } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Separator } from "../ui/separator";
 import { FilterOptions } from "@/types/filterOptions";
 import { SortBySelect } from "./sort-products";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
 
 type Props = {
   isAdmin: boolean;
@@ -182,7 +183,7 @@ export default function ResponsiveProductFilters({
   brandId,
 }: Props) {
   const isMobile = useIsMobile();
-  const router = useRouter();
+  const router = useSafeRouter();
   const searchParams = useSearchParams();
 
   const categories = useMemo(() => {

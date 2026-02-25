@@ -14,17 +14,17 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { getBaseUrl } from "@/lib/utils";
 import { formatBusinessProfile } from "@/lib/business-profile-formatter";
-import { useRouter } from "next/navigation";
 import { useUserGate } from "@/context/UserGateProvider";
 import { useRequireUserProfile } from "@/hooks/useUserProfile";
 import { useUserProfileState } from "@/context/UserProfileProvider";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
 
 interface UserUnlockDialogProps {
   children: React.ReactNode;
 }
 
 export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
-  const router = useRouter();
+  const router = useSafeRouter();
   const { profileComplete } = useUserGate();
   useRequireUserProfile(true); // Ensure profile is loaded and complete status is accurate
   const { clientUser } = useUserProfileState();

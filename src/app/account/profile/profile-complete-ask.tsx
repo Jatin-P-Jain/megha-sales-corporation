@@ -9,8 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, ChevronsRight } from "lucide-react";
-
-import { useRouter } from "next/navigation";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
 
 interface ProfileCompleteAskProps {
   open: boolean;
@@ -21,7 +20,7 @@ export default function ProfileCompleteAsk({
   open,
   setOpen,
 }: ProfileCompleteAskProps) {
-  const router = useRouter();
+  const router = useSafeRouter();
 
   const handleLater = async () => {
     router.push("/");

@@ -10,13 +10,13 @@ import {
   ListOrderedIcon,
   PencilIcon,
 } from "lucide-react";
-import Link from "next/link";
 import imageUrlFormatter from "@/lib/image-urlFormatter";
 import { Button } from "@/components/ui/button";
 import { cookies } from "next/headers";
 import { auth } from "@/firebase/server";
 import { BrandMediaViewer } from "@/components/custom/brand-media-viewer";
 import clsx from "clsx";
+import { SafeLink } from "@/components/custom/utility/SafeLink";
 
 interface BrandPageProps {
   params: Promise<{
@@ -49,10 +49,10 @@ export default async function BrandPage({ params }: BrandPageProps) {
             className="hover:text-primary flex items-center justify-between gap-1 !p-1 md:!px-4"
             asChild
           >
-            <Link href={`/products-list?brandId=${brand.id}`}>
+            <SafeLink href={`/products-list?brandId=${brand.id}`}>
               <ListOrderedIcon className="size-4" />
               {brand?.brandName} Products
-            </Link>
+            </SafeLink>
           </Button>
           {isAdmin && (
             <Button
@@ -61,10 +61,10 @@ export default async function BrandPage({ params }: BrandPageProps) {
               asChild
               size={"sm"}
             >
-              <Link href={`/admin-dashboard/edit-brand/${brand.id}`}>
+              <SafeLink href={`/admin-dashboard/edit-brand/${brand.id}`}>
                 <PencilIcon className="size-4" />
                 Edit Brand
-              </Link>
+              </SafeLink>
             </Button>
           )}
         </div>
@@ -103,10 +103,10 @@ export default async function BrandPage({ params }: BrandPageProps) {
                 className="text-muted-foreground decoration-primary mb-4 flex h-0 min-h-0 items-center justify-center gap-2 !px-0 text-sm"
                 asChild
               >
-                <Link href={brand?.brandWebsite} target="_blank">
+                <SafeLink href={brand?.brandWebsite} target="_blank">
                   <span className="text-sky-800">{brand.brandWebsite}</span>
                   <ExternalLinkIcon className="size-4 text-sky-800" />
-                </Link>
+                </SafeLink>
               </Button>
             ) : (
               <span className="text-muted-foreground text-xs">

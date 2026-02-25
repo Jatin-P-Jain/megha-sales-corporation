@@ -1,5 +1,6 @@
 import BrandLogo from "@/components/custom/brand-logo";
 import PublishBrandButton from "@/components/custom/publish-brand-button";
+import { SafeLink } from "@/components/custom/utility/SafeLink";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,7 +18,6 @@ import {
   PlusCircleIcon,
   WrenchIcon,
 } from "lucide-react";
-import Link from "next/link";
 
 const AdminBrands = async ({
   searchParams,
@@ -39,20 +39,20 @@ const AdminBrands = async ({
           </h1>
         </div>
         <Button variant={"link"} asChild className="p-0">
-          <Link href={"/products-list"} className="">
+          <SafeLink href={"/products-list"} className="">
             <LayoutListIcon className="size-4" /> All Products
-          </Link>
+          </SafeLink>
         </Button>
       </div>
       <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         <Card className="flex cursor-pointer items-center justify-center gap-4 border-2 border-dashed bg-gray-100/50 p-1 px-3 shadow-md">
-          <Link
+          <SafeLink
             href={"/admin-dashboard/new-brand"}
             className="text-primary flex h-full w-full items-center justify-center gap-2 font-semibold"
           >
             <PlusCircleIcon className="h-3 w-3" />
             <span className="text-sm font-normal">Add New Brand</span>
-          </Link>
+          </SafeLink>
         </Card>
         {data.map((brand) => {
           const newSearchParams = new URLSearchParams();
@@ -61,13 +61,13 @@ const AdminBrands = async ({
             <Card key={brand.id} className="gap-2 p-4 shadow-md">
               <CardHeader className="flex w-full items-center justify-between p-0 text-xl font-bold">
                 <CardTitle className="px- text-primary text-xl font-semibold underline">
-                  <Link
+                  <SafeLink
                     href={`/brands/${brand.id}`}
                     className="flex items-center gap-1"
                   >
                     {brand.brandName}{" "}
                     <InfoIcon className="size-5 text-amber-600" />
-                  </Link>
+                  </SafeLink>
                 </CardTitle>
                 <div className="flex items-center justify-center gap-1">
                   <div
@@ -89,13 +89,13 @@ const AdminBrands = async ({
                           ? "REMOVED"
                           : ""}
                   </div>
-                  <Link
+                  <SafeLink
                     href={`/admin-dashboard/edit-brand/${brand.id}`}
                     className="border-primary/70 text-primary flex items-center justify-center gap-1 rounded-lg border-1 p-1.5 py-1"
                   >
                     <PencilIcon className="h-3.5 w-3.5" />
                     <span className="text-xs md:text-sm">Edit</span>
-                  </Link>
+                  </SafeLink>
                 </div>
               </CardHeader>
               <CardContent className="flex flex-1 flex-col gap-0 p-0">
@@ -167,12 +167,12 @@ const AdminBrands = async ({
                     </span>
                   </div>
                   {brand.totalProducts > 0 && (
-                    <Link
+                    <SafeLink
                       href={`/products-list?${newSearchParams}`}
                       className="text-primary font-semibold hover:underline"
                     >
                       Show Products
-                    </Link>
+                    </SafeLink>
                   )}
                 </div>
 
@@ -183,7 +183,7 @@ const AdminBrands = async ({
 
                   {brand?.status === "live" && (
                     <Button className="w-full gap-2" asChild>
-                      <Link
+                      <SafeLink
                         href={{
                           pathname: "/admin-dashboard/new-product",
                           query: { brandId: brand.id },
@@ -191,7 +191,7 @@ const AdminBrands = async ({
                       >
                         <PlusCircleIcon />
                         Add Product
-                      </Link>
+                      </SafeLink>
                     </Button>
                   )}
                 </div>

@@ -12,6 +12,7 @@ import NetworkBanner from "@/components/custom/network-banner";
 import { Footer } from "@/components/custom/footer";
 import { NavBar } from "@/components/custom/navbar/nav-bar";
 import RouteProgress from "@/components/custom/route-progress";
+import { NavigationLockProvider } from "@/context/navigation-lock-provider";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -93,13 +94,16 @@ export default async function RootLayout({
 
         <Providers>
           <RouteProgress />
-          <NavBar />
-          <div className="mx-auto max-w-screen-lg md:p-8 md:pt-28 px-4 pt-20 pb-8">{children}</div>
+          <NavigationLockProvider>
+            <NavBar />
+            <div className="mx-auto max-w-screen-lg px-4 pt-20 pb-8 md:p-8 md:pt-28">
+              {children}
+            </div>
+          </NavigationLockProvider>
         </Providers>
 
         <Footer />
         <NetworkBanner />
-        
 
         <Analytics />
         <SpeedInsights />

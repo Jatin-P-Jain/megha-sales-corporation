@@ -15,10 +15,10 @@ import { Loader2, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { deleteBrand } from "./actions";
-import { useRouter } from "next/navigation";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
 
 export default function DeleteAccountButton({ brandId }: { brandId: string }) {
-  const router = useRouter();
+  const router = useSafeRouter();
   const [isDeleting, setIsDeleting] = useState(false);
   const [open, setOpen] = useState(false);
   const deleteHandler = async () => {
@@ -62,7 +62,7 @@ export default function DeleteAccountButton({ brandId }: { brandId: string }) {
           <Button
             variant={"destructive"}
             onClick={deleteHandler}
-            className="bg-red-700 hover:shadow-md hover:bg-red-800"
+            className="bg-red-700 hover:bg-red-800 hover:shadow-md"
           >
             {isDeleting ? (
               <>

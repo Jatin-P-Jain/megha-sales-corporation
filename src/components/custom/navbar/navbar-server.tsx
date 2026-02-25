@@ -1,16 +1,16 @@
 import React from "react";
-import Link from "next/link";
 import Image from "next/image";
 import BrandLogo from "../../../../public/brand-logo.svg";
 import JinendraLogo from "../../../../public/jai-jinendra.png";
 import ContactUsLink from "../contact-us-link";
 import NavBarClientRight from "./navbar-client-right";
+import { SafeLink } from "../utility/SafeLink";
 
 export default function NavBarServer() {
   return (
     <nav className="fixed top-0 right-0 left-0 z-50 flex flex-wrap items-center justify-between bg-cyan-950 p-3 px-4 text-white shadow-md lg:px-8">
       <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4">
-        <Link
+        <SafeLink
           href="/"
           className="flex items-center justify-center gap-1 text-lg tracking-wider uppercase md:gap-4 md:text-2xl"
         >
@@ -40,7 +40,7 @@ export default function NavBarServer() {
               Corporation
             </span>
           </div>
-        </Link>
+        </SafeLink>
 
         <div className="bg-muted hidden h-12 w-px md:inline-flex" />
         <ContactUsLink />

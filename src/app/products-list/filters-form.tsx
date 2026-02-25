@@ -9,8 +9,9 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -24,7 +25,7 @@ const formSchema = z.object({
 export default function FiltersForm({ openFilters }: { openFilters: boolean }) {
   const [isPending, startTransition] = useTransition();
   const searchParams = useSearchParams();
-  const router = useRouter();
+  const router = useSafeRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -52,21 +53,21 @@ export default function FiltersForm({ openFilters }: { openFilters: boolean }) {
   };
   return (
     <div
-      className={`transition-all duration-500 ease-in-out overflow-hidden   ${
-        openFilters ? "max-h-[1000px] opacity-100 pt-3" : "max-h-0 opacity-0"
+      className={`overflow-hidden transition-all duration-500 ease-in-out ${
+        openFilters ? "max-h-[1000px] pt-3 opacity-100" : "max-h-0 opacity-0"
       }`}
     >
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(handleSubmit)}
-          className={`grid sm:grid-cols-4 grid-cols-1 gap-3 `}
+          className={`grid grid-cols-1 gap-3 sm:grid-cols-4`}
         >
           <FormField
             control={form.control}
             name="minPrice"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs px-1 text-gray-700">
+                <FormLabel className="px-1 text-xs text-gray-700">
                   Minimum Price
                 </FormLabel>
                 <FormControl>
@@ -86,7 +87,7 @@ export default function FiltersForm({ openFilters }: { openFilters: boolean }) {
             name="maxPrice"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs px-1 text-gray-700">
+                <FormLabel className="px-1 text-xs text-gray-700">
                   Maximum Price
                 </FormLabel>
                 <FormControl>
@@ -106,7 +107,7 @@ export default function FiltersForm({ openFilters }: { openFilters: boolean }) {
             name="minBedrooms"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs px-1 text-gray-700">
+                <FormLabel className="px-1 text-xs text-gray-700">
                   Minimum Bedrooms
                 </FormLabel>
                 <FormControl>
@@ -122,7 +123,7 @@ export default function FiltersForm({ openFilters }: { openFilters: boolean }) {
             )}
           />
 
-          <Button type="submit" className="w-full cursor-pointer mt-auto">
+          <Button type="submit" className="mt-auto w-full cursor-pointer">
             {isPending ? "Applying Filters" : "Apply Filters"}
           </Button>
         </form>

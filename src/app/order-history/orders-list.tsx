@@ -13,10 +13,11 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import clsx from "clsx";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePaginatedFirestore } from "@/hooks/usePaginatedFireStore";
 import type { Order } from "@/types/order";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
 
 function OrdersSkeleton() {
   return (
@@ -46,7 +47,7 @@ export default function OrdersList({
   isAdmin: boolean;
   userId?: string;
 }) {
-  const router = useRouter();
+  const router = useSafeRouter();
   const searchParams = useSearchParams();
   const previousFiltersRef = useRef<string>("");
 

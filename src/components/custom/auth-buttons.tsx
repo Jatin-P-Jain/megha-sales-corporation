@@ -1,6 +1,4 @@
 "use client";
-
-import Link from "next/link";
 import { useAuthActions, useAuthState } from "@/context/useAuth";
 import {
   DropdownMenu,
@@ -41,6 +39,7 @@ import clsx from "clsx";
 import { useRequireUserProfile } from "@/hooks/useUserProfile";
 import { useUserProfileState } from "@/context/UserProfileProvider";
 import { useUserGate } from "@/context/UserGateProvider";
+import { SafeLink } from "./utility/SafeLink";
 
 type AccountStatusUI =
   | "pending"
@@ -260,44 +259,44 @@ export default function AuthButtons() {
             <DropdownMenuSeparator />
 
             <DropdownMenuItem asChild>
-              <Link
+              <SafeLink
                 href="/account"
                 className="flex items-center justify-between"
               >
                 My Account
                 <UserRound className="text-secondary-foreground" />
-              </Link>
+              </SafeLink>
             </DropdownMenuItem>
 
             {isAdmin ? (
               <>
                 <DropdownMenuItem asChild>
-                  <Link
+                  <SafeLink
                     href="/order-history"
                     className="flex items-center justify-between"
                   >
                     Order Book
                     <NotebookTextIcon className="text-secondary-foreground" />
-                  </Link>
+                  </SafeLink>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link
+                  <SafeLink
                     href="/admin-dashboard"
                     className="flex items-center justify-between"
                   >
                     Admin Dashboard
                     <ShieldUserIcon className="text-secondary-foreground" />
-                  </Link>
+                  </SafeLink>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild disabled>
-                  <Link
+                  <SafeLink
                     href="/change-pricing"
                     className="flex items-center justify-between"
                   >
                     Change Pricing Structure <br />
                     (Coming Soon)
                     <TagsIcon className="text-secondary-foreground" />
-                  </Link>
+                  </SafeLink>
                 </DropdownMenuItem>
               </>
             ) : (
@@ -316,25 +315,25 @@ export default function AuthButtons() {
                   asChild
                   disabled={!profileComplete || accountStatus !== "approved"}
                 >
-                  <Link
+                  <SafeLink
                     href="/cart"
                     className="flex items-center justify-between"
                   >
                     My Cart
                     <ShoppingCartIcon className="text-secondary-foreground" />
-                  </Link>
+                  </SafeLink>
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   asChild
                   disabled={!profileComplete || accountStatus !== "approved"}
                 >
-                  <Link
+                  <SafeLink
                     href="/order-history"
                     className="flex items-center justify-between"
                   >
                     Order History
                     <ClipboardList className="text-secondary-foreground" />
-                  </Link>
+                  </SafeLink>
                 </DropdownMenuItem>
               </div>
             )}
@@ -394,11 +393,11 @@ export default function AuthButtons() {
 
   // 3) Logged-out state
   return (
-    <Link
+    <SafeLink
       href="/login"
       className="flex items-center justify-center gap-1 text-base font-medium hover:underline"
     >
       Login <LogInIcon className="size-4" />
-    </Link>
+    </SafeLink>
   );
 }

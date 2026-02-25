@@ -4,7 +4,6 @@ import { z } from "zod";
 import { Loader2, PlusCircleIcon } from "lucide-react";
 import { useAuthState } from "@/context/useAuth";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { ref, uploadBytesResumable, UploadTask } from "firebase/storage";
 import { storage } from "@/firebase/client";
 import BrandForm from "@/components/custom/brand-form";
@@ -14,10 +13,11 @@ import { BrandMedia } from "@/types/brand";
 import { useState } from "react";
 import { slugify } from "@/lib/utils";
 import { saveBrandMedia } from "../brands/action";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
 
 export default function NewBrandForm() {
   const { currentUser } = useAuthState();
-  const router = useRouter();
+  const router = useSafeRouter();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [progressMap, setProgressMap] = useState<Record<string, number>>({});
   const handleSubmit = async (data: z.infer<typeof brandSchema>) => {

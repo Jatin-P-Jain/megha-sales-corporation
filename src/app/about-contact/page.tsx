@@ -19,12 +19,12 @@ import JainLogo from "@/assets/icons/jain-logo.svg";
 import GoogleMapComponent from "@/components/custom/google-map";
 import { EnquiryDialog } from "@/components/custom/wa-enquiry-dialog";
 import AboutAutoPartsShop from "@/components/custom/about-us";
-import Link from "next/link";
 import BankDetails from "@/components/custom/bank-details";
+import { SafeLink } from "@/components/custom/utility/SafeLink";
 
 export default function AboutAndContact() {
   return (
-    <div className="container mx-auto flex max-w-4xl flex-col overflow-auto p-4 gap-4 mb-8">
+    <div className="container mx-auto mb-8 flex max-w-4xl flex-col gap-4 overflow-auto p-4">
       <div className="flex w-full items-center justify-between space-y-1">
         <div className="relative">
           <Image alt="" src={JainLogo} width={30} height={30} />
@@ -164,7 +164,7 @@ export default function AboutAndContact() {
             <div className="flex flex-col items-center gap-1 md:flex-row">
               Thoughtfully designed and developed with passion and ❤️ by{" "}
               <div className="flex items-center gap-1">
-                <Link
+                <SafeLink
                   href="https://www.jatinprakash.online"
                   className="underline"
                   target="_blank"
@@ -173,7 +173,7 @@ export default function AboutAndContact() {
                   <span className="text-[14px] font-semibold">
                     Jatin Prakash Jain
                   </span>
-                </Link>
+                </SafeLink>
               </div>
             </div>
             <span className="text-lg">✨</span>

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, useCallback } from "react";
 import Image from "next/image";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -69,13 +69,14 @@ import {
   useUserProfileState,
 } from "@/context/UserProfileProvider";
 import { updateGateProfileComplete } from "@/lib/firebase/updateGateProfileComplete";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
 
 type FormValues = z.infer<typeof userProfileSchema>;
 
 export default function ProfileForm() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const router = useRouter();
+  const router = useSafeRouter();
 
   useRequireUserProfile(true);
 

@@ -6,9 +6,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import Link from "next/link";
 import { Users, Package, MessageSquareMore } from "lucide-react";
 import UsersCardClient from "./users/users-unlock-client";
+import { SafeLink } from "@/components/custom/utility/SafeLink";
 
 const AdminDashboard = async () => {
   return (
@@ -33,10 +33,10 @@ const AdminDashboard = async () => {
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
-              <Link href="/admin-dashboard/brands">
+              <SafeLink href="/admin-dashboard/brands">
                 <Package className="h-4 w-4" />
                 Manage Brands
-              </Link>
+              </SafeLink>
             </Button>
           </CardContent>
         </Card>
@@ -67,10 +67,10 @@ const AdminDashboard = async () => {
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
-              <Link href="/admin-dashboard/enquiries">
+              <SafeLink href="/admin-dashboard/enquiries">
                 <MessageSquareMore className="h-4 w-4" />
                 View Enquiries
-              </Link>
+              </SafeLink>
             </Button>
           </CardContent>
         </Card>

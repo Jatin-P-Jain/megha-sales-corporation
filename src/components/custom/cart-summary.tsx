@@ -3,13 +3,13 @@
 import React from "react";
 import { Button } from "../ui/button";
 import { ArrowBigRightDashIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
 import currencyFormatter from "@/lib/currency-formatter";
 import { useCartState } from "@/context/cartContext";
-import Link from "next/link";
+import { SafeLink } from "./utility/SafeLink";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
 
 function CartSummary({ isUser }: { isUser: boolean }) {
-  const router = useRouter();
+  const router = useSafeRouter();
   const { cartTotals, loading } = useCartState();
 
   const { totalUnits = 0, totalItems = 0, totalAmount = 0 } = cartTotals || {};
@@ -64,10 +64,13 @@ function CartSummary({ isUser }: { isUser: boolean }) {
         </Button>
       ) : (
         <Button asChild className="flex w-full items-center justify-center">
-          <Link href="/checkout" className="flex w-full items-center gap-2 justify-center bg-amber-200">
+          <SafeLink
+            href="/checkout"
+            className="flex w-full items-center justify-center gap-2"
+          >
             <span>Checkout</span>
             <ArrowBigRightDashIcon className="size-5" />
-          </Link>
+          </SafeLink>
         </Button>
       )}
     </div>

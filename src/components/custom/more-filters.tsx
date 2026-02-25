@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useTransition, useCallback } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { FunnelPlusIcon, Loader2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +16,7 @@ import {
 import clsx from "clsx";
 import { FilterOptions } from "@/types/filterOptions";
 import { FilterSection } from "./filter-section";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
 
 const FILTERS = [
   { key: "brand", applyKey: "brandId", label: "Brand" },
@@ -35,7 +36,7 @@ export default function MoreFilters({
   filterActive?: boolean;
   showText?: boolean;
 }) {
-  const router = useRouter();
+  const router = useSafeRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const [pendingKey, setPendingKey] = useState<string | null>(null);

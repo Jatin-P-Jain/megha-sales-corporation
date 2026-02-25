@@ -10,13 +10,14 @@ import {
 import { usePaginatedFirestore } from "@/hooks/usePaginatedFireStore";
 import { UserData } from "@/types/user";
 import clsx from "clsx";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import UserCard from "./user-card";
 import UserCardSkeleton from "@/components/custom/user-card-skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
 
 type SearchField = "email" | "phone" | "userId" | "displayName";
 
@@ -24,7 +25,7 @@ export default function UsersList() {
   const PAGE_SIZE = process.env.NEXT_PUBLIC_PAGE_SIZE
     ? parseInt(process.env.NEXT_PUBLIC_PAGE_SIZE)
     : 10;
-  const router = useRouter();
+  const router = useSafeRouter();
   const searchParams = useSearchParams();
   const previousFiltersRef = useRef<string>("");
 

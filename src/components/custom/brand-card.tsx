@@ -1,13 +1,13 @@
-import Link from "next/link";
 import { Brand } from "@/types/brand";
 import { Card, CardHeader } from "../ui/card";
 import BrandLogo from "./brand-logo";
+import { SafeLink } from "./utility/SafeLink";
 
 export default function BrandCard({ brand }: { brand: Brand }) {
   const href = `/products-list?brandId=${encodeURIComponent(brand.id)}&page=1`;
 
   return (
-    <Link
+    <SafeLink
       href={href}
       className="block focus:outline-none"
       // If you render tons of these cards, consider prefetch={false} to reduce network work. [web:285]
@@ -23,6 +23,6 @@ export default function BrandCard({ brand }: { brand: Brand }) {
           </div>
         </CardHeader>
       </Card>
-    </Link>
+    </SafeLink>
   );
 }

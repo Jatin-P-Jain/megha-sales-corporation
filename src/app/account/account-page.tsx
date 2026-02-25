@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState, type ChangeEvent } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { ref, uploadBytesResumable } from "firebase/storage";
 
@@ -21,9 +21,10 @@ import {
   useUserProfileState,
 } from "@/context/UserProfileProvider";
 import { useRequireUserProfile } from "@/hooks/useUserProfile";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
 
 export default function AccountPage() {
-  const router = useRouter();
+  const router = useSafeRouter();
   const searchParams = useSearchParams();
 
   useRequireUserProfile(true);

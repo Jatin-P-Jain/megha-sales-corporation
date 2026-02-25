@@ -1,10 +1,10 @@
-import Link from "next/link";
 import Image from "next/image";
 import AboutUsContactIcon from "@/assets/icons/about-contact.svg";
+import { SafeLink } from "./utility/SafeLink";
 
 export default function ContactUsLink() {
   return (
-    <Link
+    <SafeLink
       href="/about-contact"
       className="text-sm tracking-wider whitespace-nowrap uppercase hover:underline md:text-base"
     >
@@ -32,6 +32,6 @@ export default function ContactUsLink() {
         </span>
         <span className="hidden lg:flex">About & Contact</span>
       </span>
-    </Link>
+    </SafeLink>
   );
 }

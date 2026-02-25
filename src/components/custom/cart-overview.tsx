@@ -7,8 +7,8 @@ import currencyFormatter from "@/lib/currency-formatter";
 import { Skeleton } from "../ui/skeleton";
 import clsx from "clsx";
 import { useCartState } from "@/context/cartContext";
-import Link from "next/link";
 import { useUserGate } from "@/context/UserGateProvider";
+import { SafeLink } from "./utility/SafeLink";
 
 export default function CartOverview() {
   const { loading, cartTotals } = useCartState();
@@ -82,10 +82,10 @@ export default function CartOverview() {
         </Button>
       ) : (
         <Button asChild className="flex w-full items-center justify-center">
-          <Link href="/cart" className="flex items-center gap-2">
+          <SafeLink href="/cart" className="flex items-center gap-2">
             <span>Cart</span>
             <ShoppingCartIcon className="size-5" />
-          </Link>
+          </SafeLink>
         </Button>
       )}
     </div>

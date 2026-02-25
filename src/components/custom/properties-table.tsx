@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Property } from "@/types/property";
 import { EyeIcon, PencilIcon } from "lucide-react";
-import Link from "next/link";
+import { SafeLink } from "./utility/SafeLink";
 
 export default async function PropertiesTable({
   data,
@@ -67,19 +67,19 @@ export default async function PropertiesTable({
                   </TableCell>
                   <TableCell className="flex justify-end gap-2">
                     <Button asChild variant={"outline"} size={"sm"}>
-                      <Link href={`/property/${property.id}`}>
+                      <SafeLink href={`/property/${property.id}`}>
                         <EyeIcon />
-                      </Link>
+                      </SafeLink>
                     </Button>
                     {isFavouritesTable ? (
                       <></>
                     ) : (
                       <Button asChild variant={"outline"} size={"sm"}>
-                        <Link
+                        <SafeLink
                           href={`/admin-dashboard/edit-property/${property.id}`}
                         >
                           <PencilIcon />
-                        </Link>
+                        </SafeLink>
                       </Button>
                     )}
                   </TableCell>
@@ -100,7 +100,7 @@ export default async function PropertiesTable({
                         variant={"outline"}
                         key={i}
                       >
-                        <Link
+                        <SafeLink
                           href={`${
                             isFavouritesTable
                               ? "/account/my-favourites"
@@ -108,7 +108,7 @@ export default async function PropertiesTable({
                           }?page=${i + 1}`}
                         >
                           {i + 1}
-                        </Link>
+                        </SafeLink>
                       </Button>
                     );
                   })}

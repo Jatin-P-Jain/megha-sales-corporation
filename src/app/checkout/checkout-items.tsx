@@ -15,10 +15,10 @@ import {
 } from "@/components/ui/table";
 import { Loader2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { truncateMiddle } from "@/lib/utils";
 import clsx from "clsx";
 import useIsMobile from "@/hooks/useIsMobile";
+import { SafeLink } from "@/components/custom/utility/SafeLink";
 
 export function CheckoutItems() {
   const { loading, cartTotals, cartProducts } = useCartState();
@@ -39,7 +39,7 @@ export function CheckoutItems() {
       <div className="flex w-full flex-col items-center justify-center gap-4">
         Your cart is empty!
         <Button asChild>
-          <Link href="/products-list">Build your cart</Link>
+          <SafeLink href="/products-list">Build your cart</SafeLink>
         </Button>
       </div>
     );

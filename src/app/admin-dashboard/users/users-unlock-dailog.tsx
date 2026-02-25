@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,6 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { KeyRound, Loader, LockKeyhole } from "lucide-react";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
 
 export default function UsersUnlockDialog({
   children,
@@ -22,7 +22,7 @@ export default function UsersUnlockDialog({
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }) {
-  const router = useRouter();
+  const router = useSafeRouter();
   const [internalOpen, setInternalOpen] = useState(false);
 
   const open = openProp ?? internalOpen;

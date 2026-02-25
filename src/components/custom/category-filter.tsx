@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useTransition, useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +19,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ChevronDown, Loader2Icon } from "lucide-react";
 import clsx from "clsx";
 import { Badge } from "../ui/badge";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
 
 type CategorySelectProps = {
   categories: string[];
@@ -27,7 +28,7 @@ type CategorySelectProps = {
 export default function CategoryMultiSelect({
   categories,
 }: CategorySelectProps) {
-  const router = useRouter();
+  const router = useSafeRouter();
   const params = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const [pendingKey, setPendingKey] = useState<string | null>(null);

@@ -2,7 +2,7 @@
 import BrandCard from "@/components/custom/brand-card";
 import type { Brand } from "@/types/brand";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { SafeLink } from "@/components/custom/utility/SafeLink";
 
 type Props = {
   brandsPromise: Promise<{ data: Brand[]; totalPages?: number }>;
@@ -28,7 +28,7 @@ export default async function BrandsGrid({ brandsPromise }: Props) {
       <div className="text-muted-foreground flex w-full items-center justify-between text-xs md:text-base">
         <div>Browse products by brands</div>
         <Button variant="link" asChild className="p-0">
-          <Link href="/products-list">Show all products</Link>
+          <SafeLink href="/products-list">Show all products</SafeLink>
         </Button>
       </div>
 

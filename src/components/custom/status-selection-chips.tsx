@@ -2,14 +2,15 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import clsx from "clsx";
 import { CircleXIcon, Loader2Icon } from "lucide-react";
 import { useTransition, useState, useEffect } from "react";
 import { PRODUCT_STATUS } from "@/data/product-status";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
 
 export default function StatusChips() {
-  const router = useRouter();
+  const router = useSafeRouter();
   const params = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
