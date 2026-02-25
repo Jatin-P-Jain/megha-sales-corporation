@@ -54,8 +54,7 @@ export default function SearchProducts({
   const [notFound, setNotFound] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const { clientUser } = useAuthState();
-  const isAdmin = clientUser?.userType === "admin" || false;
+  const { isAdmin } = useAuthState();
 
   const inputRef = useRef<HTMLInputElement | null>(null);
 

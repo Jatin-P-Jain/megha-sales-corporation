@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { useAuthState } from "@/context/auth-context";
 
 export const PushHandler = () => {
-  const { clientUser } = useAuthState();
+  const { currentUser } = useAuthState();
   useEffect(() => {
     const setup = async () => {
       console.log("sw:", "serviceWorker" in navigator);
@@ -31,7 +31,7 @@ export const PushHandler = () => {
         const body =
           payload.notification?.body ?? payload.data?.body ?? "No body";
 
-        if (payload?.data?.uid === clientUser?.uid) {
+        if (payload?.data?.uid === currentUser?.uid) {
           // Show toast only if the message is intended for the current user
           toast.success(title, { description: body });
         }
@@ -39,7 +39,7 @@ export const PushHandler = () => {
     };
 
     setup();
-  }, []);
+  }, [currentUser?.uid]);
 
   return null;
 };

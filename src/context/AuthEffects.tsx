@@ -20,18 +20,14 @@ type AccountStatusUI =
   | "incomplete";
 
 export default function AuthEffects() {
-  const { currentUser } = useAuthState();
+  const { currentUser, isAdmin } = useAuthState();
 
   // Gate is always-on: use this for access/status logic + toasts
   const { gate, gateLoading, gateSyncing } = useUserGate();
 
-  // Inactivity limit should prefer gate.userType (fast, global)
-  const userType = gate?.userType;
-
-  const inactivityLimit =
-    userType === "admin"
-      ? parseInt(process.env.NEXT_PUBLIC_ADMIN_INACTIVITY_LIMIT || "0", 10)
-      : parseInt(process.env.NEXT_PUBLIC_USER_INACTIVITY_LIMIT || "0", 10);
+  const inactivityLimit = isAdmin
+    ? parseInt(process.env.NEXT_PUBLIC_ADMIN_INACTIVITY_LIMIT || "0", 10)
+    : parseInt(process.env.NEXT_PUBLIC_USER_INACTIVITY_LIMIT || "0", 10);
 
   useMonitorInactivity(currentUser, inactivityLimit);
 

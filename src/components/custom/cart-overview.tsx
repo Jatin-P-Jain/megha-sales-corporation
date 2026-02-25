@@ -6,15 +6,14 @@ import { ShoppingCartIcon } from "lucide-react";
 import currencyFormatter from "@/lib/currency-formatter";
 import { Skeleton } from "../ui/skeleton";
 import clsx from "clsx";
-import { useAuthState } from "@/context/useAuth";
 import { useCartState } from "@/context/cartContext";
 import Link from "next/link";
+import { useUserGate } from "@/context/UserGateProvider";
 
 export default function CartOverview() {
-  const { clientUser } = useAuthState();
   const { loading, cartTotals } = useCartState();
 
-  const accountStatus = clientUser?.accountStatus;
+  const { accountStatus } = useUserGate();
   const isAccountApproved = accountStatus === "approved";
 
   const { totalUnits = 0, totalItems = 0, totalAmount = 0 } = cartTotals || {};

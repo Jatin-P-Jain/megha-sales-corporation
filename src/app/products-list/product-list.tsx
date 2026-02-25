@@ -10,7 +10,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { useAuthState } from "@/context/useAuth";
+import { useUserGate } from "@/context/UserGateProvider";
 import { usePaginatedFirestore } from "@/hooks/usePaginatedFireStore";
 import { Product } from "@/types/product";
 import clsx from "clsx";
@@ -18,8 +18,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useMemo } from "react";
 
 export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
-  const { clientUser } = useAuthState();
-  const accountStatus = clientUser?.accountStatus;
+  const { accountStatus } = useUserGate();
 
   const PAGE_SIZE = process.env.NEXT_PUBLIC_PAGE_SIZE
     ? parseInt(process.env.NEXT_PUBLIC_PAGE_SIZE, 10)

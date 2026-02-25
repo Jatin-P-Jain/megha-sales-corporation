@@ -121,10 +121,10 @@ function AccountStatusBadge({
   status,
   compact,
 }: {
-  status?: string;
+  status?: string | null;
   compact?: boolean;
 }) {
-  const meta = getStatusMeta(status);
+  const meta = getStatusMeta(status ?? undefined);
   const Icon = meta.Icon;
 
   return (

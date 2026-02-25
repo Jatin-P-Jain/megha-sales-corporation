@@ -3,52 +3,43 @@
 
 import GoogleOneTap from "@/components/custom/google-one-tap";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { useAuthState } from "@/context/useAuth";
+import { useUserGate } from "@/context/UserGateProvider";
 import { Loader2Icon } from "lucide-react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-const AUTH_PAGES = new Set([
-  "/login",
-  "/signup",
-  "/forgot-password",
-  "/reset-password",
-]);
+const AUTH_PAGES = new Set(["/login"]);
 
 export default function GoogleOneTapWrapper() {
-  const { clientUser, clientUserLoading } = useAuthState(); // ✅ state only
-
   const pathname = usePathname();
   const searchParams = useSearchParams();
-
   const [signingIn, setSigningIn] = useState(false);
   const [loginSuccess, setLoginSuccess] = useState(false);
   const redirectedRef = useRef(false);
 
+  const { profileComplete, gateLoading } = useUserGate();
+
   const shouldShowOneTap = useMemo(() => {
     if (AUTH_PAGES.has(pathname)) return false;
-    if (clientUserLoading) return false;
-    if (clientUser) return false;
     return true;
-  }, [pathname, clientUserLoading, clientUser]);
+  }, [pathname]);
 
   const redirect = searchParams.get("redirect") || undefined;
 
   const nextPath = useMemo(() => {
-    if (!clientUser) return null;
-    if (!clientUser.profileComplete) return "/account/profile?from=login";
+    if (!profileComplete) return "/account/profile?from=login";
     return redirect ?? "/";
-  }, [clientUser, redirect]);
+  }, [profileComplete, redirect]);
 
   useEffect(() => {
     if (!loginSuccess) return;
-    if (clientUserLoading) return;
+    if (gateLoading) return;
     if (!nextPath) return;
     if (redirectedRef.current) return;
 
     redirectedRef.current = true;
     window.location.assign(nextPath);
-  }, [loginSuccess, clientUserLoading, nextPath]);
+  }, [loginSuccess, gateLoading, nextPath]);
 
   if (signingIn) {
     return (

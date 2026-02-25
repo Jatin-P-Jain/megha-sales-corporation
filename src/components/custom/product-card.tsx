@@ -20,6 +20,7 @@ import {
   useCartItem,
   useCartState,
 } from "@/context/cartContext";
+import { useUserGate } from "@/context/UserGateProvider";
 
 type ProductCardProps = {
   product: Product;
@@ -35,11 +36,11 @@ export default function ProductCard({
   onClose,
 }: ProductCardProps) {
   const { loading: cartLoading } = useCartState();
-  const { clientUser, currentUser } = useAuthState();
+  const { currentUser } = useAuthState();
+  const { profileComplete } = useUserGate();
   const router = useRouter();
 
   const isUser = !!currentUser;
-  const isProfileComplete = !!clientUser?.profileComplete;
 
   const [selectedSize, setSelectedSize] = useState<ProductSize | undefined>(
     undefined,
@@ -78,11 +79,6 @@ export default function ProductCard({
     const matched = product.sizes.find((s) => s.size === cartSel);
     if (matched) setSelectedSize(matched);
   }, [cartItem?.selectedSize, product.sizes, selectedSize]);
-
-  const goLogin = useCallback(() => {
-    onClose?.();
-    router.push("/login");
-  }, [onClose, router]);
 
   const goProfile = useCallback(() => {
     onClose?.();
@@ -203,15 +199,15 @@ export default function ProductCard({
                   {selectedSize?.discount ?? product.discount}%
                 </span>
               ) : !currentUser ? (
-                <div
-                  onClick={goLogin}
+                <Link
+                  href="/login"
                   className="flex cursor-pointer items-center justify-between gap-2 transition-all hover:opacity-80"
                 >
                   <span className="inline-flex items-center font-semibold text-yellow-600">
                     *****
                   </span>
                   <EyeIcon className="size-5 text-yellow-600" />
-                </div>
+                </Link>
               ) : (
                 <UserUnlockDialog>
                   <div className="flex cursor-pointer items-center justify-between gap-2 transition-all hover:opacity-80">
@@ -265,16 +261,15 @@ export default function ProductCard({
           ) : !isUser ? (
             <div className="inline-flex w-full items-center justify-center gap-1 rounded-md border border-yellow-600 bg-yellow-50 p-1 px-2 text-center text-xs whitespace-nowrap text-yellow-600">
               Please{" "}
-              <button
-                type="button"
+              <Link
+                href="/login"
                 className="cursor-pointer font-semibold underline hover:text-yellow-800"
-                onClick={goLogin}
               >
                 Login
-              </button>{" "}
+              </Link>{" "}
               to add products to your cart.
             </div>
-          ) : !isProfileComplete ? (
+          ) : !profileComplete ? (
             <Button
               onClick={goProfile}
               className="flex w-full cursor-pointer items-center justify-center gap-1 rounded-md border border-yellow-600 bg-yellow-50 text-center text-xs text-yellow-600 md:w-fit"

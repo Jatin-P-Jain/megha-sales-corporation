@@ -3,8 +3,6 @@
 import React, { useMemo, useState } from "react";
 import { Button } from "../ui/button";
 import { Loader2Icon, PlusSquareIcon } from "lucide-react";
-import { useAuthState } from "@/context/useAuth";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
 import { Skeleton } from "../ui/skeleton";
@@ -37,11 +35,9 @@ export default function CartControls({
   isCartPage = false,
   isDisabled = false,
 }: Props) {
-  const { currentUser } = useAuthState();
   const { loading } = useCartState();
   const { increment, decrement, addToCart } = useCartActions();
 
-  const router = useRouter();
   const [loadingAction, setLoadingAction] = useState<
     "add" | "inc" | "dec" | null
   >(null);
@@ -72,10 +68,6 @@ export default function CartControls({
   const isBusy = loadingAction !== null;
 
   const handleAdd = async () => {
-    if (!currentUser) {
-      router.push("/login");
-      return;
-    }
     if (hasSizes && !selectedSize) {
       toast.error("Please select a size before adding to cart");
       return;

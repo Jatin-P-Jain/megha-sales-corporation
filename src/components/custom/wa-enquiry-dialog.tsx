@@ -17,12 +17,20 @@ import { useAuthState } from "@/context/useAuth";
 import { toast } from "sonner";
 import { saveEnquiry } from "@/app/admin-dashboard/enquires/actions";
 import { generateSequenceId } from "@/lib/firebase/generateSequenceId";
+import { useRequireUserProfile } from "@/hooks/useUserProfile";
+import { useUserProfileState } from "@/context/UserProfileProvider";
 
 type EnquiryDialogProps = {
   trigger: React.ReactNode;
 };
 
 export function EnquiryDialog({ trigger }: EnquiryDialogProps) {
+  const { currentUser } = useAuthState();
+  const isLoggedIn = !!currentUser;
+
+  useRequireUserProfile(true);
+  const { clientUser } = useUserProfileState();
+
   const [isOpen, setIsOpen] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isSent, setIsSent] = useState(false);
@@ -34,9 +42,6 @@ export function EnquiryDialog({ trigger }: EnquiryDialogProps) {
 
   const nameInputRef = useRef<HTMLInputElement | null>(null);
   const messageRef = useRef<HTMLTextAreaElement | null>(null);
-
-  const { clientUser } = useAuthState();
-  const isLoggedIn = !!clientUser;
 
   useEffect(() => {
     if (isOpen && isLoggedIn) {
@@ -50,7 +55,13 @@ export function EnquiryDialog({ trigger }: EnquiryDialogProps) {
     }
     setMessage("");
     setIsSent(false);
-  }, [isOpen]);
+  }, [
+    isOpen,
+    clientUser?.displayName,
+    clientUser?.phone,
+    clientUser?.email,
+    isLoggedIn,
+  ]);
 
   useEffect(() => {
     if (!isOpen || isSent) return;
