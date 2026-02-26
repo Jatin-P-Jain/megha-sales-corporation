@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2Icon, ThumbsUpIcon } from "lucide-react";
 import { useCartActions, useCartState } from "@/context/cartContext";
@@ -30,7 +30,15 @@ function buildOrderData(params: {
   };
 }
 
-export default function CheckoutFooter() {
+type CheckoutFooterProps = {
+  setIsPlacingOrder: React.Dispatch<React.SetStateAction<boolean>>;
+  isPlacingOrder: boolean;
+};
+
+export default function CheckoutFooter({
+  setIsPlacingOrder,
+  isPlacingOrder,
+}: CheckoutFooterProps) {
   const router = useSafeRouter();
 
   useRequireUserProfile(true);
@@ -40,8 +48,6 @@ export default function CheckoutFooter() {
 
   const { cartProducts, cartTotals, loading: cartLoading } = useCartState();
   const { resetCartContext } = useCartActions();
-
-  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
   const totalAmount = cartTotals?.totalAmount ?? 0;
   const totalUnits = cartTotals?.totalUnits ?? 0;

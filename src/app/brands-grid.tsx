@@ -11,9 +11,13 @@ type Props = {
 export default async function BrandsGrid({ brandsPromise }: Props) {
   const { data: brands } = await brandsPromise;
 
-  const lcvBrands = brands.filter((b) => b.vehicleCategory === "lcv");
-  const hcvBrands = brands.filter((b) => b.vehicleCategory === "hcv");
-  const bothBrands = brands.filter((b) => b.vehicleCategory === "both");
+  const lcvBrands = brands.filter((b) => b.vehicleCategory === "lcv").sort((a, b) =>
+    a.brandName.localeCompare(b.brandName)
+  );
+  const hcvBrands = brands
+    .filter((b) => b.vehicleCategory === "hcv")
+    .sort((a, b) => a.brandName.localeCompare(b.brandName));
+  const bothBrands = brands.filter((b) => b.vehicleCategory === "both").sort((a, b) => a.brandName.localeCompare(b.brandName));
 
   if (!brands || brands.length === 0) {
     return (

@@ -10,7 +10,7 @@ export default async function Cart() {
   return (
     <div className="mx-auto flex max-w-screen-lg flex-col gap-4">
       <div
-        className={`fixed inset-x-0 top-0 z-30 mx-auto flex h-52 w-full max-w-screen-lg flex-col items-end justify-end rounded-lg bg-white px-4 py-4 shadow-md md:h-60`}
+        className={`fixed inset-x-0 top-0 z-30 mx-auto flex h-55 w-full max-w-screen-lg flex-col items-end justify-end rounded-lg bg-white px-4 py-4 shadow-md md:h-60`}
       >
         <div className="mx-auto flex w-full max-w-screen-lg flex-col pt-3 md:pt-6">
           <EllipsisBreadCrumbs

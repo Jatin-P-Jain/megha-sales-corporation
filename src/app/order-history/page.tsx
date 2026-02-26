@@ -62,7 +62,7 @@ export default async function OrderHistoryPage({
           </h1>
           {!requestedOrderId && (
             <div className="flex w-full items-center justify-between pl-2">
-              <div className="text-muted-foreground text-sm">Filters :</div>
+              <div className="text-muted-foreground text-sm">Order Status :</div>
               <OrderStatusChips />
             </div>
           )}

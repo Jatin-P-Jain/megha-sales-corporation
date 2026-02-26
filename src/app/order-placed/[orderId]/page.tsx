@@ -16,14 +16,15 @@ export default async function OrderPlacedPage({
   newSearchParams.set("orderId", orderId);
 
   return (
-    <div className="mx-auto flex min-h-[70vh] items-center justify-center px-4 py-10">
+    <div className="mx-auto flex items-center justify-center">
       <div className="flex w-full flex-col items-center gap-3 text-center">
         <div className="mb-4 grid place-items-center rounded-full bg-green-50 p-4">
           <BadgeCheckIcon className="size-14 text-green-800 md:size-16" />
         </div>
 
-        <h1 className="text-primary text-xl font-semibold md:text-2xl">
-          Order placed successfully.
+        <h1 className="text-primary text-xl font-semibold md:text-2xl flex flex-col items-center justify-center gap-2">
+          Your Order has been placed.
+          <span className="text-base">Thank you for your purchase!</span>
         </h1>
         <p className="text-muted-foreground mt-2 text-sm md:text-base">
           We&apos;ll start packing your order shortly and will notify you once
