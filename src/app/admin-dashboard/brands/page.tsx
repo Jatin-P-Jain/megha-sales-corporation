@@ -11,13 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getBrands, VEHICLE_CATEGORIES } from "@/data/brands";
-import {
-  InfoIcon,
-  LayoutListIcon,
-  PencilIcon,
-  PlusCircleIcon,
-  WrenchIcon,
-} from "lucide-react";
+import { InfoIcon, PencilIcon, PlusCircleIcon, WrenchIcon } from "lucide-react";
 
 const AdminBrands = async ({
   searchParams,
@@ -33,16 +27,11 @@ const AdminBrands = async ({
     <div>
       <div className="flex w-full items-center justify-between">
         <div className="flex flex-col">
-          <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+          <h1 className="text-2xl font-bold">Brands Management</h1>
           <h1 className="itatic text-muted-foreground text-sm font-medium">
             All your brands at one place!
           </h1>
         </div>
-        <Button variant={"link"} asChild className="p-0">
-          <SafeLink href={"/products-list"} className="">
-            <LayoutListIcon className="size-4" /> All Products
-          </SafeLink>
-        </Button>
       </div>
       <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         <Card className="flex cursor-pointer items-center justify-center gap-4 border-2 border-dashed bg-gray-100/50 p-1 px-3 shadow-md">

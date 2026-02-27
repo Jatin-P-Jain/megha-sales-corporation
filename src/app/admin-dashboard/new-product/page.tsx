@@ -44,9 +44,9 @@ const NewProduct = async ({ searchParams }: SearchParamProps) => {
     <div className="">
       <EllipsisBreadCrumbs items={breadCrumbItems} />
 
-      <Card className="mt-6">
+      <Card className="mt-4">
         <CardHeader>
-          <CardTitle className="flex flex-col text-3xl font-bold">
+          <CardTitle className="flex flex-col text-xl md:text-2xl font-bold">
             New Product
             <span className="text-muted-foreground text-xs font-normal">
               * marked fields are mandotory

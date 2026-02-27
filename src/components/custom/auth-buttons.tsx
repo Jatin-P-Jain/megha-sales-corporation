@@ -279,15 +279,6 @@ export default function AuthButtons() {
               <>
                 <DropdownMenuItem asChild>
                   <SafeLink
-                    href="/order-history"
-                    className="flex items-center justify-between"
-                  >
-                    Order Book
-                    <NotebookTextIcon className="text-secondary-foreground" />
-                  </SafeLink>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <SafeLink
                     href="/admin-dashboard"
                     className="flex items-center justify-between"
                   >
@@ -295,13 +286,27 @@ export default function AuthButtons() {
                     <ShieldUserIcon className="text-secondary-foreground" />
                   </SafeLink>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <SafeLink
+                    href="/order-history"
+                    className="flex items-center justify-between"
+                  >
+                    Order Book
+                    <NotebookTextIcon className="text-secondary-foreground" />
+                  </SafeLink>
+                </DropdownMenuItem>
+
                 <DropdownMenuItem asChild disabled>
                   <SafeLink
                     href="/change-pricing"
                     className="flex items-center justify-between"
                   >
-                    Change Pricing Structure <br />
-                    (Coming Soon)
+                    <div className="flex flex-col">
+                      Change Pricing Structure
+                      <span className="w-1/2 text-xs whitespace-nowrap">
+                        (Coming Soon)
+                      </span>
+                    </div>
                     <TagsIcon className="text-secondary-foreground" />
                   </SafeLink>
                 </DropdownMenuItem>

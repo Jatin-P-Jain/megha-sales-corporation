@@ -12,9 +12,9 @@ const NewProduct = () => {
           { label: "New Brand" },
         ]}
       />
-      <Card className="mt-6">
+      <Card className="mt-4">
         <CardHeader>
-          <CardTitle className="text-3xl font-bold flex flex-col">
+          <CardTitle className="text-xl md:text-2xl font-bold flex flex-col">
             New Brand
             <span className="text-xs text-muted-foreground font-normal">
               * marked fields are mandotory

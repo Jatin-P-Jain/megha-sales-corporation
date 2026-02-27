@@ -24,7 +24,7 @@ import { SafeLink } from "@/components/custom/utility/SafeLink";
 
 export default function AboutAndContact() {
   return (
-    <div className="container mx-auto mb-8 flex max-w-4xl flex-col gap-4 overflow-auto p-4">
+    <div className="container mx-auto flex max-w-4xl flex-col gap-4 overflow-auto">
       <div className="flex w-full items-center justify-between space-y-1">
         <div className="relative">
           <Image alt="" src={JainLogo} width={30} height={30} />
