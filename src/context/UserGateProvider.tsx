@@ -18,10 +18,13 @@ export type AccountStatus =
   | "suspended"
   | "deactivated";
 
+export type UserRole = "admin" | "customer";
+
 export type UserGate = {
   profileComplete: boolean;
   accountStatus: AccountStatus;
   rejectionReason?: string;
+  userRole: UserRole;
 };
 
 type UserGateState = {
@@ -31,6 +34,7 @@ type UserGateState = {
   profileComplete: boolean | null;
   accountStatus: AccountStatus | null;
   rejectionReason: string | null;
+  userRole: UserRole | null;
 };
 
 const Ctx = createContext<UserGateState | null>(null);
@@ -103,6 +107,7 @@ export function UserGateProvider({ children }: { children: React.ReactNode }) {
             profileComplete: !!d.profileComplete,
             accountStatus: (d.accountStatus ?? "pending") as AccountStatus,
             rejectionReason: d.rejectionReason ?? "",
+            userRole: (d.userRole as UserRole) || "customer",
           });
 
           setGateLoading(false);
@@ -132,6 +137,7 @@ export function UserGateProvider({ children }: { children: React.ReactNode }) {
       profileComplete: gate ? gate.profileComplete : gateLoading ? null : false,
       accountStatus: gate ? gate.accountStatus : gateLoading ? null : "pending",
       rejectionReason: gate ? (gate.rejectionReason ?? "") : null,
+      userRole: gate ? gate.userRole : null,
     };
   }, [gateLoading, gateSyncing, gate]);
 

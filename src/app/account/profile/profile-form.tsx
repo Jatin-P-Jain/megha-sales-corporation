@@ -68,7 +68,7 @@ import {
   useUserProfileActions,
   useUserProfileState,
 } from "@/context/UserProfileProvider";
-import { updateGateProfileComplete } from "@/lib/firebase/updateGateProfileComplete";
+import { updateUserGate } from "@/lib/firebase/updateUserGate";
 import { useSafeRouter } from "@/hooks/useSafeRouter";
 
 type FormValues = z.infer<typeof userProfileSchema>;
@@ -302,7 +302,7 @@ export default function ProfileForm() {
             businessType: "",
             businessProfile: null,
           });
-          await updateGateProfileComplete(true);
+          await updateUserGate(true, "admin", "approved");
         } else {
           const finalBusinessType =
             rest.businessType === "other" && otherBusinessType
@@ -332,7 +332,7 @@ export default function ProfileForm() {
             businessType: finalBusinessType,
             businessProfile,
           });
-          await updateGateProfileComplete(true);
+          await updateUserGate(true, "customer", "pending");
         }
 
         const freshClientUser = await refreshUser();
@@ -365,15 +365,7 @@ export default function ProfileForm() {
         );
       }
     },
-    [
-      gstDetails,
-      idType,
-      isAdmin,
-      refreshUser,
-      router,
-      searchParams,
-      updateGateProfileComplete,
-    ],
+    [gstDetails, idType, isAdmin, refreshUser, router, searchParams],
   );
 
   const canSubmit = useMemo(() => {
@@ -429,8 +421,6 @@ export default function ProfileForm() {
         gstNumber: "",
         panNumber: "",
         firmName: "",
-
-        userType: "admin",
         otp: "",
         otherBusinessType: "",
       } as FormValues;

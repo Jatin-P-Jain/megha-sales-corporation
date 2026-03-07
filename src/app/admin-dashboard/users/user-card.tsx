@@ -23,7 +23,7 @@ import {
   ShieldOff,
   Trash2,
 } from "lucide-react";
-import { UserData } from "@/types/user";
+import { FullUser } from "@/types/user";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -60,14 +60,14 @@ import Image from "next/image";
 import DefaultUserIcon from "@/assets/icons/user.png";
 
 interface UserCardProps {
-  user: UserData;
+  user: FullUser;
   onStatusUpdate?: () => void;
 }
 
 export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
   // Widen status to allow extra states like "revoked" / "deleted" without TS narrowing issues.
   const accountStatus = (user.accountStatus ?? "pending") as string;
-  const isAdmin = user.userType === "admin";
+  const isAdmin = user.userRole === "admin";
 
   const [isApproving, setIsApproving] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
@@ -467,7 +467,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                 <span>User Type:</span>
               </div>
               <span className="text-sm font-semibold capitalize">
-                {user.userType || "N/A"}
+                {user.userRole || "N/A"}
               </span>
             </div>
 

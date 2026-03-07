@@ -22,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useSafeRouter } from "@/hooks/useSafeRouter";
+import { AccountStatus } from "@/context/UserGateProvider";
 
 const STATUS_CONFIG = {
   pending: { icon: Clock, label: "Pending" },
@@ -31,7 +32,6 @@ const STATUS_CONFIG = {
   deactivated: { icon: UserX, label: "Deactivated" },
 } as const;
 
-export type AccountStatus = keyof typeof STATUS_CONFIG;
 const ALL_STATUSES = Object.keys(STATUS_CONFIG) as AccountStatus[];
 
 const UserSearchAndFilters: React.FC = () => {

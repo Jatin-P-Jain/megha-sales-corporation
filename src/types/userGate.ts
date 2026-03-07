@@ -1,6 +1,8 @@
+import { UserRole } from "@/context/UserGateProvider";
+
 export type UserGateDoc = {
   profileComplete: boolean;
-  userType: string; // "admin" | "customer" etc
+  userRole: UserRole;
   accountStatus?:
     | "pending"
     | "approved"

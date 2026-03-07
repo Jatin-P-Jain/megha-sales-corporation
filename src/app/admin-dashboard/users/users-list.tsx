@@ -8,7 +8,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { usePaginatedFirestore } from "@/hooks/usePaginatedFireStore";
-import { UserData } from "@/types/user";
+import { FullUser } from "@/types/user";
 import clsx from "clsx";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -69,8 +69,8 @@ export default function UsersList() {
   ];
 
   const { data, loading, hasMore, currentPage, loadPage, totalItems } =
-    usePaginatedFirestore<UserData>({
-      collectionPath: "users",
+    usePaginatedFirestore<FullUser>({
+      collectionPath: "usersDirectory",
       pageSize: PAGE_SIZE,
       orderByField: "createdAt",
       orderDirection: "desc",
@@ -159,7 +159,7 @@ export default function UsersList() {
   }
 
   return (
-    <div className="relative mx-auto flex max-w-screen-lg flex-col">
+    <div className="relative mx-auto flex max-w-6xl flex-col">
       {/* Active Search Display */}
       {searchField && searchQuery && (
         <div className="flex w-full items-center justify-center gap-2 px-4">
@@ -188,8 +188,8 @@ export default function UsersList() {
       </p>
       {data.length > 0 && (
         <div className="flex h-full w-full flex-1 flex-col justify-between gap-4 py-2">
-          <div className="flex w-full flex-1 flex-grow flex-col gap-5">
-            {data.map((user: UserData, index: number) => (
+          <div className="flex w-full flex-1 grow flex-col gap-5">
+            {data.map((user: FullUser, index: number) => (
               <UserCard
                 key={index}
                 user={user}

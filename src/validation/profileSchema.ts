@@ -2,10 +2,6 @@ import { z } from "zod";
 
 export const userProfileDataSchema = z
   .object({
-    userType: z
-      .enum(["admin", "customer", "accountant", "dispatcher", "other"])
-      .or(z.string())
-      .optional(),
     email: z.string().email(),
     displayName: z.string().min(2, "Name must be at least 2 characters"),
     businessIdType: z.enum(["pan", "gst"]).optional(),

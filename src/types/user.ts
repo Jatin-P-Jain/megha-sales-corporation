@@ -1,3 +1,4 @@
+import { UserGate } from "@/context/UserGateProvider";
 import { BusinessProfile } from "@/data/businessProfile";
 
 export interface FirebaseAuthData {
@@ -10,10 +11,10 @@ export type BusinessType = "retailer" | "wholesaler" | "distributor" | "other";
 export type UserData = {
   uid: string;
   userId: string;
-  businessType?: BusinessType | string;
   email: string | null;
   phone: string | null;
   displayName: string;
+  businessType?: BusinessType | string;
   businessIdType?: "pan" | "gst";
   gstNumber?: string;
   panNumber?: string;
@@ -22,3 +23,5 @@ export type UserData = {
   businessProfile?: BusinessProfile;
   firebaseAuth?: FirebaseAuthData;
 };
+
+export type FullUser = UserData & UserGate;

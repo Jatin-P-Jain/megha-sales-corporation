@@ -18,7 +18,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { firestore } from "@/firebase/client";
 import { Product } from "@/types/product";
-import { UserData } from "@/types/user";
+import { FullUser, UserData } from "@/types/user";
 import { Order } from "@/types/order";
 
 type UsePaginatedFirestoreOptions = {
@@ -42,7 +42,9 @@ type UsePaginatedFirestoreOptions = {
   countRefreshMs?: number;
 };
 
-export const usePaginatedFirestore = <T extends Product | UserData | Order>({
+export const usePaginatedFirestore = <
+  T extends Product | UserData | Order | FullUser
+>({
   collectionPath,
   pageSize = 10,
   filters = [],
