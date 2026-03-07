@@ -68,9 +68,9 @@ export default function Orders({
   };
 
   return (
-    <div className="flex w-full flex-1 flex-grow flex-col gap-3">
+    <div className="flex w-full flex-1 grow flex-col gap-3">
       {orderData.map((order) => {
-        const { id, products, status, totals, createdAt, updatedAt, user } =
+        const { id, products, status, totals, updatedAt, user } =
           order;
         const {
           displayName: userName,
@@ -105,11 +105,11 @@ export default function Orders({
               />
               <div className="flex w-full items-end justify-between gap-2">
                 <div className="flex w-full flex-col items-center justify-start gap-1">
-                  <div className="text-muted-foreground flex w-full items-center justify-start text-[10px] md:text-xs">
-                    Created: {formatDateTime(createdAt)}
-                  </div>
-                  <div className="text-muted-foreground flex w-full items-center justify-start text-[10px] md:text-xs">
-                    Updated: {formatDateTime(updatedAt)}
+                  <div className="text-muted-foreground flex w-full items-center justify-start text-[10px] md:text-xs gap-2">
+                    Last Updated :
+                    <span className="font-semibold">
+                      {formatDateTime(updatedAt)}
+                    </span>
                   </div>
                 </div>
                 {isAdmin && (

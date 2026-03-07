@@ -43,15 +43,16 @@ function OrdersSkeleton() {
 export default function OrdersList({
   isAdmin,
   userId,
+  requestedOrderId,
 }: {
   isAdmin: boolean;
   userId?: string;
+  requestedOrderId?: string;
 }) {
   const router = useSafeRouter();
   const searchParams = useSearchParams();
   const previousFiltersRef = useRef<string>("");
 
-  const requestedOrderId = searchParams.get("orderId") ?? undefined;
   const showSingle = !!requestedOrderId;
 
   // Keep URL as the source of truth (same as ProductList)
@@ -130,6 +131,7 @@ export default function OrdersList({
     filters,
     orderByField: "updatedAt",
     orderDirection: "desc",
+    realtime: true,
   });
 
   // Keep hook in sync with URL page
@@ -161,6 +163,13 @@ export default function OrdersList({
     router.replace(`/order-history?${sp.toString()}`);
   };
 
+  useEffect(() => {
+    if (!requestedOrderId && previousFiltersRef.current.includes("orderId")) {
+      previousFiltersRef.current = "";
+      loadPage(1); // Force reload ALL orders
+    }
+  }, [requestedOrderId, loadPage]);
+
   const start = (currentPage - 1) * PAGE_SIZE + 1;
   const end = Math.min(currentPage * PAGE_SIZE, totalItems);
   const totalPages = Math.max(Math.ceil(totalItems / PAGE_SIZE), 1);
@@ -182,27 +191,37 @@ export default function OrdersList({
   }
 
   return (
-    <div className={clsx("relative mx-auto flex max-w-screen-lg flex-col",requestedOrderId && "-mt-10")}>
+    <div
+      className={clsx(
+        "relative mx-auto flex flex-col",
+        requestedOrderId && "-mt-10",
+      )}
+    >
       {!requestedOrderId && (
-        <p className="text-muted-foreground sticky top-0 z-10 w-full px-4 py-1 text-center text-xs md:text-sm">
+        <p className="text-muted-foreground w-full text-center text-xs md:text-sm">
           Page {currentPage} • Showing {start}–{end} of {totalItems} results
         </p>
       )}
 
       {data.length > 0 && (
-        <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col justify-between gap-4 py-2">
-          <div className="flex w-full flex-1 flex-grow flex-col gap-5">
+        <div
+          className={clsx(
+            "flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col gap-4 py-2",
+            requestedOrderId && "min-h-0!",
+          )}
+        >
+          <div className="flex w-full flex-1 grow flex-col gap-5 p-1">
             <Orders orderData={data} isAdmin={isAdmin} />
           </div>
 
           {showSingle ? (
             <Button
-              className="mx-auto w-3/4"
+              className="mx-auto w-fit"
               onClick={() => router.push("/order-history")}
             >
               View all orders
             </Button>
-          ) : (
+          ) : totalPages > 1 ? (
             <Pagination className="z-50">
               <PaginationContent className="w-full items-center justify-center">
                 {currentPage > 1 && (
@@ -274,7 +293,7 @@ export default function OrdersList({
                 )}
               </PaginationContent>
             </Pagination>
-          )}
+          ) : null}
         </div>
       )}
     </div>

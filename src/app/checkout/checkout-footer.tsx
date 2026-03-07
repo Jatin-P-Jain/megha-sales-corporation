@@ -2,7 +2,7 @@
 
 import React, { useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2Icon, ThumbsUpIcon } from "lucide-react";
+import { ChevronLeft, Loader2Icon, PackageCheck } from "lucide-react";
 import { useCartActions, useCartState } from "@/context/cartContext";
 import currencyFormatter from "@/lib/currency-formatter";
 import { createOrder } from "./actions";
@@ -13,6 +13,7 @@ import { getBaseUrl } from "@/lib/utils";
 import { useRequireUserProfile } from "@/hooks/useUserProfile";
 import { useUserProfileState } from "@/context/UserProfileProvider";
 import { useSafeRouter } from "@/hooks/useSafeRouter";
+import Link from "next/link";
 
 function buildOrderData(params: {
   cartProducts: OrderData["products"];
@@ -120,12 +121,12 @@ export default function CheckoutFooter({
         }),
       });
 
-      await resetCartContext();
       router.push(`/order-placed/${orderId}`);
+      await resetCartContext();
+      setIsPlacingOrder(false);
     } catch (err) {
       console.error(err);
       toast.error("Error!", { description: "Could not place order" });
-    } finally {
       setIsPlacingOrder(false);
     }
   }, [
@@ -139,36 +140,84 @@ export default function CheckoutFooter({
   ]);
 
   return (
-    <div className="flex w-full items-center justify-between py-3 pb-8">
-      <p className="text-muted-foreground flex flex-col text-xs md:text-sm">
-        Total Amount :
-        {cartLoading ? (
-          <Loader2Icon className="size-4 animate-spin" />
-        ) : (
-          <span className="text-primary text-base font-semibold">
-            {currencyFormatter(totalAmount)}/-
-          </span>
-        )}
-      </p>
-
-      <Button
-        className="flex items-center justify-center gap-2"
-        disabled={isDisabled}
-        onClick={orderPlaceHandler}
-        type="button"
-      >
-        {isPlacingOrder ? (
-          <>
-            Placing your order...
+    <>
+      <div className="flex w-full flex-col items-center justify-between gap-3 py-3 pb-8 md:hidden">
+        <p className="text-muted-foreground flex w-full items-center justify-between gap-1 text-xs">
+          Total Amount :
+          {cartLoading ? (
             <Loader2Icon className="size-4 animate-spin" />
-          </>
-        ) : (
-          <>
-            Confirm &amp; Place Order
-            <ThumbsUpIcon className="size-4" />
-          </>
-        )}
-      </Button>
-    </div>
+          ) : (
+            <span className="text-primary text-xl font-semibold">
+              {currencyFormatter(totalAmount)}/-
+            </span>
+          )}
+        </p>
+        <div className="flex w-full items-center justify-between gap-4">
+          <Link
+            className="border-muted-foreground hover:bg-muted flex py-2 flex-1 items-center justify-center rounded-md border text-xs transition-colors"
+            href="/cart"
+          >
+            <ChevronLeft className="size-5" />
+            Go Back to Cart
+          </Link>
+
+          <Button
+            className="flex flex-1 items-center justify-center gap-2"
+            disabled={isDisabled}
+            onClick={orderPlaceHandler}
+            type="button"
+          >
+            {isPlacingOrder ? (
+              <>
+                Placing your order...
+                <Loader2Icon className="size-4 animate-spin" />
+              </>
+            ) : (
+              <>
+                Place Order
+                <PackageCheck className="size-5" />
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+      <div className="hidden w-full items-center justify-between py-3 pb-8 md:flex">
+        <Link
+          className="border-muted-foreground hover:bg-muted flex h-full items-center justify-center rounded-md border px-3 py-1 text-xs transition-colors"
+          href="/cart"
+        >
+          <ChevronLeft className="size-5" />
+          Go Back to Cart
+        </Link>
+        <p className="text-muted-foreground flex items-center justify-center gap-1 text-xs">
+          Total Amount :
+          {cartLoading ? (
+            <Loader2Icon className="size-4 animate-spin" />
+          ) : (
+            <span className="text-primary text-xl font-semibold">
+              {currencyFormatter(totalAmount)}/-
+            </span>
+          )}
+        </p>
+        <Button
+          className="flex items-center justify-center gap-4"
+          disabled={isDisabled}
+          onClick={orderPlaceHandler}
+          type="button"
+        >
+          {isPlacingOrder ? (
+            <>
+              Placing your order...
+              <Loader2Icon className="size-4 animate-spin" />
+            </>
+          ) : (
+            <>
+              Place Order
+              <PackageCheck className="size-5" />
+            </>
+          )}
+        </Button>
+      </div>
+    </>
   );
 }

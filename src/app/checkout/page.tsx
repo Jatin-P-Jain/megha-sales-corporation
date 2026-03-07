@@ -5,7 +5,7 @@ export default async function CheckoutPage() {
   const decoded = await requireProfileCompleteOrRedirect("/checkout");
   const isAdmin = Boolean(decoded.admin);
   return (
-    <div className="mx-auto flex max-w-screen-lg flex-col gap-4 relative">
+    <div className="mx-auto flex max-w-6xl flex-col gap-4 relative">
       <CheckoutShell isAdmin={isAdmin} />
     </div>
   );

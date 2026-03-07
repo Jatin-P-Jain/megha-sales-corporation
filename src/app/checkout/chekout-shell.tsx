@@ -32,9 +32,9 @@ export default function CheckoutShell({ isAdmin = false }: CheckoutShellProps) {
       )}
       <>
         <div
-          className={`fixed inset-x-0 top-0 z-30 mx-auto flex h-45 w-full max-w-screen-lg flex-col items-end justify-end rounded-lg bg-white px-4 py-4 shadow-md md:h-50`}
+          className={`fixed inset-x-0 top-0 z-30 mx-auto flex h-45 w-full max-w-6xl flex-col items-end justify-end rounded-lg bg-white px-4 py-4 shadow-md md:h-50`}
         >
-          <div className="mx-auto flex w-full max-w-screen-lg flex-col pt-3 md:pt-6">
+          <div className="mx-auto flex w-full max-w-6xl flex-col gap-1">
             <EllipsisBreadCrumbs
               items={[
                 {
@@ -46,7 +46,7 @@ export default function CheckoutShell({ isAdmin = false }: CheckoutShellProps) {
                 { label: "Checkout" },
               ]}
             />
-            <h1 className="py-2 text-xl font-[600] tracking-wide text-cyan-950 md:text-2xl">
+            <h1 className="text-xl font-semibold tracking-wide text-cyan-950 md:text-2xl">
               Checkout
             </h1>
             <p className="text-muted-foreground text-xs md:text-sm">
@@ -60,7 +60,7 @@ export default function CheckoutShell({ isAdmin = false }: CheckoutShellProps) {
         </div>
 
         <div
-          className={`flex h-[100vh] flex-1 overflow-auto scroll-auto pt-30 md:pt-28`}
+          className={`flex flex-1 overflow-auto scroll-auto pt-30 md:pt-28`}
         >
           <div className="no-scrollbar mb-20 flex h-full max-h-[450px] w-full overflow-auto">
             <CheckoutItems />
@@ -68,7 +68,7 @@ export default function CheckoutShell({ isAdmin = false }: CheckoutShellProps) {
         </div>
 
         <div
-          className={`fixed inset-x-0 bottom-0 z-30 mx-auto flex h-fit w-full max-w-screen-lg flex-col items-end justify-end rounded-t-lg bg-white px-4 py-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]`}
+          className={`fixed inset-x-0 bottom-0 z-30 mx-auto flex h-fit w-full max-w-6xl flex-col items-end justify-end rounded-t-lg bg-white px-4 py-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]`}
         >
           <CheckoutFooter
             setIsPlacingOrder={setIsPlacingOrder}
