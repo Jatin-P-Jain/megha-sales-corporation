@@ -1,13 +1,25 @@
-import { UserData } from "./user";
+import { FullUser } from "./user";
 
 export type Enquiry = {
   id: string;
   enquiryText: string;
-  sentBy: UserData | { name: string; phone: string; email: string };
+  userId: string;
+  sentBy:
+    | FullUser
+    | { displayName: string; phone: string; email: string; photoUrl?: string };
   status: "pending" | "in-progress" | "resolved";
-  repliedText?: string;
-  repliedBy?: UserData;
-  repliedAt?: Date;
-  created: Date;
-  updated: Date;
+  replies?: {
+    text: string;
+    repliedBy:
+      | FullUser
+      | {
+          displayName: string;
+          phone: string;
+          email: string;
+          photoUrl?: string;
+        };
+    repliedAt: string;
+  }[];
+  createdAt: string;
+  updatedAt: string;
 };

@@ -47,8 +47,6 @@ import OTPInput from "@/components/custom/otp-input";
 import GoogleIcon from "@/components/custom/google-icon.svg";
 import { GstDetails } from "@/components/custom/gst-details";
 import ProfileCompleteAsk from "./profile-complete-ask";
-
-import { GstDetailsData } from "@/data/businessProfile";
 import { formatBusinessProfile } from "@/lib/business-profile-formatter";
 
 import { useRecaptcha } from "@/hooks/useRecaptcha";
@@ -70,6 +68,7 @@ import {
 } from "@/context/UserProfileProvider";
 import { updateUserGate } from "@/lib/firebase/updateUserGate";
 import { useSafeRouter } from "@/hooks/useSafeRouter";
+import { GstDetailsData } from "@/types/user";
 
 type FormValues = z.infer<typeof userProfileSchema>;
 
@@ -108,7 +107,6 @@ export default function ProfileForm() {
       await setToken(idToken, refreshToken);
     },
     onLinked: async ({ user }) => {
-      console.log({ user });
       const photoUrl = user?.providerData.find(
         (p) => p.providerId === "google.com",
       )?.photoURL;

@@ -2,7 +2,6 @@ import type { UserData } from "@/types/user";
 
 export const formatBusinessProfile = (user?: UserData | null): string => {
   if (!user) return "❌ No business details available.";
-  console.log({ user });
 
   const businessProfile = user.businessProfile as
     | {

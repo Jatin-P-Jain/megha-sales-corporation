@@ -114,8 +114,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.log({ raw });
-
     const {
       templateKey,
       customerUserId,

@@ -11,6 +11,7 @@ import {
   StoreIcon,
   FootprintsIcon,
   MapPinIcon,
+  Copy,
 } from "lucide-react";
 import Image from "next/image";
 import WhatsappIcon from "@/assets/icons/whatsapp.png";
@@ -55,22 +56,10 @@ export default function AboutAndContact() {
                   <Phone className="size-5" />
                   <span className="">+91-9425505557</span>
                 </p>
-                <EnquiryDialog
-                  trigger={
-                    <Button
-                      variant="outline"
-                      className="h-0 min-h-0 w-fit gap-2 rounded-full border-green-600 p-3 px-5 text-green-600"
-                    >
-                      <div className="relative">
-                        <Image
-                          src={WhatsappIcon}
-                          alt=""
-                          width={15}
-                          height={15}
-                        />
-                      </div>
-                      Contact
-                    </Button>
+                <Copy
+                  className="size-5 cursor-pointer"
+                  onClick={() =>
+                    navigator.clipboard.writeText("+91-9425505557")
                   }
                 />
               </div>
@@ -90,22 +79,10 @@ export default function AboutAndContact() {
                   <Phone className="size-5" />
                   <span className="">+91-9589143377</span>
                 </p>
-                <EnquiryDialog
-                  trigger={
-                    <Button
-                      variant="outline"
-                      className="h-0 min-h-0 w-fit gap-2 rounded-full border-green-600 p-3 px-5 text-green-600"
-                    >
-                      <div className="relative">
-                        <Image
-                          src={WhatsappIcon}
-                          alt=""
-                          width={15}
-                          height={15}
-                        />
-                      </div>
-                      Contact
-                    </Button>
+                <Copy
+                  className="size-5 cursor-pointer"
+                  onClick={() =>
+                    navigator.clipboard.writeText("+91-9589143377")
                   }
                 />
               </div>

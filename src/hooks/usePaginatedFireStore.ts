@@ -20,6 +20,7 @@ import { firestore } from "@/firebase/client";
 import { Product } from "@/types/product";
 import { FullUser, UserData } from "@/types/user";
 import { Order } from "@/types/order";
+import { Enquiry } from "@/types/enquiry";
 
 type UsePaginatedFirestoreOptions = {
   collectionPath: string;
@@ -43,7 +44,7 @@ type UsePaginatedFirestoreOptions = {
 };
 
 export const usePaginatedFirestore = <
-  T extends Product | UserData | Order | FullUser
+  T extends Product | UserData | Order | FullUser | Enquiry
 >({
   collectionPath,
   pageSize = 10,
@@ -70,16 +71,21 @@ export const usePaginatedFirestore = <
   const unsubRef = useRef<Unsubscribe | null>(null);
 
   const effectiveQueryKey = useMemo(() => {
-    return (
-      queryKey ??
-      JSON.stringify({
+    if (queryKey) return queryKey;
+
+    // For realtime with filters, use a stable string key
+    try {
+      return JSON.stringify({
         collectionPath,
-        filters,
+        filters: filters.length > 0 ? filters : undefined,
         orderByField,
         orderDirection,
         pageSize,
-      })
-    );
+      });
+    } catch {
+      // Fallback for circular reference errors
+      return `${collectionPath}-${orderByField}-${filters.length}`;
+    }
   }, [
     queryKey,
     collectionPath,
@@ -203,10 +209,17 @@ export const usePaginatedFirestore = <
         q = query(q, limit(pageSize));
 
         if (realtime) {
-          // realtime listener for this page
+          // Safety timeout: if listener doesn't fire within 10s, clear loading
+          const timeoutId = setTimeout(() => {
+            console.warn(
+              `[usePaginatedFirestore] Realtime listener timeout for ${collectionPath}`
+            );
+            setLoading(false);
+          }, 10000);
           unsubRef.current = onSnapshot(
             q as Query<DocumentData>,
             (snapshot) => {
+              clearTimeout(timeoutId);
               const docs = mapDocs(snapshot.docs);
               cursors.current[targetPage] = snapshot.docs.at(-1) ?? null;
 
@@ -216,7 +229,11 @@ export const usePaginatedFirestore = <
               setLoading(false);
             },
             (err) => {
-              console.error("Realtime pagination error:", err);
+              clearTimeout(timeoutId);
+              console.error(
+                `[usePaginatedFirestore] Realtime pagination error for ${collectionPath}:`,
+                err
+              );
               setLoading(false);
             }
           );
@@ -235,11 +252,12 @@ export const usePaginatedFirestore = <
       } catch (err) {
         console.error("Pagination fetch error:", err);
       } finally {
-        if (!realtime) setLoading(false);
+        if (!realtime || !unsubRef.current) setLoading(false);
       }
     },
     [
       buildQueryBase,
+      collectionPath,
       currentPage,
       ensureCursorForPrevPage,
       hasMore,

@@ -15,7 +15,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Loader2Icon, SendIcon, CheckCircle2 } from "lucide-react";
 import { useAuthState } from "@/context/useAuth";
 import { toast } from "sonner";
-import { saveEnquiry } from "@/app/admin-dashboard/enquires/actions";
+import { saveEnquiry } from "@/app/admin-dashboard/enquiries/actions";
 import { generateSequenceId } from "@/lib/firebase/generateSequenceId";
 import { useRequireUserProfile } from "@/hooks/useUserProfile";
 import { useUserProfileState } from "@/context/UserProfileProvider";

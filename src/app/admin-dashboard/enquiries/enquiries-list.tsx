@@ -8,20 +8,20 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { usePaginatedFirestore } from "@/hooks/usePaginatedFireStore";
-import { FullUser } from "@/types/user";
 import clsx from "clsx";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import UserCard from "./user-card";
+import { useEffect, useRef, useMemo } from "react";
 import UserCardSkeleton from "@/components/custom/user-card-skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { useSafeRouter } from "@/hooks/useSafeRouter";
+import EnquiryCard from "./enquiry-card";
+import { Enquiry } from "@/types/enquiry";
 
 type SearchField = "email" | "phone" | "userId" | "displayName";
 
-export default function UsersList() {
+export default function EnquiriesList() {
   const PAGE_SIZE = process.env.NEXT_PUBLIC_PAGE_SIZE
     ? parseInt(process.env.NEXT_PUBLIC_PAGE_SIZE)
     : 10;
@@ -40,51 +40,29 @@ export default function UsersList() {
   };
   const filterKey = JSON.stringify(filtersOnly);
 
-  // Convert comma-separated strings to arrays
-  const accountStatuses = accountStatusValue
-    ? accountStatusValue.split(",")
-    : [];
-
-  // Construct filters
-  const filters = [
-    ...(accountStatuses.length > 0
-      ? [
-          {
-            field: "accountStatus",
-            op: "in" as const,
-            value: accountStatuses,
-          },
-        ]
-      : []),
-    // Add search filter
-    ...(searchField && searchQuery
-      ? [
-          {
-            field: searchField,
-            op: "==" as const,
-            value: searchQuery,
-          },
-        ]
-      : []),
-  ];
+  // Build filters from search params - memoized to prevent infinite loops
+  const filters = useMemo(
+    () => [
+      ...(searchField && searchQuery
+        ? [{ field: searchField, op: "==" as const, value: searchQuery }]
+        : []),
+      ...(accountStatusValue
+        ? [{ field: "status", op: "==" as const, value: accountStatusValue }]
+        : []),
+    ],
+    [searchField, searchQuery, accountStatusValue],
+  );
 
   const { data, loading, hasMore, currentPage, loadPage, totalItems } =
-    usePaginatedFirestore<FullUser>({
-      collectionPath: "usersDirectory",
+    usePaginatedFirestore<Enquiry>({
+      collectionPath: "enquiries",
       pageSize: PAGE_SIZE,
-      orderByField: "createdAt",
+      filters,
+      orderByField: "updatedAt",
       orderDirection: "desc",
-      filters: filters,
       realtime: true,
+      queryKey: `enquiries-${filterKey}`, // Stable key for filter changes
     });
-
-  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
-
-  useEffect(() => {
-    if (!loading) {
-      setHasLoadedOnce(true);
-    }
-  }, [loading]);
 
   // Reset to page 1 if filters change
   useEffect(() => {
@@ -93,7 +71,7 @@ export default function UsersList() {
 
       const sp = new URLSearchParams(searchParams.toString());
       sp.set("page", "1");
-      router.replace(`/admin-dashboard/users?${sp.toString()}`);
+      router.replace(`/admin-dashboard/enquiries?${sp.toString()}`);
     }
   }, [filterKey, router, searchParams]);
 
@@ -126,7 +104,7 @@ export default function UsersList() {
   const end = Math.min(currentPage * PAGE_SIZE, totalItems);
   const totalPages = Math.max(Math.ceil(totalItems / PAGE_SIZE), 1);
 
-  if (loading || !hasLoadedOnce) {
+  if (loading) {
     return (
       <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col gap-4 px-4 py-6">
         {[...Array(4)].map((_, i) => (
@@ -136,7 +114,7 @@ export default function UsersList() {
     );
   }
 
-  if (!loading && hasLoadedOnce && data.length === 0) {
+  if (!loading && data.length === 0) {
     return (
       <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col items-center justify-center gap-4">
         {searchField && searchQuery && (
@@ -149,7 +127,7 @@ export default function UsersList() {
             <X className="h-3 w-3 cursor-pointer" onClick={handleClearSearch} />
           </Badge>
         )}
-        <p className="text-muted-foreground">No users found.</p>
+        <p className="text-muted-foreground">No Enquiries yet.</p>
         {searchField && searchQuery && (
           <Button variant="outline" onClick={handleClearSearch}>
             Clear Search
@@ -190,11 +168,17 @@ export default function UsersList() {
       {data.length > 0 && (
         <div className="flex h-full w-full flex-1 flex-col justify-between gap-4 py-2">
           <div className="flex w-full flex-1 grow flex-col gap-5">
-            {data.map((user: FullUser, index: number) => (
-              <UserCard
+            {data.map((enquiry: Enquiry, index: number) => (
+              <EnquiryCard
                 key={index}
-                user={user}
-                onStatusUpdate={() => loadPage(currentPage)}
+                enquiry={enquiry}
+                isAdmin={true}
+                onStatusChange={async () => {
+                  /* update status */
+                }}
+                onReply={async () => {
+                  /* add reply */
+                }}
               />
             ))}
           </div>

@@ -156,7 +156,5 @@ export const createWhatsAppPayloadFromInput = ({
     });
   }
 
-  console.log(JSON.stringify(payload));
-
   return payload;
 };

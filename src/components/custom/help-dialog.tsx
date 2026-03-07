@@ -14,12 +14,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { UserData } from "@/types/user";
+import { FullUser } from "@/types/user";
 import clsx from "clsx";
 import { toast } from "sonner";
 import { Loader2Icon, SendIcon } from "lucide-react";
 import { generateSequenceId } from "@/lib/firebase/generateSequenceId";
-import { saveEnquiry } from "@/app/admin-dashboard/enquires/actions";
+import { saveEnquiry } from "@/app/admin-dashboard/enquiries/actions";
 
 export default function HelpDialog({
   open,
@@ -28,7 +28,7 @@ export default function HelpDialog({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  user: UserData;
+  user: FullUser;
 }) {
   const prefill = useMemo(
     () => ({
@@ -100,14 +100,15 @@ export default function HelpDialog({
         const savedEnquiryResponse = await saveEnquiry({
           id: customEnquiryId,
           enquiryText: form.message,
+          userId: user.uid,
           sentBy: user || {
             name: form.name,
             phone: form.phone,
             email: form.email,
           },
           status: "pending",
-          created: new Date(),
-          updated: new Date(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         });
         if (savedEnquiryResponse.success === false) {
           throw new Error(

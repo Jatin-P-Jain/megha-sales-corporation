@@ -40,6 +40,7 @@ import { useRequireUserProfile } from "@/hooks/useUserProfile";
 import { useUserProfileState } from "@/context/UserProfileProvider";
 import { useUserGate } from "@/context/UserGateProvider";
 import { SafeLink } from "./utility/SafeLink";
+import { FullUser } from "@/types/user";
 
 type AccountStatusUI =
   | "pending"
@@ -139,12 +140,14 @@ export default function AuthButtons() {
 
   const { currentUser, isAdmin, isLoggingOut, userRole } = useAuthState();
   const { logout } = useAuthActions();
-  const { profileComplete, accountStatus } = useUserGate();
+  const { profileComplete, accountStatus, gate } = useUserGate();
   useRequireUserProfile(true);
   const { clientUser, clientUserLoading } = useUserProfileState();
 
+  const fullUser = { ...clientUser, ...gate } as FullUser;
+
   const [helpOpen, setHelpOpen] = useState(false);
-  // 1) Loading state
+  // 1) Loading state₹
   if (currentUser && clientUserLoading) {
     return (
       <div className="flex items-center justify-center">
@@ -388,7 +391,7 @@ export default function AuthButtons() {
         <HelpDialog
           open={helpOpen}
           onOpenChange={setHelpOpen}
-          user={clientUser}
+          user={fullUser}
         />
 
         {isLoggingOut && (

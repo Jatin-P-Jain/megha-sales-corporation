@@ -22,7 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useSafeRouter } from "@/hooks/useSafeRouter";
-import { AccountStatus } from "@/context/UserGateProvider";
+import { AccountStatus } from "@/types/userGate";
 
 const STATUS_CONFIG = {
   pending: { icon: Clock, label: "Pending" },

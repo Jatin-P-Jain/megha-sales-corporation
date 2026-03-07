@@ -18,9 +18,7 @@ export const saveEnquiry = async (enquiryData: Enquiry) => {
     await fireStore.runTransaction(async (txn) => {
       txn.set(docRef, {
         ...enquiryData,
-        created: new Date(),
-        updated: new Date(),
-      });
+      } as Enquiry);
     });
     return { enquiryId: docRef.id };
   } catch (e: unknown) {
