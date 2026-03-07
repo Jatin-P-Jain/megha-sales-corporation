@@ -1,0 +1,6 @@
+{
+  "projects": {
+    "dev": "megha-sales-corporation-dev",
+    "prod": "megha-sales-corporation"
+  }
+}

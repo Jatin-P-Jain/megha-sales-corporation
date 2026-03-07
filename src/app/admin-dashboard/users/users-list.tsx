@@ -159,7 +159,7 @@ export default function UsersList() {
   }
 
   return (
-    <div className="relative mx-auto flex max-w-6xl flex-col">
+    <div className="relative mx-auto flex w-full flex-col">
       {/* Active Search Display */}
       {searchField && searchQuery && (
         <div className="flex w-full items-center justify-center gap-2 px-4">

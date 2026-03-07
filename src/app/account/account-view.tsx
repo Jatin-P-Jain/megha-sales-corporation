@@ -41,7 +41,7 @@ import type { UserData } from "@/types/user";
 import type { BusinessProfile } from "@/data/businessProfile";
 
 import FirebaseAuthMethods from "./firebase-auth-methods";
-import { AccountStatus } from "@/components/custom/user-search-filters";
+import { AccountStatus } from "@/types/userGate";
 
 function formatDate(dateString?: string) {
   if (!dateString) return "N/A";
