@@ -10,22 +10,7 @@ import React, {
 } from "react";
 import { auth, firestore } from "@/firebase/client";
 import { doc, onSnapshot, setDoc, serverTimestamp } from "firebase/firestore";
-
-export type AccountStatus =
-  | "pending"
-  | "approved"
-  | "rejected"
-  | "suspended"
-  | "deactivated";
-
-export type UserRole = "admin" | "customer";
-
-export type UserGate = {
-  profileComplete: boolean;
-  accountStatus: AccountStatus;
-  rejectionReason?: string;
-  userRole: UserRole;
-};
+import { AccountStatus, UserGate, UserRole } from "@/types/userGate";
 
 type UserGateState = {
   gateLoading: boolean;

@@ -1,7 +1,7 @@
 "use client";
 
-import { AccountStatus, UserRole } from "@/context/UserGateProvider";
 import { auth, firestore } from "@/firebase/client";
+import { AccountStatus, UserRole } from "@/types/userGate";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 
 export async function updateUserGate(

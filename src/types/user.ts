@@ -1,5 +1,5 @@
-import { UserGate } from "@/context/UserGateProvider";
 import { BusinessProfile } from "@/data/businessProfile";
+import { UserGate } from "./userGate";
 
 export interface FirebaseAuthData {
   identities: Record<string, string>;
