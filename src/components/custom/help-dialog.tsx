@@ -19,7 +19,9 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { Loader2Icon, SendIcon } from "lucide-react";
 import { generateSequenceId } from "@/lib/firebase/generateSequenceId";
-import { saveEnquiry } from "@/app/admin-dashboard/enquiries/actions";
+import { saveEnquiry } from "@/app/enquiries/actions";
+import { Enquiry } from "@/types/enquiry";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
 
 export default function HelpDialog({
   open,
@@ -30,6 +32,7 @@ export default function HelpDialog({
   onOpenChange: (open: boolean) => void;
   user: FullUser;
 }) {
+  const router = useSafeRouter();
   const prefill = useMemo(
     () => ({
       name: user.displayName ?? "",
@@ -99,17 +102,27 @@ export default function HelpDialog({
       if (response.ok) {
         const savedEnquiryResponse = await saveEnquiry({
           id: customEnquiryId,
-          enquiryText: form.message,
           userId: user.uid,
-          sentBy: user || {
-            name: form.name,
+          conversation: [
+            {
+              text: form.message,
+              sentAt: new Date().toISOString(),
+              messageBy: user || {
+                displayName: form.name,
+                phone: form.phone,
+                email: form.email,
+              },
+            },
+          ],
+          createdBy: user || {
+            displayName: form.name,
             phone: form.phone,
             email: form.email,
           },
           status: "pending",
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-        });
+        } as Enquiry);
         if (savedEnquiryResponse.success === false) {
           throw new Error(
             savedEnquiryResponse.error || "Failed to save enquiry",
@@ -121,8 +134,10 @@ export default function HelpDialog({
         onOpenChange(false);
         // Keep prefill, only clear message for next time
         setForm((prev) => ({ ...prev, message: "" }));
+        // Optional: Redirect to enquiry details page after submission
+        router.replace(`/enquiries?page=1`);
       } else {
-        throw Error;
+        throw new Error("Failed to send enquiry");
       }
     } catch (err) {
       console.log(err);

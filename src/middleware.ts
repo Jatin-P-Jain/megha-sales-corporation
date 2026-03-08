@@ -117,5 +117,7 @@ export const config = {
     "/checkout",
     "/order-history",
     "/brands/:path*",
+    "/enquiries",
+    "/enquiries/:path*",
   ],
 };

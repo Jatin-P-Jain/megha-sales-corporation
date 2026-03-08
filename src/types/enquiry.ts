@@ -1,16 +1,17 @@
 import { FullUser } from "./user";
 
+export type EnquiryStatus = "pending" | "in-progress" | "resolved";
+
 export type Enquiry = {
   id: string;
-  enquiryText: string;
   userId: string;
-  sentBy:
+  createdBy:
     | FullUser
     | { displayName: string; phone: string; email: string; photoUrl?: string };
-  status: "pending" | "in-progress" | "resolved";
-  replies?: {
+  status: EnquiryStatus;
+  conversation?: {
     text: string;
-    repliedBy:
+    messageBy:
       | FullUser
       | {
           displayName: string;
@@ -18,7 +19,7 @@ export type Enquiry = {
           email: string;
           photoUrl?: string;
         };
-    repliedAt: string;
+    sentAt: string;
   }[];
   createdAt: string;
   updatedAt: string;

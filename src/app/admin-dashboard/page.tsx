@@ -67,7 +67,7 @@ const AdminDashboard = async () => {
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
-              <SafeLink href="/admin-dashboard/enquiries">
+              <SafeLink href="/enquiries">
                 <MessageSquareMore className="h-4 w-4" />
                 View Enquiries
               </SafeLink>

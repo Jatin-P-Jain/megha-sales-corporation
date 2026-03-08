@@ -1,7 +1,7 @@
 "use server";
 import { auth, fireStore } from "@/firebase/server";
 import imageUrlFormatter from "@/lib/image-urlFormatter";
-import { AccountStatus } from "@/types/user";
+import { AccountStatus } from "@/types/userGate";
 import { cookies } from "next/headers";
 
 export async function updateUserAccountStatus({

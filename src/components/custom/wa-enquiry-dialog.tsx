@@ -15,10 +15,11 @@ import React, { useEffect, useRef, useState } from "react";
 import { Loader2Icon, SendIcon, CheckCircle2 } from "lucide-react";
 import { useAuthState } from "@/context/useAuth";
 import { toast } from "sonner";
-import { saveEnquiry } from "@/app/admin-dashboard/enquiries/actions";
+import { saveEnquiry } from "@/app/enquiries/actions";
 import { generateSequenceId } from "@/lib/firebase/generateSequenceId";
 import { useRequireUserProfile } from "@/hooks/useUserProfile";
 import { useUserProfileState } from "@/context/UserProfileProvider";
+import { Enquiry } from "@/types/enquiry";
 
 type EnquiryDialogProps = {
   trigger: React.ReactNode;
@@ -101,16 +102,28 @@ export function EnquiryDialog({ trigger }: EnquiryDialogProps) {
         setIsSent(true);
         const savedEnquiryResponse = await saveEnquiry({
           id: customEnquiryId,
-          enquiryText: message,
-          sentBy: clientUser || {
-            name: name,
+          userId: clientUser?.uid,
+          conversation: [
+            {
+              text: message,
+              sentAt: new Date().toISOString(),
+              messageBy: clientUser || {
+                displayName: name,
+                phone: phone,
+                email: email,
+              },
+            },
+          ],
+          createdBy: clientUser || {
+            displayName: name,
             phone: phone,
             email: email,
           },
           status: "pending",
-          created: new Date(),
-          updated: new Date(),
-        });
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        } as Enquiry);
+
         if (savedEnquiryResponse.success === false) {
           throw new Error(
             savedEnquiryResponse.error || "Failed to save enquiry",

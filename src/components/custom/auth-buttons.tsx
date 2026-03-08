@@ -33,14 +33,11 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { usePwaPrompt } from "@/hooks/usePwaPrompt";
-import { useState } from "react";
-import HelpDialog from "./help-dialog";
 import clsx from "clsx";
 import { useRequireUserProfile } from "@/hooks/useUserProfile";
 import { useUserProfileState } from "@/context/UserProfileProvider";
 import { useUserGate } from "@/context/UserGateProvider";
 import { SafeLink } from "./utility/SafeLink";
-import { FullUser } from "@/types/user";
 
 type AccountStatusUI =
   | "pending"
@@ -140,13 +137,10 @@ export default function AuthButtons() {
 
   const { currentUser, isAdmin, isLoggingOut, userRole } = useAuthState();
   const { logout } = useAuthActions();
-  const { profileComplete, accountStatus, gate } = useUserGate();
+  const { profileComplete, accountStatus } = useUserGate();
   useRequireUserProfile(true);
   const { clientUser, clientUserLoading } = useUserProfileState();
 
-  const fullUser = { ...clientUser, ...gate } as FullUser;
-
-  const [helpOpen, setHelpOpen] = useState(false);
   // 1) Loading state₹
   if (currentUser && clientUserLoading) {
     return (
@@ -355,12 +349,14 @@ export default function AuthButtons() {
 
             <DropdownMenuSeparator />
 
-            <DropdownMenuItem
-              className="flex items-center justify-between"
-              onClick={() => setTimeout(() => setHelpOpen(true), 0)}
-            >
-              Need help?
-              <MessageCircleQuestionIcon className="text-secondary-foreground" />
+            <DropdownMenuItem className="flex items-center justify-between">
+              <SafeLink
+                href="/enquiries"
+                className="flex w-full items-center justify-between"
+              >
+                Need help?
+                <MessageCircleQuestionIcon className="text-secondary-foreground" />
+              </SafeLink>
             </DropdownMenuItem>
 
             <DropdownMenuItem
@@ -387,12 +383,6 @@ export default function AuthButtons() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-
-        <HelpDialog
-          open={helpOpen}
-          onOpenChange={setHelpOpen}
-          user={fullUser}
-        />
 
         {isLoggingOut && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/30">

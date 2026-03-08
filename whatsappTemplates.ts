@@ -82,7 +82,6 @@ export const whatsappTemplates: Record<
       customerPhone,
       enquiryId,
       customerMessage,
-      customerWANumber,
     }) => ({
       bodyParams: [
         adminName,
@@ -90,7 +89,6 @@ export const whatsappTemplates: Record<
         customerPhone,
         enquiryId,
         customerMessage,
-        customerWANumber,
       ],
       buttonParams: [enquiryId],
     }),

@@ -10,48 +10,104 @@ import {
 import { usePaginatedFirestore } from "@/hooks/usePaginatedFireStore";
 import clsx from "clsx";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef, useMemo, useState } from "react";
 import UserCardSkeleton from "@/components/custom/user-card-skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { useSafeRouter } from "@/hooks/useSafeRouter";
 import EnquiryCard from "./enquiry-card";
-import { Enquiry } from "@/types/enquiry";
+import { Enquiry, EnquiryStatus } from "@/types/enquiry";
+import { replyToEnquiry, updateEnquiryStatus } from "./actions";
+import { useUserGate } from "@/context/UserGateProvider";
+import { useRequireUserProfile } from "@/hooks/useUserProfile";
+import { useUserProfileState } from "@/context/UserProfileProvider";
+import { FullUser } from "@/types/user";
 
-type SearchField = "email" | "phone" | "userId" | "displayName";
+type SearchField =
+  | "createdBy.email"
+  | "createdBy.phone"
+  | "id"
+  | "createdBy.displayName";
 
-export default function EnquiriesList() {
+export default function EnquiriesList({
+  isAdmin,
+  userId,
+}: {
+  isAdmin: boolean;
+  userId?: string;
+}) {
   const PAGE_SIZE = process.env.NEXT_PUBLIC_PAGE_SIZE
     ? parseInt(process.env.NEXT_PUBLIC_PAGE_SIZE)
     : 10;
   const router = useSafeRouter();
   const searchParams = useSearchParams();
   const previousFiltersRef = useRef<string>("");
-
-  const accountStatusValue = searchParams.get("accountStatus") || "";
+  const [displayData, setDisplayData] = useState<Enquiry[]>([]);
   const searchField = searchParams.get("searchField") as SearchField | null;
   const searchQuery = searchParams.get("searchQuery") || "";
 
+  const { gate } = useUserGate();
+  useRequireUserProfile(true);
+  const { clientUser } = useUserProfileState();
+
+  const fullUser = useMemo(() => {
+    return {
+      ...clientUser,
+      ...gate,
+    } as FullUser;
+  }, [clientUser, gate]);
+
+  const statusKey = useMemo(() => {
+    const all = searchParams.getAll("enquiryStatus");
+    if (all.length > 0) return all.join(",");
+    return searchParams.get("enquiryStatus") ?? "";
+  }, [searchParams]);
+
+  const enquiryStatuses = useMemo(() => {
+    if (!statusKey.trim()) return [] as EnquiryStatus[];
+    return statusKey.split(",").filter(Boolean) as EnquiryStatus[];
+  }, [statusKey]);
+
   const filtersOnly = {
-    accountStatus: accountStatusValue,
+    enquiryStatuses,
     searchField,
     searchQuery,
   };
   const filterKey = JSON.stringify(filtersOnly);
 
-  // Build filters from search params - memoized to prevent infinite loops
-  const filters = useMemo(
-    () => [
-      ...(searchField && searchQuery
-        ? [{ field: searchField, op: "==" as const, value: searchQuery }]
-        : []),
-      ...(accountStatusValue
-        ? [{ field: "status", op: "==" as const, value: accountStatusValue }]
-        : []),
-    ],
-    [searchField, searchQuery, accountStatusValue],
-  );
+  // Construct filters
+  const filters = [
+    // If not admin, scope to user
+    ...(!isAdmin
+      ? [
+          {
+            field: "userId",
+            op: "==" as const,
+            value: userId ?? "__missing__",
+          },
+        ]
+      : []),
+    ...(enquiryStatuses.length > 0
+      ? [
+          {
+            field: "status",
+            op: "in" as const,
+            value: enquiryStatuses,
+          },
+        ]
+      : []),
+    // Add search filter
+    ...(searchField && searchQuery
+      ? [
+          {
+            field: searchField,
+            op: "==" as const,
+            value: searchQuery,
+          },
+        ]
+      : []),
+  ];
 
   const { data, loading, hasMore, currentPage, loadPage, totalItems } =
     usePaginatedFirestore<Enquiry>({
@@ -64,6 +120,11 @@ export default function EnquiriesList() {
       queryKey: `enquiries-${filterKey}`, // Stable key for filter changes
     });
 
+  // Sync displayData with hook data
+  useEffect(() => {
+    setDisplayData(data);
+  }, [data]);
+
   // Reset to page 1 if filters change
   useEffect(() => {
     if (previousFiltersRef.current !== filterKey) {
@@ -71,14 +132,14 @@ export default function EnquiriesList() {
 
       const sp = new URLSearchParams(searchParams.toString());
       sp.set("page", "1");
-      router.replace(`/admin-dashboard/enquiries?${sp.toString()}`);
+      router.replace(`/enquiries?${sp.toString()}`);
     }
   }, [filterKey, router, searchParams]);
 
   const handlePageChange = (page: number) => {
     const sp = new URLSearchParams(searchParams.toString());
     sp.set("page", `${page}`);
-    router.replace(`/admin-dashboard/users?${sp.toString()}`);
+    router.replace(`/enquiries?${sp.toString()}`);
     loadPage(page);
   };
 
@@ -87,15 +148,21 @@ export default function EnquiriesList() {
     params.delete("searchField");
     params.delete("searchQuery");
     params.delete("page");
-    router.push(`/admin-dashboard/users?${params.toString()}`);
+    router.push(`/enquiries?${params.toString()}`);
+  };
+
+  const handleEnquiryUpdate = (updatedEnquiry: Enquiry) => {
+    setDisplayData((prev) =>
+      prev.map((e) => (e.id === updatedEnquiry.id ? updatedEnquiry : e)),
+    );
   };
 
   const getFieldLabel = (field: SearchField) => {
     const labels: Record<SearchField, string> = {
-      email: "Email",
-      phone: "Phone",
-      userId: "User ID",
-      displayName: "Name",
+      "createdBy.email": "Email",
+      "createdBy.phone": "Phone",
+      id: "Enquiry ID",
+      "createdBy.displayName": "Name",
     };
     return labels[field];
   };
@@ -166,18 +233,35 @@ export default function EnquiriesList() {
         Page {currentPage} • Showing {start}–{end} of {totalItems} results
       </p>
       {data.length > 0 && (
-        <div className="flex h-full w-full flex-1 flex-col justify-between gap-4 py-2">
+        <div className="flex h-full w-full flex-1 flex-col justify-between gap-4 px-1 py-2">
           <div className="flex w-full flex-1 grow flex-col gap-5">
-            {data.map((enquiry: Enquiry, index: number) => (
+            {displayData.map((enquiry: Enquiry) => (
               <EnquiryCard
-                key={index}
+                key={enquiry.id}
                 enquiry={enquiry}
-                isAdmin={true}
-                onStatusChange={async () => {
-                  /* update status */
+                isAdmin={isAdmin}
+                loggedInUser={fullUser}
+                onStatusChange={async (status) => {
+                  const result = await updateEnquiryStatus({
+                    enquiryId: enquiry.id,
+                    status,
+                  });
+
+                  if (!result.success) {
+                    throw new Error(result.error || "Failed to update status");
+                  }
                 }}
-                onReply={async () => {
-                  /* add reply */
+                onUpdate={handleEnquiryUpdate}
+                onReply={async (replyText) => {
+                  const result = await replyToEnquiry({
+                    enquiryId: enquiry.id,
+                    replyText,
+                    user: fullUser,
+                  });
+
+                  if (!result.success) {
+                    throw new Error(result.error || "Failed to send reply");
+                  }
                 }}
               />
             ))}

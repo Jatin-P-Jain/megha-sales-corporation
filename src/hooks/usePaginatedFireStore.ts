@@ -95,21 +95,34 @@ export const usePaginatedFirestore = <
     pageSize,
   ]);
 
-  const buildQueryBase = useCallback(() => {
-    let q = query(collection(firestore, collectionPath));
+  const buildQueryBase = useCallback(
+    (cursorDoc?: QueryDocumentSnapshot<DocumentData> | null) => {
+      const constraints = [];
 
-    if (collectionPath === "users") {
-      q = query(q, orderBy("updatedAt", "desc"));
-    } else {
-      q = query(q, orderBy(orderByField, orderDirection));
-    }
+      // 1. Add WHERE constraints first
+      filters.forEach((f) => {
+        constraints.push(where(f.field, f.op, f.value));
+      });
 
-    filters.forEach((f) => {
-      q = query(q, where(f.field, f.op, f.value));
-    });
+      // 2. Add ORDER BY
+      if (collectionPath === "users") {
+        constraints.push(orderBy("updatedAt", "desc"));
+      } else {
+        constraints.push(orderBy(orderByField, orderDirection));
+      }
 
-    return q;
-  }, [collectionPath, filters, orderByField, orderDirection]);
+      // 3. Add CURSOR (startAfter) - must be after orderBy
+      if (cursorDoc) {
+        constraints.push(startAfter(cursorDoc));
+      }
+
+      // 4. Add LIMIT last
+      constraints.push(limit(pageSize));
+
+      return query(collection(firestore, collectionPath), ...constraints);
+    },
+    [collectionPath, filters, orderByField, orderDirection, pageSize]
+  );
 
   const mapDocs = useCallback(
     (docs: QueryDocumentSnapshot<DocumentData>[]) => {
@@ -135,10 +148,11 @@ export const usePaginatedFirestore = <
   const fetchCount = useCallback(async () => {
     setCountLoading(true);
     try {
-      let countQuery = query(collection(firestore, collectionPath));
-      filters.forEach((f) => {
-        countQuery = query(countQuery, where(f.field, f.op, f.value));
-      });
+      const constraints = filters.map((f) => where(f.field, f.op, f.value));
+      const countQuery = query(
+        collection(firestore, collectionPath),
+        ...constraints
+      );
       const snapshot = await getCountFromServer(countQuery);
       setTotalItems(snapshot.data().count);
     } catch (error) {
@@ -169,14 +183,9 @@ export const usePaginatedFirestore = <
       for (let page = 1; page < targetPage; page++) {
         if (cursors.current[page]) continue;
 
-        let q = buildQueryBase();
         const prevCursor = cursors.current[page - 1];
+        const q = buildQueryBase(prevCursor);
 
-        if (prevCursor) {
-          q = query(q, startAfter(prevCursor));
-        }
-
-        q = query(q, limit(pageSize));
         const snapshot = await getDocs(q);
 
         cursors.current[page] = snapshot.docs.at(-1) ?? null;
@@ -203,40 +212,47 @@ export const usePaginatedFirestore = <
         await ensureCursorForPrevPage(targetPage);
 
         const cursor = cursors.current[targetPage - 1] ?? null;
-
-        let q = buildQueryBase();
-        if (cursor) q = query(q, startAfter(cursor));
-        q = query(q, limit(pageSize));
+        const q = buildQueryBase(cursor);
 
         if (realtime) {
-          // Safety timeout: if listener doesn't fire within 10s, clear loading
-          const timeoutId = setTimeout(() => {
-            console.warn(
-              `[usePaginatedFirestore] Realtime listener timeout for ${collectionPath}`
+          try {
+            // For realtime pagination, we use a hybrid approach:
+            // 1. First fetch the initial data to ensure UI updates immediately
+            // 2. Then set up the listener for realtime updates
+            const initialSnapshot = await getDocs(q);
+            const initialDocs = mapDocs(initialSnapshot.docs);
+            cursors.current[targetPage] = initialSnapshot.docs.at(-1) ?? null;
+
+            setHasMore(initialSnapshot.docs.length === pageSize);
+            setData(initialDocs);
+            setCurrentPage(targetPage);
+
+            // Set up realtime listener for ongoing updates
+            unsubRef.current = onSnapshot(
+              q as Query<DocumentData>,
+              (snapshot) => {
+                const docs = mapDocs(snapshot.docs);
+                cursors.current[targetPage] = snapshot.docs.at(-1) ?? null;
+
+                setHasMore(snapshot.docs.length === pageSize);
+                setData(docs);
+                setCurrentPage(targetPage);
+              },
+              (err) => {
+                console.error(
+                  `[usePaginatedFirestore] Realtime pagination error for ${collectionPath}:`,
+                  err
+                );
+              }
             );
             setLoading(false);
-          }, 10000);
-          unsubRef.current = onSnapshot(
-            q as Query<DocumentData>,
-            (snapshot) => {
-              clearTimeout(timeoutId);
-              const docs = mapDocs(snapshot.docs);
-              cursors.current[targetPage] = snapshot.docs.at(-1) ?? null;
-
-              setHasMore(snapshot.docs.length === pageSize);
-              setData(docs);
-              setCurrentPage(targetPage);
-              setLoading(false);
-            },
-            (err) => {
-              clearTimeout(timeoutId);
-              console.error(
-                `[usePaginatedFirestore] Realtime pagination error for ${collectionPath}:`,
-                err
-              );
-              setLoading(false);
-            }
-          );
+          } catch (err) {
+            console.error(
+              `[usePaginatedFirestore] Failed to set up realtime pagination for ${collectionPath}:`,
+              err
+            );
+            setLoading(false);
+          }
           return;
         }
 
