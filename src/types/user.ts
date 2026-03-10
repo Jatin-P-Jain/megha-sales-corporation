@@ -82,3 +82,10 @@ export type UserData = {
 };
 
 export type FullUser = UserData & UserGate;
+
+export type FeedbackUser = {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+};

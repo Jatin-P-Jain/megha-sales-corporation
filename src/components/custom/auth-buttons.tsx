@@ -354,7 +354,7 @@ export default function AuthButtons() {
                 href="/enquiries"
                 className="flex w-full items-center justify-between"
               >
-                Need help?
+                Help Center
                 <MessageCircleQuestionIcon className="text-secondary-foreground" />
               </SafeLink>
             </DropdownMenuItem>
@@ -376,10 +376,10 @@ export default function AuthButtons() {
             <DropdownMenuSeparator />
 
             <DropdownMenuItem
-              className="flex items-center justify-between"
+              className="flex items-center justify-between text-red-700 hover:bg-red-500 font-medium"
               onClick={() => logout()}
             >
-              Logout <LogOutIcon className="text-secondary-foreground" />
+              Logout <LogOutIcon className="text-red-700" />
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
