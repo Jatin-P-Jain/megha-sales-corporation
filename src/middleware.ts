@@ -1,6 +1,7 @@
 import { decodeJwt } from "jose";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { getSafeRedirectPath } from "@/lib/safe-redirect";
 
 export async function middleware(request: NextRequest) {
   const { pathname, origin, searchParams } = request.nextUrl;
@@ -43,10 +44,8 @@ export async function middleware(request: NextRequest) {
 
   // 3) Block /login & /register when already logged in
   if ((pathname === "/login" || pathname === "/register") && token) {
-    const hasRedirect = searchParams.get("redirect");
-    if (!hasRedirect) {
-      return NextResponse.redirect(new URL("/", origin));
-    }
+    const safeRedirect = getSafeRedirectPath(searchParams.get("redirect"));
+    return NextResponse.redirect(new URL(safeRedirect, origin));
   }
 
   // 4) Decode your token (admin, exp, profileComplete from custom claim)

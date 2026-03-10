@@ -67,6 +67,7 @@ import {
   useUserProfileState,
 } from "@/context/UserProfileProvider";
 import { updateUserGate } from "@/lib/firebase/updateUserGate";
+import { getSafeRedirectPath } from "@/lib/safe-redirect";
 import { useSafeRouter } from "@/hooks/useSafeRouter";
 import { GstDetailsData } from "@/types/user";
 
@@ -354,7 +355,7 @@ export default function ProfileForm() {
           description: "Your profile has been saved successfully!",
         });
 
-        const redirect = searchParams.get("redirect") ?? "/";
+        const redirect = getSafeRedirectPath(searchParams.get("redirect"));
         router.push(redirect);
       } catch (err: unknown) {
         console.error("Profile Submit error:", err);

@@ -5,13 +5,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import LoginForm from "@/components/custom/login-form";
 import { useAuthState } from "@/context/auth-context";
 import { useUserGate } from "@/context/UserGateProvider";
+import { getSafeRedirectPath } from "@/lib/safe-redirect";
 
 export default function LoginClient({ redirect }: { redirect?: string }) {
   const { currentUser } = useAuthState();
   const { gate, gateLoading } = useUserGate();
-  
+
   const [loginSuccess, setLoginSuccess] = useState(false);
   const redirectedRef = useRef(false);
+  const safeRedirect = useMemo(() => getSafeRedirectPath(redirect), [redirect]);
 
   const nextPath = useMemo(() => {
     // If not logged in yet, don't decide.
@@ -24,8 +26,8 @@ export default function LoginClient({ redirect }: { redirect?: string }) {
     if (!gate) return "/account/profile?from=login";
 
     if (!gate.profileComplete) return "/account/profile?from=login";
-    return redirect ?? "/";
-  }, [currentUser, gateLoading, gate, redirect]);
+    return safeRedirect;
+  }, [currentUser, gateLoading, gate, safeRedirect]);
 
   useEffect(() => {
     if (!loginSuccess) return;

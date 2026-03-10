@@ -7,6 +7,7 @@ import { ref, uploadBytesResumable } from "firebase/storage";
 
 import { storage } from "@/firebase/client";
 import imageUrlFormatter from "@/lib/image-urlFormatter";
+import { getSafeRedirectPath } from "@/lib/safe-redirect";
 import { useAuthState } from "@/context/useAuth";
 
 import { useRecaptcha } from "@/hooks/useRecaptcha";
@@ -58,7 +59,10 @@ export default function AccountPage() {
   }, [clientUser?.photoUrl]);
 
   const onGoToProfile = useCallback(() => {
-    const redirectTo = searchParams.get("redirect") ?? "/account";
+    const redirectTo = getSafeRedirectPath(
+      searchParams.get("redirect"),
+      "/account",
+    );
     const profileUrl = new URL("/account/profile", window.location.origin);
     profileUrl.searchParams.set("redirect", redirectTo);
     router.push(profileUrl.toString());

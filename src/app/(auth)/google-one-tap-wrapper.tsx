@@ -4,6 +4,7 @@
 import GoogleOneTap from "@/components/custom/google-one-tap";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useUserGate } from "@/context/UserGateProvider";
+import { getSafeRedirectPath } from "@/lib/safe-redirect";
 import { Loader2Icon } from "lucide-react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -24,11 +25,11 @@ export default function GoogleOneTapWrapper() {
     return true;
   }, [pathname]);
 
-  const redirect = searchParams.get("redirect") || undefined;
+  const redirect = getSafeRedirectPath(searchParams.get("redirect"));
 
   const nextPath = useMemo(() => {
     if (!profileComplete) return "/account/profile?from=login";
-    return redirect ?? "/";
+    return redirect;
   }, [profileComplete, redirect]);
 
   useEffect(() => {
