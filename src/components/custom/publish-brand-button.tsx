@@ -5,7 +5,7 @@ import { Loader2, SendIcon } from "lucide-react";
 import { useAuthState } from "@/context/useAuth";
 import { BrandStatus } from "@/types/brandStatus";
 import { toast } from "sonner";
-import { updateStatus } from "@/app/admin-dashboard/users/action";
+import { updateStatus } from "@/app/admin-dashboard/brands/action";
 
 const PublishBrandButton = ({
   brandId,

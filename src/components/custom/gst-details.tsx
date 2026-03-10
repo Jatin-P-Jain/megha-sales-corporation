@@ -13,7 +13,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { useState } from "react";
-import { GstDetailsData } from "@/data/businessProfile";
+import { GstDetailsData } from "@/types/user";
 
 interface GstDetailsProps {
   data: GstDetailsData | null;

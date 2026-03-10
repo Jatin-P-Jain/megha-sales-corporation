@@ -1,6 +1,6 @@
 "use server";
-import { BusinessProfile } from "@/data/businessProfile";
 import { auth, fireStore } from "@/firebase/server";
+import { BusinessProfile } from "@/types/user";
 import { cookies } from "next/headers";
 
 export const updateUserProfile = async (data: {
