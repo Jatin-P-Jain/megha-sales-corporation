@@ -88,7 +88,7 @@ export default function AccountPage() {
       };
       reader.readAsDataURL(file);
 
-      const imagePath = `users/${clientUser.userId}/profile-picture/${Date.now()}-${file.name}`;
+      const imagePath = `users/${clientUser.uid}/profile-picture/${Date.now()}-${file.name}`;
       const logoStorageRef = ref(storage, imagePath);
 
       setUploading(true);
@@ -112,10 +112,8 @@ export default function AccountPage() {
         });
 
         await updateUserPhoto({ userId: clientUser.uid, photoUrl: imagePath });
-
         const formatted = imageUrlFormatter(imagePath);
         setPhoto(formatted);
-        updateUserPhoto({ userId: clientUser.uid, photoUrl: formatted });
 
         toast.success("Profile updated!", {
           description: "New profile picture is set for your account.",

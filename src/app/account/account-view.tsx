@@ -37,8 +37,7 @@ import {
 
 import DefaultUserIcon from "@/assets/icons/user.png";
 
-import type { UserData } from "@/types/user";
-import type { BusinessProfile } from "@/data/businessProfile";
+import type { BusinessProfile, UserData } from "@/types/user";
 
 import FirebaseAuthMethods from "./firebase-auth-methods";
 import { AccountStatus } from "@/types/userGate";
@@ -260,7 +259,7 @@ function AccountViewInner({
   const statusInfo = getAccountStatusInfo(accountStatus, rejectionReason);
 
   return (
-    <Card className="mx-auto w-full max-w-screen-lg p-2 py-4 md:p-4 md:py-6">
+    <Card className="mx-auto w-full max-w-6xl p-2 py-4 md:p-4 md:py-6">
       <CardHeader className="p-0">
         <CardTitle className="text-primary p-0 text-center text-xl font-semibold md:text-2xl">
           My Account
@@ -278,7 +277,7 @@ function AccountViewInner({
               <AlertDescription
                 className={clsx("ml-2 text-sm", statusInfo?.color)}
               >
-                <div className="flex w-full flex-col items-center gap-1 text-xs md:flex-row justify-center">
+                <div className="flex w-full flex-col items-center justify-center gap-1 text-xs md:flex-row">
                   <span className="text-sm font-semibold">
                     {statusInfo?.title}
                   </span>{" "}
