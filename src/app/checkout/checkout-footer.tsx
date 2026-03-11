@@ -113,6 +113,7 @@ export default function CheckoutFooter({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           uid: clientUser.uid,
+          type: "order",
           title: "🛒 Order Update",
           body: `Your order #${orderId} has been placed!`,
           url: `${getBaseUrl()}/order-history/${orderId}`,
@@ -154,7 +155,7 @@ export default function CheckoutFooter({
         </p>
         <div className="flex w-full items-center justify-between gap-4">
           <Link
-            className="border-muted-foreground hover:bg-muted flex py-2 flex-1 items-center justify-center rounded-md border text-xs transition-colors"
+            className="border-muted-foreground hover:bg-muted flex flex-1 items-center justify-center rounded-md border py-2 text-xs transition-colors"
             href="/cart"
           >
             <ChevronLeft className="size-5" />

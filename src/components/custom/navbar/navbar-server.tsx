@@ -8,7 +8,7 @@ import { SafeLink } from "../utility/SafeLink";
 
 export default function NavBarServer() {
   return (
-    <nav className="fixed top-0 right-0 left-0 z-50 flex flex-wrap items-center justify-between bg-cyan-950 p-3 px-4 text-white shadow-md lg:px-8">
+    <nav className="fixed top-0 right-0 left-0 z-60 flex flex-wrap items-center justify-between bg-cyan-950 p-3 px-4 text-white shadow-md lg:px-8">
       <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4">
         <SafeLink
           href="/"

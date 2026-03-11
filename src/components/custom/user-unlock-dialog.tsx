@@ -66,6 +66,7 @@ export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           uid: clientUser?.uid,
+          type: "account",
           title: "🛎️ Approval Request Sent",
           body: `Your approval request has been sent to the admin.`,
           url: `${getBaseUrl()}/account`,
@@ -99,7 +100,7 @@ export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
               </DialogTitle>
             </div>
 
-            <DialogDescription className="text-xs text-left">
+            <DialogDescription className="text-left text-xs">
               To give you the best pricing and protect our business network, we
               review new accounts before enabling full access. Once approved,
               everything unlocks automatically.
@@ -112,15 +113,15 @@ export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
             </h4>
 
             <ul className="space-y-1 text-sm text-yellow-700">
-              <li className="flex md:items-center gap-2">
+              <li className="flex gap-2 md:items-center">
                 <Tags className="size-4" /> Viewing product discounts and
                 special pricing
               </li>
-              <li className="flex md:items-center gap-2">
+              <li className="flex gap-2 md:items-center">
                 <ShoppingCart className="size-4" /> Adding items to the cart /
                 building a cart
               </li>
-              <li className="flex md:items-center gap-2">
+              <li className="flex gap-2 md:items-center">
                 <PackageCheck className="size-4" /> Placing orders (checkout)
               </li>
             </ul>

@@ -1,8 +1,40 @@
 "use server";
 import { auth, fireStore } from "@/firebase/server";
+import { createUserNotification } from "@/lib/firebase/createUserNotification";
 import imageUrlFormatter from "@/lib/image-urlFormatter";
 import { AccountStatus } from "@/types/userGate";
 import { cookies } from "next/headers";
+
+const accountStatusNotificationMap: Record<
+  AccountStatus,
+  { title: string; body: (rejectionReason?: string) => string }
+> = {
+  pending: {
+    title: "Account Review Pending",
+    body: () => "Your account is under review. We will update you soon.",
+  },
+  approved: {
+    title: "Account Approved",
+    body: () =>
+      "Your account has been approved. You can now access all features.",
+  },
+  rejected: {
+    title: "Account Rejected",
+    body: (rejectionReason) =>
+      rejectionReason?.trim()
+        ? `Your account was rejected: ${rejectionReason.trim()}`
+        : "Your account was rejected. Please contact support for details.",
+  },
+  suspended: {
+    title: "Account Suspended",
+    body: () =>
+      "Your account access has been suspended. Please contact support.",
+  },
+  deactivated: {
+    title: "Account Deactivated",
+    body: () => "Your account has been deactivated. Please contact support.",
+  },
+};
 
 export async function updateUserAccountStatus({
   userId,
@@ -47,6 +79,18 @@ export async function updateUserAccountStatus({
 
     const userRef = fireStore.collection("users").doc(userId);
     await userRef.update(updateData);
+
+    const notificationConfig = accountStatusNotificationMap[accountStatus];
+    await createUserNotification({
+      uid: userId,
+      type: "account",
+      title: notificationConfig.title,
+      body: notificationConfig.body(rejectionReason),
+      url: "/account",
+      clickAction: "view_account",
+      status: accountStatus,
+      source: "admin",
+    });
 
     return { success: true, message: "User status updated successfully" };
   } catch (error) {

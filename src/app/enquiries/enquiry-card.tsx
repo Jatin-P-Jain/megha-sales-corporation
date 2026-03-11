@@ -83,6 +83,7 @@ export default function EnquiryCard({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             uid: notificationUid,
+            type: "enquiry",
             title: "Enquiry Update",
             body: `Your enquiry #${enquiry.id} has been updated!`,
             url: `${getBaseUrl()}/enquiries/${enquiry.id}`,

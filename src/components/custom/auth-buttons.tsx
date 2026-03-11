@@ -13,6 +13,7 @@ import DefaultUserIcon from "@/assets/icons/user.png";
 import { Badge } from "../ui/badge";
 import Image from "next/image";
 import {
+  BellRing,
   ClipboardList,
   DownloadIcon,
   Loader2Icon,
@@ -38,6 +39,9 @@ import { useRequireUserProfile } from "@/hooks/useUserProfile";
 import { useUserProfileState } from "@/context/UserProfileProvider";
 import { useUserGate } from "@/context/UserGateProvider";
 import { SafeLink } from "./utility/SafeLink";
+import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
+import NotificationsCenterClient from "@/app/notifications/notifications-center-client";
+import { useState } from "react";
 
 type AccountStatusUI =
   | "pending"
@@ -140,6 +144,12 @@ export default function AuthButtons() {
   const { profileComplete, accountStatus } = useUserGate();
   useRequireUserProfile(true);
   const { clientUser, clientUserLoading } = useUserProfileState();
+  const { unreadCount: unreadNotifications } = useRealtimeNotifications({
+    uid: currentUser?.uid,
+    includeItems: false,
+  });
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
   // 1) Loading state₹
   if (currentUser && clientUserLoading) {
@@ -154,7 +164,7 @@ export default function AuthButtons() {
   if (clientUser) {
     return (
       <>
-        <DropdownMenu>
+        <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
           <DropdownMenuTrigger asChild className="">
             <button className="relative flex flex-col items-center">
               <Avatar
@@ -192,6 +202,10 @@ export default function AuthButtons() {
                   </AvatarFallback>
                 )}
               </Avatar>
+
+              {unreadNotifications > 0 && (
+                <span className="absolute -top-1 -right-1 inline-flex h-2.5 w-2.5 rounded-full bg-cyan-500" />
+              )}
 
               {isAdmin && (
                 <div className="bottom-0 rounded-sm bg-green-100 px-1 text-[8px] font-semibold text-green-700">
@@ -260,6 +274,24 @@ export default function AuthButtons() {
                 )}
             </DropdownMenuLabel>
 
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onSelect={() => {
+                setIsMenuOpen(false);
+                setIsNotificationsOpen(true);
+              }}
+              className="flex w-full items-center justify-between"
+            >
+              <div className="flex items-center justify-start gap-2">
+                Notification Center
+                {unreadNotifications > 0 && (
+                  <span className="text-xs font-semibold">
+                    ({unreadNotifications > 99 ? "99+" : unreadNotifications})
+                  </span>
+                )}
+              </div>
+              <BellRing className="text-secondary-foreground size-4" />
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
 
             <DropdownMenuItem asChild>
@@ -376,13 +408,21 @@ export default function AuthButtons() {
             <DropdownMenuSeparator />
 
             <DropdownMenuItem
-              className="flex items-center justify-between text-red-700 hover:bg-red-500 font-medium"
+              className="flex items-center justify-between font-medium text-red-700 hover:bg-red-500"
               onClick={() => logout()}
             >
               Logout <LogOutIcon className="text-red-700" />
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        <NotificationsCenterClient
+          open={isNotificationsOpen}
+          onOpenChange={setIsNotificationsOpen}
+          onNavigate={() => {
+            setIsMenuOpen(false);
+            setIsNotificationsOpen(false);
+          }}
+        />
 
         {isLoggingOut && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/30">

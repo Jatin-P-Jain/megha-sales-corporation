@@ -1,9 +1,11 @@
 import { fireStore, messaging } from "@/firebase/server";
+import { createUserNotification } from "@/lib/firebase/createUserNotification";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const { uid, title, body, url, clickAction, status } = await req.json();
+    const { uid, title, body, url, clickAction, status, type } =
+      await req.json();
 
     if (!uid || !title || !body) {
       return NextResponse.json(
@@ -11,6 +13,17 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+
+    const storedNotification = await createUserNotification({
+      uid,
+      title,
+      body,
+      url,
+      clickAction,
+      status,
+      type,
+      source: "system",
+    });
 
     // 1. Get all FCM tokens for the user
     const tokensSnapshot = await fireStore
@@ -21,8 +34,14 @@ export async function POST(req: Request) {
 
     if (tokens.length === 0) {
       return NextResponse.json(
-        { error: "No FCM tokens found" },
-        { status: 404 }
+        {
+          success: true,
+          notificationId: storedNotification.id,
+          sent: 0,
+          failed: 0,
+          pushSkipped: "No FCM tokens found",
+        },
+        { status: 200 }
       );
     }
 
@@ -77,6 +96,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
+      notificationId: storedNotification.id,
       sent: response.successCount,
       failed: response.failureCount,
       failedTokens,
