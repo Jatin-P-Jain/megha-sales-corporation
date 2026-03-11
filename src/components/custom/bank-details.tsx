@@ -49,10 +49,12 @@ export default function BankDetails({
     value: string;
     copyable?: boolean;
   }) => (
-    <div className="flex items-center justify-between gap-4 rounded-md border p-3">
-      <div className="text-muted-foreground text-sm">{label}</div>
+    <div className="flex items-center justify-between gap-4 rounded-md border p-2 px-3">
+      <div className="text-muted-foreground text-sm whitespace-nowrap">
+        {label}
+      </div>
       <div className="flex items-center gap-2 text-right">
-        <div className="text-sm font-semibold break-all">{value}</div>
+        <div className="text-sm font-semibold ">{value}</div>
         {copyable ? (
           <Button
             type="button"
@@ -70,7 +72,7 @@ export default function BankDetails({
   );
 
   return (
-    <Card className="w-full">
+    <Card className="w-full py-2">
       <CardHeader>
         <CardTitle className="text-base md:text-lg">{title}</CardTitle>
         <CardDescription className="text-xs md:text-sm">
@@ -78,7 +80,7 @@ export default function BankDetails({
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="grid gap-4 md:grid-cols-2">
+      <CardContent className="grid gap-4 px-2 md:grid-cols-2">
         <div className="grid gap-3">
           <Row label="Account holder" value={bankDetails.accountHolder} />
           <Row

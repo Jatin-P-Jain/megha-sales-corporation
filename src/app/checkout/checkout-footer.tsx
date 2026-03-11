@@ -10,6 +10,7 @@ import { useAuthState } from "@/context/useAuth";
 import { toast } from "sonner";
 import { OrderData } from "@/types/order";
 import { getBaseUrl } from "@/lib/utils";
+import { notifyUserAction } from "@/actions/notify-user";
 import { useRequireUserProfile } from "@/hooks/useUserProfile";
 import { useUserProfileState } from "@/context/UserProfileProvider";
 import { useSafeRouter } from "@/hooks/useSafeRouter";
@@ -108,18 +109,14 @@ export default function CheckoutFooter({
         }),
       });
 
-      await fetch("/api/notify-user", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          uid: clientUser.uid,
-          type: "order",
-          title: "🛒 Order Update",
-          body: `Your order #${orderId} has been placed!`,
-          url: `${getBaseUrl()}/order-history/${orderId}`,
-          clickAction: "view_order",
-          status: "created",
-        }),
+      await notifyUserAction({
+        uid: clientUser.uid,
+        type: "order",
+        title: "📦 Order Update",
+        body: `Your order #${orderId} has been placed!`,
+        url: `${getBaseUrl()}/order-history?orderId=${orderId}`,
+        clickAction: "view_order",
+        status: "created",
       });
 
       router.push(`/order-placed/${orderId}`);
@@ -136,6 +133,7 @@ export default function CheckoutFooter({
     currentUser,
     resetCartContext,
     router,
+    setIsPlacingOrder,
     totalAmount,
     totalUnits,
   ]);

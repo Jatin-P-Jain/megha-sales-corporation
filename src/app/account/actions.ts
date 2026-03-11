@@ -1,6 +1,6 @@
 "use server";
 import { auth, fireStore } from "@/firebase/server";
-import { createUserNotification } from "@/lib/firebase/createUserNotification";
+import { notifyUser } from "@/lib/firebase/notifyUser";
 import imageUrlFormatter from "@/lib/image-urlFormatter";
 import { AccountStatus } from "@/types/userGate";
 import { cookies } from "next/headers";
@@ -10,28 +10,28 @@ const accountStatusNotificationMap: Record<
   { title: string; body: (rejectionReason?: string) => string }
 > = {
   pending: {
-    title: "Account Review Pending",
+    title: "⏳ Account Review Pending",
     body: () => "Your account is under review. We will update you soon.",
   },
   approved: {
-    title: "Account Approved",
+    title: "✅ Account Approved",
     body: () =>
       "Your account has been approved. You can now access all features.",
   },
   rejected: {
-    title: "Account Rejected",
+    title: "❌ Account Rejected",
     body: (rejectionReason) =>
       rejectionReason?.trim()
         ? `Your account was rejected: ${rejectionReason.trim()}`
         : "Your account was rejected. Please contact support for details.",
   },
   suspended: {
-    title: "Account Suspended",
+    title: "⛔ Account Suspended",
     body: () =>
       "Your account access has been suspended. Please contact support.",
   },
   deactivated: {
-    title: "Account Deactivated",
+    title: "🚫 Account Deactivated",
     body: () => "Your account has been deactivated. Please contact support.",
   },
 };
@@ -60,7 +60,7 @@ export async function updateUserAccountStatus({
       throw new Error("Unauthorized: Admin access required");
     }
 
-    // Prepare update data
+    // Keep users and userGate in sync because gate drives access/status UI.
     const updateData: {
       accountStatus: AccountStatus;
       rejectionReason?: string;
@@ -78,10 +78,15 @@ export async function updateUserAccountStatus({
     }
 
     const userRef = fireStore.collection("users").doc(userId);
-    await userRef.update(updateData);
+    const userGateRef = fireStore.collection("userGate").doc(userId);
+    const batch = fireStore.batch();
+
+    batch.set(userRef, updateData, { merge: true });
+    batch.set(userGateRef, updateData, { merge: true });
+    await batch.commit();
 
     const notificationConfig = accountStatusNotificationMap[accountStatus];
-    await createUserNotification({
+    await notifyUser({
       uid: userId,
       type: "account",
       title: notificationConfig.title,

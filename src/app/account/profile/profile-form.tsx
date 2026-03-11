@@ -293,15 +293,23 @@ export default function ProfileForm() {
         const { otp: _otp, otherBusinessType, ...rest } = data;
 
         if (isAdmin) {
-          await updateUserProfile({
-            displayName: rest.displayName,
-            email: rest.email,
-            phone: rest.phone,
-            photoUrl: rest.photoUrl,
-            businessType: "",
-            businessProfile: null,
-          });
-          await updateUserGate(true, "admin", "approved");
+          try {
+            await updateUserProfile({
+              displayName: rest.displayName,
+              email: rest.email,
+              phone: rest.phone,
+              photoUrl: rest.photoUrl,
+              businessType: "",
+              businessProfile: null,
+            });
+          } catch (err) {
+            console.error("Admin profile update error:", err);
+          }
+          try {
+            await updateUserGate(true, "admin", "approved");
+          } catch (err) {
+            console.error("Admin gate update error:", err);
+          }
         } else {
           const finalBusinessType =
             rest.businessType === "other" && otherBusinessType

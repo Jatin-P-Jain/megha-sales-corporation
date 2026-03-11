@@ -20,6 +20,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import { getBaseUrl } from "@/lib/utils";
+import { notifyUserAction } from "@/actions/notify-user";
 import { formatBusinessProfile } from "@/lib/business-profile-formatter";
 import { useUserGate } from "@/context/UserGateProvider";
 import { useRequireUserProfile } from "@/hooks/useUserProfile";
@@ -61,18 +62,18 @@ export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
         throw new Error("Failed to send WhatsApp message");
       }
 
-      await fetch("/api/notify-user", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          uid: clientUser?.uid,
-          type: "account",
-          title: "🛎️ Approval Request Sent",
-          body: `Your approval request has been sent to the admin.`,
-          url: `${getBaseUrl()}/account`,
-          clickAction: "view_account",
-          status: "created",
-        }),
+      if (!clientUser?.uid) {
+        throw new Error("Missing user id for notification");
+      }
+
+      await notifyUserAction({
+        uid: clientUser.uid,
+        type: "account",
+        title: "🛎️ Approval Request Sent",
+        body: "Your approval request has been sent to the admin.",
+        url: `${getBaseUrl()}/account`,
+        clickAction: "view_account",
+        status: "created",
       });
 
       setOpen(false);

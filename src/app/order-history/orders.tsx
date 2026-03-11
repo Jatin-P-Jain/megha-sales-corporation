@@ -8,6 +8,7 @@ import { Order, OrderStatus } from "@/types/order";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { updateOrderStatus } from "./actions";
+import { notifyUserAction } from "@/actions/notify-user";
 import { toast } from "sonner";
 
 const getStatusMessage = (orderId: string, status: string) => {
@@ -53,18 +54,14 @@ export default function Orders({
       });
     }
 
-    await fetch("/api/notify-user", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        uid: order.user?.uid,
-        type: "order",
-        title: "🛒 Order Update",
-        body: getStatusMessage(order.id, newStatus),
-        url: `${getBaseUrl()}/order-history/${order.id}`,
-        clickAction: "view_order",
-        status: newStatus,
-      }),
+    await notifyUserAction({
+      uid: order.user?.uid,
+      type: "order",
+      title: "📦 Order Update",
+      body: getStatusMessage(order.id, newStatus),
+      url: `${getBaseUrl()}/order-history?orderId=${order.id}`,
+      clickAction: "view_order",
+      status: newStatus,
     });
   };
 
@@ -113,7 +110,7 @@ export default function Orders({
                   </div>
                 </div>
                 {isAdmin && (
-                  <div className="flex w-full flex-col rounded-lg border-1 p-1 px-2 text-[10px]">
+                  <div className="flex w-full flex-col rounded-lg border p-1 px-2 text-[10px]">
                     <span className="text-muted-foreground text-[8px] font-extralight">
                       Order By :
                     </span>

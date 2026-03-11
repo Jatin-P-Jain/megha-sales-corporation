@@ -74,6 +74,7 @@ export function UserGateProvider({ children }: { children: React.ReactNode }) {
                     profileComplete: false,
                     accountStatus: "pending",
                     rejectionReason: "",
+                    userRole: "customer",
                     updatedAt: serverTimestamp(),
                   },
                   { merge: true },

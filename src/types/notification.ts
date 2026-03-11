@@ -3,6 +3,8 @@ export type UserNotificationType = "order" | "enquiry" | "account" | "system";
 export type UserNotificationStatus =
   | "created"
   | "updated"
+  | "packing"
+  | "dispatch"
   | "approved"
   | "rejected"
   | "suspended"
