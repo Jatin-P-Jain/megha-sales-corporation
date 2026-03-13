@@ -25,7 +25,7 @@ import {
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -291,13 +291,10 @@ function AccountViewInner({
         <div className="relative flex flex-col items-center justify-center gap-2 py-4">
           <Avatar className="ring-primary h-24 w-24 bg-white p-1 ring-2 md:h-28 md:w-28">
             {photo ? (
-              <Image
+              <AvatarImage
                 src={photo}
                 alt="Profile"
                 className="h-full w-full rounded-full object-cover"
-                width={112}
-                height={112}
-                priority
               />
             ) : (
               <AvatarFallback className="bg-cyan-800">

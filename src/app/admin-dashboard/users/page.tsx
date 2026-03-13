@@ -34,7 +34,7 @@ export default async function Users() {
           <UserSearchAndFilters />
         </div>
       </div>
-      <div className={`flex w-full flex-1 overflow-auto px-4 pt-30 md:pt-20`}>
+      <div className={`flex w-full flex-1 overflow-auto pt-30 md:pt-20`}>
         <UsersList />
       </div>
     </div>

@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuItem,
 } from "../ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "../ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import DefaultUserIcon from "@/assets/icons/user.png";
 import { Badge } from "../ui/badge";
 import Image from "next/image";
@@ -41,7 +41,9 @@ import { useUserGate } from "@/context/UserGateProvider";
 import { SafeLink } from "./utility/SafeLink";
 import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 import NotificationsCenterClient from "@/app/notifications/notifications-center-client";
-import { useState } from "react";
+import { useNavigationLock } from "@/context/navigation-lock-provider";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 type AccountStatusUI =
   | "pending"
@@ -137,6 +139,9 @@ function AccountStatusBadge({
 }
 
 export default function AuthButtons() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { isNavigating } = useNavigationLock();
   const { deferredPrompt, promptToInstall, isPwa } = usePwaPrompt();
 
   const { currentUser, isAdmin, isLoggingOut, userRole } = useAuthState();
@@ -150,6 +155,27 @@ export default function AuthButtons() {
   });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const searchKey = searchParams?.toString() ?? "";
+
+  useEffect(() => {
+    if (!isNavigating) {
+      return;
+    }
+
+    setIsMenuOpen(false);
+    setIsNotificationsOpen(false);
+  }, [isNavigating]);
+
+  useEffect(() => {
+    setIsMenuOpen(false);
+    setIsNotificationsOpen(false);
+  }, [pathname, searchKey]);
+
+  useEffect(() => {
+    if (isMenuOpen) {
+      setIsNotificationsOpen(false);
+    }
+  }, [isMenuOpen]);
 
   // 1) Loading state₹
   if (currentUser && clientUserLoading) {
@@ -183,12 +209,10 @@ export default function AuthButtons() {
                 )}
               >
                 {clientUser.photoUrl ? (
-                  <Image
+                  <AvatarImage
                     src={clientUser.photoUrl}
                     alt="avatar"
-                    width={100}
-                    height={100}
-                    className="rounded-full object-center"
+                    className="rounded-full object-cover"
                   />
                 ) : (
                   <AvatarFallback className="bg-cyan-800">

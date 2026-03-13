@@ -266,15 +266,16 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
 
   return (
     <>
-      <Card className="gap-0 overflow-hidden p-0">
-        <CardHeader className="bg-primary/10 p-2 md:p-3">
-          <div className="flex flex-col items-start justify-between gap-2 md:flex-row md:items-center">
-            <div className="flex items-center gap-4">
+      <Card className="gap-0! overflow-hidden p-0">
+        <CardHeader className="bg-primary/10 p-2 gap-0">
+          <div className="flex flex-col items-start justify-between md:flex-row md:items-center">
+            <div className="flex w-full items-center gap-2">
               <Avatar className="h-12 w-12 border-2 border-white shadow-md">
                 {user.photoUrl ? (
                   <AvatarImage
                     src={user.photoUrl}
                     alt={user.displayName || ""}
+                    className="rounded-full object-cover"
                   />
                 ) : (
                   <AvatarFallback className="bg-cyan-800">
@@ -289,49 +290,24 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                 )}
               </Avatar>
 
-              <div className="flex flex-col gap-1">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  {user.displayName || "Unnamed User"}
-                  {isAdmin && (
-                    <Badge variant="default" className="bg-sky-900">
-                      <Shield className="h-3 w-3" />
-                      Admin
-                    </Badge>
-                  )}
-                </CardTitle>
-
-                {!isAdmin && (
-                  <div className="flex items-center gap-2">
-                    {getStatusBadge()}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Actions: primary + dropdown */}
-            {canShowActions && (
-              <div className="grid w-full grid-cols-[1fr_auto] gap-2 md:w-fit md:items-center">
-                {showPrimaryApprove && (
-                  <Button
-                    onClick={handleApprove}
-                    disabled={isApproving}
-                    size="sm"
-                    className="w-full bg-green-600 hover:bg-green-700 md:w-fit"
-                  >
-                    {isApproving ? (
-                      <>
-                        <span className="mr-2 h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                        Approving...
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle2 className="mr-1 h-3 w-3" />
-                        Approve
-                      </>
+              <div className="flex w-full items-center justify-between gap-1 flex-1">
+                <div className="flex w-full flex-col gap-1">
+                  <CardTitle className="flex items-center gap-2 md:text-lg">
+                    {user.displayName || "Unnamed User"}
+                    {isAdmin && (
+                      <Badge variant="default" className="bg-sky-900">
+                        <Shield className="h-3 w-3" />
+                        <span className="inline-flex text-[10px]">Admin</span>
+                      </Badge>
                     )}
-                  </Button>
-                )}
+                  </CardTitle>
 
+                  {!isAdmin && (
+                    <div className="flex items-center">
+                      {getStatusBadge()}
+                    </div>
+                  )}
+                </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -342,7 +318,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                         isApproving || isRejecting || isSuspending || isDeleting
                       }
                     >
-                      Actions
+                      <span className="md:inlex-flex hidden">Actions</span>
                       <MoreVertical className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -393,6 +369,32 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
+            </div>
+
+            {/* Actions: primary + dropdown */}
+            {canShowActions && (
+              <div className=" w-full md:w-fit md:items-center">
+                {showPrimaryApprove && (
+                  <Button
+                    onClick={handleApprove}
+                    disabled={isApproving}
+                    size="sm"
+                    className="w-full bg-green-600 hover:bg-green-700 md:w-fit"
+                  >
+                    {isApproving ? (
+                      <>
+                        <span className="mr-2 h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        Approving...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="mr-1 h-3 w-3" />
+                        Approve
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
             )}
           </div>
         </CardHeader>
@@ -401,7 +403,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
         <div
           onClick={() => setIsDetailsOpen(!isDetailsOpen)}
           className={clsx(
-            "flex cursor-pointer items-center justify-between px-4 py-2 transition-colors hover:bg-gray-50",
+            "flex cursor-pointer items-center justify-between transition-colors hover:bg-gray-50 p-2",
             isDetailsOpen && "bg-gray-100",
           )}
         >
@@ -417,7 +419,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
 
         {/* Collapsible Details Section */}
         {isDetailsOpen && (
-          <CardContent className="space-y-1 p-4">
+          <CardContent className="space-y-1 p-2">
             {/* UID */}
             <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
               <div className="flex items-center gap-2 text-sm text-gray-600">

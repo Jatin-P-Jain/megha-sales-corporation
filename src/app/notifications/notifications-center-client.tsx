@@ -16,6 +16,7 @@ import { useCallback, useMemo, useState } from "react";
 import { markAllNotificationsRead, markNotificationRead } from "./actions";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import clsx from "clsx";
 
 export default function NotificationsCenterClient({
@@ -31,6 +32,7 @@ export default function NotificationsCenterClient({
   const router = useSafeRouter();
 
   const [loading, setLoading] = useState(false);
+  const [showOlder, setShowOlder] = useState(false);
 
   const { items, unreadCount } = useRealtimeNotifications({
     uid: currentUser?.uid,
@@ -42,6 +44,16 @@ export default function NotificationsCenterClient({
     () => [...items].sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
     [items],
   );
+  const unreadItems = useMemo(
+    () => sortedItems.filter((item) => !item.read),
+    [sortedItems],
+  );
+  const olderItems = useMemo(
+    () => sortedItems.filter((item) => item.read),
+    [sortedItems],
+  );
+  const newNotificationsLabel =
+    unreadItems.length === 1 ? "new notification" : "new notifications";
 
   const handleMarkAllRead = useCallback(async () => {
     if (unreadCount === 0) return;
@@ -68,6 +80,40 @@ export default function NotificationsCenterClient({
     [onNavigate, router],
   );
 
+  const renderNotificationCard = (item: (typeof items)[number]) => (
+    <Card
+      key={item.id}
+      onClick={() => openItem(item)}
+      className={clsx(
+        "relative w-full cursor-pointer gap-1 border p-3 text-left",
+        item.read ? "bg-white" : "bg-primary/5 border-primary",
+      )}
+    >
+      <div className="flex items-start justify-between">
+        <p
+          className={clsx(
+            "text-sm leading-tight font-medium",
+            !item.read && "text-primary font-semibold",
+          )}
+        >
+          {item.title}
+        </p>
+        {!item.read && (
+          <span className="flex animate-pulse items-center gap-2 rounded-md px-3 py-0.5 text-sm text-red-700">
+            <BellRing className="inline-flex size-4" />
+          </span>
+        )}
+      </div>
+      <p className="text-muted-foreground line-clamp-2 text-xs leading-relaxed">
+        {item.body}
+      </p>
+      <div className="text-muted-foreground flex items-center justify-between text-[10px]">
+        <Badge className="capitalize">{item.type}</Badge>
+        <span>{formatDateTime(item.createdAt)}</span>
+      </div>
+    </Card>
+  );
+
   const content = (
     <div className="pb-2">
       <div className="max-h-[60vh] overflow-y-auto pr-1">
@@ -77,39 +123,33 @@ export default function NotificationsCenterClient({
           </div>
         ) : (
           <div className="flex flex-col gap-2 p-1">
-            {sortedItems.map((item) => (
-              <Card
-                key={item.id}
-                onClick={() => openItem(item)}
-                className={clsx(
-                  "relative w-full cursor-pointer gap-1 border p-3 text-left",
-                  item.read ? "bg-white" : "bg-primary/5 border-primary",
-                )}
-              >
-                <div className="flex items-start justify-between">
-                  <p
-                    className={clsx(
-                      "text-sm leading-tight font-medium",
-                      !item.read && "text-primary font-semibold",
-                    )}
-                  >
-                    {item.title}
-                  </p>
-                  {!item.read && (
-                    <span className="flex animate-pulse items-center gap-2 rounded-md px-3 py-0.5 text-sm text-red-700">
-                      <BellRing className="inline-flex size-4" />
-                    </span>
-                  )}
+            {unreadItems.length === 0 ? (
+              <div className="flex flex-col items-center gap-4">
+                <div className="text-muted-foreground flex items-center justify-center text-sm">
+                  You have no new notifications.
                 </div>
-                <p className="text-muted-foreground line-clamp-2 text-xs leading-relaxed">
-                  {item.body}
-                </p>
-                <div className="text-muted-foreground flex items-center justify-between text-[10px]">
-                  <Badge className="capitalize">{item.type}</Badge>
-                  <span>{formatDateTime(item.createdAt)}</span>
+                <label className="flex items-center gap-2 text-sm">
+                  <span className="text-muted-foreground">Show Older</span>
+                  <Switch
+                    checked={showOlder}
+                    onCheckedChange={setShowOlder}
+                    aria-label="Show older notifications"
+                    disabled={olderItems.length === 0}
+                  />
+                </label>
+              </div>
+            ) : (
+              unreadItems.map((item) => renderNotificationCard(item))
+            )}
+
+            {showOlder && olderItems.length > 0 && (
+              <>
+                <div className="text-muted-foreground px-1 pt-1 text-xs font-medium tracking-wide uppercase">
+                  Older Notifications
                 </div>
-              </Card>
-            ))}
+                {olderItems.map((item) => renderNotificationCard(item))}
+              </>
+            )}
           </div>
         )}
       </div>
@@ -124,7 +164,7 @@ export default function NotificationsCenterClient({
       dismissible={false}
       handleOnly
     >
-      <DrawerContent className="z-50! mx-auto max-h-[85vh] max-w-3xl gap-3 px-4 pt-20 pb-4 md:pt-20">
+      <DrawerContent className="z-50! mx-auto max-h-[85vh] max-w-3xl gap-3 px-4 pt-20 pb-4 md:pt-25">
         <DrawerHeader className="flex w-full flex-row items-center justify-between p-0">
           <DrawerTitle className="flex gap-2">
             <BellRing className="size-6" />
@@ -143,6 +183,22 @@ export default function NotificationsCenterClient({
             </Button>
           </div>
         </DrawerHeader>
+        {unreadCount > 0 && (
+          <div className="flex w-full items-center justify-between">
+            <div className="text-sm font-medium">
+              {unreadItems.length} {newNotificationsLabel}
+            </div>
+            <label className="flex items-center gap-2 text-sm">
+              <span className="text-muted-foreground">Show Older</span>
+              <Switch
+                checked={showOlder}
+                onCheckedChange={setShowOlder}
+                aria-label="Show older notifications"
+                disabled={olderItems.length === 0}
+              />
+            </label>
+          </div>
+        )}
         <div className="w-full">
           {content}
           <Button

@@ -189,7 +189,7 @@ export default function UsersList() {
       </p>
       {data.length > 0 && (
         <div className="flex h-full w-full flex-1 flex-col justify-between gap-4 py-2">
-          <div className="flex w-full flex-1 grow flex-col gap-5">
+          <div className="flex w-full flex-1 grow flex-col gap-2">
             {data.map((user: FullUser, index: number) => (
               <UserCard
                 key={index}
