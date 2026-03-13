@@ -333,9 +333,12 @@ export default function ProfileForm() {
                   verifieddata: gstDetails.data,
                 }
               : null;
+          const firmName =
+            businessProfile?.tradeName || rest.firmName || "User";
 
           await updateUserProfile({
             ...rest,
+            firmName,
             businessType: finalBusinessType,
             businessProfile,
           });

@@ -89,7 +89,8 @@ export default function HelpDialog({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          templateKey: "enquiry_received_to_admin",
+          templateKey: "enquiry_received_to_admin_v2",
+          customerFirmName: user?.firmName || "N/A",
           customerName: form.name,
           customerPhone: form.phone,
           customerEmail: form.email,

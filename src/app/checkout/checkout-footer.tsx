@@ -102,7 +102,8 @@ export default function CheckoutFooter({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          templateKey: "order_placed_to_admin",
+          templateKey: "order_placed_to_admin_v2",
+          customerFirmName: clientUser.firmName,
           customerName: clientUser.displayName,
           orderId,
           customerPhone: clientUser.phone,

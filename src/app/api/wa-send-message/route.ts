@@ -24,8 +24,8 @@ type SerializedError = {
 type TemplateKey =
   | "account_approval_request_to_admin"
   | "account_approval_reminder_to_admin"
-  | "order_placed_to_admin"
-  | "enquiry_received_to_admin";
+  | "order_placed_to_admin_v2"
+  | "enquiry_received_to_admin_v2";
 
 const isRecord = (v: unknown): v is Record<string, unknown> =>
   typeof v === "object" && v !== null && !Array.isArray(v);
@@ -35,8 +35,8 @@ const isString = (v: unknown): v is string => typeof v === "string";
 const isTemplateKey = (v: unknown): v is TemplateKey =>
   v === "account_approval_request_to_admin" ||
   v === "account_approval_reminder_to_admin" ||
-  v === "order_placed_to_admin" ||
-  v === "enquiry_received_to_admin";
+  v === "order_placed_to_admin_v2" ||
+  v === "enquiry_received_to_admin_v2";
 
 function requireEnv(name: string): string {
   const value = process.env[name];
@@ -117,6 +117,7 @@ export async function POST(req: NextRequest) {
     const {
       templateKey,
       customerUserId,
+      customerFirmName,
       customerName,
       orderId,
       customerPhone,
@@ -169,6 +170,9 @@ export async function POST(req: NextRequest) {
           inputParams: {
             adminName: recipient?.name ?? "Admin",
             customerUserId: isString(customerUserId) ? customerUserId : "",
+            customerFirmName: isString(customerFirmName)
+              ? customerFirmName
+              : "",
             customerName: isString(customerName) ? customerName : "",
             customerPhone: isString(customerPhone) ? customerPhone : "",
             customerEmail: isString(customerEmail) ? customerEmail : "",
