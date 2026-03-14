@@ -56,13 +56,8 @@ export default async function ProductsList({
           !isAdmin ? "h-52 md:h-58" : "h-38 md:h-48"
         } ${!isUser && "h-40! md:h-45!"}`}
       >
-        <div className="mx-auto flex w-full max-w-5xl flex-col gap-2 ">
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-1.5">
           <EllipsisBreadCrumbs items={breadcrumbs} />
-          {/* <div className="flex w-full flex-row items-center justify-between">
-            <h1 className="py-1 text-xl font-semibold tracking-wide text-cyan-950 md:text-2xl">
-              {brandName || "All"} <span className="text-lg">Products</span>
-            </h1>
-          </div> */}
 
           <ResponsiveProductFiltersServer
             isAdmin={isAdmin}

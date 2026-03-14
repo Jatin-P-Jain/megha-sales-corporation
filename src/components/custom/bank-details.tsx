@@ -49,8 +49,8 @@ export default function BankDetails({
     value: string;
     copyable?: boolean;
   }) => (
-    <div className="flex items-center justify-between gap-4 rounded-md border p-2 px-3">
-      <div className="text-muted-foreground text-sm whitespace-nowrap">
+    <div className="flex items-center justify-between gap-4 rounded-md border p-1 px-2">
+      <div className="text-muted-foreground text-xs whitespace-nowrap">
         {label}
       </div>
       <div className="flex items-center gap-2 text-right">

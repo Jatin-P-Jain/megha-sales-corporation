@@ -31,7 +31,7 @@ export default async function OrderPlacedPage({
           it&apos;s on the way.
         </p>
 
-        <div className="flex w-full flex-col gap-4 rounded-lg border bg-zinc-50 px-4 py-3">
+        <div className="flex w-full flex-col gap-4 rounded-lg border bg-zinc-50 px-2 py-3">
           <div className="flex w-full flex-col items-center justify-center">
             <div className="text-muted-foreground text-xs">Order ID</div>
             <div className="mt-1 font-mono text-sm font-semibold break-all text-zinc-900">
