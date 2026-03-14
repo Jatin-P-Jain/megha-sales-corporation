@@ -470,9 +470,9 @@ export default function AuthButtons() {
   return (
     <SafeLink
       href="/login"
-      className="flex items-center justify-center gap-1 text-base font-medium hover:underline"
+      className="flex flex-col-reverse text-[10px] items-center justify-center md:text-base font-medium hover:underline md:flex-row"
     >
-      Login <LogInIcon className="size-4" />
+      Login <LogInIcon className="size-5" />
     </SafeLink>
   );
 }

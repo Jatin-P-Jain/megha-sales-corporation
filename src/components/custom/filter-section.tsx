@@ -9,6 +9,7 @@ import { PRODUCT_STATUS } from "@/data/product-status";
 import clsx from "clsx";
 import Image from "next/image";
 import imageUrlFormatter from "@/lib/image-urlFormatter";
+import { Info } from "lucide-react";
 
 export interface FilterType {
   key: string;
@@ -28,7 +29,10 @@ export interface FilterOptions {
   }>;
   vehicleCompanies: string[];
   categories: string[];
-  statuses?: string[];
+  statuses?: Array<{
+    label: string;
+    value: string;
+  }>;
 }
 
 interface FilterSectionProps {
@@ -52,6 +56,8 @@ export function FilterSection({
   toggleSelection,
   baseSelections,
 }: FilterSectionProps) {
+  console.log({ filterOptions, selections });
+
   const [searchTerm, setSearchTerm] = useState("");
   useEffect(() => setSearchTerm(""), [filterType.key]);
 
@@ -120,15 +126,21 @@ export function FilterSection({
   const optionsMap: Record<string, string[]> = {
     vehicleCompany: filterOptions.vehicleCompanies,
     category: filterOptions.categories,
-    status: filterOptions.statuses ?? PRODUCT_STATUS.map((s) => s.value),
   };
+
+  const statusOptions = PRODUCT_STATUS.filter((s) =>
+    s.label.toLowerCase().includes(lower),
+  ).map((s) => s.value);
 
   const brandOptions = brandOptionsArray.filter((opt) =>
     opt.name.toLowerCase().includes(lower),
   );
-  const otherOptions = (optionsMap[filterType.key] || []).filter((opt) =>
-    opt.toLowerCase().includes(lower),
-  );
+  const otherOptions =
+    filterType.key === "status"
+      ? statusOptions
+      : (optionsMap[filterType.key] || []).filter((opt) =>
+          opt.toLowerCase().includes(lower),
+        );
 
   const nothingFound =
     filterType.key === "brand"
@@ -147,13 +159,19 @@ export function FilterSection({
 
   return (
     <div className="flex h-full w-full flex-col gap-2 p-4">
+      {filterType.key!=="brand"&&<div className="flex items-center gap-2">
+        <h3 className="text-muted-foreground text-[10px] flex items-center gap-1">
+          <Info className="size-3" />
+          Showing {filterType.label} options for the selected brands only.
+        </h3>
+      </div>}
       <Input
         placeholder={`Search ${filterType.label}`}
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
 
-      <div className="flex max-h-[40vh] flex-col gap-2 overflow-auto">
+      <div className="flex max-h-[45vh] flex-col gap-2 overflow-auto">
         {nothingFound && (
           <div className="text-xs">
             No {filterType.label} with name &quot;

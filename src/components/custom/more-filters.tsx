@@ -9,21 +9,14 @@ import {
 } from "react";
 import { useSearchParams } from "next/navigation";
 import {
+  ChevronDown,
+  FunnelPlus,
   FunnelPlusIcon,
   Loader2Icon,
   MousePointerClick,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import {
   Drawer,
   DrawerTrigger,
@@ -34,12 +27,18 @@ import {
   DrawerFooter,
 } from "@/components/ui/drawer";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandInput,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+} from "@/components/ui/command";
+import { Checkbox } from "@/components/ui/checkbox";
 import clsx from "clsx";
 import {
   FilterSection,
@@ -49,6 +48,8 @@ import {
 import { useSafeRouter } from "@/hooks/useSafeRouter";
 import { PRODUCT_STATUS } from "@/data/product-status";
 import useIsMobile from "@/hooks/useIsMobile";
+import Image from "next/image";
+import imageUrlFormatter from "@/lib/image-urlFormatter";
 
 type FilterDef = FilterType;
 
@@ -98,18 +99,20 @@ export default function MoreFilters({
   const mergedFilterOptions = useMemo<FilterOptions | undefined>(() => {
     if (!filterOptions) return undefined;
 
-    const statusValues =
-      filterOptions.statuses ?? PRODUCT_STATUS.map((s) => s.value);
-
     const selectedBrandIds = selections.brand || [];
+
+    console.log({ filterOptions });
 
     const selectedBrands = filterOptions.brands.filter((b) =>
       selectedBrandIds.includes(b.id),
     );
+    console.log({ selectedBrands });
 
     const extraVehicleCompanies = selectedBrands.flatMap(
       (b) => b.vehicleCompanies ?? [],
     );
+    console.log({ extraVehicleCompanies });
+
     const extraCategories = selectedBrands.flatMap((b) => b.categories ?? []);
 
     const vehicleCompanies = Array.from(
@@ -121,6 +124,8 @@ export default function MoreFilters({
       ),
     );
 
+    console.log({ vehicleCompanies });
+
     const categories = Array.from(
       new Set(
         [...(filterOptions.categories ?? []), ...extraCategories].filter(
@@ -131,7 +136,6 @@ export default function MoreFilters({
 
     return {
       ...filterOptions,
-      statuses: statusValues,
       vehicleCompanies,
       categories,
     };
@@ -181,6 +185,97 @@ export default function MoreFilters({
     [selections],
   );
 
+  const selectedCountFromParams = useCallback(
+    (applyKey: string) => {
+      const v = searchParams.get(applyKey);
+      return v ? v.split(",").filter(Boolean).length : 0;
+    },
+    [searchParams],
+  );
+
+  const optionItemsFor = useCallback(
+    (
+      key: FilterDef["key"],
+    ): { value: string; label: string; logo?: string }[] => {
+      if (!mergedFilterOptions) return [];
+
+      if (key === "brand") {
+        return (mergedFilterOptions.brands ?? []).map((b) => ({
+          value: b.id,
+          label: b.name,
+          logo: b.logo,
+        }));
+      }
+
+      if (key === "vehicleCompany") {
+        return (mergedFilterOptions.vehicleCompanies ?? []).map((v) => ({
+          value: v,
+          label: v,
+        }));
+      }
+
+      if (key === "category") {
+        return (mergedFilterOptions.categories ?? []).map((c) => ({
+          value: c,
+          label: c,
+        }));
+      }
+
+      if (key === "status") {
+        return PRODUCT_STATUS.map((s) => ({
+          value: s.value,
+          label: s.label,
+        }));
+      }
+
+      return [];
+    },
+    [mergedFilterOptions],
+  );
+
+  const currentValuesFromParams = useCallback(
+    (applyKey: string) => {
+      const params = new URLSearchParams(Array.from(searchParams.entries()));
+      const current = params.get(applyKey);
+      return current ? current.split(",").filter(Boolean) : [];
+    },
+    [searchParams],
+  );
+
+  const applyToggleFilter = useCallback(
+    (applyKey: string, value: string) => {
+      const params = new URLSearchParams(Array.from(searchParams.entries()));
+      const current = currentValuesFromParams(applyKey);
+      const next = current.includes(value)
+        ? current.filter((v) => v !== value)
+        : [...current, value];
+
+      if (next.length > 0) {
+        params.set(applyKey, next.join(","));
+      } else {
+        params.delete(applyKey);
+      }
+
+      params.set("page", "1");
+      startTransition(() => {
+        router.replace(`/products-list?${params.toString()}`);
+      });
+    },
+    [currentValuesFromParams, router, searchParams],
+  );
+
+  const clearFilterKey = useCallback(
+    (applyKey: string) => {
+      const params = new URLSearchParams(Array.from(searchParams.entries()));
+      params.delete(applyKey);
+      params.set("page", "1");
+      startTransition(() => {
+        router.replace(`/products-list?${params.toString()}`);
+      });
+    },
+    [router, searchParams],
+  );
+
   function onApply() {
     setPendingKey("apply");
     const params = new URLSearchParams(Array.from(searchParams.entries()));
@@ -207,148 +302,153 @@ export default function MoreFilters({
 
   const TriggerButton = (
     <Button
-      variant="outline"
+      variant="ghost"
       className={clsx(
-        "relative w-auto flex-1 font-normal",
-        filterActive && "border-primary text-primary border-2 font-medium",
+        "w-auto flex-1 font-normal",
+        filterActive && "text-primary border-none font-medium shadow-none",
       )}
     >
       <FunnelPlusIcon /> Filters
-      {filterActive && <span className="bg-primary size-2 rounded-full" />}
     </Button>
   );
 
   const DesktopBody = (
-    <>
-      <DialogHeader className="mb-4 px-4">
-        <DialogTitle>More Filters</DialogTitle>
-        <DialogDescription>
-          Tweak additional filters for your product search.
-        </DialogDescription>
-      </DialogHeader>
+    <div className="no-scrollbar flex gap-2 overflow-x-auto px-1 pb-1">
+      {FILTERS.map((f) => {
+        const options = optionItemsFor(f.key);
+        const selectedValues = currentValuesFromParams(f.applyKey);
+        const count = selectedCountFromParams(f.applyKey);
+        const hasSelections = count > 0;
+        const summary =
+          count === 0
+            ? f.label
+            : count === 1
+              ? `${f.label}: ${(options.find((o) => o.value === selectedValues[0]) || { label: "Selected" }).label}`
+              : `${f.label} (${count})`;
 
-      <div className="flex h-[330px] gap-4">
-        <div className="flex flex-col gap-1 md:w-[45%]">
-          {FILTERS.map((f) => {
-            const c = selectedCountFor(f.key);
-            return (
+        return (
+          <Popover key={f.key}>
+            <PopoverTrigger asChild>
               <Button
-                key={f.key}
-                variant={
-                  selected.key === f.key
-                    ? "default"
-                    : c > 0
-                      ? "secondary"
-                      : "ghost"
-                }
+                variant="outline"
+                size={"sm"}
                 className={clsx(
-                  "bg-primary/20 w-full justify-between rounded-none rounded-r-xl px-4 py-3 text-left text-sm",
-                  selected.key === f.key && "bg-primary",
+                  "justify-center text-xs",
+                  hasSelections &&
+                    "border-primary bg-primary/10 text-primary font-medium",
                 )}
-                onClick={() => setSelected(f)}
               >
-                <span className="text-wrap">
-                  {f.label} {c > 0 ? `(${c})` : ""}
-                </span>
-                {c > 0 && (
-                  <span
-                    className={clsx(
-                      "size-3 rounded-full",
-                      selected.key === f.key ? "bg-white" : "bg-primary",
-                    )}
-                  />
-                )}
+                <span className="truncate">{summary}</span>
+                <ChevronDown className="size-4 opacity-70" />
               </Button>
-            );
-          })}
-        </div>
-
-        <div className="flex h-full w-full p-4 pt-0 pl-0">
-          <div className="bg-muted flex h-full w-full flex-col rounded-md">
-            <FilterSection
-              filterType={selected}
-              selections={selections}
-              setSelections={setSelections}
-              filterOptions={mergedFilterOptions}
-              toggleSelection={toggleSelection}
-              baseSelections={baseSelections}
-            />
-          </div>
-        </div>
-      </div>
-
-      <DialogFooter className="flex w-full gap-2 px-4">
-        <Button
-          variant="outline"
-          className="border-primary text-primary w-full flex-1"
-          onClick={onClearAll}
-          disabled={isPending && pendingKey === "close"}
-        >
-          {isPending && pendingKey === "close" ? (
-            <div className="flex justify-center gap-4">
-              <span>Clearing all filters</span>
-              <Loader2Icon className="size-4 animate-spin" />
-            </div>
-          ) : (
-            "Clear All"
-          )}
-        </Button>
-
-        <Button
-          type="button"
-          variant="default"
-          className="w-full flex-1"
-          onClick={onApply}
-          disabled={isPending && pendingKey === "apply"}
-        >
-          {isPending && pendingKey === "apply" ? (
-            <div className="flex justify-center gap-4">
-              <span>Applying filters</span>
-              <Loader2Icon className="size-4 animate-spin" />
-            </div>
-          ) : (
-            "Apply Filters"
-          )}
-        </Button>
-      </DialogFooter>
-    </>
+            </PopoverTrigger>
+            <PopoverContent className="p-0" align="start">
+              <Command>
+                <div className="flex w-full flex-1 items-center">
+                  {/* <Search className="text-muted-foreground mr-2 size-4" /> */}
+                  <CommandInput
+                    placeholder={`Search ${f.label.toLowerCase()}...`}
+                    className="flex-1"
+                  />
+                </div>
+                <CommandEmpty>No results found.</CommandEmpty>
+                <CommandGroup className="max-h-56 overflow-auto">
+                  {options.map((o) => {
+                    const isChecked = selectedValues.includes(o.value);
+                    return (
+                      <CommandItem
+                        key={o.value}
+                        value={o.label}
+                        onSelect={() => {
+                          applyToggleFilter(f.applyKey, o.value);
+                        }}
+                        className="cursor-pointer"
+                      >
+                        <div className="flex w-full items-center gap-2">
+                          <Checkbox checked={isChecked} />
+                          {o?.logo && (
+                            <Image
+                              src={imageUrlFormatter(o.logo)}
+                              alt={o.label}
+                              width={32}
+                              height={32}
+                              className="size-8 rounded-sm object-contain"
+                            />
+                          )}
+                          <span className="truncate">{o.label}</span>
+                        </div>
+                      </CommandItem>
+                    );
+                  })}
+                </CommandGroup>
+                <div className="border-t p-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className="w-full"
+                    onClick={() => clearFilterKey(f.applyKey)}
+                    disabled={!hasSelections}
+                  >
+                    Clear {f.label}
+                  </Button>
+                </div>
+              </Command>
+            </PopoverContent>
+          </Popover>
+        );
+      })}
+      {isPending && (
+        <Loader2Icon className="text-muted-foreground size-4 animate-spin self-center" />
+      )}
+    </div>
   );
 
   const MobileBody = (
     <>
       <DrawerHeader className="px-4">
-        <DrawerTitle>More Filters</DrawerTitle>
-        <DrawerDescription>
-          Tweak additional filters for your product search.
+        <DrawerTitle className="text-lg">
+          <FunnelPlus className="mr-2 mb-1 inline-flex size-5" />
+          Filters
+        </DrawerTitle>
+        <DrawerDescription className="text-xs!">
+          {filterActive
+            ? "You have active filters. Apply or clear them below."
+            : "Select filters to apply to your product search."}
         </DrawerDescription>
       </DrawerHeader>
 
       <div className="px-4 pb-3">
-        <Select
-          value={selected.key}
-          onValueChange={(v) => {
-            const next = FILTERS.find((f) => f.key === v);
-            if (next) setSelected(next);
-          }}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select filter" />
-          </SelectTrigger>
-          <SelectContent>
-            {FILTERS.map((f) => {
-              const c = selectedCountFor(f.key);
-              return (
-                <SelectItem key={f.key} value={f.key}>
-                  {f.label} {c > 0 ? `(${c} selections)` : ""}
-                </SelectItem>
-              );
-            })}
-          </SelectContent>
-        </Select>
+        <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+          {FILTERS.map((f) => {
+            const c = selectedCountFor(f.key);
+            const isSelected = selected.key === f.key;
+            const hasSelections = c > 0;
+
+            return (
+              <Button
+                key={f.key}
+                variant={isSelected ? "default" : "outline"}
+                type="button"
+                size={"sm"}
+                onClick={() => setSelected(f)}
+                className={clsx(
+                  hasSelections &&
+                    !isSelected &&
+                    "bg-primary/10 text-primary border-primary border",
+                  "text-xs",
+                )}
+              >
+                <span>{f.label}</span>
+                {c > 0 && <span>({c})</span>}
+              </Button>
+            );
+          })}
+        </div>
       </div>
 
       <div className="px-4">
-        <div className="bg-muted overflow-auto rounded-md">
+        <div className="bg-muted max-h-[60vh] min-h-[55vh] overflow-auto rounded-md">
           <FilterSection
             filterType={selected}
             selections={selections}
@@ -410,13 +510,5 @@ export default function MoreFilters({
       </Drawer>
     );
   }
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{TriggerButton}</DialogTrigger>
-      <DialogContent className="gap-0 p-0 py-4 sm:max-w-[725px]">
-        {DesktopBody}
-      </DialogContent>
-    </Dialog>
-  );
+  return DesktopBody;
 }

@@ -3,6 +3,7 @@ import BrandCard from "@/components/custom/brand-card";
 import type { Brand } from "@/types/brand";
 import { Button } from "@/components/ui/button";
 import { SafeLink } from "@/components/custom/utility/SafeLink";
+import { LayoutList } from "lucide-react";
 
 type Props = {
   brandsPromise: Promise<{ data: Brand[]; totalPages?: number }>;
@@ -11,13 +12,15 @@ type Props = {
 export default async function BrandsGrid({ brandsPromise }: Props) {
   const { data: brands } = await brandsPromise;
 
-  const lcvBrands = brands.filter((b) => b.vehicleCategory === "lcv").sort((a, b) =>
-    a.brandName.localeCompare(b.brandName)
-  );
+  const lcvBrands = brands
+    .filter((b) => b.vehicleCategory === "lcv")
+    .sort((a, b) => a.brandName.localeCompare(b.brandName));
   const hcvBrands = brands
     .filter((b) => b.vehicleCategory === "hcv")
     .sort((a, b) => a.brandName.localeCompare(b.brandName));
-  const bothBrands = brands.filter((b) => b.vehicleCategory === "both").sort((a, b) => a.brandName.localeCompare(b.brandName));
+  const bothBrands = brands
+    .filter((b) => b.vehicleCategory === "both")
+    .sort((a, b) => a.brandName.localeCompare(b.brandName));
 
   if (!brands || brands.length === 0) {
     return (
@@ -32,7 +35,9 @@ export default async function BrandsGrid({ brandsPromise }: Props) {
       <div className="text-muted-foreground flex w-full items-center justify-between text-xs md:text-base">
         <div>Browse products by brands</div>
         <Button variant="link" asChild className="p-0">
-          <SafeLink href="/products-list">Show all products</SafeLink>
+          <SafeLink href="/products-list">
+            All products <LayoutList />
+          </SafeLink>
         </Button>
       </div>
 

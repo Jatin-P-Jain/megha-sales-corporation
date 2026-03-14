@@ -225,13 +225,14 @@ export default function SearchProducts({
           <DrawerTrigger asChild>
             <Button
               variant="ghost"
-              className="p-0!"
+              className="text-primary-foreground flex-col gap-0 bg-transparent p-0! shadow-md"
               onClick={() => {
                 // Defensive: ensure desktop dialog is closed if user resized
                 setOpenDesktop(false);
               }}
             >
               <SearchIcon className="size-5" />
+              <span className="text-[10px]">Search</span>
             </Button>
           </DrawerTrigger>
 

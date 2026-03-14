@@ -62,7 +62,7 @@ export function SortBySelect({
         <SelectTrigger
           className={clsx(
             "w-full text-xs font-semibold",
-            selectedOption && "border-primary border-2",
+            selectedOption && "border-primary border",
           )}
         >
           {!selectedOption ? (

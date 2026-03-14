@@ -3,13 +3,10 @@
 import React, { useMemo, useCallback } from "react";
 import clsx from "clsx";
 import useIsMobile from "@/hooks/useIsMobile";
-import CategoryFilter from "./category-filter";
 import MoreFilters from "./more-filters";
-import StatusSelect from "./status-filter";
 import { Button } from "../ui/button";
 import { XCircle } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { Separator } from "../ui/separator";
 import { FilterOptions } from "@/types/filterOptions";
 import { SortBySelect } from "./sort-products";
 import { useSafeRouter } from "@/hooks/useSafeRouter";
@@ -23,7 +20,6 @@ type Props = {
 
 type CommonUIProps = {
   filterOptions: FilterOptions;
-  categories: string[];
   isFilterApplied: boolean;
   sortValue: string;
   onClearAll: () => void;
@@ -34,7 +30,6 @@ type CommonUIProps = {
 
 function FilterRow({
   filterOptions,
-  categories,
   isFilterApplied,
   sortValue,
   onClearAll,
@@ -46,16 +41,9 @@ function FilterRow({
 
   if (mobileMode) {
     return (
-      <div className="flex flex-col gap-1 pb-2">
+      <div className="flex flex-col gap-1">
         <div className={"flex justify-between gap-3"}>
-          {/* {adminMode && (
-            <div className="w-fit max-w-[100%] min-w-0 shrink-0 flex items-center gap-2">
-              <span className="text-xs whitespace-nowrap">Quick Filter:</span>
-              <StatusSelect />
-            </div>
-          )} */}
-
-          <div className="flex h-full w-full items-center justify-center gap-2">
+          <div className="border-primary flex h-full w-full items-center justify-center gap-2 rounded-md border">
             <MoreFilters
               filterOptions={filterOptions}
               filterActive={isFilterApplied}
@@ -64,8 +52,8 @@ function FilterRow({
             {isFilterApplied && (
               <Button
                 type="button"
-                variant="secondary"
-                className="text-red-800"
+                variant="ghost"
+                className="text-red-800 border-l"
                 onClick={onClearAll}
               >
                 <XCircle />
@@ -82,25 +70,12 @@ function FilterRow({
   // Desktop layouts
   if (adminMode) {
     return (
-      <div
-        className={clsx(
-          "inline-grid w-fit max-w-full grid-cols-[auto_1fr_1fr_auto_auto] items-center gap-2 pb-4",
-        )}
-      >
-        <div className="text-muted-foreground shrink-0 text-xs">
-          Quick Filters :
-        </div>
-
-        <div className="w-full max-w-[100%] min-w-0 shrink-0">
-          <StatusSelect />
-        </div>
-
-        <div className="w-full max-w-[100%] min-w-0 shrink-0">
-          <CategoryFilter categories={categories} />
-        </div>
-
+      <div className={clsx("flex items-center justify-between gap-2")}>
         <div className="flex h-full items-center justify-center gap-4">
-          <Separator orientation="vertical" className="bg-muted h-full" />
+          <div className="text-muted-foreground shrink-0 text-xs">
+            Quick Filters :
+          </div>
+
           <MoreFilters
             filterOptions={filterOptions}
             filterActive={isFilterApplied}
@@ -125,7 +100,7 @@ function FilterRow({
 
   // Desktop non-admin
   return (
-    <div className="flex flex-col gap-2 pb-2">
+    <div className="flex flex-col gap-2">
       <div
         className={clsx(
           "grid w-full grid-cols-[auto_1fr_auto_auto] items-center justify-start gap-4",
@@ -135,11 +110,7 @@ function FilterRow({
           Filter by :
         </span>
 
-        <div className="w-fit max-w-[100%] min-w-0 shrink-0 justify-end">
-          <CategoryFilter categories={categories} />
-        </div>
-
-        <div className="flex h-full w-auto items-center justify-center gap-3">
+        <div className="flex h-full w-auto items-start justify-start gap-3">
           <MoreFilters
             filterOptions={filterOptions}
             filterActive={isFilterApplied}
@@ -148,7 +119,8 @@ function FilterRow({
           {isFilterApplied && (
             <Button
               type="button"
-              variant="secondary"
+              size={"sm"}
+              variant="ghost"
               className="text-red-800"
               onClick={onClearAll}
             >
@@ -172,43 +144,39 @@ export default function ResponsiveProductFilters({
   const router = useSafeRouter();
   const searchParams = useSearchParams();
 
-  const categories = useMemo(() => {
-    let cats: string[] = [];
+  const brandIdValue = searchParams.get("brandId") || "";
+  const effectiveBrandId = brandIdValue || brandId || "";
 
-    if (brandId) {
-      const brandIds = brandId.split(",").filter(Boolean);
-      const brandArr = filterOptions.brands.filter((b) =>
-        brandIds.includes(b.id),
-      );
-      if (brandArr.length > 0) cats = brandArr.flatMap((b) => b.categories);
-    } else {
-      cats = filterOptions.brands.flatMap((b) => b.categories);
+  const scopedBrands = useMemo(() => {
+    const selectedBrandIds = effectiveBrandId.split(",").filter(Boolean);
+    if (selectedBrandIds.length === 0) {
+      return filterOptions.brands;
     }
 
-    return Array.from(new Set(cats)).sort();
-  }, [brandId, filterOptions.brands]);
+    return filterOptions.brands.filter((b) => selectedBrandIds.includes(b.id));
+  }, [effectiveBrandId, filterOptions.brands]);
+
+  const categories = useMemo(() => {
+    return Array.from(
+      new Set(scopedBrands.flatMap((b) => b.categories)),
+    ).sort();
+  }, [scopedBrands]);
 
   const vehicleCompanies = useMemo(() => {
-    let vcs: string[] = [];
+    return Array.from(
+      new Set(scopedBrands.flatMap((b) => b.vehicleCompanies || [])),
+    ).sort();
+  }, [scopedBrands]);
 
-    if (brandId) {
-      const brandIds = brandId.split(",").filter(Boolean);
-      const brandArr = filterOptions.brands.filter((b) =>
-        brandIds.includes(b.id),
-      );
-      if (brandArr.length > 0)
-        vcs = brandArr.flatMap((b) => b.vehicleCompanies || []);
-    } else {
-      vcs = filterOptions.brands.flatMap((b) => b.vehicleCompanies || []);
-    }
+  const derivedFilterOptions = useMemo(
+    () => ({
+      ...filterOptions,
+      vehicleCompanies,
+      categories,
+    }),
+    [categories, filterOptions, vehicleCompanies],
+  );
 
-    return Array.from(new Set(vcs)).sort();
-  }, [brandId, filterOptions.brands]);
-
-  filterOptions.vehicleCompanies = vehicleCompanies;
-  filterOptions.categories = categories;
-
-  const brandIdValue = searchParams.get("brandId") || "";
   const statusValue = searchParams.get("status") || "";
   const categoryValue = searchParams.get("category") || "";
   const vehicleCompanyValue = searchParams.get("vehicleCompany") || "";
@@ -266,8 +234,7 @@ export default function ResponsiveProductFilters({
 
   return (
     <FilterRow
-      filterOptions={filterOptions}
-      categories={categories}
+      filterOptions={derivedFilterOptions}
       isFilterApplied={isFilterApplied}
       sortValue={sortValue}
       onClearAll={onClearAll}

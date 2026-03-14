@@ -13,6 +13,7 @@ import {
 import { useUserGate } from "@/context/UserGateProvider";
 import { usePaginatedFirestore } from "@/hooks/usePaginatedFireStore";
 import { useSafeRouter } from "@/hooks/useSafeRouter";
+import { unslugify } from "@/lib/utils";
 import { Product } from "@/types/product";
 import clsx from "clsx";
 import { useSearchParams } from "next/navigation";
@@ -258,7 +259,15 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
     <div className="relative mx-auto flex max-w-screen-lg flex-col">
       <p className="text-muted-foreground sticky top-0 z-10 w-full px-4 py-1 text-center text-xs md:text-sm">
         Page {currentPage} • Showing {start}–{end} of{" "}
-        {countLoading ? "…" : totalItems} results
+        {countLoading ? "…" : totalItems}{" "}
+        {brandIdValue.split(",").length === 1 ? (
+          <>
+            <span className="font-semibold text-primary">{unslugify(brandIdValue)}</span>{" "}
+            products
+          </>
+        ) : (
+          "results"
+        )}
       </p>
 
       <div className="flex h-full min-h-[calc(100vh-200px)] w-full flex-1 flex-col justify-between gap-4 py-2">
