@@ -26,6 +26,7 @@ type CommonUIProps = {
   onSortChange: (v: string) => void;
   adminMode: boolean;
   mobileMode: boolean;
+  onlyOneBrand: boolean;
 };
 
 function FilterRow({
@@ -36,6 +37,7 @@ function FilterRow({
   onSortChange,
   adminMode,
   mobileMode,
+  onlyOneBrand,
 }: CommonUIProps) {
   // Admin quick filters differ from user quick filters
 
@@ -43,7 +45,12 @@ function FilterRow({
     return (
       <div className="flex flex-col gap-1">
         <div className={"flex justify-between gap-3"}>
-          <div className="border-primary flex h-full w-full items-center justify-center gap-2 rounded-md border">
+          <div
+            className={clsx(
+              "flex h-full w-full items-center justify-center gap-2 rounded-md border",
+              isFilterApplied ? "border-primary" : "",
+            )}
+          >
             <MoreFilters
               filterOptions={filterOptions}
               filterActive={isFilterApplied}
@@ -53,7 +60,7 @@ function FilterRow({
               <Button
                 type="button"
                 variant="ghost"
-                className="text-red-800 border-l"
+                className="border-l text-red-800"
                 onClick={onClearAll}
               >
                 <XCircle />
@@ -61,7 +68,7 @@ function FilterRow({
             )}
           </div>
 
-          <SortBySelect value={sortValue} onChange={onSortChange} />
+          <SortBySelect value={sortValue} onChange={onSortChange} removeBrand={onlyOneBrand}/>
         </div>
       </div>
     );
@@ -93,7 +100,11 @@ function FilterRow({
           )}
         </div>
 
-        <SortBySelect value={sortValue} onChange={onSortChange} />
+        <SortBySelect
+          value={sortValue}
+          onChange={onSortChange}
+          removeBrand={onlyOneBrand}
+        />
       </div>
     );
   }
@@ -129,7 +140,11 @@ function FilterRow({
           )}
         </div>
 
-        <SortBySelect value={sortValue} onChange={onSortChange} />
+        <SortBySelect
+          value={sortValue}
+          onChange={onSortChange}
+          removeBrand={onlyOneBrand}
+        />
       </div>
     </div>
   );
@@ -183,6 +198,9 @@ export default function ResponsiveProductFilters({
   const priceValue = searchParams.get("price") || "";
   const discountValue = searchParams.get("discount") || "";
   const sortValue = searchParams.get("sort") || "";
+
+  const onlyOnebRandSelected =
+    effectiveBrandId.split(",").filter(Boolean).length === 1;
 
   const isFilterApplied = useMemo(() => {
     return (
@@ -241,6 +259,7 @@ export default function ResponsiveProductFilters({
       onSortChange={onSortChange}
       adminMode={isAdmin}
       mobileMode={isMobile}
+      onlyOneBrand={onlyOnebRandSelected}
     />
   );
 }

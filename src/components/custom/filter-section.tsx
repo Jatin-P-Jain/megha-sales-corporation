@@ -171,7 +171,7 @@ export function FilterSection({
         onChange={(e) => setSearchTerm(e.target.value)}
       />
 
-      <div className="flex max-h-[45vh] flex-col gap-2 overflow-auto">
+      <div className="flex max-h-[42vh] flex-col gap-2 overflow-auto">
         {nothingFound && (
           <div className="text-xs">
             No {filterType.label} with name &quot;

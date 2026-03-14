@@ -101,17 +101,13 @@ export default function MoreFilters({
 
     const selectedBrandIds = selections.brand || [];
 
-    console.log({ filterOptions });
-
     const selectedBrands = filterOptions.brands.filter((b) =>
       selectedBrandIds.includes(b.id),
     );
-    console.log({ selectedBrands });
 
     const extraVehicleCompanies = selectedBrands.flatMap(
       (b) => b.vehicleCompanies ?? [],
     );
-    console.log({ extraVehicleCompanies });
 
     const extraCategories = selectedBrands.flatMap((b) => b.categories ?? []);
 
@@ -123,8 +119,6 @@ export default function MoreFilters({
         ].filter(Boolean),
       ),
     );
-
-    console.log({ vehicleCompanies });
 
     const categories = Array.from(
       new Set(
@@ -448,7 +442,7 @@ export default function MoreFilters({
       </div>
 
       <div className="px-4">
-        <div className="bg-muted max-h-[60vh] min-h-[55vh] overflow-auto rounded-md">
+        <div className="bg-muted max-h-[80vh] overflow-auto rounded-md">
           <FilterSection
             filterType={selected}
             selections={selections}

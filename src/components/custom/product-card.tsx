@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronsRight, EyeIcon, PencilIcon, TagIcon } from "lucide-react";
+import { ChevronsRight, EyeIcon, PencilIcon } from "lucide-react";
 import { formatINR } from "@/lib/utils";
 import { Product, ProductSize, ProductStatus } from "@/types/product";
 import ProductImage from "./product-image";
@@ -44,8 +44,7 @@ const STATUS_META: Record<
   },
   "out-of-stock": {
     label: "Out of stock",
-    className:
-      "border-muted bg-muted text-muted-foreground ",
+    className: "border-muted bg-muted text-muted-foreground ",
   },
 };
 
@@ -72,6 +71,7 @@ export default function ProductCard({
   const [selectedSize, setSelectedSize] = useState<ProductSize | undefined>(
     undefined,
   );
+  const [showFullDetails, setShowFullDetails] = useState(false);
 
   const isMobile = useIsMobile();
   const isLoading = cartLoading;
@@ -112,63 +112,177 @@ export default function ProductCard({
     router.push("/account/profile");
   }, [onClose, router]);
 
+  const hasLongAdditionalDetails = useMemo(() => {
+    if (!product.additionalDetails) return false;
+    return (
+      product.additionalDetails.length > 90 ||
+      product.additionalDetails.split("\n").length > 2
+    );
+  }, [product.additionalDetails]);
+
   return (
     <Card
       key={product.id}
       className="relative gap-1 overflow-hidden p-3 shadow-md md:gap-2"
     >
       <CardContent className="flex flex-col gap-4 p-0 text-sm md:grid md:grid-cols-[3fr_1fr] md:text-base">
-        <div className="flex w-full flex-col md:gap-2">
-          <div className="text-primary flex w-full items-center justify-between font-semibold">
-            <span className="text-sm font-normal">Brand :</span>
+        <div className="flex w-full flex-col gap-1 md:gap-2">
+          <div className="text-primary flex w-full items-center justify-between font-semibold tracking-wide">
             <SafeLink
               href={`/brands/${product.brandId}`}
-              className="cursor-pointer underline"
+              className="bg-primary/10 border-primary cursor-pointer gap-2 rounded-md border px-3 py-1 underline"
             >
+              <span className="text-muted-foreground mr-2 inline-flex text-xs font-normal">
+                Brand:
+              </span>
               {product.brandName}
             </SafeLink>
+            <span className="bg-primary/10 rounded-md border px-3 py-1">
+              <span className="text-muted-foreground mr-2 hidden text-xs font-normal md:inline-flex">
+                Part Number:
+              </span>
+              {product.partNumber}
+            </span>
           </div>
 
-          <div className="text-primary flex w-full items-center justify-between font-semibold">
-            <span className="text-sm font-normal">Part Name :</span>
+          <div className="text-primary flex w-full items-center justify-between font-medium">
+            <span className="text-xs font-normal">Part Name :</span>
             <span>{product.partName}</span>
           </div>
 
-          <div className="text-primary flex w-full items-center justify-between font-semibold">
-            <span className="text-sm font-normal">Part Number :</span>
-            {product.partNumber}
+          <div className="text-primary flex w-full items-start justify-between font-medium">
+            <span className="w-full flex-1 text-xs font-normal whitespace-nowrap">
+              Applications :
+            </span>
+            <span className="fle w-full flex-2 text-right">
+              {vehicleNameProcessed}
+            </span>
           </div>
 
-          <div className="text-primary flex w-full items-center justify-between font-semibold">
-            <span className="w-full text-sm font-normal">Applications :</span>
-            <div className="flex w-full items-end justify-end">
-              <span>{vehicleNameProcessed}</span>
-            </div>
-          </div>
-
-          <div className="text-primary flex w-full items-center justify-between font-semibold">
-            <span className="text-sm font-normal">Category :</span>
+          <div className="text-primary flex w-full items-center justify-between font-medium">
+            <span className="text-xs font-normal">Category :</span>
             {product.partCategory}
           </div>
 
           {product.additionalDetails && (
-            <div className="text-primary flex w-full items-start justify-between font-semibold">
-              <span className="text-sm font-normal">Additional Details :</span>
-              <span className="text-right whitespace-pre-line">
-                {product.additionalDetails}
-              </span>
+            <div className="text-primary flex w-full items-start justify-between font-medium">
+              <span className="text-xs font-normal">Additional Details :</span>
+              <div className="flex flex-col items-end gap-1 text-right">
+                <span
+                  className={clsx(
+                    "whitespace-pre-line",
+                    !showFullDetails && "max-h-12 overflow-hidden",
+                  )}
+                >
+                  {product.additionalDetails}
+                </span>
+
+                {hasLongAdditionalDetails && (
+                  <button
+                    type="button"
+                    onClick={() => setShowFullDetails((prev) => !prev)}
+                    className="text-primary text-xs font-semibold underline hover:opacity-80"
+                  >
+                    {showFullDetails ? "See less" : "See more"}
+                  </button>
+                )}
+              </div>
             </div>
           )}
 
           {isMobile && (
-            <div className="flex h-27 min-h-27 w-full items-center justify-center md:min-h-30 md:w-full">
-              <ProductImage productImage={product.image} />
+            <div className="flex gap-3">
+              <div className="flex h-22 w-1/2 items-center justify-center rounded-sm border shadow-sm">
+                <ProductImage productImage={product.image} />
+              </div>
+              <div className="bg-primary/10 flex h-auto w-1/2 flex-col items-center justify-center gap-1 rounded-sm p-1.5 px-4 md:flex-row">
+                <div className="text-primary flex w-full items-center justify-between gap-2 font-semibold md:w-fit">
+                  <span className="text-foreground text-xs font-normal">
+                    Price :
+                  </span>
+                  {product.hasSizes &&
+                  !product.samePriceForAllSizes &&
+                  !selectedSize ? (
+                    <span className="text-muted-foreground text-[8px] font-normal whitespace-nowrap italic md:text-xs">
+                      Select a size
+                    </span>
+                  ) : (
+                    <span className="text-base font-semibold">
+                      {formatINR(selectedSize?.price ?? product.price)}
+                    </span>
+                  )}
+                </div>
+
+                <div className="text-primary flex w-full items-center justify-between font-semibold md:text-sm">
+                  <span className="text-foreground text-xs font-normal whitespace-nowrap">
+                    Discount :
+                  </span>
+
+                  {product.hasSizes &&
+                  !product.samePriceForAllSizes &&
+                  !selectedSize ? (
+                    <span className="text-muted-foreground text-[8px] font-normal whitespace-nowrap italic md:text-xs">
+                      Select a size
+                    </span>
+                  ) : isAccountApproved || isAdmin ? (
+                    <span className="font-semibold">
+                      {selectedSize?.discount ?? product.discount}%
+                    </span>
+                  ) : !currentUser ? (
+                    <SafeLink
+                      href="/login"
+                      className="flex cursor-pointer items-center justify-between transition-all hover:opacity-80"
+                    >
+                      <span className="inline-flex items-center font-semibold text-yellow-600">
+                        ***
+                      </span>
+                      <EyeIcon className="size-5 text-yellow-600" />
+                    </SafeLink>
+                  ) : (
+                    <UserUnlockDialog>
+                      <div className="flex cursor-pointer items-center justify-between transition-all hover:opacity-80">
+                        <span className="inline-flex items-center font-semibold text-yellow-600">
+                          ***
+                        </span>
+                        <EyeIcon className="size-5 text-yellow-600" />
+                      </div>
+                    </UserUnlockDialog>
+                  )}
+                </div>
+
+                <div className="text-primary flex w-full items-center justify-between font-semibold md:w-fit md:text-sm">
+                  <span className="text-foreground text-xs font-normal">
+                    GST :
+                  </span>
+                  {product.hasSizes &&
+                  !product.samePriceForAllSizes &&
+                  !selectedSize ? (
+                    <span className="text-muted-foreground text-[8px] font-normal whitespace-nowrap italic md:text-xs">
+                      Select a size
+                    </span>
+                  ) : (
+                    <span className="font-semibold">
+                      {selectedSize?.gst ?? product.gst}%
+                    </span>
+                  )}
+                </div>
+
+                {product.hasSizes &&
+                  !product.samePriceForAllSizes &&
+                  !selectedSize && (
+                    <span className="text-muted-foreground text-[8px] italic md:text-xs">
+                      Pricing varies by size.
+                    </span>
+                  )}
+              </div>
             </div>
           )}
 
           {product.sizes && product.sizes?.length > 0 && (
             <div className="text-primary mb-1 flex h-full w-full flex-col justify-between gap-1 font-semibold md:mb-2 md:flex-row">
-              <span className="text-sm font-normal">Select Size:</span>
+              <span className="text-xs font-normal md:text-sm">
+                Select Size:
+              </span>
               {isLoading ? (
                 <Skeleton className="flex h-6 w-full" />
               ) : (
@@ -187,38 +301,42 @@ export default function ProductCard({
         </div>
 
         {!isMobile && (
-          <div className="flex h-27 min-h-27 w-full items-center justify-center md:min-h-30 md:w-full">
+          <div className="flex w-full items-center justify-center rounded-sm border shadow-sm">
             <ProductImage productImage={product.image} />
           </div>
         )}
       </CardContent>
 
-      <CardFooter className="flex flex-col items-end justify-center gap-4 p-0 md:grid md:grid-cols-[3fr_1fr]">
-        <div className="bg-primary/10 flex w-full items-center justify-between gap-2 rounded-sm p-1 px-2 text-xs md:flex-row md:items-center md:justify-between md:px-8 md:text-base">
-          <TagIcon className="text-primary size-4" />
-          <div className="flex w-full flex-col items-center justify-between md:flex-row">
+      <CardFooter className="flex flex-col items-end justify-center gap-2 p-0 md:grid md:grid-cols-[3fr_1fr]">
+        <div className="flex w-full items-center justify-between gap-2 text-xs">
+          {/* <TagIcon className="text-primary size-4" /> */}
+          <div className="bg-primary/10 hidden w-full flex-col items-center justify-between gap-1 rounded-sm p-1 px-4 md:flex md:flex-row">
             <div className="text-primary flex w-full items-center justify-between gap-2 font-semibold md:w-fit">
-              <span className="text-foreground font-normal">Price :</span>
+              <span className="text-foreground text-xs font-normal">
+                Price :
+              </span>
               {product.hasSizes &&
               !product.samePriceForAllSizes &&
               !selectedSize ? (
-                <span className="text-muted-foreground text-[8px] font-normal italic md:text-xs">
+                <span className="text-muted-foreground text-[8px] font-normal whitespace-nowrap italic md:text-xs">
                   Select a size
                 </span>
               ) : (
-                <span className="font-semibold">
+                <span className="text-lg font-semibold">
                   {formatINR(selectedSize?.price ?? product.price)}
                 </span>
               )}
             </div>
 
-            <div className="text-primary flex w-full items-center justify-between gap-2 font-semibold md:w-fit md:text-sm">
-              <span className="text-foreground font-normal">Discount :</span>
+            <div className="text-primary flex w-full items-center justify-between font-semibold md:w-fit md:text-sm">
+              <span className="text-foreground text-xs font-normal whitespace-nowrap">
+                Discount :
+              </span>
 
               {product.hasSizes &&
               !product.samePriceForAllSizes &&
               !selectedSize ? (
-                <span className="text-muted-foreground text-[8px] font-normal italic md:text-xs">
+                <span className="text-muted-foreground text-[8px] font-normal whitespace-nowrap italic md:text-xs">
                   Select a size
                 </span>
               ) : isAccountApproved || isAdmin ? (
@@ -247,12 +365,12 @@ export default function ProductCard({
               )}
             </div>
 
-            <div className="text-primary flex w-full items-center justify-between gap-2 font-semibold md:w-fit md:text-sm">
-              <span className="text-foreground font-normal">GST :</span>
+            <div className="text-primary flex w-full items-center justify-between font-semibold md:w-fit md:text-sm">
+              <span className="text-foreground text-xs font-normal">GST :</span>
               {product.hasSizes &&
               !product.samePriceForAllSizes &&
               !selectedSize ? (
-                <span className="text-muted-foreground text-[8px] font-normal italic md:text-xs">
+                <span className="text-muted-foreground text-[8px] font-normal whitespace-nowrap italic md:text-xs">
                   Select a size
                 </span>
               ) : (
@@ -277,7 +395,7 @@ export default function ProductCard({
             <div className="flex w-full flex-col">
               <div
                 className={clsx(
-                  "inline-flex w-full items-center justify-center rounded-md rounded-b-none border px-2 py-1 text-center text-xs md:text-sm font-medium",
+                  "inline-flex w-full items-center justify-center rounded-md rounded-b-none border px-2 py-1 text-center text-xs font-medium md:text-sm",
                   STATUS_META[product.status].className,
                 )}
               >

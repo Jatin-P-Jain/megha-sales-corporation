@@ -21,12 +21,12 @@ export default function CartOverview() {
   if (loading) {
     return (
       <div className="grid grid-cols-[3fr_4fr_2fr] items-center justify-center rounded-lg border p-1 text-sm md:px-4">
-        <div className="text-muted-foreground flex w-full flex-col text-xs md:text-sm">
+        {/* <div className="text-muted-foreground flex w-full flex-col text-xs md:text-sm">
           Cart Overview
           <span className="text-muted-foreground text-[8px]">
             (after discount &amp; GST)
           </span>
-        </div>
+        </div> */}
         <Skeleton className="mx-auto flex h-full w-3/4 justify-center" />
         <Skeleton className="h-9 w-full" />
       </div>
@@ -34,56 +34,68 @@ export default function CartOverview() {
   }
 
   return (
-    <div className="grid grid-cols-[3fr_4fr_2fr] items-center justify-center rounded-lg border p-1 text-sm md:px-4">
-      <div className="text-muted-foreground flex w-full flex-col text-xs md:text-sm ">
+    <div className="flex items-center justify-between gap-6 rounded-lg border p-1 text-sm md:px-4">
+      {/* <div className="text-muted-foreground flex w-full flex-col text-xs md:text-sm ">
         Cart Overview
         <span className="text-muted-foreground text-[8px]">
           (after discount &amp; GST)
         </span>
-      </div>
-      <div className="mx-auto flex flex-col items-center justify-center md:w-fit">
-        <div className="flex w-full flex-col justify-between gap-0 px-2 py-0">
-          <div className="flex items-center gap-5">
-            <div className="flex items-center gap-1 text-xs md:text-sm">
-              Units:{" "}
-              <span className="text-primary text-sm font-semibold md:text-base">
-                {totalUnits}
-              </span>
-            </div>
-            <div className="flex items-center gap-1 text-xs md:text-sm">
-              Items:{" "}
-              <span className="text-primary text-sm font-semibold md:text-base">
-                {totalItems}
-              </span>
-            </div>
-          </div>
+      </div> */}
 
-          <div className="flex flex-col items-center justify-start gap-0 text-xs md:text-sm">
-            <div className="flex items-center gap-1">
-              Amount:{" "}
-              <span className="text-primary text-sm font-semibold md:text-base">
-                {currencyFormatter(totalAmount)}
-              </span>
+      <div className="flex w-full flex-col items-start justify-between md:w-fit px-2">
+        {totalUnits > 0 ? (
+          <div className="flex w-full items-center justify-between">
+            <div className="flex flex-col">
+              <div className="flex items-center gap-1 text-xs md:text-sm">
+                Units:{" "}
+                <span className="text-primary text-sm font-semibold tabular-nums md:text-base">
+                  {totalUnits}
+                </span>
+              </div>
+              <div className="flex items-center gap-1 text-xs md:text-sm">
+                Products:{" "}
+                <span className="text-primary text-sm font-semibold md:text-base">
+                  {totalItems}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-col items-center justify-start gap-0 text-xs md:text-sm">
+              <div className="flex flex-col items-center gap-1">
+                Total Amount{" "}
+                <span className="text-primary text-sm font-semibold md:text-base">
+                  {currencyFormatter(totalAmount)}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="text-muted-foreground flex flex-col items-start text-xs font-medium">
+            Empty Cart!
+            <span className="text-muted-foreground text-[10px] font-normal">
+              Add products to see totals.
+            </span>
+          </div>
+        )}
       </div>
-      {!isAccountApproved ? (
+
+      {!isAccountApproved || totalUnits === 0 ? (
         <Button
           className={clsx(
-            "flex w-full items-center justify-center",
-            "cursor-not-allowed ring-2 ring-yellow-700",
+            "flex items-center justify-center",
+            "cursor-not-allowed",
+            !isAccountApproved && "ring-2 ring-yellow-700",
           )}
           disabled
           type="button"
         >
-          <span>Cart</span>
+          <span>Go to Cart</span>
           <ShoppingCartIcon className="size-5" />
         </Button>
       ) : (
-        <Button asChild className="flex w-full items-center justify-center">
+        <Button asChild className="flex w-auto items-center justify-center">
           <SafeLink href="/cart" className="flex items-center gap-2">
-            <span>Cart</span>
+            <span>Go to Cart</span>
             <ShoppingCartIcon className="size-5" />
           </SafeLink>
         </Button>
