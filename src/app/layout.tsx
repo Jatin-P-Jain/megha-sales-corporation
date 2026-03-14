@@ -87,7 +87,7 @@ export default async function RootLayout({
       </head>
 
       <body
-        className={`${poppins.className} max-h-screen min-h-[100dvh] antialiased`}
+        className={`${poppins.className} max-h-screen min-h-[100dvh] antialiased no-scrollbar`}
       >
         <Providers>
           <ServiceWorkerRegister />
