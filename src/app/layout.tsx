@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Poppins } from "next/font/google";
 import Script from "next/script";
+import { Suspense } from "react";
 
 import Providers from "./providers";
 import { ServiceWorkerRegister } from "./service-worker-register";
@@ -87,22 +88,24 @@ export default async function RootLayout({
       </head>
 
       <body
-        className={`${poppins.className} max-h-screen min-h-[100dvh] antialiased no-scrollbar`}
+        className={`${poppins.className} no-scrollbar max-h-screen min-h-[100dvh] antialiased`}
       >
         <Providers>
           <ServiceWorkerRegister />
-          <NavigationLockProvider>
-            <InstallPWAButton />
+          <Suspense fallback={null}>
+            <NavigationLockProvider>
+              <InstallPWAButton />
 
-            <RouteProgress />
-            <NavBar />
-            <div className="mx-auto max-w-screen-lg px-4 pt-20 pb-8 md:p-8 md:pt-28">
-              {children}
-            </div>
+              <RouteProgress />
+              <NavBar />
+              <div className="mx-auto max-w-screen-lg px-4 pt-20 pb-8 md:p-8 md:pt-28">
+                {children}
+              </div>
 
-            <Footer />
-            <NetworkBanner />
-          </NavigationLockProvider>
+              <Footer />
+              <NetworkBanner />
+            </NavigationLockProvider>
+          </Suspense>
         </Providers>
 
         <Analytics />
