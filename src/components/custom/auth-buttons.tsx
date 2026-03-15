@@ -395,9 +395,11 @@ export default function AuthButtons() {
                   >
                     <span className="flex items-center justify-start gap-2">
                       My Cart{" "}
-                      <span className="font-medium">
-                        ({totalItems} item{totalItems !== 1 ? "s" : ""})
-                      </span>
+                      {totalItems > 0 && (
+                        <span className="font-medium">
+                          ({totalItems} item{totalItems !== 1 ? "s" : ""})
+                        </span>
+                      )}
                     </span>
                     <ShoppingCartIcon className="text-secondary-foreground" />
                   </SafeLink>
