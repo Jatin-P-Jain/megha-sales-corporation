@@ -2,7 +2,13 @@
 
 import React, { useMemo, useState } from "react";
 import { Button } from "../ui/button";
-import { Loader2Icon, PlusSquareIcon } from "lucide-react";
+import {
+  CheckIcon,
+  Loader2Icon,
+  PlusSquareIcon,
+  TextCursorInput,
+  XIcon,
+} from "lucide-react";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
 import { Skeleton } from "../ui/skeleton";
@@ -13,6 +19,8 @@ import {
   useCartItem,
   useCartState,
 } from "@/context/cartContext";
+import { Input } from "../ui/input";
+import useIsMobile from "@/hooks/useIsMobile";
 
 interface Props {
   productId: string;
@@ -35,12 +43,15 @@ export default function CartControls({
   isCartPage = false,
   isDisabled = false,
 }: Props) {
+  const isMobile = useIsMobile();
   const { loading } = useCartState();
-  const { increment, decrement, addToCart } = useCartActions();
+  const { increment, decrement, addToCart, setQuantity } = useCartActions();
 
   const [loadingAction, setLoadingAction] = useState<
-    "add" | "inc" | "dec" | null
+    "add" | "inc" | "dec" | "set" | null
   >(null);
+  const [showCustomQtyInput, setShowCustomQtyInput] = useState(false);
+  const [customQty, setCustomQty] = useState("");
 
   // Determine the cart item key used in Firestore docs
   const cartItemKey = useMemo(() => {
@@ -115,6 +126,41 @@ export default function CartControls({
     }
   };
 
+  const handleOpenCustomQty = () => {
+    setCustomQty(String(qty));
+    setShowCustomQtyInput(true);
+  };
+
+  const handleCancelCustomQty = () => {
+    setShowCustomQtyInput(false);
+    setCustomQty("");
+  };
+
+  const handleConfirmCustomQty = async () => {
+    const parsed = Number(customQty);
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      toast.error("Please enter a quantity greater than 0");
+      return;
+    }
+
+    const finalQty = Math.floor(parsed);
+    const key = isCartPage
+      ? productId
+      : getCartItemKey(productId, selectedSizeValue);
+
+    setLoadingAction("set");
+    try {
+      await setQuantity(key, finalQty);
+      setShowCustomQtyInput(false);
+      setCustomQty("");
+    } catch (e) {
+      console.error(e);
+      toast.error("Error updating quantity");
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
   // If qty is zero, show Add button
   if (qty === 0) {
     return (
@@ -142,37 +188,96 @@ export default function CartControls({
 
   // Otherwise show – [qty] +
   return (
-    <div className="flex w-full items-center justify-center gap-2">
-      <Button
-        onClick={handleDec}
-        disabled={isBusy}
-        className="rounded-none rounded-l-lg px-6 font-semibold"
-      >
-        –
-      </Button>
+    <div
+      className={clsx(
+        "flex w-full flex-row-reverse items-center justify-center gap-2",
+        isCartPage || !isMobile ? "flex-col! items-end! gap-1!" : undefined,
+      )}
+    >
+      <div className="flex w-full items-center justify-center gap-2">
+        <Button
+          onClick={handleDec}
+          disabled={isBusy}
+          className="rounded-none rounded-l-lg px-3 font-semibold"
+        >
+          –
+        </Button>
 
-      <div className="relative h-4 w-full overflow-hidden">
-        <AnimatePresence initial={false}>
-          <motion.span
-            key={qty}
-            initial={{ y: direction * 70, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -direction * 70, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="text-primary absolute inset-0 flex items-center justify-center text-base font-semibold"
-          >
-            {qty}
-          </motion.span>
-        </AnimatePresence>
+        <div className="relative h-4 w-full overflow-hidden">
+          <AnimatePresence initial={false}>
+            <motion.span
+              key={qty}
+              initial={{ y: direction * 70, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -direction * 70, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="text-primary absolute inset-0 flex items-center justify-center text-base font-semibold"
+            >
+              {qty}
+            </motion.span>
+          </AnimatePresence>
+        </div>
+
+        <Button
+          onClick={handleInc}
+          disabled={isBusy}
+          className="rounded-none rounded-r-lg px-3 font-semibold"
+        >
+          +
+        </Button>
       </div>
+      {!showCustomQtyInput ? (
+        <Button
+          variant="link"
+          size="sm"
+          onClick={handleOpenCustomQty}
+          disabled={isBusy}
+          className="text-primary w-fit p-0! text-xs"
+        >
+          <TextCursorInput className="h-4 w-4" /> Custom Quantity
+        </Button>
+      ) : (
+        <div
+          className={clsx(
+            "flex w-auto items-center gap-1",
+            isCartPage && "w-full! justify-between",
+          )}
+        >
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleCancelCustomQty}
+            disabled={isBusy}
+            aria-label="Cancel custom quantity"
+            className="bg-red-100 p-0! text-red-700"
+          >
+            <XIcon className="h-4 w-4" />
+          </Button>
+          <Input
+            type="number"
+            min={1}
+            value={customQty}
+            onChange={(e) => setCustomQty(e.target.value)}
+            className="border-input bg-background min-w-16 flex-1 rounded-md border px-2 text-center text-sm"
+            disabled={isBusy}
+          />
 
-      <Button
-        onClick={handleInc}
-        disabled={isBusy}
-        className="rounded-none rounded-r-lg px-6 font-semibold"
-      >
-        +
-      </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleConfirmCustomQty}
+            disabled={isBusy}
+            aria-label="Apply custom quantity"
+            className="bg-green-100 text-green-700"
+          >
+            {loadingAction === "set" ? (
+              <Loader2Icon className="h-4 w-4 animate-spin" />
+            ) : (
+              <CheckIcon className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

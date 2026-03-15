@@ -8,6 +8,7 @@ import {
   ChevronDown,
   MessageCirclePlus,
   MessageCircle,
+  FunnelPlus,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,8 @@ import { useUserProfileState } from "@/context/UserProfileProvider";
 import { FullUser } from "@/types/user";
 import SearchEnquiry from "./search-enquiry";
 import { EnquiryStatus } from "@/types/enquiry";
+import useIsMobile from "@/hooks/useIsMobile";
+import { useAuthState } from "@/context/auth-context";
 
 const STATUS_CONFIG = {
   pending: { icon: Clock, label: "Pending" },
@@ -37,9 +40,10 @@ const STATUS_CONFIG = {
 const ALL_STATUSES = Object.keys(STATUS_CONFIG) as EnquiryStatus[];
 
 const EnquirySearchFiltersCreate: React.FC = () => {
+  const isMobile = useIsMobile();
   const router = useSafeRouter();
   const searchParams = useSearchParams();
-
+  const { isAdmin } = useAuthState();
   const { gate, userRole } = useUserGate();
   useRequireUserProfile(true);
   const { clientUser } = useUserProfileState();
@@ -90,13 +94,13 @@ const EnquirySearchFiltersCreate: React.FC = () => {
 
   return (
     <div className="space-y-1">
-      <div className="grid grid-cols-[1fr_auto_auto] gap-2 md:items-center md:gap-4">
+      <div className="flex gap-2 overflow-auto md:items-center md:gap-4">
         {userRole !== "admin" && (
           <Button onClick={() => setHelpOpen(true)}>
             Raise a help request <MessageCirclePlus className="size-5" />
           </Button>
         )}
-        <SearchEnquiry variant="outline" showText={true} />
+        <SearchEnquiry variant="outline" showText={!isMobile || isAdmin} />
 
         <div className="flex w-full flex-wrap items-center justify-center gap-2 md:justify-end">
           <span className="hidden text-xs font-medium text-gray-700 md:inline md:text-sm">
@@ -105,9 +109,16 @@ const EnquirySearchFiltersCreate: React.FC = () => {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="flex items-center gap-2">
-                {buttonLabel}
-                <ChevronDown className="h-4 w-4 opacity-60" />
+              <Button
+                variant="outline"
+                className="flex w-full items-center gap-2 md:w-fit"
+              >
+                {(!isMobile || isAdmin) && buttonLabel}
+                {isMobile || isAdmin ? (
+                  <FunnelPlus className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4 opacity-60" />
+                )}
               </Button>
             </DropdownMenuTrigger>
 

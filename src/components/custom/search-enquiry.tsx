@@ -97,7 +97,7 @@ export default function SearchEnquiry({
           variant={variant}
           className={clsx(
             buttonClassName,
-            "border-primary w-full border shadow-lg",
+            "border-primary w-auto md:flex-1 border shadow-lg",
           )}
         >
           <SearchIcon /> {showText && <> Search Enquiries</>}

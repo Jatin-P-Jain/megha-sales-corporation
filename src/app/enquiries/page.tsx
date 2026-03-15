@@ -10,13 +10,18 @@ export default async function Enquiries() {
   return (
     <div className="mx-auto flex w-full flex-col gap-4">
       <div
-        className={`fixed inset-x-0 top-0 z-30 mx-auto flex h-48 w-full max-w-6xl flex-col items-end justify-end rounded-lg bg-white px-4 shadow-md pb-4`}
+        className={`fixed inset-x-0 top-0 z-30 mx-auto flex h-45 md:h-50 w-full max-w-6xl flex-col items-end justify-end rounded-lg bg-white px-4 pb-4 shadow-md`}
       >
-        <div className="mx-auto flex w-full flex-col ">
-          <div className="mb-0 flex w-full flex-row items-center justify-between">
-            <h1 className="py-2 text-xl font-semibold tracking-wide text-cyan-950 md:text-2xl">
-              <span className="text-xl">Enquiry Management</span>
+        <div className="flex w-full flex-col gap-2">
+          <div className="flex w-full flex-col items-start justify-between bg-">
+            <h1 className="text-xl font-semibold tracking-wide text-cyan-950 md:text-2xl">
+              <span className="text-lg">
+                {isAdmin ? "Enquiry Management" : "Help Center"}
+              </span>
             </h1>
+            <span className="text-sm text-muted-foreground">
+              {isAdmin ? "Manage all the queries from one place" : "All your queries at one place"}
+            </span>
           </div>
           <EnquirySearchFiltersCreate />
         </div>

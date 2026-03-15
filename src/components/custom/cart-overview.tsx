@@ -42,7 +42,7 @@ export default function CartOverview() {
         </span>
       </div> */}
 
-      <div className="flex w-full flex-col items-start justify-between md:w-fit px-2">
+      <div className="flex w-full flex-col items-start justify-between px-2">
         {totalUnits > 0 ? (
           <div className="flex w-full items-center justify-between">
             <div className="flex flex-col">

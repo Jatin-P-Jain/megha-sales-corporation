@@ -66,6 +66,7 @@ export type CartActions = {
   clearCart: () => Promise<void>;
   increment: (cartItemKey: string) => Promise<void>;
   decrement: (cartItemKey: string) => Promise<void>;
+  setQuantity: (cartItemKey: string, quantity: number) => Promise<void>;
   setCartProducts: (cartProducts: CartProduct[]) => void;
   resetCartContext: () => Promise<void>;
 };
@@ -328,6 +329,27 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     [currentUser, cartIndex],
   );
 
+  const setQuantity = useCallback(
+    async (cartItemKey: string, quantity: number) => {
+      if (!currentUser) throw new Error("Not authenticated");
+
+      const ref = doc(
+        firestore,
+        "carts",
+        currentUser.uid,
+        "items",
+        cartItemKey,
+      );
+
+      if (quantity > 0) {
+        await setDoc(ref, { quantity }, { merge: true });
+      } else {
+        await deleteDoc(ref);
+      }
+    },
+    [currentUser],
+  );
+
   const clearCart = useCallback(async () => {
     if (!currentUser) throw new Error("Not authenticated");
     const batch = writeBatch(firestore);
@@ -390,6 +412,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       clearCart,
       increment,
       decrement,
+      setQuantity,
       setCartProducts,
       resetCartContext,
     }),
@@ -399,6 +422,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       clearCart,
       increment,
       decrement,
+      setQuantity,
       resetCartContext,
     ],
   );
