@@ -44,6 +44,7 @@ import NotificationsCenterClient from "@/app/notifications/notifications-center-
 import { useNavigationLock } from "@/context/navigation-lock-provider";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useCartState } from "@/context/cartContext";
 
 type AccountStatusUI =
   | "pending"
@@ -153,6 +154,8 @@ export default function AuthButtons() {
     uid: currentUser?.uid,
     includeItems: false,
   });
+  const { cartTotals } = useCartState();
+  const { totalItems } = cartTotals;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const searchKey = searchParams?.toString() ?? "";
@@ -390,7 +393,12 @@ export default function AuthButtons() {
                     href="/cart"
                     className="flex items-center justify-between"
                   >
-                    My Cart
+                    <span className="flex items-center justify-start gap-2">
+                      My Cart{" "}
+                      <span className="font-medium">
+                        ({totalItems} item{totalItems !== 1 ? "s" : ""})
+                      </span>
+                    </span>
                     <ShoppingCartIcon className="text-secondary-foreground" />
                   </SafeLink>
                 </DropdownMenuItem>
@@ -411,15 +419,17 @@ export default function AuthButtons() {
 
             <DropdownMenuSeparator />
 
-            <DropdownMenuItem className="flex items-center justify-between">
-              <SafeLink
-                href="/enquiries"
-                className="flex w-full items-center justify-between"
-              >
-                Help Center
-                <MessageCircleQuestionIcon className="text-secondary-foreground" />
-              </SafeLink>
-            </DropdownMenuItem>
+            {!isAdmin && (
+              <DropdownMenuItem className="flex items-center justify-between">
+                <SafeLink
+                  href="/enquiries"
+                  className="flex w-full items-center justify-between"
+                >
+                  Help Center
+                  <MessageCircleQuestionIcon className="text-secondary-foreground" />
+                </SafeLink>
+              </DropdownMenuItem>
+            )}
 
             <DropdownMenuItem
               className="flex items-center justify-between"
@@ -470,7 +480,7 @@ export default function AuthButtons() {
   return (
     <SafeLink
       href="/login"
-      className="flex flex-col-reverse text-[10px] items-center justify-center md:text-base font-medium hover:underline md:flex-row"
+      className="flex flex-col-reverse items-center justify-center text-[10px] font-medium hover:underline md:flex-row md:text-base"
     >
       Login <LogInIcon className="size-5" />
     </SafeLink>
