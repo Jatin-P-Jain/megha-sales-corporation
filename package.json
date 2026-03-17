@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "prebuild": "tsx scripts/generate-sw.ts",
-    "dev": "tsx scripts/generate-sw.ts && next dev",
+    "prebuild": "APP_ENV=production tsx scripts/generate-sw.ts",
+    "dev": "APP_ENV=development tsx scripts/generate-sw.ts && next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint src scripts/generate-sw.ts next.config.ts eslint.config.mjs --max-warnings=0"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",
@@ -45,7 +45,7 @@
     "framer-motion": "^12.14.0",
     "jose": "^6.0.10",
     "lucide-react": "^0.483.0",
-    "next": "15.2.8",
+    "next": "15.5.13",
     "next-themes": "^0.4.6",
     "nextjs-toploader": "^3.9.17",
     "radix-ui": "^1.4.3",
@@ -70,7 +70,7 @@
     "@types/react-dom": "^19",
     "dotenv": "^17.2.2",
     "eslint": "^9",
-    "eslint-config-next": "15.2.3",
+    "eslint-config-next": "15.5.13",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "tailwindcss": "^4",

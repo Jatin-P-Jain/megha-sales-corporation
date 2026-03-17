@@ -1,7 +1,43 @@
-import { decodeJwt } from "jose";
-import { cookies } from "next/headers";
+import { createRemoteJWKSet, jwtVerify } from "jose";
 import { NextRequest, NextResponse } from "next/server";
 import { getSafeRedirectPath } from "@/lib/safe-redirect";
+
+const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+const jwks = createRemoteJWKSet(
+  new URL(
+    "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com"
+  )
+);
+
+type VerifiedClaims = {
+  admin?: boolean;
+  exp?: number;
+};
+
+const verifyFirebaseIdToken = async (
+  token: string
+): Promise<VerifiedClaims | null> => {
+  if (!projectId) {
+    console.error(
+      "Missing NEXT_PUBLIC_FIREBASE_PROJECT_ID for middleware auth"
+    );
+    return null;
+  }
+
+  try {
+    const { payload } = await jwtVerify(token, jwks, {
+      issuer: `https://securetoken.google.com/${projectId}`,
+      audience: projectId,
+    });
+
+    return {
+      admin: Boolean(payload.admin),
+      exp: payload.exp,
+    };
+  } catch {
+    return null;
+  }
+};
 
 export async function middleware(request: NextRequest) {
   const { pathname, origin, searchParams } = request.nextUrl;
@@ -22,8 +58,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // 2) Grab the ID token or treat as logged-out
-  const cookieStore = await cookies();
-  const token = cookieStore.get("firebaseAuthToken")?.value;
+  const token = request.cookies.get("firebaseAuthToken")?.value;
 
   const publicPaths = ["/", "/login", "/register", "/products-list"];
   const isPublic =
@@ -48,27 +83,17 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(safeRedirect, origin));
   }
 
-  // 4) Decode your token (admin, exp, profileComplete from custom claim)
-  let admin: boolean | undefined;
-  let exp: number | undefined;
-
-  try {
-    const decoded = decodeJwt(token) as {
-      admin?: boolean;
-      exp?: number;
-      user_id?: string;
-    };
-
-    admin = decoded.admin;
-    exp = decoded.exp;
-  } catch (error) {
-    console.error("Failed to decode JWT:", error);
+  // 4) Verify token signature/claims before trusting role or expiry data
+  const verified = await verifyFirebaseIdToken(token);
+  if (!verified) {
     const redirectUrl = new URL("/login", origin);
     const res = NextResponse.redirect(redirectUrl);
     res.cookies.delete("firebaseAuthToken");
     res.cookies.delete("firebaseAuthRefreshToken");
     return res;
   }
+
+  const { admin, exp } = verified;
 
   // 5) If your token's about to expire, refresh it
   if (exp && (exp - 5 * 60) * 1000 < Date.now()) {

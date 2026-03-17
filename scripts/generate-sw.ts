@@ -3,7 +3,14 @@ import fs from "fs";
 import dotenv from "dotenv";
 import path from "path";
 
-const envFile = `.env.${process.env.NODE_ENV || "development"}.local`;
+const appEnv =
+  process.env.APP_ENV ||
+  process.env.NODE_ENV ||
+  (process.env.npm_lifecycle_event === "prebuild"
+    ? "production"
+    : "development");
+
+const envFile = `.env.${appEnv}.local`;
 const envPath = path.resolve(process.cwd(), envFile);
 
 dotenv.config({ path: envPath });
@@ -23,7 +30,7 @@ if (
   !NEXT_PUBLIC_APP_ID
 ) {
   console.error(
-    "Missing required environment variables for service worker generation.",
+    "Missing required environment variables for service worker generation."
   );
   process.exit(1);
 }
