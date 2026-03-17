@@ -4,35 +4,25 @@ import { useEffect } from "react";
 
 export const ServiceWorkerRegister = () => {
   useEffect(() => {
+    const isDev = process.env.NODE_ENV !== "production";
+
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       const registerSW = async () => {
         try {
-          // Unregister any existing service worker first (optional)
-          const existingRegistrations =
-            await navigator.serviceWorker.getRegistrations();
-          for (const registration of existingRegistrations) {
-            if (registration.scope === window.location.origin + "/") {
-              await registration.unregister();
-              console.log("Existing SW unregistered");
-            }
-          }
-
-          // Register the new service worker
+          // Register or update service worker in place.
           const registration = await navigator.serviceWorker.register(
             "/firebase-messaging-sw.js",
             {
               scope: "/",
-              updateViaCache: "none", // Always fetch fresh SW
+              updateViaCache: "none",
             },
           );
 
-          console.log("SW registered successfully:", registration);
+          await registration.update();
+          if (isDev) console.log("SW registered:", registration);
 
-          // Wait for the service worker to be ready
-          const swRegistration = await navigator.serviceWorker.ready;
-          console.log("SW ready:", swRegistration);
+          await navigator.serviceWorker.ready;
 
-          // Handle service worker updates
           registration.addEventListener("updatefound", () => {
             const newWorker = registration.installing;
             if (newWorker) {
@@ -41,20 +31,19 @@ export const ServiceWorkerRegister = () => {
                   newWorker.state === "installed" &&
                   navigator.serviceWorker.controller
                 ) {
-                  // New service worker available
-                  console.log("New SW available");
-                  // You can show a notification to user to refresh the page
+                  if (isDev) console.log("New SW available");
                 }
               });
             }
           });
 
-          // Listen for messages from service worker
-          navigator.serviceWorker.addEventListener("message", (event) => {
-            console.log("Message from SW:", event.data);
-          });
-        } catch (error) {
-          console.error("SW registration failed:", error);
+          if (isDev) {
+            navigator.serviceWorker.addEventListener("message", (event) => {
+              console.log("Message from SW:", event.data);
+            });
+          }
+        } catch {
+          console.error("SW registration failed");
         }
       };
 
@@ -64,7 +53,7 @@ export const ServiceWorkerRegister = () => {
         window.addEventListener("load", registerSW);
         return () => window.removeEventListener("load", registerSW);
       }
-    } else {
+    } else if (isDev) {
       console.log("Service workers are not supported in this browser");
     }
   }, []);

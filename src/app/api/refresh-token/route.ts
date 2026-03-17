@@ -13,7 +13,15 @@ export const GET = async (request: NextRequest) => {
   if (!refreshToken) {
     return NextResponse.redirect(new URL("/", request.url));
   }
+
+  if (!apiKey) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+
     const response = await fetch(
       `https://secureToken.googleapis.com/v1/token?key=${apiKey}`,
       {
@@ -23,20 +31,28 @@ export const GET = async (request: NextRequest) => {
           grant_type: "refresh_token",
           refresh_token: refreshToken,
         }),
+        signal: controller.signal,
       }
     );
+    clearTimeout(timeout);
+
     const jsonResponse = await response.json();
     if (!response.ok || !jsonResponse?.id_token) {
       throw new Error("Token refresh failed");
     }
+
     const newToken = jsonResponse.id_token;
     cookieStore.set("firebaseAuthToken", newToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV == "production",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60,
     });
+
     return NextResponse.redirect(new URL(path, request.url));
-  } catch (e) {
-    console.log("Failed to refresh token -- ", e);
+  } catch {
+    console.error("Failed to refresh token");
     return NextResponse.redirect(new URL("/", request.url));
   }
 };

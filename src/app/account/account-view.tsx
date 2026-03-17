@@ -153,7 +153,7 @@ function DetailRow({
   onCopy?: (text: string, label: string) => void;
 }) {
   const display = valueNode ?? (
-    <span className="break-all">{formatValue(value)}</span>
+    <span className="wrap-break-word">{formatValue(value)}</span>
   );
 
   return (

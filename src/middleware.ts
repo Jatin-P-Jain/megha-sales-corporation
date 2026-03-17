@@ -63,6 +63,11 @@ export async function middleware(request: NextRequest) {
   const publicPaths = ["/", "/login", "/register", "/products-list"];
   const isPublic =
     publicPaths.includes(pathname) || pathname.startsWith("/brands");
+  const isAuthPage = pathname === "/login" || pathname === "/register";
+
+  if (isPublic && !isAuthPage) {
+    return NextResponse.next();
+  }
 
   if (!token) {
     if (isPublic) return NextResponse.next();
@@ -128,19 +133,13 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/",
-    "/admin-dashboard",
     "/admin-dashboard/:path*",
     "/login",
     "/register",
-    "/account",
     "/account/:path*",
-    "/products-list",
-    "/products-list/:path*",
     "/cart",
     "/checkout",
     "/order-history",
-    "/brands/:path*",
     "/enquiries",
     "/enquiries/:path*",
   ],
