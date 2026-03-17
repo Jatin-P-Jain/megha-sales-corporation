@@ -37,7 +37,7 @@ export default function ForgotPasswordForm() {
             });
           }
         } catch (e) {
-          console.log({ e });
+          console.error("Password reset request failed:", e instanceof Error ? e.message : e);
         }
         setEmail("");
         setLoading(false);

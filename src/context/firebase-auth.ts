@@ -59,16 +59,18 @@ export const verifyOTP = async (
   try {
     const result = await confirmationResult.confirm(otp);
     if (result) {
-      // console.log("OTP verification successful", result);
+      if (process.env.NODE_ENV === "development") {
+        console.log("OTP verification successful");
+      }
       const user = result.user;
       const token = await user.getIdToken(true);
       await setToken(token, user.refreshToken);
       return user;
     } else {
-      console.log("OTP verification failed: No result returned");
+      console.error("OTP verification failed: No result returned");
     }
   } catch (err) {
-    console.log("OTP verification failed", err);
+    console.error("OTP verification failed:", err instanceof Error ? err.message : err);
     throw err;
   }
 };

@@ -141,7 +141,7 @@ export default function HelpDialog({
         throw new Error("Failed to send enquiry");
       }
     } catch (err) {
-      console.log(err);
+      console.error("Help request failed:", err instanceof Error ? err.message : err);
       toast.error("Oops! Something Went Wrong", {
         description: "We couldn't send your query. Please try again shortly.",
       });
