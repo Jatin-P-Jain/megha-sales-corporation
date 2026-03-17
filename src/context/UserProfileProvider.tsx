@@ -75,7 +75,6 @@ export function UserProfileProvider({
         console.log("Created new user document for uid:", fbUid);
       }
     } else {
-      
     }
   }, []);
 

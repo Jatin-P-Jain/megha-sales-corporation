@@ -177,7 +177,10 @@ export function FeedbackDialog({ trigger }: FeedbackDialogProps) {
         });
       }
     } catch (err) {
-      console.error("Feedback submission failed:", err instanceof Error ? err.message : err);
+      console.error(
+        "Feedback submission failed:",
+        err instanceof Error ? err.message : err,
+      );
       toast.error("Something went wrong", {
         description: "Your feedback wasn't sent. Please try again in a moment.",
       });

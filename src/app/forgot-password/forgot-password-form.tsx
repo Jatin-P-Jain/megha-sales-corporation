@@ -37,7 +37,10 @@ export default function ForgotPasswordForm() {
             });
           }
         } catch (e) {
-          console.error("Password reset request failed:", e instanceof Error ? e.message : e);
+          console.error(
+            "Password reset request failed:",
+            e instanceof Error ? e.message : e,
+          );
         }
         setEmail("");
         setLoading(false);
@@ -48,10 +51,10 @@ export default function ForgotPasswordForm() {
         onChange={(e) => setEmail(e.target.value)}
         type="email"
         placeholder="Email"
-        className="border border-gray-300 rounded p-2 mb-4 w-full"
+        className="mb-4 w-full rounded border border-gray-300 p-2"
         disabled={loading}
       />
-      <Button className="rounded p-2 w-full" type="submit" disabled={loading}>
+      <Button className="w-full rounded p-2" type="submit" disabled={loading}>
         Send Reset Link
       </Button>
     </form>
