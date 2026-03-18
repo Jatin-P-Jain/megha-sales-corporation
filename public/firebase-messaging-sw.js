@@ -4,10 +4,10 @@ importScripts("https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-com
 
 // Initialize Firebase with environment variables
 firebase.initializeApp({
-  apiKey: "AIzaSyA5OprNbI9Qx5KiL9Ji8alBVAi3-fNP6oI",
-  projectId: "megha-sales-corporation",
-  messagingSenderId: "279587746987",
-  appId: "1:279587746987:web:f3142e3ae123d4cc5d33ee",
+  apiKey: "AIzaSyCrwm1SeI0eeDRDCm3SrI8EsakaTwTa3YE",
+  projectId: "megha-sales-corporation-dev",
+  messagingSenderId: "19402792672",
+  appId: "1:19402792672:web:c8b19421d4bd0c14afba85",
 });
 
 const messaging = firebase.messaging();
