@@ -42,6 +42,11 @@ const verifyFirebaseIdToken = async (
 export async function middleware(request: NextRequest) {
   const { pathname, origin, searchParams } = request.nextUrl;
 
+  // Handle CORS preflight requests
+  if (request.method === "OPTIONS") {
+    return NextResponse.next();
+  }
+
   // 0) Static/public bypass
   if (
     pathname === "/firebase-messaging-sw.js" ||
