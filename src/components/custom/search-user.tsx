@@ -21,7 +21,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import clsx from "clsx";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
 
 type SearchField = "email" | "phone" | "userId" | "displayName";
 
@@ -34,7 +35,7 @@ export default function SearchUser({
   buttonClassName?: string;
   showText?: boolean;
 }) {
-  const router = useRouter();
+  const router = useSafeRouter();
   const searchParams = useSearchParams();
 
   const [open, setOpen] = useState(false);

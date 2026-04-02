@@ -1,8 +1,9 @@
 import React from "react";
-import Link from "next/link";
+
 import { BadgeCheckIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BankDetails from "@/components/custom/bank-details";
+import { SafeLink } from "@/components/custom/utility/SafeLink";
 
 export default async function OrderPlacedPage({
   params,
@@ -15,21 +16,22 @@ export default async function OrderPlacedPage({
   newSearchParams.set("orderId", orderId);
 
   return (
-    <div className="mx-auto flex min-h-[70vh] items-center justify-center px-4 py-10">
+    <div className="mx-auto flex items-center justify-center">
       <div className="flex w-full flex-col items-center gap-3 text-center">
         <div className="mb-4 grid place-items-center rounded-full bg-green-50 p-4">
           <BadgeCheckIcon className="size-14 text-green-800 md:size-16" />
         </div>
 
-        <h1 className="text-primary text-xl font-semibold md:text-2xl">
-          Order placed successfully.
+        <h1 className="text-primary text-xl font-semibold md:text-2xl flex flex-col items-center justify-center gap-2">
+          Your Order has been placed.
+          <span className="text-base">Thank you for your purchase!</span>
         </h1>
         <p className="text-muted-foreground mt-2 text-sm md:text-base">
           We&apos;ll start packing your order shortly and will notify you once
           it&apos;s on the way.
         </p>
 
-        <div className="flex w-full flex-col gap-4 rounded-lg border bg-zinc-50 px-4 py-3">
+        <div className="flex w-full flex-col gap-4 rounded-lg border bg-zinc-50 px-2 py-3">
           <div className="flex w-full flex-col items-center justify-center">
             <div className="text-muted-foreground text-xs">Order ID</div>
             <div className="mt-1 font-mono text-sm font-semibold break-all text-zinc-900">
@@ -37,9 +39,9 @@ export default async function OrderPlacedPage({
             </div>
           </div>
           <Button asChild className="w-full">
-            <Link href={`/order-history?${newSearchParams.toString()}`}>
+            <SafeLink href={`/order-history?${newSearchParams.toString()}`}>
               View order details
-            </Link>
+            </SafeLink>
           </Button>
           <BankDetails />
         </div>
@@ -53,10 +55,10 @@ export default async function OrderPlacedPage({
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Button asChild variant="outline" className="w-full">
-              <Link href="/products-list">Explore products</Link>
+              <SafeLink href="/products-list">Explore products</SafeLink>
             </Button>
             <Button asChild variant="outline" className="w-full">
-              <Link href="/">Go to home</Link>
+              <SafeLink href="/">Go to home</SafeLink>
             </Button>
           </div>
         </div>

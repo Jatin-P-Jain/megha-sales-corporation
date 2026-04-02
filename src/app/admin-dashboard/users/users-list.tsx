@@ -8,15 +8,16 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { usePaginatedFirestore } from "@/hooks/usePaginatedFireStore";
-import { UserData } from "@/types/user";
+import { FullUser } from "@/types/user";
 import clsx from "clsx";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import UserCard from "./user-card";
 import UserCardSkeleton from "@/components/custom/user-card-skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
 
 type SearchField = "email" | "phone" | "userId" | "displayName";
 
@@ -24,7 +25,7 @@ export default function UsersList() {
   const PAGE_SIZE = process.env.NEXT_PUBLIC_PAGE_SIZE
     ? parseInt(process.env.NEXT_PUBLIC_PAGE_SIZE)
     : 10;
-  const router = useRouter();
+  const router = useSafeRouter();
   const searchParams = useSearchParams();
   const previousFiltersRef = useRef<string>("");
 
@@ -68,12 +69,13 @@ export default function UsersList() {
   ];
 
   const { data, loading, hasMore, currentPage, loadPage, totalItems } =
-    usePaginatedFirestore<UserData>({
-      collectionPath: "users",
+    usePaginatedFirestore<FullUser>({
+      collectionPath: "usersDirectory",
       pageSize: PAGE_SIZE,
       orderByField: "createdAt",
       orderDirection: "desc",
       filters: filters,
+      realtime: true,
     });
 
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
@@ -158,7 +160,7 @@ export default function UsersList() {
   }
 
   return (
-    <div className="relative mx-auto flex max-w-screen-lg flex-col">
+    <div className="relative mx-auto flex w-full flex-col">
       {/* Active Search Display */}
       {searchField && searchQuery && (
         <div className="flex w-full items-center justify-center gap-2 px-4">
@@ -187,8 +189,8 @@ export default function UsersList() {
       </p>
       {data.length > 0 && (
         <div className="flex h-full w-full flex-1 flex-col justify-between gap-4 py-2">
-          <div className="flex w-full flex-1 flex-grow flex-col gap-5">
-            {data.map((user: UserData, index: number) => (
+          <div className="flex w-full flex-1 grow flex-col gap-2">
+            {data.map((user: FullUser, index: number) => (
               <UserCard
                 key={index}
                 user={user}

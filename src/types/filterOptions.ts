@@ -4,6 +4,7 @@ export type FilterOptions = {
     name: string;
     logo: string;
     categories: string[];
+    vehicleCompanies?: string[];
   }[];
   vehicleCompanies: string[];
   categories: string[];

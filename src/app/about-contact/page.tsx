@@ -11,20 +11,21 @@ import {
   StoreIcon,
   FootprintsIcon,
   MapPinIcon,
+  Copy,
+  MessageCircleHeart,
 } from "lucide-react";
 import Image from "next/image";
-import WhatsappIcon from "@/assets/icons/whatsapp.png";
 import BhagwanSlok from "@/assets/icons/bhagwan-slok.svg";
 import JainLogo from "@/assets/icons/jain-logo.svg";
 import GoogleMapComponent from "@/components/custom/google-map";
-import { EnquiryDialog } from "@/components/custom/wa-enquiry-dialog";
+import { FeedbackDialog } from "@/components/custom/feedback-dialog";
 import AboutAutoPartsShop from "@/components/custom/about-us";
-import Link from "next/link";
 import BankDetails from "@/components/custom/bank-details";
+import { SafeLink } from "@/components/custom/utility/SafeLink";
 
 export default function AboutAndContact() {
   return (
-    <div className="container mx-auto flex max-w-4xl flex-col overflow-auto p-4 gap-4 mb-8">
+    <div className="container mx-auto flex max-w-4xl flex-col gap-4 overflow-auto">
       <div className="flex w-full items-center justify-between space-y-1">
         <div className="relative">
           <Image alt="" src={JainLogo} width={30} height={30} />
@@ -47,70 +48,48 @@ export default function AboutAndContact() {
           <div className="grid w-full grid-cols-1 items-center justify-center gap-8 md:grid-cols-2 md:gap-16">
             <div className="text-primary/95 flex w-full flex-col gap-1 text-sm font-semibold">
               <p className="flex items-center justify-start gap-2">
-                <User2Icon className="size-5" />
-                <span className="text-base font-semibold">Yashwant Jain</span>
+                <User2Icon className="size-4 md:size-5" />
+                <span className="font-semibold md:text-base">
+                  Yashwant Jain
+                </span>
               </p>
               <div className="flex w-full items-center justify-between gap-4">
-                <p className="flex items-center gap-2 text-base">
-                  <Phone className="size-5" />
+                <p className="flex items-center gap-2 md:text-base">
+                  <Phone className="size-4 md:size-5" />
                   <span className="">+91-9425505557</span>
                 </p>
-                <EnquiryDialog
-                  trigger={
-                    <Button
-                      variant="outline"
-                      className="h-0 min-h-0 w-fit gap-2 rounded-full border-green-600 p-3 px-5 text-green-600"
-                    >
-                      <div className="relative">
-                        <Image
-                          src={WhatsappIcon}
-                          alt=""
-                          width={15}
-                          height={15}
-                        />
-                      </div>
-                      Contact
-                    </Button>
+                <Copy
+                  className="size-4 cursor-pointer md:size-5"
+                  onClick={() =>
+                    navigator.clipboard.writeText("+91-9425505557")
                   }
                 />
               </div>
-              <p className="flex items-center gap-2 text-base">
-                <Mail className="size-5" />
+              <p className="flex items-center gap-2 md:text-base">
+                <Mail className="size-4 md:size-5" />
                 <span className="">yashwantraipur@gmail.com</span>
               </p>
             </div>
             {/* <Separator /> */}
             <div className="text-primary/95 flex w-full flex-col gap-1 text-sm font-semibold">
               <p className="flex items-center justify-start gap-2">
-                <User2Icon className="size-5" />
-                <span className="text-base font-semibold">Pratham Jain</span>
+                <User2Icon className="size-4 md:size-5" />
+                <span className="font-semibold md:text-base">Pratham Jain</span>
               </p>
               <div className="flex w-full items-center justify-between gap-4">
-                <p className="flex items-center gap-2 text-base">
-                  <Phone className="size-5" />
+                <p className="flex items-center gap-2 md:text-base">
+                  <Phone className="size-4 md:size-5" />
                   <span className="">+91-9589143377</span>
                 </p>
-                <EnquiryDialog
-                  trigger={
-                    <Button
-                      variant="outline"
-                      className="h-0 min-h-0 w-fit gap-2 rounded-full border-green-600 p-3 px-5 text-green-600"
-                    >
-                      <div className="relative">
-                        <Image
-                          src={WhatsappIcon}
-                          alt=""
-                          width={15}
-                          height={15}
-                        />
-                      </div>
-                      Contact
-                    </Button>
+                <Copy
+                  className="size-4 cursor-pointer md:size-5"
+                  onClick={() =>
+                    navigator.clipboard.writeText("+91-9589143377")
                   }
                 />
               </div>
-              <p className="flex items-center gap-2 text-base">
-                <Mail className="size-5" />
+              <p className="flex items-center gap-2 md:text-base">
+                <Mail className="size-4 md:size-5" />
                 <span className="">prathamjain01@gmail.com</span>
               </p>
             </div>
@@ -144,16 +123,17 @@ export default function AboutAndContact() {
               Please reach out with any queries or feedback. We will get back to
               you as soon as possible.
             </p>
-            <EnquiryDialog
+            <FeedbackDialog
               trigger={
                 <Button
                   variant="outline"
-                  className="w-full gap-4 border-green-600 text-green-600"
+                  className="text-primary h-full w-full flex-wrap gap-0 md:gap-2"
                 >
-                  <div className="relative">
-                    <Image src={WhatsappIcon} alt="" width={20} height={20} />
-                  </div>
-                  Enquire on WhatsApp
+                  Happy to hear from you!{" "}
+                  <span className="flex items-center justify-center gap-2">
+                    Drop a message.
+                    <MessageCircleHeart className="size-5" />
+                  </span>
                 </Button>
               }
             />
@@ -164,7 +144,7 @@ export default function AboutAndContact() {
             <div className="flex flex-col items-center gap-1 md:flex-row">
               Thoughtfully designed and developed with passion and ❤️ by{" "}
               <div className="flex items-center gap-1">
-                <Link
+                <SafeLink
                   href="https://www.jatinprakash.online"
                   className="underline"
                   target="_blank"
@@ -173,7 +153,7 @@ export default function AboutAndContact() {
                   <span className="text-[14px] font-semibold">
                     Jatin Prakash Jain
                   </span>
-                </Link>
+                </SafeLink>
               </div>
             </div>
             <span className="text-lg">✨</span>

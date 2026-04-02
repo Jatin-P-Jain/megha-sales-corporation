@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,7 +10,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { KeyRound, Loader, LockKeyhole } from "lucide-react";
+import { Eye, EyeClosed, KeyRound, Loader, LockKeyhole } from "lucide-react";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
+import {
+  InputGroup,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 
 export default function UsersUnlockDialog({
   children,
@@ -22,13 +27,14 @@ export default function UsersUnlockDialog({
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }) {
-  const router = useRouter();
+  const router = useSafeRouter();
   const [internalOpen, setInternalOpen] = useState(false);
 
   const open = openProp ?? internalOpen;
   const setOpen = onOpenChange ?? setInternalOpen;
 
   const [passphrase, setPassphrase] = useState("");
+  const [showPassphrase, setShowPassphrase] = useState(false);
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
@@ -78,14 +84,24 @@ export default function UsersUnlockDialog({
         </DialogHeader>
 
         <div className="space-y-3">
-          <input
-            value={passphrase}
-            onChange={(e) => setPassphrase(e.target.value)}
-            type="password"
-            autoComplete="current-password"
-            className="bg-background w-full rounded-md border px-3 py-2"
-            placeholder="Passphrase"
-          />
+          <InputGroup>
+            <InputGroupInput
+              value={passphrase}
+              onChange={(e) => setPassphrase(e.target.value)}
+              type={showPassphrase ? "text" : "password"}
+              autoComplete="current-password"
+              className=""
+              placeholder="Passphrase"
+              disabled={loading}
+            />
+            <InputGroupButton
+              onClick={() => {
+                setShowPassphrase((prev) => !prev);
+              }}
+            >
+              {showPassphrase ? <EyeClosed /> : <Eye />}
+            </InputGroupButton>
+          </InputGroup>
 
           {error ? <p className="text-sm text-red-600">{error}</p> : null}
 

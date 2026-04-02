@@ -14,10 +14,10 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { deleteProduct } from "./actions";
-import { useAuth } from "@/context/useAuth";
+import { useAuthState } from "@/context/useAuth";
 import { updateBrandProcuctCount } from "@/app/admin-dashboard/brands/action";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
 
 export default function DeleteProductButton({
   brandId,
@@ -28,14 +28,14 @@ export default function DeleteProductButton({
   totalBrandProducts: number;
   productId: string;
 }) {
-  const router = useRouter();
+  const router = useSafeRouter();
   const [isDeleting, setIsDeleting] = useState(false);
   const [open, setOpen] = useState(false);
-  const auth = useAuth();
+  const { currentUser } = useAuthState();
 
   const deleteHandler = async () => {
     setIsDeleting(true);
-    const token = await auth?.currentUser?.getIdToken();
+    const token = await currentUser?.getIdToken();
     if (!token) {
       setIsDeleting(false);
       return;

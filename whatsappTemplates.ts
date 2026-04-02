@@ -61,36 +61,48 @@ export const whatsappTemplates: Record<
       buttonParams: [customerUserId],
     }),
   },
-  order_placed_to_admin: {
-    name: "order_placed_to_admin",
+  order_placed_to_admin_v2: {
+    name: "order_placed_to_admin_v2",
     language: { code: "en" },
-    bodyParamsCount: 4,
+    bodyParamsCount: 5,
     hasButton: true,
-    resolveParams: ({ adminName, orderId, customerName, customerPhone }) => ({
-      bodyParams: [adminName, orderId, customerName, customerPhone],
+    resolveParams: ({
+      adminName,
+      orderId,
+      customerFirmName,
+      customerName,
+      customerPhone,
+    }) => ({
+      bodyParams: [
+        adminName,
+        orderId,
+        customerFirmName,
+        customerName,
+        customerPhone,
+      ],
       buttonParams: [orderId],
     }),
   },
-  enquiry_received_to_admin: {
-    name: "enquiry_received_to_admin",
+  enquiry_received_to_admin_v2: {
+    name: "enquiry_received_to_admin_v2",
     language: { code: "en" },
     bodyParamsCount: 6,
     hasButton: true,
     resolveParams: ({
       adminName,
+      customerFirmName,
       customerName,
       customerPhone,
       enquiryId,
       customerMessage,
-      customerWANumber,
     }) => ({
       bodyParams: [
         adminName,
+        customerFirmName,
         customerName,
         customerPhone,
         enquiryId,
         customerMessage,
-        customerWANumber,
       ],
       buttonParams: [enquiryId],
     }),
@@ -155,8 +167,6 @@ export const createWhatsAppPayloadFromInput = ({
       parameters: buttonParams.map((text) => ({ type: "text", text })),
     });
   }
-
-  console.log(JSON.stringify(payload));
 
   return payload;
 };

@@ -63,3 +63,45 @@ export const updateBrandProcuctCount = async (
 
   await fireStore.collection("brands").doc(brandId).update({ totalProducts });
 };
+
+export const updateStatus = async (
+  {
+    brandId,
+    newBrandStatus,
+  }: {
+    brandId: string;
+    newBrandStatus: "draft" | "live" | "discontinued";
+  },
+  authtoken: string,
+) => {
+  const verifiedToken = await auth.verifyIdToken(authtoken);
+  if (!verifiedToken.admin) {
+    return {
+      error: true,
+      message: "Unauthorized",
+    };
+  }
+
+  const schema = z.object({
+    brandId: z.string(),
+    newBrandStatus: z.enum(["draft", "live", "discontinued"]),
+  });
+
+  const validation = schema.safeParse({ brandId, newBrandStatus });
+  if (!validation.success) {
+    return {
+      error: true,
+      message: validation.error.issues[0]?.message || "An error occurred",
+    };
+  }
+
+  await fireStore
+    .collection("brands")
+    .doc(brandId)
+    .update({ status: newBrandStatus, updated: new Date() });
+
+  return {
+    error: false,
+    message: "Brand status updated successfully",
+  };
+};

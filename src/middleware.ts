@@ -1,9 +1,51 @@
-import { decodeJwt } from "jose";
-import { cookies } from "next/headers";
+import { createRemoteJWKSet, jwtVerify } from "jose";
 import { NextRequest, NextResponse } from "next/server";
+import { getSafeRedirectPath } from "@/lib/safe-redirect";
+
+const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+const jwks = createRemoteJWKSet(
+  new URL(
+    "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com"
+  )
+);
+
+type VerifiedClaims = {
+  admin?: boolean;
+  exp?: number;
+};
+
+const verifyFirebaseIdToken = async (
+  token: string
+): Promise<VerifiedClaims | null> => {
+  if (!projectId) {
+    console.error(
+      "Missing NEXT_PUBLIC_FIREBASE_PROJECT_ID for middleware auth"
+    );
+    return null;
+  }
+
+  try {
+    const { payload } = await jwtVerify(token, jwks, {
+      issuer: `https://securetoken.google.com/${projectId}`,
+      audience: projectId,
+    });
+
+    return {
+      admin: Boolean(payload.admin),
+      exp: payload.exp,
+    };
+  } catch {
+    return null;
+  }
+};
 
 export async function middleware(request: NextRequest) {
   const { pathname, origin, searchParams } = request.nextUrl;
+
+  // Handle CORS preflight requests
+  if (request.method === "OPTIONS") {
+    return NextResponse.next();
+  }
 
   // 0) Static/public bypass
   if (
@@ -21,12 +63,16 @@ export async function middleware(request: NextRequest) {
   }
 
   // 2) Grab the ID token or treat as logged-out
-  const cookieStore = await cookies();
-  const token = cookieStore.get("firebaseAuthToken")?.value;
+  const token = request.cookies.get("firebaseAuthToken")?.value;
 
   const publicPaths = ["/", "/login", "/register", "/products-list"];
   const isPublic =
     publicPaths.includes(pathname) || pathname.startsWith("/brands");
+  const isAuthPage = pathname === "/login" || pathname === "/register";
+
+  if (isPublic && !isAuthPage) {
+    return NextResponse.next();
+  }
 
   if (!token) {
     if (isPublic) return NextResponse.next();
@@ -43,37 +89,21 @@ export async function middleware(request: NextRequest) {
 
   // 3) Block /login & /register when already logged in
   if ((pathname === "/login" || pathname === "/register") && token) {
-    const hasRedirect = searchParams.get("redirect");
-    if (!hasRedirect) {
-      return NextResponse.redirect(new URL("/", origin));
-    }
+    const safeRedirect = getSafeRedirectPath(searchParams.get("redirect"));
+    return NextResponse.redirect(new URL(safeRedirect, origin));
   }
 
-  // 4) Decode your token (admin, exp, profileComplete from custom claim)
-  let admin: boolean | undefined;
-  let exp: number | undefined;
-  let profileComplete: boolean | undefined;
-
-  try {
-    const decoded = decodeJwt(token) as {
-      admin?: boolean;
-      exp?: number;
-      user_id?: string;
-      profileComplete?: boolean;
-    };
-    console.log({ decoded });
-
-    admin = decoded.admin;
-    exp = decoded.exp;
-    profileComplete = decoded.profileComplete;
-  } catch (error) {
-    console.error("Failed to decode JWT:", error);
+  // 4) Verify token signature/claims before trusting role or expiry data
+  const verified = await verifyFirebaseIdToken(token);
+  if (!verified) {
     const redirectUrl = new URL("/login", origin);
     const res = NextResponse.redirect(redirectUrl);
     res.cookies.delete("firebaseAuthToken");
     res.cookies.delete("firebaseAuthRefreshToken");
     return res;
   }
+
+  const { admin, exp } = verified;
 
   // 5) If your token's about to expire, refresh it
   if (exp && (exp - 5 * 60) * 1000 < Date.now()) {
@@ -94,22 +124,6 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // 7) Profile-complete guard (using custom claim, no fetch)
-  //    Only enforce on specific routes, and skip the profile page itself.
-  const profileRequiredPaths = ["/cart", "/checkout", "/order-history"];
-
-  const requiresProfile = profileRequiredPaths.some(
-    (p) => pathname === p || pathname.startsWith(p + "/")
-  );
-
-  if (requiresProfile && pathname !== "/account/profile") {
-    if (!profileComplete) {
-      const url = new URL("/account/profile", origin);
-      url.searchParams.set("redirect", pathname + request.nextUrl.search);
-      return NextResponse.redirect(url);
-    }
-  }
-
   // 8) Admin vs user guards
   if (!admin && pathname.startsWith("/admin-dashboard")) {
     return NextResponse.redirect(new URL("/", origin));
@@ -124,18 +138,14 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/",
-    "/admin-dashboard",
     "/admin-dashboard/:path*",
     "/login",
     "/register",
-    "/account",
     "/account/:path*",
-    "/products-list",
-    "/products-list/:path*",
     "/cart",
     "/checkout",
     "/order-history",
-    "/brands/:path*",
+    "/enquiries",
+    "/enquiries/:path*",
   ],
 };

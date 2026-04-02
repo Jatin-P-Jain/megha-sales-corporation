@@ -3,7 +3,6 @@ import { auth, storage } from "@/firebase/client";
 import { Loader2, SaveIcon } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import {
   deleteObject,
   ref,
@@ -17,7 +16,11 @@ import { Product } from "@/types/product";
 import ProductForm from "@/components/custom/product-form";
 import { productSchema } from "@/validation/productSchema";
 import { deleteProduct, updateProduct } from "./actions";
-import { createProduct, saveProductMedia } from "@/app/admin-dashboard/new-product/actions";
+import {
+  createProduct,
+  saveProductMedia,
+} from "@/app/admin-dashboard/new-product/actions";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
 
 export default function EditProductForm({
   product,
@@ -47,7 +50,7 @@ export default function EditProductForm({
     sizes,
     image,
   } = product;
-  const router = useRouter();
+  const router = useSafeRouter();
   const [progressMap, setProgressMap] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const handleSubmit = async (data: z.infer<typeof productSchema>) => {

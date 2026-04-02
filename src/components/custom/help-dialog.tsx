@@ -14,12 +14,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { UserData } from "@/types/user";
+import { FullUser } from "@/types/user";
 import clsx from "clsx";
 import { toast } from "sonner";
 import { Loader2Icon, SendIcon } from "lucide-react";
 import { generateSequenceId } from "@/lib/firebase/generateSequenceId";
-import { saveEnquiry } from "@/app/admin-dashboard/enquires/actions";
+import { saveEnquiry } from "@/app/enquiries/actions";
+import { Enquiry } from "@/types/enquiry";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
 
 export default function HelpDialog({
   open,
@@ -28,8 +30,9 @@ export default function HelpDialog({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  user: UserData;
+  user: FullUser;
 }) {
+  const router = useSafeRouter();
   const prefill = useMemo(
     () => ({
       name: user.displayName ?? "",
@@ -86,7 +89,8 @@ export default function HelpDialog({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          templateKey: "enquiry_received_to_admin",
+          templateKey: "enquiry_received_to_admin_v2",
+          customerFirmName: user?.firmName || "N/A",
           customerName: form.name,
           customerPhone: form.phone,
           customerEmail: form.email,
@@ -99,16 +103,27 @@ export default function HelpDialog({
       if (response.ok) {
         const savedEnquiryResponse = await saveEnquiry({
           id: customEnquiryId,
-          enquiryText: form.message,
-          sentBy: user || {
-            name: form.name,
+          userId: user.uid,
+          conversation: [
+            {
+              text: form.message,
+              sentAt: new Date().toISOString(),
+              messageBy: user || {
+                displayName: form.name,
+                phone: form.phone,
+                email: form.email,
+              },
+            },
+          ],
+          createdBy: user || {
+            displayName: form.name,
             phone: form.phone,
             email: form.email,
           },
           status: "pending",
-          created: new Date(),
-          updated: new Date(),
-        });
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        } as Enquiry);
         if (savedEnquiryResponse.success === false) {
           throw new Error(
             savedEnquiryResponse.error || "Failed to save enquiry",
@@ -120,11 +135,16 @@ export default function HelpDialog({
         onOpenChange(false);
         // Keep prefill, only clear message for next time
         setForm((prev) => ({ ...prev, message: "" }));
+        // Optional: Redirect to enquiry details page after submission
+        router.replace(`/enquiries?page=1`);
       } else {
-        throw Error;
+        throw new Error("Failed to send enquiry");
       }
     } catch (err) {
-      console.log(err);
+      console.error(
+        "Help request failed:",
+        err instanceof Error ? err.message : err,
+      );
       toast.error("Oops! Something Went Wrong", {
         description: "We couldn't send your query. Please try again shortly.",
       });

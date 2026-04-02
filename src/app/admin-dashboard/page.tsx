@@ -6,20 +6,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import Link from "next/link";
 import { Users, Package, MessageSquareMore } from "lucide-react";
 import UsersCardClient from "./users/users-unlock-client";
+import { SafeLink } from "@/components/custom/utility/SafeLink";
 
 const AdminDashboard = async () => {
   return (
-    <div className="container mx-auto max-w-4xl p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <p className="text-muted-foreground mt-2">
+    <div className="container mx-auto flex max-w-4xl flex-col gap-4 p-2">
+      <div>
+        <h1 className="text-xl font-bold md:text-2xl">Admin Dashboard</h1>
+        <p className="text-muted-foreground text-sm">
           Manage your application from here
         </p>
       </div>
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2">
         {/* Brands Card */}
         <Card className="transition-shadow hover:shadow-lg">
           <CardHeader>
@@ -33,10 +33,10 @@ const AdminDashboard = async () => {
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
-              <Link href="/admin-dashboard/brands">
+              <SafeLink href="/admin-dashboard/brands">
                 <Package className="h-4 w-4" />
                 Manage Brands
-              </Link>
+              </SafeLink>
             </Button>
           </CardContent>
         </Card>
@@ -67,10 +67,10 @@ const AdminDashboard = async () => {
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
-              <Link href="/admin-dashboard/enquiries">
+              <SafeLink href="/enquiries">
                 <MessageSquareMore className="h-4 w-4" />
                 View Enquiries
-              </Link>
+              </SafeLink>
             </Button>
           </CardContent>
         </Card>

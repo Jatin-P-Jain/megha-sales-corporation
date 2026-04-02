@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import {
   CheckCircle,
   Clock,
@@ -21,6 +21,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
+import { AccountStatus } from "@/types/userGate";
 
 const STATUS_CONFIG = {
   pending: { icon: Clock, label: "Pending" },
@@ -30,11 +32,10 @@ const STATUS_CONFIG = {
   deactivated: { icon: UserX, label: "Deactivated" },
 } as const;
 
-export type AccountStatus = keyof typeof STATUS_CONFIG;
 const ALL_STATUSES = Object.keys(STATUS_CONFIG) as AccountStatus[];
 
 const UserSearchAndFilters: React.FC = () => {
-  const router = useRouter();
+  const router = useSafeRouter();
   const searchParams = useSearchParams();
 
   const selectedStatuses = useMemo(() => {
@@ -74,7 +75,7 @@ const UserSearchAndFilters: React.FC = () => {
 
   return (
     <div className="space-y-1">
-      <div className="grid grid-cols-[1fr_auto] md:gap-4 gap-2  md:items-center">
+      <div className="grid grid-cols-[1fr_auto] gap-2 md:items-center md:gap-4">
         <SearchUser variant="outline" showText={true} />
         <div className="flex w-full flex-wrap items-center justify-center gap-2 md:justify-end">
           <span className="hidden text-xs font-medium text-gray-700 md:inline md:text-sm">

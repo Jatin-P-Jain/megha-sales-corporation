@@ -9,22 +9,33 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, ChevronsRight, MessageCircle } from "lucide-react";
+import {
+  AlertCircle,
+  ChevronsRight,
+  PackageCheck,
+  Send,
+  ShoppingCart,
+  Tags,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useAuth } from "@/context/useAuth";
 import { getBaseUrl } from "@/lib/utils";
+import { notifyUserAction } from "@/actions/notify-user";
 import { formatBusinessProfile } from "@/lib/business-profile-formatter";
-import { useRouter } from "next/navigation";
+import { useUserGate } from "@/context/UserGateProvider";
+import { useRequireUserProfile } from "@/hooks/useUserProfile";
+import { useUserProfileState } from "@/context/UserProfileProvider";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
 
 interface UserUnlockDialogProps {
   children: React.ReactNode;
 }
 
 export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
-  const router = useRouter();
-  const auth = useAuth();
-  const { profileComplete } = auth.clientUser || {};
+  const router = useSafeRouter();
+  const { profileComplete } = useUserGate();
+  useRequireUserProfile(true); // Ensure profile is loaded and complete status is accurate
+  const { clientUser } = useUserProfileState();
   const [open, setOpen] = useState(false);
   const [sending, setSending] = useState(false);
 
@@ -39,11 +50,11 @@ export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           templateKey: "account_approval_reminder_to_admin",
-          customerUserId: auth.clientUser?.userId,
-          customerName: auth.clientUser?.displayName || "User",
-          customerPhone: auth.clientUser?.phone || "Not provided",
-          customerEmail: auth.clientUser?.email || "Not provided",
-          customerBusinessProfile: formatBusinessProfile(auth.clientUser),
+          customerUserId: clientUser?.userId,
+          customerName: clientUser?.displayName || "User",
+          customerPhone: clientUser?.phone || "Not provided",
+          customerEmail: clientUser?.email || "Not provided",
+          customerBusinessProfile: formatBusinessProfile(clientUser),
         }),
       });
 
@@ -51,17 +62,18 @@ export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
         throw new Error("Failed to send WhatsApp message");
       }
 
-      await fetch("/api/notify-user", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          uuid: auth.clientUser?.uuid,
-          title: "🛎️ Approval Request Sent",
-          body: `Your approval request has been sent to the admin.`,
-          url: `${getBaseUrl()}/account`,
-          clickAction: "view_account",
-          status: "created",
-        }),
+      if (!clientUser?.uid) {
+        throw new Error("Missing user id for notification");
+      }
+
+      await notifyUserAction({
+        uid: clientUser.uid,
+        type: "account",
+        title: "🛎️ Approval Request Sent",
+        body: "Your approval request has been sent to the admin.",
+        url: `${getBaseUrl()}/account`,
+        clickAction: "view_account",
+        status: "created",
       });
 
       setOpen(false);
@@ -80,7 +92,7 @@ export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
       <DialogTrigger asChild>{children}</DialogTrigger>
 
       {profileComplete ? (
-        <DialogContent className="p-2 md:p-4">
+        <DialogContent className="p-4">
           <DialogHeader className="p-2">
             <div className="flex items-center gap-2">
               <AlertCircle className="h-6 w-6 text-yellow-600" />
@@ -89,7 +101,7 @@ export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
               </DialogTitle>
             </div>
 
-            <DialogDescription className="text-xs md:text-base">
+            <DialogDescription className="text-left text-xs">
               To give you the best pricing and protect our business network, we
               review new accounts before enabling full access. Once approved,
               everything unlocks automatically.
@@ -98,13 +110,21 @@ export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
 
           <div className="flex flex-col gap-3 rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-sm">
             <h4 className="text-sm font-semibold text-yellow-800">
-              What&apos;s temporarily unavailable (until approval)
+              What&apos;s temporarily unavailable (until approval)?
             </h4>
 
             <ul className="space-y-1 text-sm text-yellow-700">
-              <li>• Viewing product discounts and special pricing</li>
-              <li>• Adding items to the cart / building a cart</li>
-              <li>• Placing orders (checkout)</li>
+              <li className="flex gap-2 md:items-center">
+                <Tags className="size-4" /> Viewing product discounts and
+                special pricing
+              </li>
+              <li className="flex gap-2 md:items-center">
+                <ShoppingCart className="size-4" /> Adding items to the cart /
+                building a cart
+              </li>
+              <li className="flex gap-2 md:items-center">
+                <PackageCheck className="size-4" /> Placing orders (checkout)
+              </li>
             </ul>
 
             <p className="text-xs text-yellow-700 italic">
@@ -126,8 +146,8 @@ export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
                 </>
               ) : (
                 <>
-                  <MessageCircle className="mr-2 h-4 w-4" />
-                  Request approval on WhatsApp
+                  <Send className="size-4" />
+                  Send request approval
                 </>
               )}
             </Button>
@@ -151,7 +171,7 @@ export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
               </DialogTitle>
             </div>
 
-            <DialogDescription className="text-xs md:text-base">
+            <DialogDescription className="text-xs">
               Please complete your profile information before requesting account
               approval. This helps us verify your details and speeds up the
               approval process.
@@ -160,13 +180,21 @@ export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
 
           <div className="flex flex-col gap-3 rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-sm">
             <h4 className="text-sm font-semibold text-yellow-800">
-              What&apos;s temporarily unavailable
+              What&apos;s temporarily unavailable?
             </h4>
 
             <ul className="space-y-1 text-sm text-yellow-700">
-              <li>• Viewing product discounts and special pricing</li>
-              <li>• Adding items to the cart / building a cart</li>
-              <li>• Placing orders (checkout)</li>
+              <li className="flex items-center gap-2">
+                <Tags className="size-4" /> Viewing product discounts and
+                special pricing
+              </li>
+              <li className="flex items-center gap-2">
+                <ShoppingCart className="size-4" /> Adding items to the cart /
+                building a cart
+              </li>
+              <li className="flex items-center gap-2">
+                <PackageCheck className="size-4" /> Placing orders (checkout)
+              </li>
             </ul>
 
             <p className="text-xs text-yellow-700 italic">

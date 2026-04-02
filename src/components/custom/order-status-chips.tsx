@@ -2,10 +2,11 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import clsx from "clsx";
 import { CircleXIcon, Loader2Icon } from "lucide-react";
 import { useTransition, useState, useEffect } from "react";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
 
 export const STATUSES: { label: string; value: string }[] = [
   { label: "Pending", value: "pending" },
@@ -14,7 +15,7 @@ export const STATUSES: { label: string; value: string }[] = [
 ];
 
 export default function OrderStatusChips() {
-  const router = useRouter();
+  const router = useSafeRouter();
   const params = useSearchParams();
   const [isPending, startTransition] = useTransition();
 

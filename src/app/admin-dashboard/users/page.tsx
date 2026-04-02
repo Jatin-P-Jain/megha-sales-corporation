@@ -9,7 +9,6 @@ export default async function Users() {
   const token = cookieStore.get("firebaseAuthToken")?.value;
   const verifiedToken = token ? await auth.verifyIdToken(token) : null;
   const isAdmin = verifiedToken?.admin;
-  const isUser = verifiedToken ? true : false;
   const breadcrumbs = [
     {
       href: isAdmin ? "/admin-dashboard/" : "/",
@@ -21,23 +20,21 @@ export default async function Users() {
   ];
 
   return (
-    <div className="mx-auto flex max-w-screen-lg flex-col gap-4">
+    <div className="mx-auto flex w-full flex-col gap-4">
       <div
-        className={`fixed inset-x-0 top-0 z-30 mx-auto flex w-full max-w-screen-lg flex-col items-end justify-end rounded-lg bg-white px-4 shadow-md ${!isAdmin ? "h-45 pt-45 md:pt-67" : "h-48 pt-0 md:h-55"} ${!isUser && "!h-53 !pt-0"}`}
+        className={`fixed inset-x-0 top-0 z-30 mx-auto flex h-48 w-full max-w-6xl flex-col items-end justify-end rounded-lg bg-white px-4 shadow-md md:h-55`}
       >
-        <div className="mx-auto flex w-full max-w-screen-lg flex-col pt-8 pb-4 md:pt-6 md:pb-4">
+        <div className="mx-auto flex w-full flex-col pt-8 pb-4 md:pt-6 md:pb-4">
           <EllipsisBreadCrumbs items={breadcrumbs} />
           <div className="mb-0 flex w-full flex-row items-center justify-between">
-            <h1 className="py-2 text-xl font-[600] tracking-wide text-cyan-950 md:text-2xl">
+            <h1 className="py-2 text-xl font-semibold tracking-wide text-cyan-950 md:text-2xl">
               <span className="text-xl">User Management</span>
             </h1>
           </div>
           <UserSearchAndFilters />
         </div>
       </div>
-      <div
-        className={`flex-1 overflow-auto px-4 ${!isAdmin ? "pt-43 md:pt-52" : "pt-32 md:pt-30"} ${!isUser && "!pt-38"} pb-20`}
-      >
+      <div className={`flex w-full flex-1 overflow-auto pt-30 md:pt-20`}>
         <UsersList />
       </div>
     </div>

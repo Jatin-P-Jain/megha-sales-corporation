@@ -1,9 +1,19 @@
 "use client";
 import {
-  collection, query, where, orderBy, limit, startAfter,
-  getDocs, onSnapshot, getCountFromServer, QueryConstraint
+  collection,
+  DocumentData,
+  QueryDocumentSnapshot,
+  query,
+  where,
+  orderBy,
+  limit,
+  startAfter,
+  getDocs,
+  onSnapshot,
+  getCountFromServer,
+  QueryConstraint,
 } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { firestore } from "@/firebase/client";
 import { Order, OrderStatus } from "@/types/order";
 
@@ -23,9 +33,10 @@ export function useOrders({
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalItems, setTotalItems] = useState<number>(0);
-
-  // Keep a stable dependency for status
-  const statusKey = JSON.stringify([...(status ?? [])].sort());
+  const cursorCache = useRef<
+    Map<number, QueryDocumentSnapshot<DocumentData> | null>
+  >(new Map([[1, null]]));
+  const queryKeyRef = useRef<string>("");
 
   useEffect(() => {
     let unsub: undefined | (() => void);
@@ -56,10 +67,28 @@ export function useOrders({
 
       // List query + pagination
       const baseConstraints: QueryConstraint[] = [orderBy("updatedAt", "desc")];
+      const normalizedStatus = [...(status ?? [])].sort();
       if (userId) baseConstraints.push(where("user.id", "==", userId));
-      if (status && status.length > 0) baseConstraints.push(where("status", "in", status));
+      if (normalizedStatus.length > 0) {
+        baseConstraints.push(where("status", "in", normalizedStatus));
+      }
 
-      const baseQuery = query(collection(firestore, "orders"), ...baseConstraints);
+      const queryKey = JSON.stringify({
+        orderId: orderId ?? null,
+        userId: userId ?? null,
+        status: normalizedStatus,
+        pageSize,
+      });
+
+      if (queryKeyRef.current !== queryKey) {
+        queryKeyRef.current = queryKey;
+        cursorCache.current = new Map([[1, null]]);
+      }
+
+      const baseQuery = query(
+        collection(firestore, "orders"),
+        ...baseConstraints
+      );
 
       const countSnap = await getCountFromServer(baseQuery);
       if (cancelled) return;
@@ -67,21 +96,59 @@ export function useOrders({
 
       const constraints = [...baseConstraints];
       if (page > 1) {
-        const skipQuery = query(collection(firestore, "orders"), ...constraints, limit((page - 1) * pageSize));
-        const skipped = await getDocs(skipQuery);
-        const lastVisible = skipped.docs.at(-1);
-        if (!lastVisible) {
+        let startCursor = cursorCache.current.get(page);
+
+        if (startCursor === undefined) {
+          let nearestPage = 1;
+          for (const cachedPage of cursorCache.current.keys()) {
+            if (cachedPage < page && cachedPage > nearestPage) {
+              nearestPage = cachedPage;
+            }
+          }
+
+          let cursor = cursorCache.current.get(nearestPage) ?? null;
+          for (let p = nearestPage; p < page; p += 1) {
+            const walkConstraints = [...baseConstraints];
+            if (cursor) {
+              walkConstraints.push(startAfter(cursor));
+            }
+
+            const walkQuery = query(
+              collection(firestore, "orders"),
+              ...walkConstraints,
+              limit(pageSize)
+            );
+            const walkSnap = await getDocs(walkQuery);
+            const nextCursor = walkSnap.docs.at(-1) ?? null;
+            cursorCache.current.set(p + 1, nextCursor);
+            cursor = nextCursor;
+          }
+
+          startCursor = cursorCache.current.get(page);
+        }
+
+        if (startCursor === null || startCursor === undefined) {
           setOrders([]);
           setLoading(false);
           return;
         }
-        constraints.push(startAfter(lastVisible));
+
+        constraints.push(startAfter(startCursor));
       }
 
-      const pageQuery = query(collection(firestore, "orders"), ...constraints, limit(pageSize));
+      const pageQuery = query(
+        collection(firestore, "orders"),
+        ...constraints,
+        limit(pageSize)
+      );
       unsub = onSnapshot(pageQuery, (snapshot) => {
         if (cancelled) return;
-        const docs = snapshot.docs.map((d) => ({ ...(d.data() as Order), id: d.id }));
+        const docs = snapshot.docs.map((d) => ({
+          ...(d.data() as Order),
+          id: d.id,
+        }));
+        const nextCursor = snapshot.docs.at(-1) ?? null;
+        cursorCache.current.set(page + 1, nextCursor);
         setOrders(docs);
         setLoading(false);
       });
@@ -93,8 +160,7 @@ export function useOrders({
       cancelled = true;
       if (unsub) unsub();
     };
-    // IMPORTANT: include orderId and a stable key for status
-  }, [page, pageSize, userId, statusKey, orderId]);
+  }, [page, pageSize, userId, status, orderId]);
 
   const totalPages = Math.ceil(totalItems / pageSize);
   return { orders, loading, totalItems, totalPages };

@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Users } from "lucide-react";
 import UsersUnlockDialog from "./users-unlock-dailog";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
 
 export default function UsersCardClient() {
   const searchParams = useSearchParams();
-  const router = useRouter();
+  const router = useSafeRouter();
 
   const shouldAutoOpen = useMemo(
     () => searchParams.get("unlock") === "users",

@@ -2,27 +2,34 @@
 
 import { fireStore } from "@/firebase/server";
 import { UserData } from "@/types/user";
+import { toast } from "sonner";
+import { mapDbUserToClientUser } from "./mapDBUserToClient";
 
 export const createUserIfNotExists = async (user: UserData) => {
-  if (!user || !user.uuid) return;
+  if (!user || !user.uid) return;
 
-  const userRef = fireStore.collection("users").doc(user.uuid);
-  const userSnapshot = await userRef.get();
+  try {
+    const userRef = fireStore.collection("users").doc(user.uid);
+    const userSnapshot = await userRef.get();
 
-  if (!userSnapshot.exists) {
-    const adminEmails = process.env.ADMIN_EMAILS?.split(",") || [];
-    const adminPhoneNumbers = process.env.ADMIN_PHONES?.split(",") || [];
-    const isAdmin =
-      (user.email && adminEmails.includes(user.email)) ||
-      (user.phone && adminPhoneNumbers.includes(user.phone));
-    const newUserData = {
-      ...user,
-      profileComplete: false,
-      userType: isAdmin ? "admin" : null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+    if (!userSnapshot.exists) {
+      const newUserData = {
+        ...user,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      await userRef.set(newUserData);
+      return { newUser: true, user: newUserData };
+    }
+    return {
+      newUser: false,
+      user: mapDbUserToClientUser(userSnapshot.data()) as UserData,
     };
-
-    await userRef.set(newUserData);
+  } catch (error) {
+    console.error("Error in createUserIfNotExists:", error);
+    toast.error(
+      error instanceof Error ? error.message : "Failed to create user document"
+    );
   }
 };

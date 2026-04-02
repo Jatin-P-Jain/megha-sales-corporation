@@ -1,13 +1,26 @@
-import { UserData } from "./user";
+import { FullUser } from "./user";
+
+export type EnquiryStatus = "pending" | "in-progress" | "resolved";
 
 export type Enquiry = {
   id: string;
-  enquiryText: string;
-  sentBy: UserData | { name: string; phone: string; email: string };
-  status: "pending" | "in-progress" | "resolved";
-  repliedText?: string;
-  repliedBy?: UserData;
-  repliedAt?: Date;
-  created: Date;
-  updated: Date;
+  userId: string;
+  createdBy:
+    | FullUser
+    | { displayName: string; phone: string; email: string; photoUrl?: string };
+  status: EnquiryStatus;
+  conversation?: {
+    text: string;
+    messageBy:
+      | FullUser
+      | {
+          displayName: string;
+          phone: string;
+          email: string;
+          photoUrl?: string;
+        };
+    sentAt: string;
+  }[];
+  createdAt: string;
+  updatedAt: string;
 };

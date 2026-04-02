@@ -4,7 +4,6 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import useIsMobile from "@/hooks/useIsMobile";
 import clsx from "clsx";
 import { ArrowDown, ArrowUp, ArrowUpDownIcon } from "lucide-react";
 // Put your sort options here
@@ -50,50 +49,50 @@ const SORT_OPTIONS = [
 export function SortBySelect({
   value,
   onChange,
+  removeBrand,
 }: {
   value: string;
   onChange: (newValue: string) => void;
+  removeBrand: boolean;
 }) {
-  const isMobile = useIsMobile();
   const selectedOption = SORT_OPTIONS.find((opt) => opt.value === value);
+  const sliceFrom = removeBrand ? 2 : 0; // if only one brand, remove brandName options
   return (
-    <div className="flex w-full items-center justify-center gap-2 text-xs">
+    <div className="flex w-auto items-center justify-center gap-2 text-xs">
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger
           className={clsx(
-            "text-xs font-semibold",
-            selectedOption && "border-primary border-2",
+            "w-full text-xs font-semibold shadow-none",
+            selectedOption && "border-primary border",
           )}
+          iconClassName="hidden"
         >
           {!selectedOption ? (
-            <span className="text-muted-foreground flex items-center gap-1">
-              <ArrowUpDownIcon className="size-4" /> Sort By
+            <span className="text-foreground flex items-center gap-1 font-normal">
+              <ArrowUpDownIcon className="text-foreground size-4" /> Sort By
             </span>
           ) : (
             <div className="flex w-full gap-2">
               <span className="text-muted-foreground flex items-center gap-1">
                 <ArrowUpDownIcon className="text-primary size-4" />{" "}
-                {!isMobile && ":"}
               </span>
 
-              {!isMobile && (
+              <span className="flex items-center gap-1 font-semibold">
+                {selectedOption.label.split(": ")[0]}:
                 <span className="flex items-center gap-1 font-semibold">
-                  {selectedOption.label.split(": ")[0]}:
-                  <span className="flex items-center gap-1 font-semibold">
-                    {selectedOption.label.split(": ")[1]}
-                    {selectedOption.dir === "asc" ? (
-                      <ArrowUp className="h-4 w-4" />
-                    ) : (
-                      <ArrowDown className="h-4 w-4" />
-                    )}
-                  </span>
+                  {selectedOption.label.split(": ")[1]}
+                  {selectedOption.dir === "asc" ? (
+                    <ArrowUp className="h-4 w-4" />
+                  ) : (
+                    <ArrowDown className="h-4 w-4" />
+                  )}
                 </span>
-              )}
+              </span>
             </div>
           )}
         </SelectTrigger>
         <SelectContent align="end">
-          {SORT_OPTIONS.map((opt) => (
+          {SORT_OPTIONS.slice(sliceFrom).map((opt) => (
             <SelectItem
               key={opt.value}
               value={opt.value}

@@ -34,24 +34,6 @@ export const setToken = async (token: string, refreshToken: string) => {
       newClaims.admin = true;
     }
 
-    // Profile completeness check
-    if (
-      !userRecord.phoneNumber ||
-      !userRecord.email ||
-      !userRecord.displayName ||
-      !userRecord.customClaims?.role
-    ) {
-      newClaims.profileComplete = false;
-    }
-    if (
-      newClaims.admin &&
-      userRecord.phoneNumber &&
-      userRecord.displayName &&
-      userRecord.email
-    ) {
-      newClaims.profileComplete = true;
-    }
-
     // Only set if changes are needed
     await auth.setCustomUserClaims(userRecord.uid, newClaims);
 

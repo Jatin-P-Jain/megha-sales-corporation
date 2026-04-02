@@ -1,16 +1,30 @@
-import { Loader2Icon } from "lucide-react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Loading() {
   return (
-    <div className="flex w-full items-center justify-center flex-col gap-4 absolute h-screen top-0 left-0 p-6">
-      <Loader2Icon className="animate-spin" />
-      <div className="text-2xl font-bold text-gray-700">Loading page...</div>
-      <div className="flex flex-col text-sm md:text-lg text-gray-500 text-center gap-2 font-semibold">
-        Please wait!{" "}
-        <span className="font-normal">
-          The content is being loaded for you.
-        </span>
-      </div>
-    </div>
+    <Card className="mx-auto w-full max-w-screen-lg p-2 py-4 md:p-4 md:py-6">
+      <CardHeader className="p-0">
+        <div className="flex flex-col items-center gap-3">
+          <Skeleton className="h-7 w-40" /> {/* title */}
+          <Skeleton className="h-28 w-28 rounded-full" /> {/* avatar */}
+          <Skeleton className="h-4 w-64" /> {/* uid label */}
+          <Skeleton className="h-5 w-44" /> {/* uid value */}
+        </div>
+      </CardHeader>
+
+      <CardContent className="mt-6 flex flex-col gap-4 p-0">
+        <Skeleton className="h-10 w-full rounded-md" /> {/* role banner */}
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Skeleton key={i} className="h-12 w-full rounded-md" />
+          ))}
+        </div>
+        <Skeleton className="h-28 w-full rounded-md" />{" "}
+        {/* firebase methods card area */}
+        <Skeleton className="h-12 w-full rounded-md" />{" "}
+        {/* collapsible trigger */}
+      </CardContent>
+    </Card>
   );
 }

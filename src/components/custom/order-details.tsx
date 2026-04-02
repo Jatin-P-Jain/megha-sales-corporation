@@ -89,7 +89,7 @@ export default function OrderDetails({
               </Table>
 
               {/* 2) Scrollable body */}
-              <ScrollArea className="max-h-[400px] min-h-[200px] overflow-auto">
+              <ScrollArea className="max-h-100 overflow-auto">
                 <Table className="table-fixed">
                   <TableBody className="child:border-b-on-last-row">
                     {products.map((item) => {

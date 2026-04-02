@@ -24,10 +24,10 @@ const EditProductPage = async ({
           { label: "Edit Product" },
         ]}
       />
-      <Card className="mt-6">
+      <Card className="mt-4">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <div className="flex flex-col text-3xl font-bold">
+            <div className="flex flex-col text-xl md:text-2xl font-bold">
               Edit Product
               <span className="text-muted-foreground text-xs font-normal">
                 * marked fields are mandotory

@@ -22,7 +22,7 @@ export const loginWithGoogle = async (): Promise<User | undefined> => {
 
 export const loginWithEmailAndPass = async (
   email: string,
-  password: string,
+  password: string
 ): Promise<User | undefined> => {
   const result = await signInWithEmailAndPassword(auth, email, password);
   const user = result.user;
@@ -33,42 +33,49 @@ export const loginWithEmailAndPass = async (
 
 export const sendOTP = async (
   mobile: string,
-  verifier: RecaptchaVerifier,
+  verifier: RecaptchaVerifier
 ): Promise<ConfirmationResult> => {
   try {
     // console.log("Sending OTP to", mobile);
     return await signInWithPhoneNumber(auth, `+91${mobile}`, verifier);
   } catch (e) {
-  // Reset so user can retry (Firebase docs)
-  if (typeof window !== "undefined") {
-    if (window.grecaptcha && window.recaptchaWidgetId !== undefined) {
-      window.grecaptcha.reset(window.recaptchaWidgetId);
-    } else if (window.recaptchaVerifier) {
-      // If widgetId not stored, get it then reset
-      window.recaptchaVerifier.render().then((id) => window.grecaptcha?.reset(id));
+    // Reset so user can retry (Firebase docs)
+    if (typeof window !== "undefined") {
+      if (window.grecaptcha && window.recaptchaWidgetId !== undefined) {
+        window.grecaptcha.reset(window.recaptchaWidgetId);
+      } else if (window.recaptchaVerifier) {
+        // If widgetId not stored, get it then reset
+        window.recaptchaVerifier
+          .render()
+          .then((id) => window.grecaptcha?.reset(id));
+      }
     }
+    throw e;
   }
-  throw e;
-}
 };
 
 export const verifyOTP = async (
   otp: string,
-  confirmationResult: ConfirmationResult,
+  confirmationResult: ConfirmationResult
 ): Promise<User | undefined> => {
   try {
     const result = await confirmationResult.confirm(otp);
     if (result) {
-      // console.log("OTP verification successful", result);
+      if (process.env.NODE_ENV === "development") {
+        console.log("OTP verification successful");
+      }
       const user = result.user;
       const token = await user.getIdToken(true);
       await setToken(token, user.refreshToken);
       return user;
     } else {
-      console.log("OTP verification failed: No result returned");
+      console.error("OTP verification failed: No result returned");
     }
   } catch (err) {
-    console.log("OTP verification failed", err);
+    console.error(
+      "OTP verification failed:",
+      err instanceof Error ? err.message : err
+    );
     throw err;
   }
 };

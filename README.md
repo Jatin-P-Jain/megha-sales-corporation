@@ -1,36 +1,91 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Megha Sales Corporation
 
-## Getting Started
+Production Next.js application for product discovery, ordering, account management, admin workflows, and Firebase-backed notifications.
 
-First, run the development server:
+## Tech Stack
+
+- Next.js 15 (App Router)
+- TypeScript
+- Firebase (Auth, Firestore, Storage, Messaging)
+- ESLint
+
+## Local Development
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Run development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+App runs on `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment Behavior
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The service worker file in `public/firebase-messaging-sw.js` is generated during `dev` and `build` by `scripts/generate-sw.ts`.
 
-## Learn More
+Environment selection order for service worker generation:
 
-To learn more about Next.js, take a look at the following resources:
+1. `APP_ENV`
+2. `NODE_ENV`
+3. lifecycle fallback (`prebuild` => `production`, otherwise `development`)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Current npm scripts set `APP_ENV` explicitly:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `npm run dev` => `APP_ENV=development`
+- `npm run build` (via `prebuild`) => `APP_ENV=production`
 
-## Deploy on Vercel
+This means you do not need to manually define `APP_ENV` in env files or on Vercel unless you want to override behavior.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Quality Gates
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Run checks locally:
+
+```bash
+npm run lint
+npm run build
+npm audit --omit=dev --audit-level=high
+```
+
+## CI Workflow
+
+CI is defined in [.github/workflows/ci.yml](.github/workflows/ci.yml).
+
+When CI runs:
+
+- On every pull request
+- On pushes to `main`
+
+What CI does in order:
+
+1. Checks out repository code
+2. Sets up Node.js 20 with npm cache
+3. Installs dependencies with `npm ci`
+4. Runs lint (`npm run lint`)
+5. Runs production build (`npm run build`)
+6. Runs security gate (`npm audit --omit=dev --audit-level=high`)
+
+Pass/fail behavior:
+
+- If any step fails, the workflow fails and the PR/push is marked failed.
+- Only low-severity audit findings are currently tolerated by this gate.
+
+## Release Checklist
+
+Before release:
+
+1. Ensure CI is green.
+2. Verify required production env vars are set on deployment platform.
+3. Confirm `npm run build` succeeds locally for the release branch.
+4. Smoke-test critical flows:
+	- login
+	- products list/filter
+	- checkout
+	- admin dashboard access
+	- notifications
+5. Deploy and monitor logs for auth, API, and notification errors.

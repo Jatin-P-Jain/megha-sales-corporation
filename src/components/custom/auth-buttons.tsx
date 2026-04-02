@@ -1,7 +1,5 @@
 "use client";
-
-import Link from "next/link";
-import { useAuth } from "@/context/useAuth";
+import { useAuthActions, useAuthState } from "@/context/useAuth";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -10,11 +8,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuItem,
 } from "../ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "../ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import DefaultUserIcon from "@/assets/icons/user.png";
 import { Badge } from "../ui/badge";
 import Image from "next/image";
 import {
+  BellRing,
   ClipboardList,
   DownloadIcon,
   Loader2Icon,
@@ -35,9 +34,17 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { usePwaPrompt } from "@/hooks/usePwaPrompt";
-import { useState } from "react";
-import HelpDialog from "./help-dialog";
 import clsx from "clsx";
+import { useRequireUserProfile } from "@/hooks/useUserProfile";
+import { useUserProfileState } from "@/context/UserProfileProvider";
+import { useUserGate } from "@/context/UserGateProvider";
+import { SafeLink } from "./utility/SafeLink";
+import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
+import NotificationsCenterClient from "@/app/notifications/notifications-center-client";
+import { useNavigationLock } from "@/context/navigation-lock-provider";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useCartState } from "@/context/cartContext";
 
 type AccountStatusUI =
   | "pending"
@@ -118,10 +125,10 @@ function AccountStatusBadge({
   status,
   compact,
 }: {
-  status?: string;
+  status?: string | null;
   compact?: boolean;
 }) {
-  const meta = getStatusMeta(status);
+  const meta = getStatusMeta(status ?? undefined);
   const Icon = meta.Icon;
 
   return (
@@ -133,18 +140,47 @@ function AccountStatusBadge({
 }
 
 export default function AuthButtons() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { isNavigating } = useNavigationLock();
   const { deferredPrompt, promptToInstall, isPwa } = usePwaPrompt();
-  const auth = useAuth();
-  const { clientUser, clientUserLoading, logout, currentUser, isLoggingOut } =
-    auth;
 
-  const [helpOpen, setHelpOpen] = useState(false);
+  const { currentUser, isAdmin, isLoggingOut, userRole } = useAuthState();
+  const { logout } = useAuthActions();
+  const { profileComplete, accountStatus } = useUserGate();
+  useRequireUserProfile(true);
+  const { clientUser, clientUserLoading } = useUserProfileState();
+  const { unreadCount: unreadNotifications } = useRealtimeNotifications({
+    uid: currentUser?.uid,
+    includeItems: false,
+  });
+  const { cartTotals } = useCartState();
+  const { totalItems } = cartTotals;
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const searchKey = searchParams?.toString() ?? "";
 
-  const isAdmin = clientUser?.userType === "admin";
-  const accountStatus = clientUser?.accountStatus;
-  const profileComplete = clientUser?.profileComplete;
+  useEffect(() => {
+    if (!isNavigating) {
+      return;
+    }
 
-  // 1) Loading state
+    setIsMenuOpen(false);
+    setIsNotificationsOpen(false);
+  }, [isNavigating]);
+
+  useEffect(() => {
+    setIsMenuOpen(false);
+    setIsNotificationsOpen(false);
+  }, [pathname, searchKey]);
+
+  useEffect(() => {
+    if (isMenuOpen) {
+      setIsNotificationsOpen(false);
+    }
+  }, [isMenuOpen]);
+
+  // 1) Loading state₹
   if (currentUser && clientUserLoading) {
     return (
       <div className="flex items-center justify-center">
@@ -157,7 +193,7 @@ export default function AuthButtons() {
   if (clientUser) {
     return (
       <>
-        <DropdownMenu>
+        <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
           <DropdownMenuTrigger asChild className="">
             <button className="relative flex flex-col items-center">
               <Avatar
@@ -176,12 +212,10 @@ export default function AuthButtons() {
                 )}
               >
                 {clientUser.photoUrl ? (
-                  <Image
+                  <AvatarImage
                     src={clientUser.photoUrl}
                     alt="avatar"
-                    width={100}
-                    height={100}
-                    className="rounded-full object-center"
+                    className="rounded-full object-cover"
                   />
                 ) : (
                   <AvatarFallback className="bg-cyan-800">
@@ -196,6 +230,10 @@ export default function AuthButtons() {
                 )}
               </Avatar>
 
+              {unreadNotifications > 0 && (
+                <BellRing className="absolute -top-2 -right-2 inline-flex h-5 w-5 animate-pulse rounded-full bg-red-600 p-0.5" />
+              )}
+
               {isAdmin && (
                 <div className="bottom-0 rounded-sm bg-green-100 px-1 text-[8px] font-semibold text-green-700">
                   Admin
@@ -207,7 +245,7 @@ export default function AuthButtons() {
           <DropdownMenuContent
             align="end"
             sideOffset={4}
-            className="w-50 md:w-80"
+            className="w-80 rounded-md border p-1 shadow-lg"
           >
             <DropdownMenuLabel className="flex flex-col items-start space-y-1 px-4 py-2">
               <span className="font-medium">{clientUser.displayName}</span>
@@ -221,19 +259,26 @@ export default function AuthButtons() {
                 </span>
               )}
 
-              <div className="flex w-full flex-col justify-between gap-2 md:flex-row md:items-center">
-                {clientUser.userType && (
-                  <span className="bg-muted w-fit rounded-full px-2 py-0.5 text-xs font-semibold">
-                    {toTitleCase(clientUser.userType)}
-                  </span>
-                )}
+              {isAdmin && (
+                <span className="w-fit rounded-full bg-green-50 px-2 py-0.5 text-xs font-semibold text-green-700">
+                  Admin Account
+                </span>
+              )}
 
+              <div className="flex w-full flex-col justify-between gap-2 md:flex-row md:items-center">
                 {!isAdmin ? (
-                  !profileComplete ? (
-                    <AccountStatusBadge status={"incomplete"} />
-                  ) : (
-                    <AccountStatusBadge status={accountStatus} />
-                  )
+                  <>
+                    {userRole && (
+                      <span className="bg-muted w-fit rounded-full px-2 py-0.5 text-xs font-semibold">
+                        {toTitleCase(userRole)}
+                      </span>
+                    )}
+                    {!profileComplete ? (
+                      <AccountStatusBadge status={"incomplete"} />
+                    ) : (
+                      <AccountStatusBadge status={accountStatus} />
+                    )}
+                  </>
                 ) : null}
               </div>
 
@@ -256,47 +301,76 @@ export default function AuthButtons() {
                 )}
             </DropdownMenuLabel>
 
+            {!isAdmin && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={() => {
+                    setIsMenuOpen(false);
+                    setIsNotificationsOpen(true);
+                  }}
+                  className="flex w-full items-center justify-between"
+                >
+                  <div className="flex items-center justify-start gap-2">
+                    Notification Center
+                    {unreadNotifications > 0 && (
+                      <span className="text-xs font-semibold">
+                        (
+                        {unreadNotifications > 99 ? "99+" : unreadNotifications}
+                        )
+                      </span>
+                    )}
+                  </div>
+                  <BellRing className="text-secondary-foreground size-4" />
+                </DropdownMenuItem>
+              </>
+            )}
             <DropdownMenuSeparator />
 
             <DropdownMenuItem asChild>
-              <Link
+              <SafeLink
                 href="/account"
                 className="flex items-center justify-between"
               >
                 My Account
                 <UserRound className="text-secondary-foreground" />
-              </Link>
+              </SafeLink>
             </DropdownMenuItem>
 
             {isAdmin ? (
               <>
                 <DropdownMenuItem asChild>
-                  <Link
-                    href="/order-history"
-                    className="flex items-center justify-between"
-                  >
-                    Order Book
-                    <NotebookTextIcon className="text-secondary-foreground" />
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link
+                  <SafeLink
                     href="/admin-dashboard"
                     className="flex items-center justify-between"
                   >
                     Admin Dashboard
                     <ShieldUserIcon className="text-secondary-foreground" />
-                  </Link>
+                  </SafeLink>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <SafeLink
+                    href="/order-history"
+                    className="flex items-center justify-between"
+                  >
+                    Order Book
+                    <NotebookTextIcon className="text-secondary-foreground" />
+                  </SafeLink>
+                </DropdownMenuItem>
+
                 <DropdownMenuItem asChild disabled>
-                  <Link
+                  <SafeLink
                     href="/change-pricing"
                     className="flex items-center justify-between"
                   >
-                    Change Pricing Structure <br />
-                    (Coming Soon)
+                    <div className="flex flex-col">
+                      Change Pricing Structure
+                      <span className="w-1/2 text-xs whitespace-nowrap">
+                        (Coming Soon)
+                      </span>
+                    </div>
                     <TagsIcon className="text-secondary-foreground" />
-                  </Link>
+                  </SafeLink>
                 </DropdownMenuItem>
               </>
             ) : (
@@ -315,38 +389,49 @@ export default function AuthButtons() {
                   asChild
                   disabled={!profileComplete || accountStatus !== "approved"}
                 >
-                  <Link
+                  <SafeLink
                     href="/cart"
                     className="flex items-center justify-between"
                   >
-                    My Cart
+                    <span className="flex items-center justify-start gap-2">
+                      My Cart{" "}
+                      {totalItems > 0 && (
+                        <span className="font-medium">
+                          ({totalItems} item{totalItems !== 1 ? "s" : ""})
+                        </span>
+                      )}
+                    </span>
                     <ShoppingCartIcon className="text-secondary-foreground" />
-                  </Link>
+                  </SafeLink>
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   asChild
                   disabled={!profileComplete || accountStatus !== "approved"}
                 >
-                  <Link
+                  <SafeLink
                     href="/order-history"
                     className="flex items-center justify-between"
                   >
                     Order History
                     <ClipboardList className="text-secondary-foreground" />
-                  </Link>
+                  </SafeLink>
                 </DropdownMenuItem>
               </div>
             )}
 
             <DropdownMenuSeparator />
 
-            <DropdownMenuItem
-              className="flex items-center justify-between"
-              onClick={() => setTimeout(() => setHelpOpen(true), 0)}
-            >
-              Need help?
-              <MessageCircleQuestionIcon className="text-secondary-foreground" />
-            </DropdownMenuItem>
+            {!isAdmin && (
+              <DropdownMenuItem className="flex items-center justify-between">
+                <SafeLink
+                  href="/enquiries"
+                  className="flex w-full items-center justify-between"
+                >
+                  Help Center
+                  <MessageCircleQuestionIcon className="text-secondary-foreground" />
+                </SafeLink>
+              </DropdownMenuItem>
+            )}
 
             <DropdownMenuItem
               className="flex items-center justify-between"
@@ -365,18 +450,20 @@ export default function AuthButtons() {
             <DropdownMenuSeparator />
 
             <DropdownMenuItem
-              className="flex items-center justify-between"
+              className="flex items-center justify-between font-medium text-red-700 hover:bg-red-500"
               onClick={() => logout()}
             >
-              Logout <LogOutIcon className="text-secondary-foreground" />
+              Logout <LogOutIcon className="text-red-700" />
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-
-        <HelpDialog
-          open={helpOpen}
-          onOpenChange={setHelpOpen}
-          user={clientUser}
+        <NotificationsCenterClient
+          open={isNotificationsOpen}
+          onOpenChange={setIsNotificationsOpen}
+          onNavigate={() => {
+            setIsMenuOpen(false);
+            setIsNotificationsOpen(false);
+          }}
         />
 
         {isLoggingOut && (
@@ -393,11 +480,11 @@ export default function AuthButtons() {
 
   // 3) Logged-out state
   return (
-    <Link
+    <SafeLink
       href="/login"
-      className="flex items-center justify-center gap-1 text-base font-medium hover:underline"
+      className="flex flex-col-reverse items-center justify-center text-[10px] font-medium hover:underline md:flex-row md:text-base"
     >
-      Login <LogInIcon className="size-4" />
-    </Link>
+      Login <LogInIcon className="size-5" />
+    </SafeLink>
   );
 }

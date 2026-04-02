@@ -1,8 +1,40 @@
 "use server";
 import { auth, fireStore } from "@/firebase/server";
+import { notifyUser } from "@/lib/firebase/notifyUser";
 import imageUrlFormatter from "@/lib/image-urlFormatter";
-import { AccountStatus } from "@/types/user";
+import { AccountStatus } from "@/types/userGate";
 import { cookies } from "next/headers";
+
+const accountStatusNotificationMap: Record<
+  AccountStatus,
+  { title: string; body: (rejectionReason?: string) => string }
+> = {
+  pending: {
+    title: "⏳ Account Review Pending",
+    body: () => "Your account is under review. We will update you soon.",
+  },
+  approved: {
+    title: "✅ Account Approved",
+    body: () =>
+      "Your account has been approved. You can now access all features.",
+  },
+  rejected: {
+    title: "❌ Account Rejected",
+    body: (rejectionReason) =>
+      rejectionReason?.trim()
+        ? `Your account was rejected: ${rejectionReason.trim()}`
+        : "Your account was rejected. Please contact support for details.",
+  },
+  suspended: {
+    title: "⛔ Account Suspended",
+    body: () =>
+      "Your account access has been suspended. Please contact support.",
+  },
+  deactivated: {
+    title: "🚫 Account Deactivated",
+    body: () => "Your account has been deactivated. Please contact support.",
+  },
+};
 
 export async function updateUserAccountStatus({
   userId,
@@ -28,7 +60,7 @@ export async function updateUserAccountStatus({
       throw new Error("Unauthorized: Admin access required");
     }
 
-    // Prepare update data
+    // Keep users and userGate in sync because gate drives access/status UI.
     const updateData: {
       accountStatus: AccountStatus;
       rejectionReason?: string;
@@ -46,7 +78,24 @@ export async function updateUserAccountStatus({
     }
 
     const userRef = fireStore.collection("users").doc(userId);
-    await userRef.update(updateData);
+    const userGateRef = fireStore.collection("userGate").doc(userId);
+    const batch = fireStore.batch();
+
+    batch.set(userRef, updateData, { merge: true });
+    batch.set(userGateRef, updateData, { merge: true });
+    await batch.commit();
+
+    const notificationConfig = accountStatusNotificationMap[accountStatus];
+    await notifyUser({
+      uid: userId,
+      type: "account",
+      title: notificationConfig.title,
+      body: notificationConfig.body(rejectionReason),
+      url: "/account",
+      clickAction: "view_account",
+      status: accountStatus,
+      source: "admin",
+    });
 
     return { success: true, message: "User status updated successfully" };
   } catch (error) {
@@ -57,7 +106,10 @@ export async function updateUserAccountStatus({
   }
 }
 
-export const updateUserFirebaseMethods = async () => {
+export const updateUserFirebaseMethods = async (
+  email?: string,
+  photoUrl?: string
+) => {
   const cookieStore = await cookies();
   const token = cookieStore.get("firebaseAuthToken")?.value;
 
@@ -70,7 +122,12 @@ export const updateUserFirebaseMethods = async () => {
   await fireStore
     .collection("users")
     .doc(uid)
-    .update({ firebaseAuth: decodedToken.firebase, updatedAt: new Date() });
+    .update({
+      firebaseAuth: decodedToken.firebase,
+      email: email || decodedToken.email,
+      photoUrl: photoUrl || null,
+      updatedAt: new Date(),
+    });
 
   return { success: true };
 };

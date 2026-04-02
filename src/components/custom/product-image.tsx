@@ -23,8 +23,8 @@ const ProductImage: React.FC<ProductImageProps> = ({
         <Image
           src={imageUrlFormatter(productImage)}
           alt="img"
-          width={100}
-          height={100}
+          width={120}
+          height={120}
           className="w-full h-full object-contain"
           onLoad={() => {
             setLoading(false);

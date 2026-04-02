@@ -1,20 +1,52 @@
 "use client";
-import React, { useState, useMemo, useEffect } from "react";
+
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { ChevronsRight, EyeIcon, PencilIcon, TagIcon } from "lucide-react";
+import { ChevronsRight, EyeIcon, PencilIcon } from "lucide-react";
 import { formatINR } from "@/lib/utils";
-import { Product, ProductSize } from "@/types/product";
+import { Product, ProductSize, ProductStatus } from "@/types/product";
 import ProductImage from "./product-image";
 import CartControls from "./cart-controls";
 import SizeChips from "./size-selection-chips";
-import { useCart } from "@/context/cartContext";
 import { Skeleton } from "../ui/skeleton";
 import useIsMobile from "@/hooks/useIsMobile";
 import UserUnlockDialog from "./user-unlock-dialog";
-import { useAuth } from "@/context/useAuth";
-import { useRouter } from "next/navigation";
+import { useAuthState } from "@/context/useAuth";
+import {
+  getCartItemKey,
+  useCartItem,
+  useCartState,
+} from "@/context/cartContext";
+import { useUserGate } from "@/context/UserGateProvider";
+import { SafeLink } from "./utility/SafeLink";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
+import clsx from "clsx";
+
+const STATUS_META: Record<
+  ProductStatus,
+  {
+    label: string;
+    className: string;
+  }
+> = {
+  draft: {
+    label: "Draft",
+    className: "border-amber-500 bg-amber-500/10 text-amber-700",
+  },
+  "for-sale": {
+    label: "For sale",
+    className: "border-green-500 bg-green-500/10 text-green-700",
+  },
+  discontinued: {
+    label: "Discontinued",
+    className: "border-red-500 bg-red-500/10 text-red-700",
+  },
+  "out-of-stock": {
+    label: "Out of stock",
+    className: "border-muted bg-muted text-muted-foreground ",
+  },
+};
 
 type ProductCardProps = {
   product: Product;
@@ -29,188 +61,299 @@ export default function ProductCard({
   isAccountApproved = false,
   onClose,
 }: ProductCardProps) {
-  const { cart, loading } = useCart();
-  const auth = useAuth();
-  const router = useRouter();
-  const { clientUser, currentUser } = auth;
+  const { loading: cartLoading } = useCartState();
+  const { currentUser } = useAuthState();
+  const { profileComplete } = useUserGate();
+  const router = useSafeRouter();
+
   const isUser = !!currentUser;
-  const isProfileComplete = clientUser?.profileComplete;
+
   const [selectedSize, setSelectedSize] = useState<ProductSize | undefined>(
     undefined,
   );
+  const [showFullDetails, setShowFullDetails] = useState(false);
+
   const isMobile = useIsMobile();
-
-  const [hasMounted, setHasMounted] = useState(false);
-  // 1) hydration guard
-  useEffect(() => {
-    setHasMounted(true);
-  }, []);
-
-  // 4) debounce the empty-cart state
-  const [ready, setReady] = useState(false);
-  useEffect(() => {
-    const t = setTimeout(() => {
-      setReady(true);
-    }, 1000);
-    return () => clearTimeout(t);
-  }, [cart.length]);
-
-  useEffect(() => {
-    if (!product || !product.sizes) return;
-
-    const existingItem = cart.find(
-      (item) => item.productId === product.id && item.selectedSize,
-    );
-
-    if (existingItem?.selectedSize) {
-      const matchedSizeObj = product.sizes.find(
-        (size) => size.size === existingItem.selectedSize,
-      );
-
-      if (matchedSizeObj) {
-        setSelectedSize(matchedSizeObj);
-      }
-    }
-  }, [cart, product]);
-
-  const isLoading = !hasMounted || loading || !ready;
+  const isLoading = cartLoading;
 
   const vehicleNameProcessed = useMemo(() => {
     const company = product.vehicleCompany;
     const names = Array.isArray(product.vehicleNames)
       ? product.vehicleNames.join(", ")
       : "";
-    const vehicleNameProcessed = names ? `${company} - ${names}` : company;
-    return vehicleNameProcessed;
+    return names ? `${company} - ${names}` : company;
   }, [product.vehicleNames, product.vehicleCompany]);
 
-  // Handle discount view click
-  const handleDiscountClick = () => {
+  // ✅ Subscribe only to the relevant cart item (key changes with size)
+  const cartItemKey = useMemo(
+    () => getCartItemKey(product.id, selectedSize?.size),
+    [product.id, selectedSize?.size],
+  );
+  const cartItem = useCartItem(cartItemKey);
+
+  // ✅ If there is a cartItem for this exact key, ensure selectedSize is set
+  // (useful when list loads and user already has an item in cart)
+  useEffect(() => {
+    if (!product?.sizes?.length) return;
+
+    // If selectedSize already chosen, don't override it
+    if (selectedSize) return;
+
+    // If cart item exists and has selectedSize, pick it
+    const cartSel = cartItem?.selectedSize;
+    if (!cartSel) return;
+
+    const matched = product.sizes.find((s) => s.size === cartSel);
+    if (matched) setSelectedSize(matched);
+  }, [cartItem?.selectedSize, product.sizes, selectedSize]);
+
+  const goProfile = useCallback(() => {
     onClose?.();
-    if (!clientUser) {
-      router.push("/login");
-    }
-  };
+    router.push("/account/profile");
+  }, [onClose, router]);
+
+  const hasLongAdditionalDetails = useMemo(() => {
+    if (!product.additionalDetails) return false;
+    return (
+      product.additionalDetails.length > 90 ||
+      product.additionalDetails.split("\n").length > 2
+    );
+  }, [product.additionalDetails]);
 
   return (
     <Card
-      key={product?.id}
+      key={product.id}
       className="relative gap-1 overflow-hidden p-3 shadow-md md:gap-2"
     >
       <CardContent className="flex flex-col gap-4 p-0 text-sm md:grid md:grid-cols-[3fr_1fr] md:text-base">
-        <div className="flex w-full flex-col md:gap-2">
-          <div className="text-primary flex w-full items-center justify-between font-semibold">
-            <span className="text-sm font-normal">Brand :</span>
-            <Link
+        <div className="flex w-full flex-col gap-1 md:gap-2">
+          <div className="text-primary flex w-full items-center justify-between font-semibold tracking-wide">
+            <SafeLink
               href={`/brands/${product.brandId}`}
-              className="cursor-pointer underline"
+              className="bg-primary/10 border-primary cursor-pointer gap-2 rounded-md border px-3 py-1 underline"
             >
+              <span className="text-muted-foreground mr-2 inline-flex text-xs font-normal">
+                Brand:
+              </span>
               {product.brandName}
-            </Link>
-          </div>
-          <div className="text-primary flex w-full items-center justify-between font-semibold">
-            <span className="text-sm font-normal">Part Name :</span>
-            <span className="">{product.partName}</span>
+            </SafeLink>
+            <span className="bg-primary/10 rounded-md border px-3 py-1">
+              <span className="text-muted-foreground mr-2 hidden text-xs font-normal md:inline-flex">
+                Part Number:
+              </span>
+              {product.partNumber}
+            </span>
           </div>
 
-          <div className="text-primary flex w-full items-center justify-between font-semibold">
-            <span className="text-sm font-normal">Part Number :</span>
-            {product.partNumber}
+          <div className="text-primary flex w-full items-center justify-between font-medium">
+            <span className="text-xs font-normal">Part Name :</span>
+            <span>{product.partName}</span>
           </div>
-          <div className="text-primary flex w-full items-center justify-between font-semibold">
-            <span className="w-full text-sm font-normal">Applications :</span>
-            <div className="flex w-full items-end justify-end">
-              <span className="">{vehicleNameProcessed}</span>
-            </div>
+
+          <div className="text-primary flex w-full items-start justify-between font-medium">
+            <span className="w-full flex-1 text-xs font-normal whitespace-nowrap">
+              Applications :
+            </span>
+            <span className="fle w-full flex-2 text-right">
+              {vehicleNameProcessed}
+            </span>
           </div>
-          <div className="text-primary flex w-full items-center justify-between font-semibold">
-            <span className="text-sm font-normal">Category :</span>
+
+          <div className="text-primary flex w-full items-center justify-between font-medium">
+            <span className="text-xs font-normal">Category :</span>
             {product.partCategory}
           </div>
-          {product?.additionalDetails && (
-            <div className="text-primary flex w-full items-start justify-between font-semibold">
-              <span className="text-sm font-normal">Additional Details :</span>
-              <span className="text-right whitespace-pre-line">
-                {product.additionalDetails}
-              </span>
-            </div>
-          )}
-          {isMobile && (
-            <div className="flex h-27 min-h-27 w-full items-center justify-center md:min-h-30 md:w-full">
-              <ProductImage productImage={product?.image} />
+
+          {product.additionalDetails && (
+            <div className="text-primary flex w-full items-start justify-between font-medium">
+              <span className="text-xs font-normal">Additional Details :</span>
+              <div className="flex flex-col items-end gap-1 text-right">
+                <span
+                  className={clsx(
+                    "whitespace-pre-line",
+                    !showFullDetails && "max-h-12 overflow-hidden",
+                  )}
+                >
+                  {product.additionalDetails}
+                </span>
+
+                {hasLongAdditionalDetails && (
+                  <button
+                    type="button"
+                    onClick={() => setShowFullDetails((prev) => !prev)}
+                    className="text-primary text-xs font-semibold underline hover:opacity-80"
+                  >
+                    {showFullDetails ? "See less" : "See more"}
+                  </button>
+                )}
+              </div>
             </div>
           )}
 
-          {product.sizes && product.sizes.length > 0 && (
+          {isMobile && (
+            <div className="flex gap-3">
+              <div className="flex h-22 w-1/2 items-center justify-center rounded-sm border shadow-sm">
+                <ProductImage productImage={product.image} />
+              </div>
+              <div className="bg-primary/10 flex h-auto w-1/2 flex-col items-center justify-center gap-1 rounded-sm p-1.5 px-4 md:flex-row">
+                <div className="text-primary flex w-full items-center justify-between gap-2 font-semibold md:w-fit">
+                  <span className="text-foreground text-xs font-normal">
+                    Price :
+                  </span>
+                  {product.hasSizes &&
+                  !product.samePriceForAllSizes &&
+                  !selectedSize ? (
+                    <span className="text-muted-foreground text-[8px] font-normal whitespace-nowrap italic md:text-xs">
+                      Select a size
+                    </span>
+                  ) : (
+                    <span className="text-base font-semibold">
+                      {formatINR(selectedSize?.price ?? product.price)}
+                    </span>
+                  )}
+                </div>
+
+                <div className="text-primary flex w-full items-center justify-between font-semibold md:text-sm">
+                  <span className="text-foreground text-xs font-normal whitespace-nowrap">
+                    Discount :
+                  </span>
+
+                  {product.hasSizes &&
+                  !product.samePriceForAllSizes &&
+                  !selectedSize ? (
+                    <span className="text-muted-foreground text-[8px] font-normal whitespace-nowrap italic md:text-xs">
+                      Select a size
+                    </span>
+                  ) : isAccountApproved || isAdmin ? (
+                    <span className="font-semibold">
+                      {selectedSize?.discount ?? product.discount}%
+                    </span>
+                  ) : !currentUser ? (
+                    <SafeLink
+                      href="/login"
+                      className="flex cursor-pointer items-center justify-between transition-all hover:opacity-80"
+                    >
+                      <span className="inline-flex items-center font-semibold text-yellow-600">
+                        ***
+                      </span>
+                      <EyeIcon className="size-5 text-yellow-600" />
+                    </SafeLink>
+                  ) : (
+                    <UserUnlockDialog>
+                      <div className="flex cursor-pointer items-center justify-between transition-all hover:opacity-80">
+                        <span className="inline-flex items-center font-semibold text-yellow-600">
+                          ***
+                        </span>
+                        <EyeIcon className="size-5 text-yellow-600" />
+                      </div>
+                    </UserUnlockDialog>
+                  )}
+                </div>
+
+                <div className="text-primary flex w-full items-center justify-between font-semibold md:w-fit md:text-sm">
+                  <span className="text-foreground text-xs font-normal">
+                    GST :
+                  </span>
+                  {product.hasSizes &&
+                  !product.samePriceForAllSizes &&
+                  !selectedSize ? (
+                    <span className="text-muted-foreground text-[8px] font-normal whitespace-nowrap italic md:text-xs">
+                      Select a size
+                    </span>
+                  ) : (
+                    <span className="font-semibold">
+                      {selectedSize?.gst ?? product.gst}%
+                    </span>
+                  )}
+                </div>
+
+                {product.hasSizes &&
+                  !product.samePriceForAllSizes &&
+                  !selectedSize && (
+                    <span className="text-muted-foreground text-[8px] italic md:text-xs">
+                      Pricing varies by size.
+                    </span>
+                  )}
+              </div>
+            </div>
+          )}
+
+          {product.sizes && product.sizes?.length > 0 && (
             <div className="text-primary mb-1 flex h-full w-full flex-col justify-between gap-1 font-semibold md:mb-2 md:flex-row">
-              <span className="text-sm font-normal">Select Size:</span>
+              <span className="text-xs font-normal md:text-sm">
+                Select Size:
+              </span>
               {isLoading ? (
                 <Skeleton className="flex h-6 w-full" />
               ) : (
                 <div className="md:max-w-150">
                   <SizeChips
                     productId={
-                      !!selectedSize
-                        ? product.id + selectedSize.size
-                        : product.id
+                      selectedSize ? product.id + selectedSize.size : product.id
                     }
                     sizes={product.sizes}
-                    onSelectSize={(selected) => setSelectedSize(selected)}
+                    onSelectSize={setSelectedSize}
                   />
                 </div>
               )}
             </div>
           )}
         </div>
+
         {!isMobile && (
-          <div className="flex h-27 min-h-27 w-full items-center justify-center md:min-h-30 md:w-full">
-            <ProductImage productImage={product?.image} />
+          <div className="flex w-full items-center justify-center rounded-sm border shadow-sm">
+            <ProductImage productImage={product.image} />
           </div>
         )}
       </CardContent>
-      <CardFooter className="flex flex-col items-end justify-center gap-4 p-0 md:grid md:grid-cols-[3fr_1fr]">
-        <div className="bg-primary/10 flex w-full items-center justify-between gap-2 rounded-sm p-1 px-2 text-xs md:flex-row md:items-center md:justify-between md:px-8 md:text-base">
-          <TagIcon className="text-primary size-4" />
-          <div className="flex w-full flex-col items-center justify-between md:flex-row">
+
+      <CardFooter className="flex flex-col items-end justify-center gap-2 p-0 md:grid md:grid-cols-[3fr_1fr]">
+        <div className="flex w-full items-center justify-between gap-2 text-xs">
+          {/* <TagIcon className="text-primary size-4" /> */}
+          <div className="bg-primary/10 hidden w-full flex-col items-center justify-between gap-1 rounded-sm p-1 px-4 md:flex md:flex-row">
             <div className="text-primary flex w-full items-center justify-between gap-2 font-semibold md:w-fit">
-              <span className="text-foreground font-normal">Price :</span>
-              {product?.hasSizes &&
+              <span className="text-foreground text-xs font-normal">
+                Price :
+              </span>
+              {product.hasSizes &&
               !product.samePriceForAllSizes &&
               !selectedSize ? (
-                <span className="text-muted-foreground text-[8px] font-normal italic md:text-xs">
+                <span className="text-muted-foreground text-[8px] font-normal whitespace-nowrap italic md:text-xs">
                   Select a size
                 </span>
               ) : (
-                <span className="font-semibold">
-                  {formatINR(selectedSize?.price ?? product?.price)}
+                <span className="text-lg font-semibold">
+                  {formatINR(selectedSize?.price ?? product.price)}
                 </span>
               )}
             </div>
-            <div className="text-primary flex w-full items-center justify-between gap-2 font-semibold md:w-fit md:text-sm">
-              <span className="text-foreground font-normal">Discount :</span>
-              {product?.hasSizes &&
+
+            <div className="text-primary flex w-full items-center justify-between font-semibold md:w-fit md:text-sm">
+              <span className="text-foreground text-xs font-normal whitespace-nowrap">
+                Discount :
+              </span>
+
+              {product.hasSizes &&
               !product.samePriceForAllSizes &&
               !selectedSize ? (
-                <span className="text-muted-foreground text-[8px] font-normal italic md:text-xs">
+                <span className="text-muted-foreground text-[8px] font-normal whitespace-nowrap italic md:text-xs">
                   Select a size
                 </span>
-              ) : isAccountApproved ? (
+              ) : isAccountApproved || isAdmin ? (
                 <span className="font-semibold">
-                  {selectedSize?.discount ?? product?.discount}%
+                  {selectedSize?.discount ?? product.discount}%
                 </span>
               ) : !currentUser ? (
-                // Not logged in - redirect to login
-                <div
-                  onClick={handleDiscountClick}
+                <SafeLink
+                  href="/login"
                   className="flex cursor-pointer items-center justify-between gap-2 transition-all hover:opacity-80"
                 >
                   <span className="inline-flex items-center font-semibold text-yellow-600">
                     *****
                   </span>
                   <EyeIcon className="size-5 text-yellow-600" />
-                </div>
+                </SafeLink>
               ) : (
-                // Logged in but not approved - show approval dialog
                 <UserUnlockDialog>
                   <div className="flex cursor-pointer items-center justify-between gap-2 transition-all hover:opacity-80">
                     <span className="inline-flex items-center font-semibold text-yellow-600">
@@ -221,22 +364,24 @@ export default function ProductCard({
                 </UserUnlockDialog>
               )}
             </div>
-            <div className="text-primary flex w-full items-center justify-between gap-2 font-semibold md:w-fit md:text-sm">
-              <span className="text-foreground font-normal">GST :</span>
-              {product?.hasSizes &&
+
+            <div className="text-primary flex w-full items-center justify-between font-semibold md:w-fit md:text-sm">
+              <span className="text-foreground text-xs font-normal">GST :</span>
+              {product.hasSizes &&
               !product.samePriceForAllSizes &&
               !selectedSize ? (
-                <span className="text-muted-foreground text-[8px] font-normal italic md:text-xs">
+                <span className="text-muted-foreground text-[8px] font-normal whitespace-nowrap italic md:text-xs">
                   Select a size
                 </span>
               ) : (
                 <span className="font-semibold">
-                  {selectedSize?.gst ?? product?.gst}%
+                  {selectedSize?.gst ?? product.gst}%
                 </span>
               )}
             </div>
+
             {product.hasSizes &&
-              !product?.samePriceForAllSizes &&
+              !product.samePriceForAllSizes &&
               !selectedSize && (
                 <span className="text-muted-foreground text-[8px] italic md:text-xs">
                   Pricing varies by size.
@@ -244,107 +389,60 @@ export default function ProductCard({
               )}
           </div>
         </div>
+
         <div className="flex w-full items-center justify-end gap-2">
           {isAdmin ? (
             <div className="flex w-full flex-col">
               <div
-                className={`${
-                  product.status === "draft"
-                    ? "border-amber-100 bg-amber-100 text-yellow-600"
-                    : product.status === "for-sale"
-                      ? "border-green-100 bg-green-100 text-green-700"
-                      : product.status === "out-of-stock"
-                        ? "border-zinc-100 bg-zinc-100 text-zinc-800"
-                        : product.status === "discontinued"
-                          ? "border-red-100 bg-red-100 text-red-600"
-                          : ""
-                } py-1font-semibold flex w-full items-center justify-center gap-1 rounded-t-lg border-1 px-1 pt-1 text-xs font-semibold`}
+                className={clsx(
+                  "inline-flex w-full items-center justify-center rounded-md rounded-b-none border px-2 py-1 text-center text-xs font-medium md:text-sm",
+                  STATUS_META[product.status].className,
+                )}
               >
-                <span className="text-muted-foreground text-xs font-normal">
-                  Status :{" "}
-                </span>
-                {product.status === "draft"
-                  ? "DRAFT"
-                  : product.status === "for-sale"
-                    ? "FOR SALE"
-                    : product.status === "out-of-stock"
-                      ? "OUT OF STOCK"
-                      : product.status === "discontinued"
-                        ? "DISCONTINUED"
-                        : ""}
+                {STATUS_META[product.status].label}
               </div>
               <Button
-                variant={"outline"}
+                variant="outline"
                 asChild
-                className={`${
-                  product.status === "draft"
-                    ? "border-amber-100"
-                    : product.status === "for-sale"
-                      ? "border-green-100"
-                      : product.status === "out-of-stock"
-                        ? "border-zinc-100"
-                        : product.status === "discontinued"
-                          ? "border-red-100"
-                          : ""
-                } rounded-t-none`}
+                className="text-primary border-primary rounded-t-none"
               >
-                <Link
-                  href={`/admin-dashboard/edit-product/${product?.brandId}/${product?.id}`}
+                <SafeLink
+                  href={`/admin-dashboard/edit-product/${product.brandId}/${product.id}`}
                 >
                   <PencilIcon />
                   Edit Product
-                </Link>
+                </SafeLink>
               </Button>
             </div>
           ) : !isUser ? (
             <div className="inline-flex w-full items-center justify-center gap-1 rounded-md border border-yellow-600 bg-yellow-50 p-1 px-2 text-center text-xs whitespace-nowrap text-yellow-600">
               Please{" "}
-              <span
+              <SafeLink
+                href="/login"
                 className="cursor-pointer font-semibold underline hover:text-yellow-800"
-                onClick={() => {
-                  onClose?.();
-                  router.push("/login");
-                }}
               >
                 Login
-              </span>{" "}
+              </SafeLink>{" "}
               to add products to your cart.
             </div>
-          ) : !isProfileComplete ? (
+          ) : !profileComplete ? (
             <Button
-              onClick={() => {
-                onClose?.();
-                router.push("/account/profile");
-              }}
+              onClick={goProfile}
               className="flex w-full cursor-pointer items-center justify-center gap-1 rounded-md border border-yellow-600 bg-yellow-50 text-center text-xs text-yellow-600 md:w-fit"
             >
               {"Complete Your Profile Now"} <ChevronsRight className="size-4" />
             </Button>
           ) : (
             <div className="flex w-full flex-col items-center justify-end">
-              {!clientUser?.profileComplete ? (
-                <div className="bg-yellow-50 px-2">
-                  <span className="text-xs text-yellow-700">
-                    Incomplete Profile
-                  </span>
-                </div>
-              ) : isUser && !isAccountApproved ? (
-                <div className="bg-yellow-50 px-2">
-                  <span className="text-xs text-yellow-700">
-                    Account Approval Pending
-                  </span>
-                </div>
-              ) : null}
-
               <CartControls
                 isDisabled={!isAccountApproved && isUser}
-                productId={product?.id}
+                productId={product.id}
                 selectedSize={product.hasSizes ? selectedSize?.size : ""}
                 hasSizes={product.hasSizes}
                 productPricing={{
                   price: selectedSize?.price ?? product.price,
-                  discount: selectedSize?.discount ?? product?.discount,
-                  gst: selectedSize?.gst ?? product?.gst,
+                  discount: selectedSize?.discount ?? product.discount,
+                  gst: selectedSize?.gst ?? product.gst,
                 }}
               />
             </div>

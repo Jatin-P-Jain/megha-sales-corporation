@@ -5,20 +5,20 @@ import { productSchema } from "@/validation/productSchema";
 
 import { z } from "zod";
 import { Loader2, PlusCircleIcon } from "lucide-react";
-import { useAuth } from "@/context/useAuth";
+import { useAuthState } from "@/context/useAuth";
 
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { ref, uploadBytesResumable, UploadTask } from "firebase/storage";
 import { storage } from "@/firebase/client";
 import { createProduct, saveProductMedia } from "./actions";
 import { Brand } from "@/types/brand";
 import { useEffect, useState } from "react";
 import { updateBrandProcuctCount } from "../brands/action";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
 
 export default function NewProductForm({ brand }: { brand?: Brand | Brand[] }) {
-  const auth = useAuth();
-  const router = useRouter();
+  const { currentUser } = useAuthState();
+  const router = useSafeRouter();
   const [progressMap, setProgressMap] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [brandSelected, setBrandSelected] = useState<Brand | undefined>(
@@ -32,7 +32,7 @@ export default function NewProductForm({ brand }: { brand?: Brand | Brand[] }) {
 
   const handleSubmit = async (data: z.infer<typeof productSchema>) => {
     setIsLoading(true);
-    const token = await auth?.currentUser?.getIdToken();
+    const token = await currentUser?.getIdToken();
     if (!token) {
       setIsLoading(false);
       return;

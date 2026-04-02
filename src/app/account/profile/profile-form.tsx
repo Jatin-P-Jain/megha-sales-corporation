@@ -1,6 +1,31 @@
 "use client";
 
+import { useEffect, useMemo, useState, useCallback } from "react";
+import Image from "next/image";
+import { usePathname, useSearchParams } from "next/navigation";
+
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useForm, useWatch } from "react-hook-form";
+
+import clsx from "clsx";
+import {
+  CheckCircle2,
+  CheckCircleIcon,
+  CircleUserRound,
+  CloudDownload,
+  Info,
+  Loader2,
+  Loader2Icon,
+  PencilIcon,
+  Repeat,
+  SaveIcon,
+  Send,
+} from "lucide-react";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -10,10 +35,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm } from "react-hook-form";
-import { z } from "zod";
-import { userProfileSchema } from "@/validation/profileSchema";
 import {
   Select,
   SelectContent,
@@ -21,42 +42,49 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import clsx from "clsx";
-import { loginUserMobileSchema } from "@/validation/loginUser";
-import { useEffect, useState } from "react";
-import {
-  CheckCircle2,
-  CircleUserRound,
-  CloudDownload,
-  Info,
-  Loader2,
-  Loader2Icon,
-  SaveIcon,
-} from "lucide-react";
-import { useMobileOtp } from "@/hooks/useMobileOtp";
+
 import OTPInput from "@/components/custom/otp-input";
-import { useRecaptcha } from "@/hooks/useRecaptcha";
-import { toast } from "sonner";
-import { useAuth } from "@/context/useAuth";
-import { updateUserProfile } from "./action";
 import GoogleIcon from "@/components/custom/google-icon.svg";
-import Image from "next/image";
 import { GstDetails } from "@/components/custom/gst-details";
-import { GstDetailsData } from "@/data/businessProfile";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { formatBusinessProfile } from "@/lib/business-profile-formatter";
-import { useLinkAuthProviders } from "@/hooks/useLinkAuthProviders";
-import { setToken } from "@/context/actions";
-import { updateUserFirebaseMethods } from "../actions";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ProfileCompleteAsk from "./profile-complete-ask";
+import { formatBusinessProfile } from "@/lib/business-profile-formatter";
+
+import { useRecaptcha } from "@/hooks/useRecaptcha";
+import { useMobileOtp } from "@/hooks/useMobileOtp";
+import { useLinkAuthProviders } from "@/hooks/useLinkAuthProviders";
+
+import { setToken } from "@/context/actions";
+import { useAuthState } from "@/context/useAuth";
+
+import { updateUserProfile } from "./action";
+import { updateUserFirebaseMethods } from "../actions";
+
+import { userProfileSchema } from "@/validation/profileSchema";
+import { loginUserMobileSchema } from "@/validation/loginUser";
+import { useRequireUserProfile } from "@/hooks/useUserProfile";
+import {
+  useUserProfileActions,
+  useUserProfileState,
+} from "@/context/UserProfileProvider";
+import { updateUserGate } from "@/lib/firebase/updateUserGate";
+import { getSafeRedirectPath } from "@/lib/safe-redirect";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
+import { GstDetailsData } from "@/types/user";
+
+type FormValues = z.infer<typeof userProfileSchema>;
 
 export default function ProfileForm() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const router = useRouter();
-  const auth = useAuth();
-  const clientUser = auth?.clientUser;
+  const router = useSafeRouter();
+
+  useRequireUserProfile(true);
+
+  const { currentUser, isAdmin, authLoading } = useAuthState();
+  const { refreshUser } = useUserProfileActions();
+  const { clientUser, clientUserLoading } = useUserProfileState();
+
+  const pageLoading = authLoading || (currentUser ? clientUserLoading : false);
 
   const recaptchaVerifier = useRecaptcha({ enabled: true });
 
@@ -67,36 +95,45 @@ export default function ProfileForm() {
   const [gstDetails, setGstDetails] = useState<GstDetailsData | null>(null);
   const [loadingGst, setLoadingGst] = useState(false);
   const [gstError, setGstError] = useState<string | null>(null);
+
+  // Local UI state for GST vs PAN
   const [idType, setIdType] = useState<"pan" | "gst">("gst");
 
   const [didInit, setDidInit] = useState(false);
-  const isAdmin = clientUser?.userType === "admin";
 
   const { linkGoogle, linkingGoogle } = useLinkAuthProviders({
-    user: auth.currentUser,
+    user: currentUser,
     recaptchaVerifier: recaptchaVerifier.verifier,
     onToken: async (idToken, refreshToken) => {
       await setToken(idToken, refreshToken);
     },
-    onLinked: async () => {
-      await updateUserFirebaseMethods();
-      await auth.refreshClientUser();
+    onLinked: async ({ user }) => {
+      const photoUrl = user?.providerData.find(
+        (p) => p.providerId === "google.com",
+      )?.photoURL;
+
+      await updateUserFirebaseMethods(
+        user?.email ?? undefined,
+        photoUrl ?? undefined,
+      );
+      await refreshUser();
     },
     toast,
   });
 
-  // ✅ RHF: don’t rely on async defaultValues; reset when clientUser loads/changes. [web:125]
-  const form = useForm<z.infer<typeof userProfileSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(userProfileSchema),
     mode: "onChange",
     reValidateMode: "onChange",
     criteriaMode: "all",
+    shouldUnregister: true, // ✅ key for conditional GST/PAN fields
     defaultValues: {
       displayName: "",
       email: "",
       phone: "",
-      businessType: undefined,
-      businessIdType: undefined,
+      // keep selects controlled from day 1
+      businessType: "",
+      businessIdType: "gst",
       gstNumber: "",
       panNumber: "",
       firmName: "",
@@ -106,91 +143,135 @@ export default function ProfileForm() {
     },
   });
 
+  // Watch only what you need for conditional rendering + submit gating
+  const displayName = useWatch({ control: form.control, name: "displayName" });
+  const email = useWatch({ control: form.control, name: "email" });
+  const selectedBusinessType = useWatch({
+    control: form.control,
+    name: "businessType",
+  });
+  const otherBusinessType = useWatch({
+    control: form.control,
+    name: "otherBusinessType",
+  });
+  const phoneNumber = useWatch({ control: form.control, name: "phone" });
+  const otp = useWatch({ control: form.control, name: "otp" });
+  const panNumber = useWatch({ control: form.control, name: "panNumber" });
+  const firmName = useWatch({ control: form.control, name: "firmName" });
+
+  const [isPhoneValid, setIsPhoneValid] = useState(false);
+  useEffect(() => {
+    setIsPhoneValid(
+      loginUserMobileSchema.safeParse({ mobile: phoneNumber }).success,
+    );
+  }, [phoneNumber]);
+
+  // Init defaults once when clientUser arrives
   useEffect(() => {
     if (!clientUser || didInit) return;
+
     const from = searchParams.get("from");
     if (from === "login") {
       setDialogOpen(true);
 
       const next = new URLSearchParams(searchParams.toString());
       next.delete("from");
-
       const qs = next.toString();
-      router.replace(qs ? `${pathname}?${qs}` : pathname); // removes param without full reload [web:177]
+      router.replace(qs ? `${pathname}?${qs}` : pathname);
     }
-    const nextDefaults = {
+
+    const nextDefaults: Partial<FormValues> = {
       displayName: clientUser.displayName || "",
       email: clientUser.email || "",
       phone: clientUser.phone || "",
-      businessType: clientUser.businessType || undefined,
+
+      // keep controlled strings
+      businessType: clientUser.businessType || "",
       businessIdType: (clientUser.businessProfile
         ? clientUser.businessProfile.gstin
           ? "gst"
           : "pan"
-        : undefined) as "gst" | "pan" | undefined,
+        : "gst") as "gst" | "pan",
+
       gstNumber: clientUser.businessProfile?.gstin || "",
       firmName: clientUser.firmName || "",
       panNumber: clientUser.panNumber || "",
+
       photoUrl: clientUser.photoUrl || "",
-      otp: undefined,
-      otherBusinessType: undefined,
+      otp: "",
+      otherBusinessType: "",
     };
 
-    form.reset(nextDefaults);
-    setIdType((nextDefaults.businessIdType ?? "gst") as "gst" | "pan");
+    form.reset(nextDefaults as FormValues);
+
+    const initialIdType = (nextDefaults.businessIdType ?? "gst") as
+      | "gst"
+      | "pan";
+    setIdType(initialIdType);
+
     setIsVerified(!!clientUser.phone);
-    setIsPhoneLinked(!!clientUser.phone && !!clientUser.email);
+    setIsPhoneLinked(
+      !!clientUser.phone && (!!clientUser.email || !!clientUser.firebaseAuth),
+    );
     setDidInit(true);
-  }, [clientUser?.uuid, didInit, form]);
-
-  const selectedBusinessType = form.watch("businessType");
-  const phoneNumber = form.watch("phone");
-  const otp = form.watch("otp");
-
-  const panNumber = form.watch("panNumber");
-  const firmName = form.watch("firmName");
-
-  const [isPhoneValid, setIsPhoneValid] = useState(false);
+  }, [clientUser, didInit, form, pathname, router, searchParams]);
 
   useEffect(() => {
-    if (loginUserMobileSchema.safeParse({ mobile: phoneNumber }).success) {
-      setIsPhoneValid(true);
-    } else {
-      setIsPhoneValid(false);
-    }
-  }, [phoneNumber]);
+    if (!clientUser?.email) return;
 
-  const { otpReset, otpSent, sendingOtp, isVerifying, sendOtp, verifyOtp } =
-    useMobileOtp({
-      onSuccess: async () => {
-        setIsVerified(true);
-        setIsPhoneLinked(true);
-        await updateUserProfile(
-          {
-            phone: phoneNumber,
-          },
-          { profileComplete: false },
-        );
-        await auth.refreshClientUser();
-      },
-      appVerifier: recaptchaVerifier.verifier,
-      ensureRecaptcha: recaptchaVerifier.ensureReady,
-      resetRecaptcha: recaptchaVerifier.reset,
-      linkPhone: true,
-    });
+    const current = form.getValues("email") || "";
+    const next = clientUser.email || "";
+
+    // Only patch if it's actually different (and don't overwrite while user is typing)
+    if (current !== next && !form.getFieldState("email").isDirty) {
+      form.setValue("email", next, {
+        shouldDirty: false,
+        shouldTouch: false,
+        shouldValidate: true,
+      });
+    }
+  }, [clientUser?.email, form]);
+
+  const {
+    otpReset,
+    otpSent,
+    sendingOtp,
+    isVerifying,
+    sendOtp,
+    verifyOtp,
+    resendIn,
+    resendOtp,
+    editMobile,
+    lockMobileInput,
+  } = useMobileOtp({
+    onSuccess: async () => {
+      setIsVerified(true);
+      setIsPhoneLinked(true);
+      await updateUserProfile({ phone: phoneNumber });
+      await refreshUser();
+    },
+    appVerifier: recaptchaVerifier.verifier,
+    ensureRecaptcha: recaptchaVerifier.ensureReady,
+    resetRecaptcha: recaptchaVerifier.reset,
+    linkPhone: true,
+    resendSeconds: 30,
+  });
 
   useEffect(() => {
-    if (otpReset) {
-      form.resetField("otp");
-    }
+    if (otpReset) form.resetField("otp");
   }, [otpReset, form]);
 
-  const fetchGstDetails = async (gstin: string) => {
+  const fetchGstDetails = useCallback(async (gstin: string) => {
+    const v = (gstin || "").trim();
+    if (!v) return;
+
     setLoadingGst(true);
     setGstError(null);
+
     try {
-      const res = await fetch(`/api/gst-lookup?gstin=${gstin}`);
+      const res = await fetch(`/api/gst-lookup?gstin=${encodeURIComponent(v)}`);
       const data = await res.json();
+
       if (data.flag !== true) {
         setGstError("Invalid GSTIN or no data found");
         setGstDetails(null);
@@ -204,203 +285,172 @@ export default function ProfileForm() {
     } finally {
       setLoadingGst(false);
     }
-  };
+  }, []);
 
-  const handleSubmit = async (data: z.infer<typeof userProfileSchema>) => {
-    try {
-      delete data.otp;
+  const handleSubmit = useCallback(
+    async (data: FormValues) => {
+      try {
+        const { otp: _otp, otherBusinessType, ...rest } = data;
 
-      if (isAdmin) {
-        await updateUserProfile(
-          {
-            displayName: data.displayName,
-            email: data.email,
-            phone: data.phone,
-            photoUrl: data.photoUrl,
-            userType: "admin",
-            businessType: "",
-            businessProfile: null,
-          },
-          { profileComplete: true },
-        );
-      } else {
-        const { otherBusinessType, ...rest } = data;
-        const finalBusinessType =
-          data.businessType === "other" && otherBusinessType
-            ? otherBusinessType
-            : data.businessType;
+        if (isAdmin) {
+          try {
+            await updateUserProfile({
+              displayName: rest.displayName,
+              email: rest.email,
+              phone: rest.phone,
+              photoUrl: rest.photoUrl,
+              businessType: "",
+              businessProfile: null,
+            });
+          } catch (err) {
+            console.error("Admin profile update error:", err);
+          }
+          try {
+            await updateUserGate(true, "admin", "approved");
+          } catch (err) {
+            console.error("Admin gate update error:", err);
+          }
+        } else {
+          const finalBusinessType =
+            rest.businessType === "other" && otherBusinessType
+              ? otherBusinessType
+              : rest.businessType;
 
-        const businessProfile =
-          idType === "gst" && gstDetails?.flag === true
-            ? {
-                gstin: gstDetails.data.gstin,
-                legalName: gstDetails.data.lgnm,
-                tradeName: gstDetails.data.tradeNam,
-                address: gstDetails.data.pradr?.adr || "",
-                status: gstDetails.data.sts,
-                registrationDate: gstDetails.data.rgdt,
-                natureOfBusiness: gstDetails.data.nba || [],
-                constitutionType: gstDetails.data.ctb,
-                jurisdiction: gstDetails.data.ctj,
-                verified: true,
-                verifiedAt: new Date().toISOString(),
-                verifieddata: gstDetails.data,
-              }
-            : null;
+          const businessProfile =
+            idType === "gst" && gstDetails?.flag === true
+              ? {
+                  gstin: gstDetails.data.gstin,
+                  legalName: gstDetails.data.lgnm,
+                  tradeName: gstDetails.data.tradeNam,
+                  address: gstDetails.data.pradr?.adr || "",
+                  status: gstDetails.data.sts,
+                  registrationDate: gstDetails.data.rgdt,
+                  natureOfBusiness: gstDetails.data.nba || [],
+                  constitutionType: gstDetails.data.ctb,
+                  jurisdiction: gstDetails.data.ctj,
+                  verified: true,
+                  verifiedAt: new Date().toISOString(),
+                  verifieddata: gstDetails.data,
+                }
+              : null;
+          const firmName =
+            businessProfile?.tradeName || rest.firmName || "User";
 
-        await updateUserProfile(
-          {
+          await updateUserProfile({
             ...rest,
-            userType: "customer",
+            firmName,
             businessType: finalBusinessType,
             businessProfile,
-          },
-          { profileComplete: true },
+          });
+          await updateUserGate(true, "customer", "pending");
+        }
+
+        const freshClientUser = await refreshUser();
+
+        if (freshClientUser) {
+          await fetch("/api/wa-send-message", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              templateKey: "account_approval_request_to_admin",
+              customerUserId: freshClientUser.userId,
+              customerName: freshClientUser.displayName || "User",
+              customerPhone: freshClientUser.phone || "Not provided",
+              customerEmail: freshClientUser.email || "Not provided",
+              customerBusinessProfile: formatBusinessProfile(freshClientUser),
+            }),
+          });
+        }
+
+        toast.success("Success!", {
+          description: "Your profile has been saved successfully!",
+        });
+
+        const redirect = getSafeRedirectPath(searchParams.get("redirect"));
+        router.push(redirect);
+      } catch (err: unknown) {
+        console.error("Profile Submit error:", err);
+        toast.error(
+          err instanceof Error ? err.message : "Failed to update profile",
         );
       }
+    },
+    [gstDetails, idType, isAdmin, refreshUser, router, searchParams],
+  );
 
-      const token = (await auth.currentUser?.getIdToken(true)) || "";
-      const refreshToken = auth.currentUser?.refreshToken || "";
-      await setToken(token, refreshToken);
-      const freshClientUser = await auth.refreshClientUser();
+  const canSubmit = useMemo(() => {
+    if (form.formState.isSubmitting) return false;
+    if (!isVerified) return false;
 
-      const waSendResp = await fetch("/api/wa-send-message", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          templateKey: "account_approval_request_to_admin",
-          customerUserId: freshClientUser?.userId,
-          customerName: freshClientUser?.displayName || "User",
-          customerPhone: freshClientUser?.phone || "Not provided",
-          customerEmail: freshClientUser?.email || "Not provided",
-          customerBusinessProfile: formatBusinessProfile(freshClientUser),
-        }),
-      });
-
-      if (waSendResp.ok) {
-        toast.success("Approval Request Sent", {
-          description:
-            "Your profile has been updated and an approval request has been sent to the admin.",
-        });
-      }
-
-      const redirect = searchParams.get("redirect") ?? "/";
-      router.push(redirect);
-
-      toast.success("Success!", {
-        description: "Your profile has been saved successfully!",
-      });
-    } catch (err: unknown) {
-      console.error("Profile Submit error:", err);
-      toast.error(
-        err instanceof Error ? err.message : "Failed to update profile",
-      );
-    }
-  };
-
-  const { isSubmitting } = form.formState;
-  useEffect(() => {
-    const values = form.getValues();
-    const result = userProfileSchema.safeParse(values);
-    console.log(
-      "zod safeParse success?",
-      result.success,
-      result.success ? null : JSON.stringify(result.error.issues, null, 2),
-    );
-  }, [form.watch()]);
-
-  // useEffect(() => {
-  //   console.log("submit blockers", {
-  //     isVerified,
-  //     isSubmitting,
-  //     loadingGst,
-  //     isValid: form.formState.isValid,
-  //     errors: Object.keys(form.formState.errors),
-  //     idType,
-
-  //     gstDetailsPresent: gstDetails !== null,
-  //     panNumber,
-  //   });
-  // }, [
-  //   isVerified,
-  //   isSubmitting,
-  //   loadingGst,
-  //   form.formState.isValid,
-  //   form.formState.errors,
-  //   idType,
-
-  //   gstDetails,
-  //   panNumber,
-  // ]);
-
-  const canSubmit = () => {
     if (isAdmin) {
-      return (
-        isVerified &&
-        !isSubmitting &&
-        !!form.watch("displayName") &&
-        !!form.watch("email") &&
-        !!form.watch("phone")
-      );
+      return !!displayName?.trim() && !!email?.trim() && !!phoneNumber?.trim();
     }
-    // console.log({
-    //   isVerified,
-    //   isSubmitting,
-    //   gstDetails,
-    //   panNumber,
-    //   isValid: form.formState.isValid,
-    //   formErrors: Object.keys(form.formState.errors),
-    // });
+    // businessType must be selected (default is "")
+    if (!selectedBusinessType?.trim()) return false;
 
-    return (
-      isVerified &&
-      !isSubmitting &&
-      !loadingGst &&
-      form.formState.isValid &&
-      (idType === "gst"
-        ? gstDetails !== null
-        : panNumber &&
-          panNumber.length === 10 &&
-          firmName &&
-          firmName.length >= 2)
-    );
-  };
+    // if "other", otherBusinessType must be provided
+    if (selectedBusinessType === "other" && !otherBusinessType?.trim())
+      return false;
 
-  // useEffect(() => {
-  //   if (Object.keys(form.formState.errors).length) {
-  //     console.log("RHF errors:", form.formState.errors);
-  //   }
-  // }, [form.formState.errors]);
+    if (idType === "gst") {
+      return !loadingGst && form.formState.isValid && gstDetails !== null;
+    }
+    const panOk = !!panNumber?.trim() && panNumber.trim().length === 10;
+    const firmOk = !!firmName?.trim() && firmName.trim().length >= 2;
 
-  // console.log(canSubmit());
+    return form.formState.isValid && panOk && firmOk;
+  }, [
+    displayName,
+    email,
+    phoneNumber,
+    gstDetails,
+    idType,
+    isAdmin,
+    isVerified,
+    loadingGst,
+    panNumber,
+    firmName,
+    selectedBusinessType,
+    otherBusinessType,
+    form.formState.isSubmitting,
+    form.formState.isValid,
+  ]);
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (isAdmin) {
-      const data = {
+      const data: FormValues = {
         displayName: form.getValues("displayName"),
         email: form.getValues("email"),
         phone: form.getValues("phone"),
         photoUrl: form.getValues("photoUrl"),
+
         businessType: "",
-        businessIdType: "gst" as const,
+        businessIdType: "gst",
         gstNumber: "",
         panNumber: "",
         firmName: "",
-        userType: "admin" as const,
-      };
+        otp: "",
+        otherBusinessType: "",
+      } as FormValues;
+
       handleSubmit(data);
-    } else {
-      form.handleSubmit(handleSubmit)(e);
+      return;
     }
+
+    form.handleSubmit(handleSubmit)(e);
   };
+
+  const lockPhoneInput =
+    !!clientUser?.phone || otpSent || isVerified || lockMobileInput; // keep existing behavior + lock after OTP sent
 
   return (
     <>
       <ProfileCompleteAsk open={dialogOpen} setOpen={setDialogOpen} />
+
       <Card className="gap-0">
-        <CardHeader className="">
+        <CardHeader>
           <CardTitle className="flex flex-col items-center justify-center gap-4 text-xl md:text-2xl">
             <div className="flex items-center gap-2">
               <CircleUserRound className="size-8" /> Complete Your Profile
@@ -412,9 +462,10 @@ export default function ProfileForm() {
             </span>
           </CardTitle>
         </CardHeader>
+
         <CardContent className="py-2">
           <div className="relative">
-            {auth.loading && (
+            {pageLoading && (
               <div className="absolute top-0 z-30 flex h-full w-full items-center justify-center gap-2 bg-zinc-400/10">
                 <div className="flex h-1/8 w-3/4 items-center justify-center gap-2 rounded-lg border-1 bg-white">
                   <Loader2 className="animate-spin" />
@@ -429,7 +480,6 @@ export default function ProfileForm() {
                   className="flex flex-col gap-5"
                   disabled={form.formState.isSubmitting}
                 >
-                  {/* Display name */}
                   <FormField
                     control={form.control}
                     name="displayName"
@@ -453,19 +503,22 @@ export default function ProfileForm() {
                     )}
                   />
 
-                  {/* Email + link google */}
-                  <div className="flex flex-col">
+                  <div className="flex w-full flex-col">
                     <FormField
                       control={form.control}
                       name="email"
                       render={({ field }) => (
-                        <FormItem className="flex flex-col gap-1">
-                          <div className="flex w-full flex-col items-center justify-center gap-1 md:flex-row md:items-end md:gap-4">
-                            <div className="flex w-full flex-col gap-1">
+                        <FormItem className="flex w-full flex-col gap-1">
+                          <div className="grid grid-cols-1 items-end justify-center gap-2 md:grid-cols-[minmax(0,1fr)_max-content] md:gap-4">
+                            <div
+                              className={clsx("flex min-w-0 flex-col gap-1", {
+                                ["md:col-span-2"]: clientUser?.email,
+                              })}
+                            >
                               <FormLabel className="flex items-start gap-1">
                                 Your email
                               </FormLabel>
-                              <FormControl className="w-full">
+                              <FormControl className="">
                                 <Input
                                   {...field}
                                   placeholder="Your email"
@@ -476,17 +529,23 @@ export default function ProfileForm() {
                                 />
                               </FormControl>
                               <FormMessage className="text-xs" />
+                              {clientUser?.email && (
+                                <div className="inline-flex w-fit gap-1 text-xs font-semibold text-green-700">
+                                  <CheckCircle2 className="size-4 text-green-700" />
+                                  Verified {isPhoneLinked && "and linked."}
+                                </div>
+                              )}
                             </div>
 
                             {!clientUser?.email && (
-                              <div className="flex flex-col md:flex-row">
-                                <span className="text-muted-foreground flex justify-center text-sm md:mb-2">
-                                  or
+                              <div className="flex flex-col items-center justify-between gap-2 md:flex-row md:gap-4">
+                                <span className="text-muted-foreground flex justify-center text-sm">
+                                  -- or --
                                 </span>
                                 <Button
                                   type="button"
-                                  className="w-full cursor-pointer rounded-full shadow-md md:w-auto"
-                                  variant={"outline"}
+                                  className="w-auto cursor-pointer rounded-full shadow-md"
+                                  variant="outline"
                                   onClick={linkGoogle}
                                 >
                                   {linkingGoogle ? (
@@ -522,7 +581,6 @@ export default function ProfileForm() {
                     />
                   </div>
 
-                  {/* Phone + OTP */}
                   <div className="flex flex-col gap-2">
                     <div
                       className={clsx(
@@ -540,15 +598,30 @@ export default function ProfileForm() {
                               Your mobile number
                             </FormLabel>
                             <FormControl>
-                              <div className="flex w-full gap-2">
+                              <div className="flex w-full flex-row gap-2 md:items-center md:gap-4">
                                 <Input
                                   {...field}
                                   placeholder="Mobile Number"
-                                  readOnly={!!clientUser?.phone || otpSent}
+                                  inputMode="numeric"
+                                  maxLength={10}
+                                  onChange={(e) => {
+                                    if (!isNaN(Number(e.target.value)))
+                                      field.onChange(e);
+                                  }}
+                                  readOnly={
+                                    !!clientUser?.phone ||
+                                    lockPhoneInput ||
+                                    isVerified
+                                  }
                                   className={clsx(
-                                    !!clientUser?.phone && "font-semibold",
+                                    !!clientUser?.phone ||
+                                      lockPhoneInput ||
+                                      isVerified
+                                      ? "font-semibold"
+                                      : "",
                                   )}
                                 />
+
                                 {!otpSent && !isVerified && (
                                   <Button
                                     disabled={!isPhoneValid}
@@ -561,19 +634,55 @@ export default function ProfileForm() {
                                         Sending OTP
                                       </>
                                     ) : (
-                                      "Verify"
+                                      <>
+                                        <Send className="size-4" /> Send OTP
+                                      </>
                                     )}
                                   </Button>
                                 )}
+
+                                {otpSent && !isVerified && (
+                                  <>
+                                    <Button
+                                      type="button"
+                                      variant="link"
+                                      onClick={() => {
+                                        // reset hook state
+                                        editMobile();
+                                        // reset form otp field + allow editing phone again
+                                        form.resetField("otp");
+                                        setIsVerified(false);
+                                        setIsPhoneLinked(false);
+                                      }}
+                                    >
+                                      <PencilIcon className="size-4" />{" "}
+                                      <span className="hidden md:inline-flex">
+                                        Edit Mobile Number
+                                      </span>
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      disabled={sendingOtp || resendIn > 0}
+                                      onClick={resendOtp}
+                                      className="hidden md:inline-flex"
+                                    >
+                                      <Repeat className="size-4" />{" "}
+                                      {resendIn > 0
+                                        ? `Resend in ${resendIn}s`
+                                        : "Resend"}
+                                    </Button>
+                                  </>
+                                )}
                               </div>
                             </FormControl>
+
                             <FormMessage />
                           </FormItem>
                         )}
                       />
                     </div>
 
-                    {/* ✅ Ask only Google-login users if they want linking */}
                     {!isVerified && (
                       <span className="flex items-start gap-1 text-xs text-sky-900">
                         <Info className="size-4" />
@@ -585,21 +694,19 @@ export default function ProfileForm() {
                     {isVerified && (
                       <div className="inline-flex w-fit gap-1 text-xs font-semibold text-green-700">
                         <CheckCircle2 className="size-4 text-green-700" />
-                        {isVerified && "Verified"}{" "}
-                        {isPhoneLinked && "and Linked to your email account."}
+                        Verified {isPhoneLinked && "and linked."}
                       </div>
                     )}
                   </div>
 
-                  {/* OTP entry */}
                   {otpSent && !isVerified && (
-                    <div className="grid grid-cols-1 items-end justify-center gap-4 md:grid-cols-[8fr_1fr] md:gap-4">
+                    <div className="grid grid-cols-1 items-end justify-center gap-4 md:grid-cols-[1fr_auto]">
                       <FormField
                         control={form.control}
                         name="otp"
                         render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="flex items-start gap-1">
+                          <FormItem className="flex flex-col justify-between gap-2 md:flex-row md:items-center md:gap-4">
+                            <FormLabel className="min-w-max text-sm font-normal whitespace-nowrap">
                               Enter OTP
                             </FormLabel>
                             <FormControl>
@@ -615,34 +722,51 @@ export default function ProfileForm() {
                                 )}
                               />
                             </FormControl>
+
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-
-                      <Button
-                        disabled={isVerifying}
-                        type="button"
-                        className="w-full"
-                        onClick={async () => {
-                          const code = otp ?? "";
-                          if (!code) return;
-                          await verifyOtp(code);
-                        }}
-                      >
-                        {isVerifying ? (
-                          <>
-                            <Loader2 className="size-4 animate-spin" />
-                            Verifying OTP
-                          </>
-                        ) : (
-                          "Verify OTP"
-                        )}
-                      </Button>
+                      <div className="flex items-center justify-between gap-4">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          disabled={sendingOtp || resendIn > 0}
+                          onClick={resendOtp}
+                          className="inline-flex min-w-max text-xs md:hidden"
+                          size={"sm"}
+                        >
+                          <Repeat className="size-4" />{" "}
+                          {resendIn > 0
+                            ? `Resend OTP in ${resendIn}s`
+                            : "Resend OTP"}
+                        </Button>
+                        <Button
+                          disabled={isVerifying}
+                          type="button"
+                          className="flex-1"
+                          onClick={async () => {
+                            const code = (otp ?? "").trim();
+                            if (!code) return;
+                            await verifyOtp(code);
+                          }}
+                        >
+                          {isVerifying ? (
+                            <>
+                              <Loader2 className="size-4 animate-spin" />
+                              Verifying OTP
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircleIcon className="size-4" />
+                              Verify OTP
+                            </>
+                          )}
+                        </Button>
+                      </div>
                     </div>
                   )}
 
-                  {/* Admin banner */}
                   {isAdmin ? (
                     <div className="rounded-md bg-green-100 p-4 text-center">
                       <p className="text-sm font-semibold text-green-800">
@@ -652,7 +776,6 @@ export default function ProfileForm() {
                     </div>
                   ) : (
                     <>
-                      {/* Business type */}
                       <FormField
                         control={form.control}
                         name="businessType"
@@ -663,8 +786,8 @@ export default function ProfileForm() {
                             </FormLabel>
                             <FormControl>
                               <Select
+                                value={(field.value ?? "") as string}
                                 onValueChange={field.onChange}
-                                value={field.value}
                               >
                                 <SelectTrigger className="w-full">
                                   <SelectValue placeholder="Select your business type" />
@@ -706,7 +829,7 @@ export default function ProfileForm() {
                         />
                       )}
 
-                      {/* Hidden businessIdType synced with idType */}
+                      {/* Keep RHF in-sync with local idType */}
                       <FormField
                         control={form.control}
                         name="businessIdType"
@@ -717,12 +840,14 @@ export default function ProfileForm() {
 
                       <div className="space-y-1">
                         <FormLabel>Business Identification Through</FormLabel>
+
                         <Select
                           value={idType}
                           onValueChange={(value: "pan" | "gst") => {
                             setIdType(value);
                             setGstDetails(null);
                             setGstError(null);
+
                             form.setValue("businessIdType", value, {
                               shouldValidate: true,
                             });
@@ -732,6 +857,16 @@ export default function ProfileForm() {
                             form.setValue("panNumber", "", {
                               shouldValidate: true,
                             });
+                            form.setValue("firmName", "", {
+                              shouldValidate: true,
+                            });
+
+                            form.trigger([
+                              "businessIdType",
+                              "gstNumber",
+                              "panNumber",
+                              "firmName",
+                            ]);
                           }}
                         >
                           <SelectTrigger className="w-full">
@@ -742,6 +877,7 @@ export default function ProfileForm() {
                             <SelectItem value="pan">PAN Card</SelectItem>
                           </SelectContent>
                         </Select>
+
                         <p className="text-muted-foreground text-xs">
                           {idType === "gst"
                             ? "Select this if you have a GST registration"
@@ -749,7 +885,6 @@ export default function ProfileForm() {
                         </p>
                       </div>
 
-                      {/* GST/PAN */}
                       {idType === "gst" ? (
                         <FormField
                           control={form.control}
@@ -763,6 +898,11 @@ export default function ProfileForm() {
                                     {...field}
                                     placeholder="Enter 15-digit GSTIN"
                                     maxLength={15}
+                                    onChange={(e) =>
+                                      field.onChange(
+                                        e.target.value.toUpperCase(),
+                                      )
+                                    }
                                     className={clsx(
                                       gstDetails &&
                                         "border-green-300 ring-1 ring-green-200",
@@ -781,7 +921,7 @@ export default function ProfileForm() {
                                       disabled={
                                         field.value?.length !== 15 ||
                                         loadingGst ||
-                                        isSubmitting
+                                        form.formState.isSubmitting
                                       }
                                       className="gap-2"
                                     >
@@ -794,14 +934,17 @@ export default function ProfileForm() {
 
                               {loadingGst && (
                                 <div className="mt-3">
-                                  <GstDetails data={null} loading={true} />
+                                  <GstDetails
+                                    data={null}
+                                    loading={loadingGst}
+                                  />
                                 </div>
                               )}
                               {gstDetails && (
                                 <div className="mt-3">
                                   <GstDetails
                                     data={gstDetails}
-                                    loading={false}
+                                    loading={loadingGst}
                                   />
                                 </div>
                               )}
@@ -828,12 +971,18 @@ export default function ProfileForm() {
                                     {...field}
                                     placeholder="Enter 10-character PAN"
                                     maxLength={10}
+                                    onChange={(e) =>
+                                      field.onChange(
+                                        e.target.value.toUpperCase(),
+                                      )
+                                    }
                                   />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
+
                           <FormField
                             control={form.control}
                             name="firmName"
@@ -856,13 +1005,12 @@ export default function ProfileForm() {
                     </>
                   )}
 
-                  {/* Submit */}
                   <Button
-                    disabled={!canSubmit()}
+                    disabled={!canSubmit}
                     type="submit"
                     className="w-full cursor-pointer tracking-wide uppercase"
                   >
-                    {isSubmitting ? (
+                    {form.formState.isSubmitting ? (
                       <>
                         <Loader2 className="size-4 animate-spin" />
                         Saving Profile

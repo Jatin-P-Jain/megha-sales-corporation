@@ -3,7 +3,7 @@ import { auth, storage } from "@/firebase/client";
 import { Loader2, SaveIcon } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+
 import {
   deleteObject,
   ref,
@@ -17,6 +17,7 @@ import { updateBrand } from "./actions";
 import { useState } from "react";
 import { slugify } from "@/lib/utils";
 import { saveBrandMedia } from "../../brands/action";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
 
 type Props = Brand;
 export default function EditBrandForm({
@@ -34,7 +35,7 @@ export default function EditBrandForm({
   status,
   brandMedia,
 }: Props) {
-  const router = useRouter();
+  const router = useSafeRouter();
   const [progressMap, setProgressMap] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const handleSubmit = async (data: z.infer<typeof brandSchema>) => {

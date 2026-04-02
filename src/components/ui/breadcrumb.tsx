@@ -1,15 +1,14 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { ChevronRight, MoreHorizontal } from "lucide-react";
-
 import { cn } from "@/lib/utils";
-import Link from "next/link";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./dropdown-menu";
+import { SafeLink } from "../custom/utility/SafeLink";
 
 const Breadcrumbs = ({
   isSmallScreen = false,
@@ -39,9 +38,9 @@ const Breadcrumbs = ({
                   .reverse()
                   .map((item, i) => (
                     <DropdownMenuItem key={i} asChild>
-                      <Link href={item.href ?? ""} className="w-full">
+                      <SafeLink href={item.href ?? ""} className="w-full">
                         {item.label}
-                      </Link>
+                      </SafeLink>
                     </DropdownMenuItem>
                   ))}
               </DropdownMenuContent>
@@ -52,9 +51,9 @@ const Breadcrumbs = ({
           {/* First item */}
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link href={items[items.length - 2].href!}>
+              <SafeLink href={items[items.length - 2].href!}>
                 {items[items.length - 2].label}
-              </Link>
+              </SafeLink>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
@@ -73,7 +72,7 @@ const Breadcrumbs = ({
         {items.map((item, i) => (
           <React.Fragment key={i}>
             <BreadcrumbItem>
-              {!!item.href && <Link href={item.href}>{item.label}</Link>}
+              {!!item.href && <SafeLink href={item.href}>{item.label}</SafeLink>}
               {!item.href && <BreadcrumbPage>{item.label}</BreadcrumbPage>}
             </BreadcrumbItem>
             {i < items.length - 1 && <BreadcrumbSeparator />}

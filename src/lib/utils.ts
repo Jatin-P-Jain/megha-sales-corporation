@@ -102,18 +102,18 @@ export function formatDateTime(input?: string): string {
 
   const day = String(date.getDate()).padStart(2, "0");
   const monthNames = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
+    "January",
+    "February",
+    "March",
+    "April",
     "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
   ];
   const month = monthNames[date.getMonth()];
   const year = date.getFullYear();
@@ -123,7 +123,7 @@ export function formatDateTime(input?: string): string {
   const hh = String(hours).padStart(2, "0");
   const mm = String(date.getMinutes()).padStart(2, "0");
 
-  return `${day} ${month} ${year - 2000}, ${hh}:${mm}`;
+  return `${day} ${month} ${year} at ${hh}:${mm}`;
 }
 
 export const organizeCartProducts = (cartProducts: CartProduct[]) => {

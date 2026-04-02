@@ -9,7 +9,7 @@ import {
 } from "firebase/auth";
 import { markOneTapAsFinished } from "@/hooks/useOneTapReady";
 import { setToken } from "@/context/actions";
-import { useAuth } from "@/context/useAuth";
+import { useAuthState } from "@/context/useAuth";
 
 export default function GoogleOneTap({
   setSigningIn,
@@ -18,7 +18,7 @@ export default function GoogleOneTap({
   setSigningIn: (signingIn: boolean) => void;
   setLoginSuccess: (loginSuccess: boolean) => void;
 }) {
-  const { currentUser, loading } = useAuth();
+  const { currentUser, authLoading } = useAuthState();
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -29,7 +29,7 @@ export default function GoogleOneTap({
     } catch {}
 
     // ✅ If auth state is still loading, do nothing yet.
-    if (loading) return;
+    if (authLoading) return;
 
     // ✅ If the user is already logged in, never show One Tap again on this page.
     if (currentUser) {
@@ -101,7 +101,7 @@ export default function GoogleOneTap({
         window.google?.accounts?.id?.cancel();
       } catch {}
     };
-  }, [currentUser, loading, setSigningIn, setLoginSuccess]);
+  }, [currentUser, authLoading, setSigningIn, setLoginSuccess]);
 
   return null;
 }

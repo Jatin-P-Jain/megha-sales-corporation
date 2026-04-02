@@ -8,6 +8,7 @@ import { Order, OrderStatus } from "@/types/order";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { updateOrderStatus } from "./actions";
+import { notifyUserAction } from "@/actions/notify-user";
 import { toast } from "sonner";
 
 const getStatusMessage = (orderId: string, status: string) => {
@@ -53,25 +54,21 @@ export default function Orders({
       });
     }
 
-    await fetch("/api/notify-user", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        uuid: order.user?.uuid,
-        title: "🛒 Order Update",
-        body: getStatusMessage(order.id, newStatus),
-        url: `${getBaseUrl()}/order-history/${order.id}`,
-        clickAction: "view_order",
-        status: newStatus,
-      }),
+    await notifyUserAction({
+      uid: order.user?.uid,
+      type: "order",
+      title: "📦 Order Update",
+      body: getStatusMessage(order.id, newStatus),
+      url: `${getBaseUrl()}/order-history?orderId=${order.id}`,
+      clickAction: "view_order",
+      status: newStatus,
     });
   };
 
   return (
-    <div className="flex w-full flex-1 flex-grow flex-col gap-3">
+    <div className="flex w-full flex-1 grow flex-col gap-3">
       {orderData.map((order) => {
-        const { id, products, status, totals, createdAt, updatedAt, user } =
-          order;
+        const { id, products, status, totals, updatedAt, user } = order;
         const {
           displayName: userName,
           email: userEmail,
@@ -105,15 +102,15 @@ export default function Orders({
               />
               <div className="flex w-full items-end justify-between gap-2">
                 <div className="flex w-full flex-col items-center justify-start gap-1">
-                  <div className="text-muted-foreground flex w-full items-center justify-start text-[10px] md:text-xs">
-                    Created: {formatDateTime(createdAt)}
-                  </div>
-                  <div className="text-muted-foreground flex w-full items-center justify-start text-[10px] md:text-xs">
-                    Updated: {formatDateTime(updatedAt)}
+                  <div className="text-muted-foreground flex w-full items-center justify-start gap-2 text-[10px] md:text-xs">
+                    Last Updated :
+                    <span className="font-semibold">
+                      {formatDateTime(updatedAt)}
+                    </span>
                   </div>
                 </div>
                 {isAdmin && (
-                  <div className="flex w-full flex-col rounded-lg border-1 p-1 px-2 text-[10px]">
+                  <div className="flex w-full flex-col rounded-lg border p-1 px-2 text-[10px]">
                     <span className="text-muted-foreground text-[8px] font-extralight">
                       Order By :
                     </span>

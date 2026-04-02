@@ -1,7 +1,7 @@
+import "server-only";
 import { fireStore, getTotalPages } from "@/firebase/server";
 import { Brand, BrandMedia } from "@/types/brand";
 import { BrandStatus } from "@/types/brandStatus";
-import "server-only";
 
 type BrandOptions = {
   filters?: {

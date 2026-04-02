@@ -13,10 +13,11 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import clsx from "clsx";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useRef } from "react";
 import { usePaginatedFirestore } from "@/hooks/usePaginatedFireStore";
 import type { Order } from "@/types/order";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
 
 function OrdersSkeleton() {
   return (
@@ -42,15 +43,16 @@ function OrdersSkeleton() {
 export default function OrdersList({
   isAdmin,
   userId,
+  requestedOrderId,
 }: {
   isAdmin: boolean;
   userId?: string;
+  requestedOrderId?: string;
 }) {
-  const router = useRouter();
+  const router = useSafeRouter();
   const searchParams = useSearchParams();
   const previousFiltersRef = useRef<string>("");
 
-  const requestedOrderId = searchParams.get("orderId") ?? undefined;
   const showSingle = !!requestedOrderId;
 
   // Keep URL as the source of truth (same as ProductList)
@@ -86,7 +88,7 @@ export default function OrdersList({
     // If not admin, scope to user
     if (!isAdmin) {
       f.push({
-        field: "user.uuid",
+        field: "user.uid",
         op: "==",
         value: userId ?? "__missing__",
       });
@@ -129,14 +131,8 @@ export default function OrdersList({
     filters,
     orderByField: "updatedAt",
     orderDirection: "desc",
+    realtime: true,
   });
-
-  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
-
-  // after loading becomes false
-  useEffect(() => {
-    if (!loading) setHasLoadedOnce(true);
-  }, [loading]);
 
   // Keep hook in sync with URL page
   useEffect(() => {
@@ -146,12 +142,17 @@ export default function OrdersList({
 
   // Reset to page 1 if filters change (same logic as ProductList)
   useEffect(() => {
-    if (previousFiltersRef.current !== filterKey) {
-      previousFiltersRef.current = filterKey;
-      const sp = new URLSearchParams(searchParams.toString());
-      sp.set("page", "1");
-      router.replace(`/order-history?${sp.toString()}`);
-    }
+    if (previousFiltersRef.current === filterKey) return;
+
+    previousFiltersRef.current = filterKey;
+
+    const currentPageInUrl = searchParams.get("page") ?? "1";
+    if (currentPageInUrl === "1") return;
+
+    const sp = new URLSearchParams(searchParams.toString());
+    sp.set("page", "1");
+    router.replace(`/order-history?${sp.toString()}`);
+    // do NOT call loadPage here; your page effect will run when URL updates
   }, [filterKey, router, searchParams]);
 
   const handlePageChange = (nextPage: number) => {
@@ -160,49 +161,67 @@ export default function OrdersList({
     // when paging, don’t keep orderId pinned
     sp.delete("orderId");
     router.replace(`/order-history?${sp.toString()}`);
-    loadPage(nextPage);
   };
+
+  useEffect(() => {
+    if (!requestedOrderId && previousFiltersRef.current.includes("orderId")) {
+      previousFiltersRef.current = "";
+      loadPage(1); // Force reload ALL orders
+    }
+  }, [requestedOrderId, loadPage]);
 
   const start = (currentPage - 1) * PAGE_SIZE + 1;
   const end = Math.min(currentPage * PAGE_SIZE, totalItems);
   const totalPages = Math.max(Math.ceil(totalItems / PAGE_SIZE), 1);
 
-  if (loading || !hasLoadedOnce) {
+  if (loading) {
     return <OrdersSkeleton />;
   }
 
-  if (!loading && hasLoadedOnce && data.length === 0) {
+  if (!loading && data.length === 0) {
     return (
       <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 items-center justify-center">
         <p className="text-muted-foreground">
           {requestedOrderId
             ? `No Order found with Order ID: ${requestedOrderId}`
-            : "No Orders!"}
+            : "You have no orders yet!"}
         </p>
       </div>
     );
   }
 
   return (
-    <div className="relative mx-auto flex max-w-screen-lg flex-col">
-      <p className="text-muted-foreground sticky top-0 z-10 w-full px-4 py-1 text-center text-xs md:text-sm">
-        Page {currentPage} • Showing {start}–{end} of {totalItems} results
-      </p>
+    <div
+      className={clsx(
+        "relative mx-auto flex flex-col",
+        requestedOrderId && "-mt-10",
+      )}
+    >
+      {!requestedOrderId && (
+        <p className="text-muted-foreground w-full text-center text-xs md:text-sm">
+          Page {currentPage} • Showing {start}–{end} of {totalItems} results
+        </p>
+      )}
 
       {data.length > 0 && (
-        <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col justify-between gap-4 py-2">
-          <div className="flex w-full flex-1 flex-grow flex-col gap-5">
+        <div
+          className={clsx(
+            "flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col gap-4 py-2",
+            requestedOrderId && "min-h-0!",
+          )}
+        >
+          <div className="flex w-full flex-1 grow flex-col gap-5 p-1">
             <Orders orderData={data} isAdmin={isAdmin} />
           </div>
 
           {showSingle ? (
             <Button
-              className="mx-auto w-3/4"
+              className="mx-auto w-fit"
               onClick={() => router.push("/order-history")}
             >
               View all orders
             </Button>
-          ) : (
+          ) : totalPages > 1 ? (
             <Pagination className="z-50">
               <PaginationContent className="w-full items-center justify-center">
                 {currentPage > 1 && (
@@ -274,7 +293,7 @@ export default function OrdersList({
                 )}
               </PaginationContent>
             </Pagination>
-          )}
+          ) : null}
         </div>
       )}
     </div>

@@ -1,25 +1,20 @@
 "use server";
-import { BusinessProfile } from "@/data/businessProfile";
 import { auth, fireStore } from "@/firebase/server";
-import { UserType } from "@/types/user";
+import { BusinessProfile } from "@/types/user";
 import { cookies } from "next/headers";
 
-export const updateUserProfile = async (
-  data: {
-    email?: string;
-    displayName?: string;
-    phone?: string;
-    userType?: UserType;
-    businessType?: string;
-    businessIdType?: "pan" | "gst";
-    gstNumber?: string;
-    panNumber?: string;
-    firmName?: string;
-    businessProfile?: BusinessProfile | null;
-    photoUrl?: string;
-  },
-  { profileComplete }: { profileComplete: boolean },
-) => {
+export const updateUserProfile = async (data: {
+  email?: string;
+  displayName?: string;
+  phone?: string;
+  businessType?: string;
+  businessIdType?: "pan" | "gst";
+  gstNumber?: string;
+  panNumber?: string;
+  firmName?: string;
+  businessProfile?: BusinessProfile | null;
+  photoUrl?: string;
+}) => {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get("firebaseAuthToken")?.value;
@@ -33,8 +28,6 @@ export const updateUserProfile = async (
     const uid = decodedToken.uid;
     const userData = {
       ...data,
-      profileComplete,
-      accountStatus: "pending",
       firebaseAuth: decodedToken.firebase,
     };
 
@@ -42,12 +35,6 @@ export const updateUserProfile = async (
       .collection("users")
       .doc(uid)
       .update({ ...userData, updatedAt: new Date() });
-
-    const userRecord = await auth.getUser(uid);
-    await auth.setCustomUserClaims(uid, {
-      ...(userRecord.customClaims || {}),
-      profileComplete,
-    });
 
     return { success: true };
   } catch (error) {

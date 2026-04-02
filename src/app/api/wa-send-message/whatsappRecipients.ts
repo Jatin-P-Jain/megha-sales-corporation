@@ -39,14 +39,14 @@ export const ADMIN_RECIPIENTS: AdminRecipient[] = [
 export const TEMPLATE_ROLES: Record<
   | "account_approval_request_to_admin"
   | "account_approval_reminder_to_admin"
-  | "order_placed_to_admin"
-  | "enquiry_received_to_admin",
+  | "order_placed_to_admin_v2"
+  | "enquiry_received_to_admin_v2",
   AdminRole[]
 > = {
   account_approval_request_to_admin: ["owner", "support"],
   account_approval_reminder_to_admin: ["owner", "support"],
-  order_placed_to_admin: ["owner", "support"],
-  enquiry_received_to_admin: ["owner", "support"],
+  order_placed_to_admin_v2: ["owner", "support"],
+  enquiry_received_to_admin_v2: ["owner", "support"],
 };
 
 export function recipientsForTemplate(
