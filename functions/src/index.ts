@@ -1,4 +1,5 @@
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
+import { defineString } from "firebase-functions/params";
 import { initializeApp, getApps } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import type { UsersDirectory, UserData, UserGate } from "./types";
@@ -9,9 +10,16 @@ if (!getApps().length) {
 }
 const db = getFirestore(getApps()[0]!);
 
+// Region must match the Firestore database location for the Eventarc trigger to fire.
+// Dev Firestore: asia-south1  |  Prod Firestore: asia-south2
+// Set FIRESTORE_REGION in functions/.env (dev) and functions/.env.prod (prod).
+// defineString (Firebase Params API) is resolved by Firebase CLI *before* module analysis,
+// unlike process.env which is read during module load (too early for env file injection).
+const REGION = defineString("FIRESTORE_REGION", { default: "asia-south1" });
+
 // From users/{uid} - require gate exists
 export const syncUsersDirectoryFromUsers = onDocumentWritten(
-  { document: "users/{uid}", region: "asia-south1" },
+  { document: "users/{uid}", region: REGION },
   async (event) => {
     const { uid } = event.params;
     const snap = event.data?.after;
@@ -24,7 +32,7 @@ export const syncUsersDirectoryFromUsers = onDocumentWritten(
 
 // From userGate/{uid} - require users exists
 export const syncUsersDirectoryFromUserGate = onDocumentWritten(
-  { document: "userGate/{uid}", region: "asia-south1" },
+  { document: "userGate/{uid}", region: REGION },
   async (event) => {
     const { uid } = event.params;
     const snap = event.data?.after;

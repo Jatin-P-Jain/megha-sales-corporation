@@ -1,5 +1,6 @@
 "use server";
 
+import { FieldValue } from "firebase-admin/firestore";
 import { fireStore } from "@/firebase/server";
 import { UserData } from "@/types/user";
 import { toast } from "sonner";
@@ -13,13 +14,34 @@ export const createUserIfNotExists = async (user: UserData) => {
     const userSnapshot = await userRef.get();
 
     if (!userSnapshot.exists) {
+      const now = new Date();
       const newUserData = {
         ...user,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: now,
+        updatedAt: now,
       };
 
-      await userRef.set(newUserData);
+      // Create users/{uid} and userGate/{uid} together in one batch so the
+      // Cloud Function triggers always find both documents present, regardless
+      // of which trigger fires first. This eliminates the race condition where
+      // the client-side UserGateProvider hadn't yet created userGate when the
+      // syncUsersDirectoryFromUsers function ran.
+      const gateRef = fireStore.collection("userGate").doc(user.uid);
+      const gateSnapshot = await gateRef.get();
+
+      const batch = fireStore.batch();
+      batch.set(userRef, newUserData);
+      if (!gateSnapshot.exists) {
+        batch.set(gateRef, {
+          profileComplete: false,
+          accountStatus: "pending",
+          rejectionReason: "",
+          userRole: "customer",
+          updatedAt: FieldValue.serverTimestamp(),
+        });
+      }
+      await batch.commit();
+
       return { newUser: true, user: newUserData };
     }
     return {
