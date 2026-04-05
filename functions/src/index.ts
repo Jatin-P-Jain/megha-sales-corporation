@@ -37,7 +37,11 @@ export const syncUsersDirectoryFromUsers = onDocumentWritten(
 
 // From userGate/{uid} - require users exists
 export const syncUsersDirectoryFromUserGate = onDocumentWritten(
-  { document: "userGate/{uid}", region: REGION, serviceAccount: SERVICE_ACCOUNT },
+  {
+    document: "userGate/{uid}",
+    region: REGION,
+    serviceAccount: SERVICE_ACCOUNT,
+  },
   async (event) => {
     const { uid } = event.params;
     const snap = event.data?.after;
