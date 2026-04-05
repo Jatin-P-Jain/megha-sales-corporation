@@ -17,9 +17,14 @@ const db = getFirestore(getApps()[0]!);
 // unlike process.env which is read during module load (too early for env file injection).
 const REGION = defineString("FIRESTORE_REGION", { default: "asia-south1" });
 
+// The Compute Engine default SA lacks Firestore permissions in prod.
+// Use the Firebase Admin SA which has full Firestore access via roles/firebase.sdkAdminServiceAgent.
+// Set FUNCTION_SERVICE_ACCOUNT in functions/.env and functions/.env.prod.
+const SERVICE_ACCOUNT = defineString("FUNCTION_SERVICE_ACCOUNT");
+
 // From users/{uid} - require gate exists
 export const syncUsersDirectoryFromUsers = onDocumentWritten(
-  { document: "users/{uid}", region: REGION },
+  { document: "users/{uid}", region: REGION, serviceAccount: SERVICE_ACCOUNT },
   async (event) => {
     const { uid } = event.params;
     const snap = event.data?.after;
@@ -32,7 +37,11 @@ export const syncUsersDirectoryFromUsers = onDocumentWritten(
 
 // From userGate/{uid} - require users exists
 export const syncUsersDirectoryFromUserGate = onDocumentWritten(
-  { document: "userGate/{uid}", region: REGION },
+  {
+    document: "userGate/{uid}",
+    region: REGION,
+    serviceAccount: SERVICE_ACCOUNT,
+  },
   async (event) => {
     const { uid } = event.params;
     const snap = event.data?.after;
