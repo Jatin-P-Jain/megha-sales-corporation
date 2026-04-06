@@ -30,6 +30,7 @@ import { searchProducts } from "@/lib/algolia/search";
 
 import useDebouncedValue from "@/hooks/useDebouncedValue";
 import { Input } from "@/components/ui/input";
+import { useDrawerBackButton } from "@/hooks/useDrawerBackButton";
 import SearchResultsVirtual from "./search-results-virtual";
 
 export default function SearchProducts({
@@ -74,6 +75,7 @@ export default function SearchProducts({
     setOpenDesktop(false);
     setOpenMobile(false);
   };
+  useDrawerBackButton(openMobile, () => onMobileOpenChange(false));
 
   const onDesktopOpenChange = (value: boolean) => {
     setOpenDesktop(value);

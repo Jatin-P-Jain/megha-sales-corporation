@@ -86,10 +86,12 @@ export const replyToEnquiry = async ({
   enquiryId,
   replyText,
   user,
+  isAdminReply = false,
 }: {
   enquiryId: string;
   replyText: string;
   user: FullUser;
+  isAdminReply?: boolean;
 }) => {
   const cookieStore = await cookies();
   const token = cookieStore.get("firebaseAuthToken")?.value;
@@ -120,7 +122,7 @@ export const replyToEnquiry = async ({
         ...existingEnquiry,
         conversation: [...(existingEnquiry.conversation ?? []), newReply],
         status:
-          existingEnquiry.status === "pending"
+          isAdminReply && existingEnquiry.status === "pending"
             ? "in-progress"
             : existingEnquiry.status,
         updatedAt: new Date().toISOString(),

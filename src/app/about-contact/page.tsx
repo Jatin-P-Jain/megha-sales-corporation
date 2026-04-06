@@ -127,9 +127,9 @@ export default function AboutAndContact() {
               trigger={
                 <Button
                   variant="outline"
-                  className="text-primary h-full w-full flex-wrap gap-0 md:gap-2"
+                  className="text-primary h-full w-full flex-wrap gap-1 md:gap-2"
                 >
-                  Happy to hear from you!{" "}
+                  Happy to hear from you!
                   <span className="flex items-center justify-center gap-2">
                     Drop a message.
                     <MessageCircleHeart className="size-5" />

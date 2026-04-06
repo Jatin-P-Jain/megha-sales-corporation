@@ -50,6 +50,7 @@ import { PRODUCT_STATUS } from "@/data/product-status";
 import useIsMobile from "@/hooks/useIsMobile";
 import Image from "next/image";
 import imageUrlFormatter from "@/lib/image-urlFormatter";
+import { useDrawerBackButton } from "@/hooks/useDrawerBackButton";
 
 type FilterDef = FilterType;
 
@@ -87,6 +88,7 @@ export default function MoreFilters({
   const [isPending, startTransition] = useTransition();
   const [pendingKey, setPendingKey] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
+  useDrawerBackButton(open, () => setOpen(false));
 
   const [selected, setSelected] = useState<FilterDef>(FILTERS[0]);
   const [selections, setSelections] = useState<Record<string, string[]>>({});
@@ -400,7 +402,7 @@ export default function MoreFilters({
 
   const MobileBody = (
     <>
-      <DrawerHeader className="px-4">
+      <DrawerHeader className="shrink-0 px-4">
         <DrawerTitle className="text-lg">
           <FunnelPlus className="mr-2 mb-1 inline-flex size-5" />
           Filters
@@ -412,7 +414,7 @@ export default function MoreFilters({
         </DrawerDescription>
       </DrawerHeader>
 
-      <div className="px-4 pb-3">
+      <div className="shrink-0 px-4 pb-3">
         <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
           {FILTERS.map((f) => {
             const c = selectedCountFor(f.key);
@@ -441,20 +443,18 @@ export default function MoreFilters({
         </div>
       </div>
 
-      <div className="px-4">
-        <div className="bg-muted max-h-[80vh] overflow-auto rounded-md">
-          <FilterSection
-            filterType={selected}
-            selections={selections}
-            setSelections={setSelections}
-            filterOptions={mergedFilterOptions}
-            toggleSelection={toggleSelection}
-            baseSelections={baseSelections}
-          />
-        </div>
+      <div className="bg-muted flex min-h-0 flex-1 flex-col rounded-md mx-4">
+        <FilterSection
+          filterType={selected}
+          selections={selections}
+          setSelections={setSelections}
+          filterOptions={mergedFilterOptions}
+          toggleSelection={toggleSelection}
+          baseSelections={baseSelections}
+        />
       </div>
 
-      <DrawerFooter className="flex w-full flex-row">
+      <DrawerFooter className="flex w-full shrink-0 flex-row">
         <Button
           variant="outline"
           className="border-primary text-primary"
@@ -500,7 +500,9 @@ export default function MoreFilters({
     return (
       <Drawer open={open} onOpenChange={setOpen}>
         <DrawerTrigger asChild>{TriggerButton}</DrawerTrigger>
-        <DrawerContent className="max-h-[90vh]">{MobileBody}</DrawerContent>
+        <DrawerContent className="max-h-[90vh] overflow-hidden">
+          {MobileBody}
+        </DrawerContent>
       </Drawer>
     );
   }

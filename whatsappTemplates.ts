@@ -107,6 +107,29 @@ export const whatsappTemplates: Record<
       buttonParams: [enquiryId],
     }),
   },
+  feedback_received_to_admin: {
+    name: "feedback_received_to_admin",
+    language: { code: "en" },
+    bodyParamsCount: 6,
+    hasButton: false,
+    resolveParams: ({
+      adminName,
+      customerFirmName,
+      customerName,
+      customerPhone,
+      rating,
+      customerMessage,
+    }) => ({
+      bodyParams: [
+        adminName,
+        customerFirmName,
+        customerName,
+        customerPhone,
+        rating,
+        customerMessage,
+      ],
+    }),
+  },
 };
 
 export const createWhatsAppPayloadFromInput = ({

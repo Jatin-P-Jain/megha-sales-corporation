@@ -26,7 +26,7 @@ export default async function Enquiries() {
           <EnquirySearchFiltersCreate />
         </div>
       </div>
-      <div className={`flex w-full flex-1 overflow-auto pt-25`}>
+      <div className={`flex w-full flex-1 overflow-auto pt-27`}>
         <EnquiriesList isAdmin={isAdmin} userId={verifiedToken?.uid} />
       </div>
     </div>

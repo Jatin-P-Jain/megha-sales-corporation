@@ -25,7 +25,8 @@ type TemplateKey =
   | "account_approval_request_to_admin"
   | "account_approval_reminder_to_admin"
   | "order_placed_to_admin_v2"
-  | "enquiry_received_to_admin_v2";
+  | "enquiry_received_to_admin_v2"
+  | "feedback_received_to_admin";
 
 const isRecord = (v: unknown): v is Record<string, unknown> =>
   typeof v === "object" && v !== null && !Array.isArray(v);
@@ -36,7 +37,8 @@ const isTemplateKey = (v: unknown): v is TemplateKey =>
   v === "account_approval_request_to_admin" ||
   v === "account_approval_reminder_to_admin" ||
   v === "order_placed_to_admin_v2" ||
-  v === "enquiry_received_to_admin_v2";
+  v === "enquiry_received_to_admin_v2" ||
+  v === "feedback_received_to_admin";
 
 function requireEnv(name: string): string {
   const value = process.env[name];
@@ -127,6 +129,7 @@ export async function POST(req: NextRequest) {
       customerBusinessProfile,
       toNumbers,
       enquiryId,
+      rating,
     } = raw;
 
     if (!isTemplateKey(templateKey)) {
@@ -185,6 +188,7 @@ export async function POST(req: NextRequest) {
               ? customerBusinessProfile
               : "",
             enquiryId: isString(enquiryId) ? enquiryId : "",
+            rating: isString(rating) ? rating : "",
           },
         });
 

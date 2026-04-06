@@ -192,7 +192,7 @@ export default function ProductCard({
 
           {isMobile && (
             <div className="flex gap-3">
-              <div className="flex h-22 w-1/2 items-center justify-center rounded-sm border shadow-sm">
+              <div className="relative h-32 w-1/2 rounded-sm border shadow-sm">
                 <ProductImage productImage={product.image} />
               </div>
               <div className="bg-primary/10 flex h-auto w-1/2 flex-col items-center justify-center gap-1 rounded-sm p-1.5 px-4 md:flex-row">
@@ -301,7 +301,7 @@ export default function ProductCard({
         </div>
 
         {!isMobile && (
-          <div className="flex w-full items-center justify-center rounded-sm border shadow-sm">
+          <div className="relative h-36 w-full rounded-sm border shadow-sm">
             <ProductImage productImage={product.image} />
           </div>
         )}

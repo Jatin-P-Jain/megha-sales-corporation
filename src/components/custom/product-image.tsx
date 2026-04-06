@@ -13,7 +13,7 @@ const ProductImage: React.FC<ProductImageProps> = ({
 }: ProductImageProps) => {
   const [loading, setLoading] = useState(true);
   return (
-    <div className="relative flex h-full w-full items-end justify-end justify-self-end">
+    <div className="relative h-full w-full">
       {!!productImage && loading && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/50">
           <Loader2 className="text-primary h-6 w-6 animate-spin" />
@@ -23,9 +23,8 @@ const ProductImage: React.FC<ProductImageProps> = ({
         <Image
           src={imageUrlFormatter(productImage)}
           alt="img"
-          width={120}
-          height={120}
-          className="w-full h-full object-contain"
+          fill
+          className="object-contain"
           onLoad={() => {
             setLoading(false);
           }}

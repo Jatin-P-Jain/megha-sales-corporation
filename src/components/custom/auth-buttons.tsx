@@ -145,7 +145,7 @@ export default function AuthButtons() {
   const { isNavigating } = useNavigationLock();
   const { deferredPrompt, promptToInstall, isPwa } = usePwaPrompt();
 
-  const { currentUser, isAdmin, isLoggingOut, userRole } = useAuthState();
+  const { currentUser, isAdmin, isLoggingOut } = useAuthState();
   const { logout } = useAuthActions();
   const { profileComplete, accountStatus } = useUserGate();
   useRequireUserProfile(true);
@@ -231,7 +231,7 @@ export default function AuthButtons() {
               </Avatar>
 
               {unreadNotifications > 0 && (
-                <BellRing className="absolute -top-2 -right-2 inline-flex h-5 w-5 animate-pulse rounded-full bg-red-600 p-0.5" />
+                <BellRing className="absolute -top-1 -right-1 inline-flex h-4 w-4 animate-pulse rounded-full bg-red-600 p-0.5" />
               )}
 
               {isAdmin && (
@@ -248,7 +248,20 @@ export default function AuthButtons() {
             className="w-80 rounded-md border p-1 shadow-lg"
           >
             <DropdownMenuLabel className="flex flex-col items-start space-y-1 px-4 py-2">
-              <span className="font-medium">{clientUser.displayName}</span>
+              <div className="flex w-full items-center justify-between">
+                <span className="font-medium">{clientUser.displayName}</span>
+                <div className="flex flex-col justify-between gap-2 md:flex-row md:items-center">
+                  {!isAdmin ? (
+                    <>
+                      {!profileComplete ? (
+                        <AccountStatusBadge status={"incomplete"} />
+                      ) : (
+                        <AccountStatusBadge status={accountStatus} />
+                      )}
+                    </>
+                  ) : null}
+                </div>
+              </div>
               <span className="text-muted-foreground text-xs">
                 {clientUser.email}
               </span>
@@ -265,37 +278,19 @@ export default function AuthButtons() {
                 </span>
               )}
 
-              <div className="flex w-full flex-col justify-between gap-2 md:flex-row md:items-center">
-                {!isAdmin ? (
-                  <>
-                    {userRole && (
-                      <span className="bg-muted w-fit rounded-full px-2 py-0.5 text-xs font-semibold">
-                        {toTitleCase(userRole)}
-                      </span>
-                    )}
-                    {!profileComplete ? (
-                      <AccountStatusBadge status={"incomplete"} />
-                    ) : (
-                      <AccountStatusBadge status={accountStatus} />
-                    )}
-                  </>
-                ) : null}
-              </div>
-
               {profileComplete &&
                 !isAdmin &&
                 accountStatus &&
-                accountStatus !== "approved" && (
+                accountStatus !== "approved" &&
+                accountStatus !== "pending" && (
                   <div className="mt-1 flex w-full items-center gap-1 text-xs text-zinc-600">
                     <TriangleAlert className="size-4" />
                     <span>
-                      {accountStatus === "pending"
-                        ? "Your account is under review."
-                        : accountStatus === "rejected"
-                          ? "Your account was rejected."
-                          : accountStatus === "suspended"
-                            ? "Your account is suspended."
-                            : "Your account is deactivated."}
+                      {accountStatus === "rejected"
+                        ? "Your account was rejected."
+                        : accountStatus === "suspended"
+                          ? "Your account is suspended."
+                          : "Your account is deactivated."}
                     </span>
                   </div>
                 )}
@@ -314,10 +309,8 @@ export default function AuthButtons() {
                   <div className="flex items-center justify-start gap-2">
                     Notification Center
                     {unreadNotifications > 0 && (
-                      <span className="text-xs font-semibold">
-                        (
+                      <span className="rounded-full bg-red-600 px-1.5 text-sm font-semibold text-white">
                         {unreadNotifications > 99 ? "99+" : unreadNotifications}
-                        )
                       </span>
                     )}
                   </div>
