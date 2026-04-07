@@ -12,6 +12,7 @@ type Props = {
   imageSrc: string;
   onClose: () => void;
   onCropComplete: (result: { blobUrl: string; file: File }) => void;
+  aspectRatio?: number;
 };
 
 export default function CropperModal({
@@ -19,6 +20,7 @@ export default function CropperModal({
   imageSrc,
   onClose,
   onCropComplete,
+  aspectRatio = NaN,
 }: Props) {
   const cropperRef = useRef<ReactCropperElement>(null);
 
@@ -39,15 +41,15 @@ export default function CropperModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="">
         <DialogTitle className="text-lg font-semibold">Crop Image</DialogTitle>
 
-        <div className="relative h-[400px] w-full">
+        <div className="relative h-100 w-full">
           <Cropper
             src={imageSrc}
             style={{ height: 400, width: "100%" }}
-            initialAspectRatio={NaN} // ❌ no enforced aspect ratio
-            aspectRatio={NaN} // ✅ Freeform cropping
+            initialAspectRatio={aspectRatio}
+            aspectRatio={aspectRatio}
             viewMode={1}
             background={false}
             responsive={true}

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   CheckCircle2,
   XCircle,
@@ -267,16 +267,21 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
   return (
     <>
       <Card className="gap-0! overflow-hidden p-0">
-        <CardHeader className="bg-primary/10 p-2 gap-0">
-          <div className="flex flex-col items-start justify-between md:flex-row md:items-center">
+        <CardHeader className="bg-primary/10 gap-0 p-2">
+          <div className="flex flex-col items-start justify-between gap-2 md:flex-row md:items-center">
             <div className="flex w-full items-center gap-2">
               <Avatar className="h-12 w-12 border-2 border-white shadow-md">
                 {user.photoUrl ? (
-                  <AvatarImage
-                    src={user.photoUrl}
-                    alt={user.displayName || ""}
-                    className="rounded-full object-cover"
-                  />
+                  <AvatarFallback className="bg-transparent p-0">
+                    <Image
+                      src={user.photoUrl}
+                      alt={user.displayName || ""}
+                      width={48}
+                      height={48}
+                      className="h-full w-full rounded-full object-cover"
+                      unoptimized={user.photoUrl.startsWith("blob:")}
+                    />
+                  </AvatarFallback>
                 ) : (
                   <AvatarFallback className="bg-cyan-800">
                     <Image
@@ -290,7 +295,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                 )}
               </Avatar>
 
-              <div className="flex w-full items-center justify-between gap-1 flex-1">
+              <div className="flex w-full flex-1 items-center justify-between gap-1">
                 <div className="flex w-full flex-col gap-1">
                   <CardTitle className="flex items-center gap-2 md:text-lg">
                     {user.displayName || "Unnamed User"}
@@ -303,9 +308,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                   </CardTitle>
 
                   {!isAdmin && (
-                    <div className="flex items-center">
-                      {getStatusBadge()}
-                    </div>
+                    <div className="flex items-center">{getStatusBadge()}</div>
                   )}
                 </div>
                 <DropdownMenu>
@@ -330,8 +333,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                     {/* Reject (only relevant for pending) */}
                     {accountStatus === "pending" && (
                       <DropdownMenuItem
-                        onSelect={(e) => {
-                          e.preventDefault();
+                        onSelect={() => {
                           setShowRejectDialog(true);
                         }}
                       >
@@ -343,9 +345,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                     {/* Revoke access (only meaningful for approved) */}
                     <DropdownMenuItem
                       disabled={!revokeEnabled}
-                      onSelect={(e) => {
-                        e.preventDefault();
-                        if (!revokeEnabled) return;
+                      onSelect={() => {
                         setShowSuspendDialog(true);
                       }}
                     >
@@ -358,8 +358,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                     {/* Soft delete */}
                     <DropdownMenuItem
                       className="text-destructive focus:text-destructive"
-                      onSelect={(e) => {
-                        e.preventDefault();
+                      onSelect={() => {
                         setShowDeleteDialog(true);
                       }}
                     >
@@ -373,7 +372,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
 
             {/* Actions: primary + dropdown */}
             {canShowActions && (
-              <div className=" w-full md:w-fit md:items-center">
+              <div className="w-full md:w-fit md:items-center">
                 {showPrimaryApprove && (
                   <Button
                     onClick={handleApprove}
@@ -403,7 +402,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
         <div
           onClick={() => setIsDetailsOpen(!isDetailsOpen)}
           className={clsx(
-            "flex cursor-pointer items-center justify-between transition-colors hover:bg-gray-50 p-2",
+            "flex cursor-pointer items-center justify-between p-2 transition-colors hover:bg-gray-50",
             isDetailsOpen && "bg-gray-100",
           )}
         >

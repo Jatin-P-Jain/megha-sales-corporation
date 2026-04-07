@@ -128,7 +128,7 @@ export default function UsersList() {
 
   if (loading || !hasLoadedOnce) {
     return (
-      <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col gap-4 px-4 py-6">
+      <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col gap-2 py-2">
         {[...Array(4)].map((_, i) => (
           <UserCardSkeleton key={i} />
         ))}

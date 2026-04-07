@@ -16,7 +16,12 @@ export const loginWithGoogle = async (): Promise<User | undefined> => {
   const result = await signInWithPopup(auth, provider);
   const user = result.user;
   const token = await user.getIdToken(true);
-  await setToken(token, user.refreshToken);
+  const { claimsUpdated } = await setToken(token, user.refreshToken);
+  if (claimsUpdated) {
+    // Claims were just set — force-refresh so the cookie gets the updated token
+    const freshToken = await user.getIdToken(true);
+    await setToken(freshToken, user.refreshToken);
+  }
   return user;
 };
 
@@ -27,7 +32,11 @@ export const loginWithEmailAndPass = async (
   const result = await signInWithEmailAndPassword(auth, email, password);
   const user = result.user;
   const token = await user.getIdToken(true);
-  await setToken(token, user.refreshToken);
+  const { claimsUpdated } = await setToken(token, user.refreshToken);
+  if (claimsUpdated) {
+    const freshToken = await user.getIdToken(true);
+    await setToken(freshToken, user.refreshToken);
+  }
   return user;
 };
 
@@ -66,7 +75,11 @@ export const verifyOTP = async (
       }
       const user = result.user;
       const token = await user.getIdToken(true);
-      await setToken(token, user.refreshToken);
+      const { claimsUpdated } = await setToken(token, user.refreshToken);
+      if (claimsUpdated) {
+        const freshToken = await user.getIdToken(true);
+        await setToken(freshToken, user.refreshToken);
+      }
       return user;
     } else {
       console.error("OTP verification failed: No result returned");

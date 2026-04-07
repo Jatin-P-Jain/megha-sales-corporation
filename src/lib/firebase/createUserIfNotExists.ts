@@ -1,10 +1,11 @@
 "use server";
 
 import { FieldValue } from "firebase-admin/firestore";
-import { fireStore } from "@/firebase/server";
+import { fireStore, auth } from "@/firebase/server";
 import { UserData } from "@/types/user";
 import { toast } from "sonner";
 import { mapDbUserToClientUser } from "./mapDBUserToClient";
+import { addAccountTimelineEvent } from "./addAccountTimelineEvent";
 
 export const createUserIfNotExists = async (user: UserData) => {
   if (!user || !user.uid) return;
@@ -32,15 +33,36 @@ export const createUserIfNotExists = async (user: UserData) => {
       const batch = fireStore.batch();
       batch.set(userRef, newUserData);
       if (!gateSnapshot.exists) {
-        batch.set(gateRef, {
-          profileComplete: false,
-          accountStatus: "pending",
-          rejectionReason: "",
-          userRole: "customer",
-          updatedAt: FieldValue.serverTimestamp(),
-        });
+        // Check if the user has admin claims to set appropriate gate values
+        const authUser = await auth.getUser(user.uid);
+        const isAdmin = authUser.customClaims?.admin === true;
+
+        batch.set(
+          gateRef,
+          isAdmin
+            ? {
+                profileComplete: true,
+                accountStatus: "approved",
+                rejectionReason: "",
+                userRole: "admin",
+                updatedAt: FieldValue.serverTimestamp(),
+              }
+            : {
+                profileComplete: false,
+                accountStatus: "pending",
+                rejectionReason: "",
+                userRole: "customer",
+                updatedAt: FieldValue.serverTimestamp(),
+              }
+        );
       }
       await batch.commit();
+
+      await addAccountTimelineEvent({
+        uid: user.uid,
+        type: "account_created",
+        label: "Account created",
+      });
 
       return { newUser: true, user: newUserData };
     }

@@ -4,6 +4,7 @@ import { notifyUser } from "@/lib/firebase/notifyUser";
 import imageUrlFormatter from "@/lib/image-urlFormatter";
 import { AccountStatus } from "@/types/userGate";
 import { cookies } from "next/headers";
+import { addAccountTimelineEvent } from "@/lib/firebase/addAccountTimelineEvent";
 
 const accountStatusNotificationMap: Record<
   AccountStatus,
@@ -97,6 +98,36 @@ export async function updateUserAccountStatus({
       source: "admin",
     });
 
+    const statusEventMap: Record<
+      AccountStatus,
+      {
+        type: Parameters<typeof addAccountTimelineEvent>[0]["type"];
+        label: string;
+      }
+    > = {
+      pending: {
+        type: "account_created",
+        label: "Account submitted for review",
+      },
+      approved: { type: "account_approved", label: "Account approved" },
+      rejected: { type: "account_rejected", label: "Account rejected" },
+      suspended: { type: "account_suspended", label: "Account suspended" },
+      deactivated: {
+        type: "account_deactivated",
+        label: "Account deactivated",
+      },
+    };
+    const ev = statusEventMap[accountStatus];
+    await addAccountTimelineEvent({
+      uid: userId,
+      type: ev.type,
+      label: ev.label,
+      detail:
+        accountStatus === "rejected" && rejectionReason
+          ? rejectionReason
+          : undefined,
+    });
+
     return { success: true, message: "User status updated successfully" };
   } catch (error) {
     console.error("Error updating user account status:", error);
@@ -129,6 +160,12 @@ export const updateUserFirebaseMethods = async (
       updatedAt: new Date(),
     });
 
+  await addAccountTimelineEvent({
+    uid,
+    type: "google_linked",
+    label: "Google account linked",
+  });
+
   return { success: true };
 };
 export const updateUserPhoto = async ({
@@ -143,6 +180,11 @@ export const updateUserPhoto = async ({
     const userRef = fireStore.collection("users").doc(userId);
     const imageUrl = imageUrlFormatter(photoUrl);
     await userRef.update({ photoUrl: imageUrl });
+    await addAccountTimelineEvent({
+      uid: userId,
+      type: "photo_updated",
+      label: "Profile picture updated",
+    });
   } catch (error) {
     console.log("Error while updating the user -- ", { error });
   }

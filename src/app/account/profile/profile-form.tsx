@@ -95,6 +95,7 @@ export default function ProfileForm() {
   const [gstDetails, setGstDetails] = useState<GstDetailsData | null>(null);
   const [loadingGst, setLoadingGst] = useState(false);
   const [gstError, setGstError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Local UI state for GST vs PAN
   const [idType, setIdType] = useState<"pan" | "gst">("gst");
@@ -379,7 +380,7 @@ export default function ProfileForm() {
   );
 
   const canSubmit = useMemo(() => {
-    if (form.formState.isSubmitting) return false;
+    if (form.formState.isSubmitting || isSaving) return false;
     if (!isVerified) return false;
 
     if (isAdmin) {
@@ -414,6 +415,7 @@ export default function ProfileForm() {
     otherBusinessType,
     form.formState.isSubmitting,
     form.formState.isValid,
+    isSaving,
   ]);
 
   const onSubmit = (e: React.FormEvent) => {
@@ -435,7 +437,8 @@ export default function ProfileForm() {
         otherBusinessType: "",
       } as FormValues;
 
-      handleSubmit(data);
+      setIsSaving(true);
+      void handleSubmit(data).finally(() => setIsSaving(false));
       return;
     }
 
@@ -1010,7 +1013,7 @@ export default function ProfileForm() {
                     type="submit"
                     className="w-full cursor-pointer tracking-wide uppercase"
                   >
-                    {form.formState.isSubmitting ? (
+                    {form.formState.isSubmitting || isSaving ? (
                       <>
                         <Loader2 className="size-4 animate-spin" />
                         Saving Profile

@@ -9,10 +9,13 @@ export const removeToken = async () => {
   cookieStore.delete("firebaseAuthRefreshToken");
 };
 
-export const setToken = async (token: string, refreshToken: string) => {
+export const setToken = async (
+  token: string,
+  refreshToken: string,
+): Promise<{ claimsUpdated: boolean }> => {
   try {
     const verifiedToken = await auth.verifyIdToken(token);
-    if (!verifiedToken) return;
+    if (!verifiedToken) return { claimsUpdated: false };
 
     const userRecord = await auth.getUser(verifiedToken.uid);
 
@@ -34,8 +37,12 @@ export const setToken = async (token: string, refreshToken: string) => {
       newClaims.admin = true;
     }
 
-    // Only set if changes are needed
-    await auth.setCustomUserClaims(userRecord.uid, newClaims);
+    // Only update claims if they actually changed
+    const claimsChanged =
+      JSON.stringify(existingClaims) !== JSON.stringify(newClaims);
+    if (claimsChanged) {
+      await auth.setCustomUserClaims(userRecord.uid, newClaims);
+    }
 
     const cookieStore = await cookies();
     cookieStore.set("firebaseAuthToken", token, {
@@ -46,7 +53,10 @@ export const setToken = async (token: string, refreshToken: string) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
     });
+
+    return { claimsUpdated: claimsChanged };
   } catch (e) {
     console.error("Error setting token/claims:", e);
+    return { claimsUpdated: false };
   }
 };

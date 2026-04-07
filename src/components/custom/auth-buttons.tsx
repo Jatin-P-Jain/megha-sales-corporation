@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuItem,
 } from "../ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Avatar, AvatarFallback } from "../ui/avatar";
 import DefaultUserIcon from "@/assets/icons/user.png";
 import { Badge } from "../ui/badge";
 import Image from "next/image";
@@ -212,11 +212,16 @@ export default function AuthButtons() {
                 )}
               >
                 {clientUser.photoUrl ? (
-                  <AvatarImage
-                    src={clientUser.photoUrl}
-                    alt="avatar"
-                    className="rounded-full object-cover"
-                  />
+                  <AvatarFallback className="bg-transparent p-0">
+                    <Image
+                      src={clientUser.photoUrl}
+                      alt="avatar"
+                      width={32}
+                      height={32}
+                      className="h-full w-full rounded-full object-cover"
+                      unoptimized={clientUser.photoUrl.startsWith("blob:")}
+                    />
+                  </AvatarFallback>
                 ) : (
                   <AvatarFallback className="bg-cyan-800">
                     <Image

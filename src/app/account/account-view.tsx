@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo, type ChangeEvent, type ReactNode } from "react";
+import React, { memo, useState, type ChangeEvent, type ReactNode } from "react";
 import Image from "next/image";
 import clsx from "clsx";
 import {
@@ -10,8 +10,6 @@ import {
   Clock,
   ShieldOff,
   UserX,
-  ChevronDown,
-  ChevronUp,
   Mail,
   Phone,
   User,
@@ -21,14 +19,24 @@ import {
   BadgeX,
   Hash,
   ArrowRight,
+  Pencil,
+  PlusCircle,
+  Eye,
+  ChevronDown,
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Collapsible,
   CollapsibleContent,
@@ -41,6 +49,14 @@ import type { BusinessProfile, UserData } from "@/types/user";
 
 import FirebaseAuthMethods from "./firebase-auth-methods";
 import { AccountStatus } from "@/types/userGate";
+import CropperModal from "@/components/custom/cropper-modal";
+import {
+  EditNameDialog,
+  AddPanDialog,
+  AddGstDialog,
+} from "./inline-edit-dialogs";
+import { AccountTimeline } from "@/components/custom/account-timeline";
+import { useAccountTimeline } from "@/hooks/useAccountTimeline";
 
 function formatDate(dateString?: string) {
   if (!dateString) return "N/A";
@@ -183,7 +199,7 @@ function BusinessProfileCard({
   onCopy: (text: string, label: string) => void;
 }) {
   return (
-    <div className="space-y-3 rounded-md border bg-white p-3">
+    <div className="space-y-3">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-sm font-semibold text-zinc-900">
           <Building2 className="h-4 w-4" />
@@ -224,272 +240,421 @@ function BusinessProfileCard({
 function AccountViewInner({
   clientUser,
   profileComplete,
-  userRole,
   isAdmin,
   accountStatus,
   rejectionReason,
-  moreOpen,
-  setMoreOpen,
   photo,
   uploading,
   uploadPercent,
   onPhotoChange,
+  cropOpen,
+  cropSrc,
+  onCropClose,
+  onCropDone,
   onGoToProfile,
   onCopy,
   onLinkGoogle,
   onLinkPhone,
+  onSaveName,
+  onSavePan,
+  onSaveGst,
 }: {
   clientUser: UserData;
   profileComplete: boolean | null;
-  userRole?: string;
   isAdmin: boolean;
   accountStatus: AccountStatus | null;
   rejectionReason?: string | null;
-  moreOpen: boolean;
-  setMoreOpen: (v: boolean) => void;
   photo: string;
   uploading: boolean;
   uploadPercent: number;
   onPhotoChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  cropOpen: boolean;
+  cropSrc: string;
+  onCropClose: () => void;
+  onCropDone: (result: { blobUrl: string; file: File }) => Promise<void>;
   onGoToProfile: () => void;
   onCopy: (text: string, label: string) => void;
   onLinkGoogle: () => Promise<void> | void;
   onLinkPhone: () => Promise<void> | void;
+  onSaveName: (name: string) => Promise<void>;
+  onSavePan: (pan: string) => Promise<void>;
+  onSaveGst: (bp: BusinessProfile) => Promise<void>;
 }) {
   const statusInfo = getAccountStatusInfo(accountStatus, rejectionReason);
+  const [editNameOpen, setEditNameOpen] = useState(false);
+  const [addPanOpen, setAddPanOpen] = useState(false);
+  const [addGstOpen, setAddGstOpen] = useState(false);
+  const [gstDetailsOpen, setGstDetailsOpen] = useState(false);
+  const [timelineOpen, setTimelineOpen] = useState(false);
+  const { events: timelineEvents, loading: timelineLoading } =
+    useAccountTimeline(clientUser.uid);
 
   return (
-    <Card className="mx-auto w-full max-w-6xl p-2 py-4 md:p-4 md:py-6">
-      <CardHeader className="p-0">
-        <CardTitle className="text-primary p-0 text-center text-xl font-semibold md:text-2xl">
-          My Account
-        </CardTitle>
+    <>
+      <CropperModal
+        open={cropOpen}
+        imageSrc={cropSrc}
+        onClose={onCropClose}
+        onCropComplete={onCropDone}
+        aspectRatio={1}
+      />
+      <EditNameDialog
+        open={editNameOpen}
+        onOpenChange={setEditNameOpen}
+        currentName={clientUser.displayName ?? ""}
+        onSave={onSaveName}
+      />
+      <AddPanDialog
+        open={addPanOpen}
+        onOpenChange={setAddPanOpen}
+        onSave={onSavePan}
+      />
+      <AddGstDialog
+        open={addGstOpen}
+        onOpenChange={setAddGstOpen}
+        onSave={onSaveGst}
+      />
+      <Card className="mx-auto w-full max-w-6xl p-2 py-4 md:p-4 md:py-6">
+        <CardHeader className="p-0">
+          <CardTitle className="text-primary p-0 text-center text-xl font-semibold md:text-2xl">
+            My Account
+          </CardTitle>
 
-        {!isAdmin && profileComplete && (
-          <div className="space-y-2">
-            <Alert
-              className={clsx(
-                statusInfo?.bgColor,
-                statusInfo?.borderColor,
-                "items-start p-2",
-              )}
-            >
-              <AlertDescription
-                className={clsx("ml-2 text-sm", statusInfo?.color)}
+          {!isAdmin && profileComplete && (
+            <div className="space-y-2">
+              <Alert
+                className={clsx(
+                  statusInfo?.bgColor,
+                  statusInfo?.borderColor,
+                  "items-start p-2",
+                )}
               >
-                <div className="flex w-full flex-col items-center justify-center gap-1 text-xs md:flex-row">
-                  <span className="text-sm font-semibold">
-                    {statusInfo?.title}
-                  </span>{" "}
-                  {statusInfo?.description}
-                </div>
-              </AlertDescription>
-            </Alert>
-          </div>
-        )}
-
-        <div className="relative flex flex-col items-center justify-center gap-2 py-4">
-          <Avatar className="ring-primary h-24 w-24 bg-white p-1 ring-2 md:h-28 md:w-28">
-            {photo ? (
-              <AvatarImage
-                src={photo}
-                alt="Profile"
-                className="h-full w-full rounded-full object-cover"
-              />
-            ) : (
-              <AvatarFallback className="bg-cyan-800">
-                <Image
-                  src={DefaultUserIcon}
-                  alt="avatar"
-                  width={60}
-                  height={60}
-                  className="rounded-full object-center p-1"
-                />
-              </AvatarFallback>
-            )}
-          </Avatar>
-
-          {uploading ? (
-            <div className="my-2 flex w-full flex-col items-center">
-              <Progress value={uploadPercent} className="w-48" />
-              <span className="text-primary mt-2 text-center text-sm font-medium">
-                Uploading and updating your profile picture — {uploadPercent}%
-              </span>
+                <AlertDescription
+                  className={clsx("ml-2 text-sm", statusInfo?.color)}
+                >
+                  <div className="flex w-full flex-col items-center justify-center gap-1 text-xs md:flex-row">
+                    <span className="text-sm font-semibold">
+                      {statusInfo?.title}
+                    </span>{" "}
+                    {statusInfo?.description}
+                  </div>
+                </AlertDescription>
+              </Alert>
             </div>
-          ) : (
-            <label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={onPhotoChange}
-                style={{ display: "none" }}
-              />
-              <span className="bg-muted text-primary hover:text-primary/90 cursor-pointer rounded-md px-3 py-1 text-xs">
-                Change profile picture
-              </span>
-            </label>
           )}
-        </div>
 
-        <div className="flex flex-col items-center justify-center">
-          <span className="text-muted-foreground text-center text-xs">
-            Your User ID (UID) in our system:
-          </span>
-          <span className="text-primary flex items-center justify-center gap-2 text-sm font-semibold">
-            {clientUser.userId}
-            <CopyIcon
-              className="text-primary size-4 cursor-pointer"
-              onClick={() => onCopy(clientUser.userId, "UID")}
-            />
-          </span>
-        </div>
-      </CardHeader>
+          <div className="relative flex flex-col items-center justify-center gap-2 py-4">
+            <Avatar className="ring-primary h-24 w-24 bg-white p-1 ring-2 md:h-28 md:w-28">
+              {photo ? (
+                <AvatarFallback className="bg-transparent p-0">
+                  <Image
+                    src={photo}
+                    alt="Profile"
+                    width={112}
+                    height={112}
+                    className="h-full w-full rounded-full object-cover"
+                    unoptimized={photo.startsWith("blob:")}
+                  />
+                </AvatarFallback>
+              ) : (
+                <AvatarFallback className="bg-cyan-800">
+                  <Image
+                    src={DefaultUserIcon}
+                    alt="avatar"
+                    width={60}
+                    height={60}
+                    className="rounded-full object-center p-1"
+                  />
+                </AvatarFallback>
+              )}
+            </Avatar>
 
-      <CardContent className="flex flex-col gap-4 p-0">
-        {isAdmin ? (
-          <div className="rounded-md bg-green-100 p-2 px-4 text-center text-sm text-green-700">
-            You are an <span className="font-semibold">Admin</span> — manage
-            everything!
+            {uploading ? (
+              <div className="my-2 flex w-full flex-col items-center">
+                <Progress value={uploadPercent} className="w-48" />
+                <span className="text-primary mt-2 text-center text-sm font-medium">
+                  Uploading and updating your profile picture — {uploadPercent}%
+                </span>
+              </div>
+            ) : (
+              <label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={onPhotoChange}
+                  style={{ display: "none" }}
+                />
+                <span className="bg-muted text-primary hover:text-primary/90 cursor-pointer rounded-md px-3 py-1 text-xs">
+                  Change profile picture
+                </span>
+              </label>
+            )}
           </div>
-        ) : (
-          <div className="bg-muted text-muted-foreground flex flex-col items-center justify-center rounded-md p-2 text-sm">
-            You have user access under role:
-            <span className="text-primary text-lg font-semibold first-letter:uppercase">
-              {userRole || "GUEST"}
+
+          <div className="flex flex-col items-center justify-center">
+            <span className="text-muted-foreground text-center text-xs">
+              Your User ID (UID) in our system:
+            </span>
+            <span className="text-primary flex items-center justify-center gap-2 text-sm font-semibold">
+              {clientUser.userId}
+              <CopyIcon
+                className="text-primary size-4 cursor-pointer"
+                onClick={() => onCopy(clientUser.userId, "UID")}
+              />
             </span>
           </div>
-        )}
+        </CardHeader>
 
-        {!profileComplete && !isAdmin && (
-          <Alert className="flex items-center justify-center border-yellow-200 bg-yellow-50">
-            <AlertDescription className="flex flex-col items-start gap-2 text-sm text-yellow-800">
-              <div>Your profile is incomplete.</div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onGoToProfile}
-                className="gap-2 border-yellow-300 bg-yellow-50 hover:bg-yellow-100"
-              >
-                Complete profile now
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </AlertDescription>
-          </Alert>
-        )}
+        <CardContent className="flex flex-col gap-4 p-0">
+          {isAdmin ? (
+            <div className="rounded-md bg-green-100 p-2 px-4 text-center text-sm text-green-700">
+              You are an <span className="font-semibold">Admin</span> — manage
+              everything!
+            </div>
+          ) : // <div className="bg-muted text-muted-foreground flex flex-col items-center justify-center rounded-md p-2 text-sm">
+          //   You have user access under role:
+          //   <span className="text-primary text-lg font-semibold first-letter:uppercase">
+          //     {userRole || "GUEST"}
+          //   </span>
+          // </div>
+          null}
 
-        <div className="space-y-2">
-          <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <DetailRow
-              label="Display name"
-              value={clientUser.displayName}
-              icon={User}
-            />
-            <DetailRow
-              label="Email"
-              value={clientUser.email}
-              icon={Mail}
-              copyValue={clientUser.email ?? undefined}
-              onCopy={onCopy}
-            />
-            <DetailRow
-              label="Phone"
-              value={clientUser.phone}
-              icon={Phone}
-              copyValue={clientUser.phone ?? undefined}
-              onCopy={onCopy}
-            />
-            <DetailRow
-              label="Business type"
-              valueNode={
-                <span className="break-all">
-                  {titleCase(clientUser.businessType)}
-                </span>
-              }
-              icon={Building2}
-            />
-            <DetailRow
-              label="GST number"
-              value={clientUser.gstNumber}
-              icon={FileText}
-              copyValue={clientUser.gstNumber}
-              onCopy={onCopy}
-            />
-            <DetailRow
-              label="PAN number"
-              value={clientUser.panNumber}
-              icon={FileText}
-              copyValue={clientUser.panNumber}
-              onCopy={onCopy}
-            />
-            <DetailRow
-              label="Firm/Business Name"
-              value={
-                clientUser.firmName || clientUser.businessProfile?.legalName
-              }
-              icon={FileText}
-              copyValue={
-                clientUser.firmName || clientUser.businessProfile?.legalName
-              }
-              onCopy={onCopy}
-            />
-            <DetailRow
-              label="Profile status"
-              icon={profileComplete ? BadgeCheck : BadgeX}
-              valueNode={
-                <Badge
-                  className={clsx(
-                    "capitalize",
-                    profileComplete
-                      ? "bg-green-100 text-green-800 hover:bg-green-100"
-                      : "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
-                  )}
+          {!profileComplete && !isAdmin && (
+            <Alert className="flex items-center justify-center border-yellow-200 bg-yellow-50">
+              <AlertDescription className="flex flex-col items-start gap-2 text-sm text-yellow-800">
+                <div>Your profile is incomplete.</div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onGoToProfile}
+                  className="gap-2 border-yellow-300 bg-yellow-50 hover:bg-yellow-100"
                 >
-                  {profileComplete ? "Complete" : "Incomplete"}
-                </Badge>
-              }
-            />
-          </ul>
-        </div>
+                  Complete profile now
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
 
-        {clientUser.firebaseAuth ? (
-          <FirebaseAuthMethods
-            firebaseAuth={clientUser.firebaseAuth}
-            onLinkGoogle={onLinkGoogle}
-            onLinkPhone={onLinkPhone}
-          />
-        ) : null}
-
-        {clientUser.gstNumber && clientUser.businessProfile ? (
-          <Collapsible open={moreOpen} onOpenChange={setMoreOpen}>
-            <CollapsibleTrigger asChild>
-              <button
-                type="button"
-                className={clsx(
-                  "flex w-full items-center justify-between rounded-md border bg-white px-3 py-2 text-left transition-colors hover:bg-zinc-50",
-                  moreOpen && "bg-zinc-50",
-                )}
-              >
-                <span className="text-sm font-medium text-zinc-700">
-                  {moreOpen ? "Hide GST details" : "Show GST details"}
-                </span>
-                {moreOpen ? (
-                  <ChevronUp className="h-4 w-4 text-zinc-600" />
-                ) : (
-                  <ChevronDown className="h-4 w-4 text-zinc-600" />
-                )}
-              </button>
-            </CollapsibleTrigger>
-
-            <CollapsibleContent className="mt-3 space-y-3">
-              <BusinessProfileCard
-                bp={clientUser.businessProfile as BusinessProfile}
+          <div className="space-y-2">
+            <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <DetailRow
+                label="Display name"
+                icon={User}
+                valueNode={
+                  <span className="flex items-center gap-2">
+                    <span className="wrap-break-word">
+                      {clientUser.displayName || "-"}
+                    </span>
+                    {profileComplete && (
+                      <button
+                        type="button"
+                        onClick={() => setEditNameOpen(true)}
+                        className="text-muted-foreground hover:text-primary shrink-0"
+                        aria-label="Edit display name"
+                      >
+                        <Pencil className="size-3.5" />
+                      </button>
+                    )}
+                  </span>
+                }
+              />
+              <DetailRow
+                label="Email"
+                value={clientUser.email}
+                icon={Mail}
+                copyValue={clientUser.email ?? undefined}
                 onCopy={onCopy}
               />
+              <DetailRow
+                label="Phone"
+                value={clientUser.phone}
+                icon={Phone}
+                copyValue={clientUser.phone ?? undefined}
+                onCopy={onCopy}
+              />
+              <DetailRow
+                label="Business type"
+                valueNode={
+                  <span className="break-all">
+                    {titleCase(clientUser.businessType)}
+                  </span>
+                }
+                icon={Building2}
+              />
+              <DetailRow
+                label="GST number"
+                icon={FileText}
+                valueNode={
+                  clientUser.gstNumber ? (
+                    <span className="flex items-center gap-2">
+                      <span className="wrap-break-word">
+                        {clientUser.gstNumber}
+                      </span>
+                      <CopyIcon
+                        className="text-primary size-4 shrink-0 cursor-pointer"
+                        onClick={() =>
+                          onCopy(clientUser.gstNumber!, "GST number")
+                        }
+                      />
+                      {clientUser.businessProfile && (
+                        <Button
+                          variant={"secondary"}
+                          onClick={() => setGstDetailsOpen(true)}
+                          className="text-primary hover:text-primary/80 hidden shrink-0 items-center gap-1 text-xs font-medium md:flex"
+                        >
+                          <Eye className="size-3.5" />
+                          View Details
+                        </Button>
+                      )}
+                    </span>
+                  ) : !isAdmin && profileComplete ? (
+                    <button
+                      type="button"
+                      onClick={() => setAddGstOpen(true)}
+                      className="text-primary hover:text-primary/80 flex items-center gap-1 text-xs font-medium"
+                    >
+                      <PlusCircle className="size-3.5" />
+                      Add GST
+                    </button>
+                  ) : (
+                    <span>-</span>
+                  )
+                }
+              />
+              {clientUser.gstNumber && clientUser.businessProfile && (
+                <li className="md:hidden">
+                  <Button
+                    variant={"secondary"}
+                    onClick={() => setGstDetailsOpen(true)}
+                    className="text-primary hover:bg-primary/5 flex w-full items-center gap-2 p-3 text-sm font-medium"
+                  >
+                    <Eye className="size-4 shrink-0" />
+                    View GST Details
+                  </Button>
+                </li>
+              )}
+              <DetailRow
+                label="PAN number"
+                icon={FileText}
+                valueNode={
+                  clientUser.panNumber ? (
+                    <span className="flex items-center gap-2">
+                      <span className="wrap-break-word">
+                        {clientUser.panNumber}
+                      </span>
+                      <CopyIcon
+                        className="text-primary size-4 shrink-0 cursor-pointer"
+                        onClick={() =>
+                          onCopy(clientUser.panNumber!, "PAN number")
+                        }
+                      />
+                    </span>
+                  ) : !isAdmin && profileComplete ? (
+                    <button
+                      type="button"
+                      onClick={() => setAddPanOpen(true)}
+                      className="text-primary hover:text-primary/80 flex items-center gap-1 text-xs font-medium"
+                    >
+                      <PlusCircle className="size-3.5" />
+                      Add PAN
+                    </button>
+                  ) : (
+                    <span>-</span>
+                  )
+                }
+              />
+              <DetailRow
+                label="Firm/Business Name"
+                value={
+                  clientUser.firmName || clientUser.businessProfile?.legalName
+                }
+                icon={FileText}
+                copyValue={
+                  clientUser.firmName || clientUser.businessProfile?.legalName
+                }
+                onCopy={onCopy}
+              />
+              <DetailRow
+                label="Profile status"
+                icon={profileComplete ? BadgeCheck : BadgeX}
+                valueNode={
+                  <Badge
+                    className={clsx(
+                      "capitalize",
+                      profileComplete
+                        ? "bg-green-100 text-green-800 hover:bg-green-100"
+                        : "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
+                    )}
+                  >
+                    {profileComplete ? "Complete" : "Incomplete"}
+                  </Badge>
+                }
+              />
+            </ul>
+          </div>
+
+          {clientUser.firebaseAuth ? (
+            <FirebaseAuthMethods
+              firebaseAuth={clientUser.firebaseAuth}
+              onLinkGoogle={onLinkGoogle}
+              onLinkPhone={onLinkPhone}
+            />
+          ) : null}
+
+          {clientUser.gstNumber && clientUser.businessProfile && (
+            <Dialog open={gstDetailsOpen} onOpenChange={setGstDetailsOpen}>
+              <DialogContent className="flex max-h-[85dvh] flex-col overflow-hidden p-0">
+                <DialogHeader className="shrink-0 px-6 pt-6 pb-4">
+                  <DialogTitle>GST Details</DialogTitle>
+                </DialogHeader>
+                <div className="flex-1 overflow-y-auto px-6 pb-6">
+                  <BusinessProfileCard
+                    bp={clientUser.businessProfile as BusinessProfile}
+                    onCopy={onCopy}
+                  />
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
+
+          {/* Account Timeline */}
+          <Collapsible open={timelineOpen} onOpenChange={setTimelineOpen}>
+            <CollapsibleTrigger asChild>
+              <Button
+                variant={"ghost"}
+                className="flex w-full items-center justify-between rounded-md py-2 text-sm font-medium"
+              >
+                <span className="flex items-center gap-2">
+                  <Clock className="size-4" />
+                  Account activity
+                  {!timelineLoading && timelineEvents.length > 0 && (
+                    <Badge variant="secondary" className="px-1.5 py-0 text-xs">
+                      {timelineEvents.length} event
+                      {timelineEvents.length > 1 ? "s" : ""}
+                    </Badge>
+                  )}
+                </span>
+                <ChevronDown
+                  className={clsx(
+                    "size-4 transition-transform duration-300",
+                    timelineOpen && "rotate-180",
+                  )}
+                />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="bg-secondary/50 max-h-80 overflow-y-auto rounded-md px-2 py-2">
+                <AccountTimeline
+                  events={timelineEvents}
+                  loading={timelineLoading}
+                />
+              </div>
             </CollapsibleContent>
           </Collapsible>
-        ) : null}
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </>
   );
 }
 

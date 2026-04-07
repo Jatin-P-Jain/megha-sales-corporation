@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   CheckCircle2,
   Clock,
@@ -219,10 +219,16 @@ export default function EnquiryCard({
                   </span>
                   <Avatar className="h-5 w-5 border border-white shadow-md md:h-8 md:w-8">
                     {createdBy.photoUrl ? (
-                      <AvatarImage
-                        src={createdBy.photoUrl}
-                        alt={createdBy.displayName || "User"}
-                      />
+                      <AvatarFallback className="bg-transparent p-0">
+                        <Image
+                          src={createdBy.photoUrl}
+                          alt={createdBy.displayName || "User"}
+                          width={32}
+                          height={32}
+                          className="h-full w-full rounded-full object-cover"
+                          unoptimized={createdBy.photoUrl.startsWith("blob:")}
+                        />
+                      </AvatarFallback>
                     ) : (
                       <AvatarFallback>
                         <Image

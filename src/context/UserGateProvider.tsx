@@ -68,15 +68,27 @@ export function UserGateProvider({ children }: { children: React.ReactNode }) {
             if (ensuredUidRef.current !== user.uid) {
               ensuredUidRef.current = user.uid;
               try {
+                // Check admin claim from the current token to set correct defaults
+                const tokenResult = await user.getIdTokenResult(false);
+                const isAdmin = tokenResult.claims.admin === true;
+
                 await setDoc(
                   ref,
-                  {
-                    profileComplete: false,
-                    accountStatus: "pending",
-                    rejectionReason: "",
-                    userRole: "customer",
-                    updatedAt: serverTimestamp(),
-                  },
+                  isAdmin
+                    ? {
+                        profileComplete: true,
+                        accountStatus: "approved",
+                        rejectionReason: "",
+                        userRole: "admin",
+                        updatedAt: serverTimestamp(),
+                      }
+                    : {
+                        profileComplete: false,
+                        accountStatus: "pending",
+                        rejectionReason: "",
+                        userRole: "customer",
+                        updatedAt: serverTimestamp(),
+                      },
                   { merge: true },
                 );
               } catch (e) {
