@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { SearchIcon, RotateCcwIcon, Loader } from "lucide-react";
+import { SearchIcon, XIcon, Loader, Loader2 } from "lucide-react";
 import clsx from "clsx";
 
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,6 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerDescription,
-  DrawerFooter,
 } from "@/components/ui/drawer";
 
 import type { Product } from "@/types/product";
@@ -104,7 +103,7 @@ export default function SearchProducts({
     }
 
     // Optional: minimum characters before search
-    if (q.length < 2) return;
+    if (q.length < 1) return;
 
     const requestId = ++requestIdRef.current;
 
@@ -135,7 +134,7 @@ export default function SearchProducts({
 
   const Body = (
     <div className="grid gap-2">
-      <div className="p-1 px-4">
+      <div className="flex items-center gap-2 p-1 px-4">
         <Input
           placeholder="Enter Part Number or Name to search..."
           value={searchQuery}
@@ -143,6 +142,18 @@ export default function SearchProducts({
           autoFocus
           ref={inputRef}
         />
+        {searchQuery && (
+          <Button
+            variant="secondary"
+            size="icon"
+            onClick={resetState}
+            disabled={loading}
+            className="shrink-0"
+            aria-label="Clear search"
+          >
+            <XIcon className="h-4 w-4" />
+          </Button>
+        )}
       </div>
 
       {loading && (
@@ -175,13 +186,6 @@ export default function SearchProducts({
     </div>
   );
 
-  const FooterAction = (
-    <Button onClick={resetState} disabled={loading} className="mb-1">
-      <RotateCcwIcon className="h-4 w-4" />
-      Reset
-    </Button>
-  );
-
   return (
     <>
       {/* Desktop (md+) */}
@@ -212,7 +216,7 @@ export default function SearchProducts({
 
             {Body}
 
-            <DialogFooter>{FooterAction}</DialogFooter>
+            <DialogFooter />
           </DialogContent>
         </Dialog>
       </div>
@@ -238,8 +242,8 @@ export default function SearchProducts({
             </Button>
           </DrawerTrigger>
 
-          <DrawerContent className="mx-auto h-full w-full max-w-lg">
-            <DrawerHeader className="px-0">
+          <DrawerContent className="mx-auto flex h-[calc(100dvh-5rem)] min-h-[calc(100dvh-5rem)] w-full max-w-lg flex-col overflow-hidden">
+            <DrawerHeader className="shrink-0 px-0">
               <DrawerTitle>Search product</DrawerTitle>
               <DrawerDescription className="text-xs">
                 Find products by <strong>part name</strong> or{" "}
@@ -247,8 +251,63 @@ export default function SearchProducts({
               </DrawerDescription>
             </DrawerHeader>
 
-            <div className="h-full overflow-y-auto">{Body}</div>
-            <DrawerFooter className="p-1 pb-4">{FooterAction}</DrawerFooter>
+            {/* Input + X button pinned below the header */}
+            <div className="flex shrink-0 items-center gap-2 p-1 px-4">
+              <Input
+                placeholder="Enter Part Number or Name to search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                autoFocus
+                ref={inputRef}
+              />
+              {searchQuery && (
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  onClick={resetState}
+                  disabled={loading}
+                  className="text-muted-foreground shrink-0"
+                  aria-label="Clear search"
+                >
+                  <XIcon className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+
+            {/* Results area fills all remaining space */}
+            <div className="flex min-h-0 flex-1 flex-col">
+              {loading && (
+                <div className="flex flex-col items-center justify-center gap-2 py-4">
+                  <Loader2 className="text-primary mx-auto h-4 w-4 animate-spin" />
+                  <p className="text-muted-foreground text-xs">Searching...</p>
+                </div>
+              )}
+              {result && (
+                <>
+                  <div className="shrink-0 py-1 text-center text-xs text-green-700">
+                    ✅ Found{" "}
+                    <strong>
+                      {result.length} product{result.length > 1 ? "s" : ""}
+                    </strong>{" "}
+                    for your search: <strong>{searchedPhrase}</strong>
+                  </div>
+                  <div className="min-h-0 flex-1">
+                    <SearchResultsVirtual
+                      items={result}
+                      isAdmin={isAdmin}
+                      onClose={closeAll}
+                      fillHeight
+                    />
+                  </div>
+                </>
+              )}
+              {notFound && (
+                <p className="px-4 py-2 text-sm text-red-500">
+                  ❌ No product found for your search:{" "}
+                  <strong>{searchedPhrase}</strong>
+                </p>
+              )}
+            </div>
           </DrawerContent>
         </Drawer>
       </div>

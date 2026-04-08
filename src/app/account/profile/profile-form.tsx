@@ -721,6 +721,9 @@ export default function ProfileForm() {
                                     value={value ?? ""}
                                     onChange={onChange}
                                     length={6}
+                                    onComplete={(code) => {
+                                      if (!isVerifying) void verifyOtp(code);
+                                    }}
                                   />
                                 )}
                               />

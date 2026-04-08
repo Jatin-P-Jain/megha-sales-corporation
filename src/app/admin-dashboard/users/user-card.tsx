@@ -22,6 +22,9 @@ import {
   MoreVertical,
   ShieldOff,
   Trash2,
+  TriangleAlert,
+  UserCheck2,
+  ContactRound,
 } from "lucide-react";
 import { FullUser } from "@/types/user";
 import { toast } from "sonner";
@@ -68,6 +71,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
   // Widen status to allow extra states like "revoked" / "deleted" without TS narrowing issues.
   const accountStatus = (user.accountStatus ?? "pending") as string;
   const isAdmin = user.userRole === "admin";
+  const profileComplete = !!user.profileComplete;
 
   const [isApproving, setIsApproving] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
@@ -308,7 +312,15 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                   </CardTitle>
 
                   {!isAdmin && (
-                    <div className="flex items-center">{getStatusBadge()}</div>
+                    <div className="flex flex-wrap items-center gap-1">
+                      {getStatusBadge()}
+                      {!profileComplete && (
+                        <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
+                          <TriangleAlert className="h-3 w-3" />
+                          Incomplete Profile
+                        </Badge>
+                      )}
+                    </div>
                   )}
                 </div>
                 <DropdownMenu>
@@ -459,6 +471,25 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
               <span className="text-sm font-semibold">
                 {user.phone || "N/A"}
               </span>
+            </div>
+
+            {/* Profile Complete status */}
+            <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <ContactRound className="h-4 w-4" />
+                <span>Profile Status:</span>
+              </div>
+              {profileComplete ? (
+                <div className="text-green-700 flex items-center gap-2 text-sm font-medium">
+                  <UserCheck2 className="size-4" />
+                  Complete
+                </div>
+              ) : (
+                <div className="text-yellow-800 flex items-center gap-2 text-sm font-medium">
+                  <TriangleAlert className="size-4" />
+                  Incomplete
+                </div>
+              )}
             </div>
 
             {/* User Type */}

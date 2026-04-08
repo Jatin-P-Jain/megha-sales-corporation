@@ -204,7 +204,9 @@ export function MobileAuthWrapper({ onSuccess }: { onSuccess?: () => void }) {
                             value={value ?? ""}
                             onChange={onChange}
                             length={6}
-
+                            onComplete={(code) => {
+                              if (!isVerifying) void verifyOtp(code.trim());
+                            }}
                           />
                         )}
                       />

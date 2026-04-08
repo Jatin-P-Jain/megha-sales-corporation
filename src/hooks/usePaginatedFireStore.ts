@@ -27,8 +27,8 @@ type UsePaginatedFirestoreOptions = {
   pageSize?: number;
   filters?: {
     field: string;
-    op: "==" | "in" | ">=" | "<=";
-    value: string | string[] | number;
+    op: "==" | "in" | ">=" | "<=" | "!=";
+    value: string | string[] | number | boolean;
   }[];
   orderByField?: string;
   orderDirection?: "asc" | "desc";

@@ -14,21 +14,26 @@ import { useEffect, useRef } from "react";
  *   via normal close (swipe, button) → we programmatically go back one step
  *                              to consume the sentinel entry we pushed, keeping
  *                              the history stack tidy.
+ *
+ * IMPORTANT: if the component navigates (router.push) while the drawer is open
+ * (e.g. an Apply button), call `markNavigated()` BEFORE router.push so the hook
+ * knows not to call history.back() on close — which would undo the navigation.
  */
 export function useDrawerBackButton(open: boolean, onClose: () => void) {
-  // Track whether WE pushed a sentinel entry so we know when to clean it up.
   const sentinelPushed = useRef(false);
+  // Set to true by markNavigated() when a router.push fires while open.
+  // Prevents history.back() cleanup from undoing the navigation.
+  const navigatedRef = useRef(false);
 
   useEffect(() => {
     if (open) {
-      // Push a sentinel state so the next back-press lands here.
       history.pushState({ drawerOpen: true }, "");
       sentinelPushed.current = true;
+      navigatedRef.current = false; // reset on each open
 
       const handlePopState = (_e: PopStateEvent) => {
-        // Back was pressed — close the drawer. History already moved back by
-        // the browser so the sentinel entry is already consumed; just set flag.
         sentinelPushed.current = false;
+        navigatedRef.current = false;
         onClose();
       };
 
@@ -37,12 +42,23 @@ export function useDrawerBackButton(open: boolean, onClose: () => void) {
         window.removeEventListener("popstate", handlePopState);
       };
     } else {
-      // Drawer closed via normal means (swipe / button, not back button).
-      // If we still have a sentinel entry, consume it so history stays clean.
       if (sentinelPushed.current) {
         sentinelPushed.current = false;
-        history.back();
+        if (!navigatedRef.current) {
+          // No navigation occurred — consume the sentinel cleanly.
+          history.back();
+        }
+        // If navigation did occur, leave the history as-is. The sentinel
+        // entry is now behind the new URL entry and harmless.
+        navigatedRef.current = false;
       }
     }
   }, [open, onClose]);
+
+  /** Call this before any router.push/replace that closes the drawer. */
+  const markNavigated = () => {
+    navigatedRef.current = true;
+  };
+
+  return { markNavigated };
 }
