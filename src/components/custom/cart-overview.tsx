@@ -3,30 +3,18 @@
 import React from "react";
 import { Button } from "../ui/button";
 import { ShoppingCartIcon } from "lucide-react";
-import currencyFormatter from "@/lib/currency-formatter";
 import { Skeleton } from "../ui/skeleton";
-import clsx from "clsx";
 import { useCartState } from "@/context/cartContext";
-import { useUserGate } from "@/context/UserGateProvider";
 import { SafeLink } from "./utility/SafeLink";
 
 export default function CartOverview() {
   const { loading, cartTotals } = useCartState();
 
-  const { accountStatus } = useUserGate();
-  const isAccountApproved = accountStatus === "approved";
-
-  const { totalUnits = 0, totalItems = 0, totalAmount = 0 } = cartTotals || {};
+  const { totalUnits = 0, totalItems = 0 } = cartTotals || {};
 
   if (loading) {
     return (
       <div className="grid grid-cols-[3fr_4fr_2fr] items-center justify-center rounded-lg border p-1 text-sm md:px-4">
-        {/* <div className="text-muted-foreground flex w-full flex-col text-xs md:text-sm">
-          Cart Overview
-          <span className="text-muted-foreground text-[8px]">
-            (after discount &amp; GST)
-          </span>
-        </div> */}
         <Skeleton className="mx-auto flex h-full w-3/4 justify-center" />
         <Skeleton className="h-9 w-full" />
       </div>
@@ -35,36 +23,20 @@ export default function CartOverview() {
 
   return (
     <div className="flex items-center justify-between gap-6 rounded-lg border p-1 text-sm md:px-4">
-      {/* <div className="text-muted-foreground flex w-full flex-col text-xs md:text-sm ">
-        Cart Overview
-        <span className="text-muted-foreground text-[8px]">
-          (after discount &amp; GST)
-        </span>
-      </div> */}
-
       <div className="flex w-full flex-col items-start justify-between px-2">
         {totalUnits > 0 ? (
           <div className="flex w-full items-center justify-between">
             <div className="flex flex-col">
-              <div className="flex items-center gap-1 text-xs md:text-sm">
-                Units:{" "}
-                <span className="text-primary text-sm font-semibold tabular-nums md:text-base">
-                  {totalUnits}
-                </span>
-              </div>
               <div className="flex items-center gap-1 text-xs md:text-sm">
                 Products:{" "}
                 <span className="text-primary text-sm font-semibold md:text-base">
                   {totalItems}
                 </span>
               </div>
-            </div>
-
-            <div className="flex flex-col items-center justify-start gap-0 text-xs md:text-sm">
-              <div className="flex flex-col items-center gap-1">
-                Total Amount{" "}
-                <span className="text-primary text-sm font-semibold md:text-base">
-                  {currencyFormatter(totalAmount)}
+              <div className="flex items-center gap-1 text-xs md:text-sm">
+                Units:{" "}
+                <span className="text-primary text-sm font-semibold tabular-nums md:text-base">
+                  {totalUnits}
                 </span>
               </div>
             </div>
@@ -79,13 +51,9 @@ export default function CartOverview() {
         )}
       </div>
 
-      {!isAccountApproved || totalUnits === 0 ? (
+      {totalUnits === 0 ? (
         <Button
-          className={clsx(
-            "flex items-center justify-center",
-            "cursor-not-allowed",
-            !isAccountApproved && "ring-2 ring-yellow-700",
-          )}
+          className="flex cursor-not-allowed items-center justify-center"
           disabled
           type="button"
         >

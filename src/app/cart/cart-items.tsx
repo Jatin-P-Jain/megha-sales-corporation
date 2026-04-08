@@ -5,17 +5,22 @@ import CartControls from "@/components/custom/cart-controls";
 import currencyFormatter from "@/lib/currency-formatter";
 import ProductImage from "@/components/custom/product-image";
 import { Separator } from "@/components/ui/separator";
-import { XCircleIcon } from "lucide-react";
+import { EyeIcon, XCircleIcon } from "lucide-react";
 import { PartDetailsDialog } from "@/components/custom/part-details-dialog";
+import UserUnlockDialog from "@/components/custom/user-unlock-dialog";
 import CartItemLoading from "./cart-item-loading";
 import { Button } from "@/components/ui/button";
 
 import { useCartActions, useCartState } from "@/context/cartContext";
 import { SafeLink } from "@/components/custom/utility/SafeLink";
+import { useUserGate } from "@/context/UserGateProvider";
 
 export function CartItems() {
   const { cartProducts, loading } = useCartState();
   const { removeFromCart } = useCartActions();
+  const { profileComplete, accountStatus } = useUserGate();
+  const isAccountApproved = accountStatus === "approved";
+  const canSeeDiscounts = profileComplete && isAccountApproved;
 
   const isEmpty = !loading && cartProducts.length === 0;
 
@@ -106,42 +111,63 @@ export function CartItems() {
                     </span>
                   </div>
 
-                  <div className="flex w-full items-center justify-between text-xs md:text-sm">
-                    Discount ({item.productPricing?.discount} %) :
-                    <span className="text-sm font-semibold md:text-base">
-                      <span className="text-muted-foreground text-xs font-normal">
-                        (-){" "}
-                      </span>
-                      {currencyFormatter(unitDiscount)}
-                    </span>
-                  </div>
+                  {canSeeDiscounts ? (
+                    <>
+                      <div className="flex w-full items-center justify-between text-xs md:text-sm">
+                        Discount ({item.productPricing?.discount} %) :
+                        <span className="text-sm font-semibold md:text-base">
+                          <span className="text-muted-foreground text-xs font-normal">
+                            (-){" "}
+                          </span>
+                          {currencyFormatter(unitDiscount)}
+                        </span>
+                      </div>
 
-                  <div className="flex w-full items-center justify-between text-xs md:text-sm">
-                    GST ({item.productPricing?.gst} %) :{" "}
-                    <span className="text-sm font-semibold md:text-base">
-                      <span className="text-muted-foreground text-xs font-normal">
-                        (+){" "}
-                      </span>
-                      {currencyFormatter(unitGST)}
-                    </span>
-                  </div>
+                      <div className="flex w-full items-center justify-between text-xs md:text-sm">
+                        GST ({item.productPricing?.gst} %) :
+                        <span className="text-sm font-semibold md:text-base">
+                          <span className="text-muted-foreground text-xs font-normal">
+                            (+){" "}
+                          </span>
+                          {currencyFormatter(unitGST)}
+                        </span>
+                      </div>
 
-                  <Separator />
+                      <Separator />
 
-                  <div className="flex w-full items-center justify-between text-xs md:text-sm">
-                    Net Amount :{" "}
-                    <span className="text-sm font-semibold md:text-base">
-                      {currencyFormatter(unitNetPrice)}
-                    </span>
-                  </div>
+                      <div className="flex w-full items-center justify-between text-xs md:text-sm">
+                        Net Amount :{" "}
+                        <span className="text-sm font-semibold md:text-base">
+                          {currencyFormatter(unitNetPrice)}
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <Separator />
+                      <div className="flex w-full items-center justify-between text-xs md:text-sm">
+                        <span>Discounts &amp; GST :</span>
+                        <UserUnlockDialog>
+                          <div className="flex cursor-pointer items-center gap-1 transition-all hover:opacity-80">
+                            <span className="font-semibold text-yellow-600">
+                              ***
+                            </span>
+                            <EyeIcon className="size-4 text-yellow-600" />
+                          </div>
+                        </UserUnlockDialog>
+                      </div>
+                    </>
+                  )}
                 </div>
 
-                <div className="flex w-full items-center justify-between text-xs font-semibold md:text-sm">
-                  Total Amount :{" "}
-                  <span className="text-primary text-base md:text-lg">
-                    {currencyFormatter(totalPrice)}
-                  </span>
-                </div>
+                {canSeeDiscounts && (
+                  <div className="flex w-full items-center justify-between text-xs font-semibold md:text-sm">
+                    Total Amount :{" "}
+                    <span className="text-primary text-base md:text-lg">
+                      {currencyFormatter(totalPrice)}
+                    </span>
+                  </div>
+                )}
 
                 <div className="flex h-full w-full items-end justify-end md:w-1/2">
                   <CartControls

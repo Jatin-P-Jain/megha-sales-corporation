@@ -69,11 +69,6 @@ export default function SearchProducts({
     setNotFound(false);
     setLoading(false);
   };
-
-  const closeAll = () => {
-    setOpenDesktop(false);
-    setOpenMobile(false);
-  };
   useDrawerBackButton(openMobile, () => onMobileOpenChange(false));
 
   const onDesktopOpenChange = (value: boolean) => {
@@ -170,11 +165,7 @@ export default function SearchProducts({
             search: <strong>{searchedPhrase}</strong>
           </div>
 
-          <SearchResultsVirtual
-            items={result}
-            isAdmin={isAdmin}
-            onClose={() => closeAll()}
-          />
+          <SearchResultsVirtual items={result} isAdmin={isAdmin} />
         </>
       )}
 
@@ -295,7 +286,6 @@ export default function SearchProducts({
                     <SearchResultsVirtual
                       items={result}
                       isAdmin={isAdmin}
-                      onClose={closeAll}
                       fillHeight
                     />
                   </div>

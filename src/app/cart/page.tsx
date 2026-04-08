@@ -1,11 +1,11 @@
 import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
 import { CartItems } from "./cart-items";
 import CartSummary from "@/components/custom/cart-summary";
-import { requireProfileCompleteOrRedirect } from "@/lib/auth/gaurds";
+import { getVerifiedTokenOrRedirect } from "@/lib/auth/gaurds";
 import { ShoppingCart } from "lucide-react";
 
 export default async function Cart() {
-  const verifiedToken = await requireProfileCompleteOrRedirect("/cart");
+  const verifiedToken = await getVerifiedTokenOrRedirect();
   const isAdmin = Boolean(verifiedToken?.admin);
 
   return (
@@ -24,7 +24,7 @@ export default async function Cart() {
               { label: "Cart" },
             ]}
           />
-          <h1 className="py-2 text-xl font-semibold tracking-wide text-cyan-950 md:text-2xl">
+          <h1 className="py-1 text-xl font-semibold tracking-wide text-cyan-950 md:text-2xl">
             Cart <ShoppingCart className="ml-1 inline-flex size-6" />
           </h1>
           <CartSummary isUser={!!verifiedToken} />

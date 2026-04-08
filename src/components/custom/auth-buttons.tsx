@@ -254,7 +254,9 @@ export default function AuthButtons() {
           >
             <DropdownMenuLabel className="flex flex-col items-start space-y-1 px-4 py-2">
               <div className="flex w-full items-center justify-between">
-                <span className="font-medium">{clientUser.displayName}</span>
+                {clientUser.displayName && (
+                  <span className="font-medium">{clientUser.displayName}</span>
+                )}
                 <div className="flex flex-col justify-between gap-2 md:flex-row md:items-center">
                   {!isAdmin ? (
                     <>
@@ -267,9 +269,11 @@ export default function AuthButtons() {
                   ) : null}
                 </div>
               </div>
-              <span className="text-muted-foreground text-xs">
-                {clientUser.email}
-              </span>
+              {clientUser.email && (
+                <span className="text-muted-foreground text-xs">
+                  {clientUser.email}
+                </span>
+              )}
 
               {clientUser.phone && (
                 <span className="text-muted-foreground text-xs">
@@ -373,20 +377,7 @@ export default function AuthButtons() {
               </>
             ) : (
               <div>
-                {!profileComplete && (
-                  <span className="text-muted-foreground px-2 text-xs">
-                    (Complete your profile)
-                  </span>
-                )}
-                {profileComplete && accountStatus !== "approved" && (
-                  <span className="text-muted-foreground px-2 text-xs">
-                    (Waiting for approval)
-                  </span>
-                )}
-                <DropdownMenuItem
-                  asChild
-                  disabled={!profileComplete || accountStatus !== "approved"}
-                >
+                <DropdownMenuItem asChild>
                   <SafeLink
                     href="/cart"
                     className="flex items-center justify-between"

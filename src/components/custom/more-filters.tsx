@@ -298,7 +298,7 @@ export default function MoreFilters({
     <Button
       variant="ghost"
       className={clsx(
-        "w-auto flex-1 font-normal",
+        "w-auto flex-1 font-normal justify-between",
         filterActive && "text-primary border-none font-medium shadow-none",
       )}
     >
@@ -308,11 +308,11 @@ export default function MoreFilters({
         <SlidersHorizontal className="h-4 w-4" />
       )}
       {isPending ? "Applying\u2026" : "Filters"}
-      {!isPending && totalActiveFilters > 0 && (
-        <span className="bg-primary text-primary-foreground ml-1 flex h-5 w-5 items-center justify-center rounded-full text-xs font-semibold">
+      {!isPending && totalActiveFilters > 0 ? (
+        <span className="bg-primary text-primary-foreground ml-1 flex size-4 items-center justify-center rounded-full text-[10px] font-semibold">
           {totalActiveFilters}
         </span>
-      )}
+      ) : <span className=""></span>}
     </Button>
   );
 
