@@ -10,7 +10,10 @@ import { useAuthState } from "@/context/useAuth";
 import { toast } from "sonner";
 import { OrderData } from "@/types/order";
 import { getBaseUrl } from "@/lib/utils";
-import { notifyUserAction } from "@/actions/notify-user";
+import {
+  notifyUserAction,
+  notifyAdminsByRoleAction,
+} from "@/actions/notify-user";
 import { useRequireUserProfile } from "@/hooks/useUserProfile";
 import { useUserProfileState } from "@/context/UserProfileProvider";
 import { useSafeRouter } from "@/hooks/useSafeRouter";
@@ -115,6 +118,15 @@ export default function CheckoutFooter({
         type: "order",
         title: "📦 Order Update",
         body: `Your order #${orderId} has been placed!`,
+        url: `${getBaseUrl()}/order-history?orderId=${orderId}`,
+        clickAction: "view_order",
+        status: "created",
+      });
+
+      await notifyAdminsByRoleAction({
+        type: "order",
+        title: "📦 New Order Received",
+        body: `${clientUser.displayName ?? "A customer"} from ${clientUser.firmName ?? "a firm"} placed order #${orderId}`,
         url: `${getBaseUrl()}/order-history?orderId=${orderId}`,
         clickAction: "view_order",
         status: "created",

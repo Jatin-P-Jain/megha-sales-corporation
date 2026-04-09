@@ -1,7 +1,21 @@
 // app/api/orders/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createWhatsAppPayloadFromInput } from "../../../../whatsappTemplates";
-import { recipientsForTemplate } from "./whatsappRecipients";
+import {
+  recipientsForTemplate,
+  TEST_PHONE_NUMBERS,
+} from "./whatsappRecipients";
+
+const WA_DEV_REDIRECT = "+919636245681";
+
+/** Returns true when the phone (any normalisation) matches a known test number. */
+function isTestPhone(phone: unknown): boolean {
+  if (!isString(phone)) return false;
+  const digits = phone.replace(/[^\d]/g, "");
+  // Match last 10 digits against the test set (handles +91XXXXXXXXXX, 91XXXXXXXXXX, XXXXXXXXXX)
+  const last10 = digits.slice(-10);
+  return TEST_PHONE_NUMBERS.has(last10);
+}
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -148,9 +162,18 @@ export async function POST(req: NextRequest) {
       ? toNumbers.filter(isString)
       : [];
 
-    const allRecipientPhones = Array.from(
-      new Set([...roleRecipients.map((r) => r.phoneE164), ...extraRecipients])
-    );
+    // If the triggering customer's phone is a test number, redirect ALL
+    // WhatsApp messages to the dev number to avoid spamming real staff.
+    const customerPhoneIsTest = isTestPhone(customerPhone);
+
+    const allRecipientPhones: string[] = customerPhoneIsTest
+      ? [WA_DEV_REDIRECT]
+      : Array.from(
+          new Set([
+            ...roleRecipients.map((r) => r.phoneE164),
+            ...extraRecipients,
+          ])
+        );
 
     if (allRecipientPhones.length === 0) {
       return NextResponse.json(

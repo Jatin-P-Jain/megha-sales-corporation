@@ -3,6 +3,18 @@ import { fireStore } from "@/firebase/server";
 
 export type AdminRole = "admin" | "accountant" | "dispatcher";
 
+/**
+ * Test phone numbers (10-digit, without country code).
+ * When the triggering customer's phone matches any of these, WhatsApp
+ * messages are redirected to the dev/fallback number instead of the
+ * full staff list – prevents noise during testing.
+ */
+export const TEST_PHONE_NUMBERS: ReadonlySet<string> = new Set([
+  "9636245672",
+  "9636245673",
+  "9479201388",
+]);
+
 export type AdminRecipient = {
   id: string;
   name: string;

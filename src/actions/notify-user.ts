@@ -79,3 +79,33 @@ export async function notifyAdminsAction(input: NotifyAdminsActionInput) {
     )
   );
 }
+
+/**
+ * Notifies all staff users (admin, dispatcher, accountant) by querying
+ * the userGate collection for their role, then sending in-app + push
+ * notifications to each one.
+ */
+export async function notifyAdminsByRoleAction(input: NotifyAdminsActionInput) {
+  try {
+    const staffRoles = ["admin", "dispatcher", "accountant"];
+
+    const snapshot = await fireStore
+      .collection("userGate")
+      .where("userRole", "in", staffRoles)
+      .get();
+
+    if (snapshot.empty) return;
+
+    const { pushOnly, ...rest } = input;
+
+    await Promise.allSettled(
+      snapshot.docs.map((doc) =>
+        pushOnly
+          ? sendUserPushNotification({ uid: doc.id, ...rest })
+          : notifyUser({ uid: doc.id, ...rest })
+      )
+    );
+  } catch (err) {
+    console.error("[notifyAdminsByRoleAction] Failed:", err);
+  }
+}

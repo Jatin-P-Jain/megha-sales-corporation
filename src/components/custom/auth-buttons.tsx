@@ -238,7 +238,24 @@ export default function AuthButtons() {
               </Avatar>
 
               {unreadNotifications > 0 && (
-                <BellRing className="absolute -top-1 -right-1 inline-flex h-4 w-4 animate-pulse rounded-full bg-red-600 p-0.5" />
+                <span
+                  className={clsx(
+                    "absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-red-600 text-white",
+                    isAdmin
+                      ? "h-4 min-w-4 px-0.5 text-[9px] font-bold"
+                      : "h-4 w-4 animate-pulse",
+                  )}
+                >
+                  {isAdmin ? (
+                    unreadNotifications > 99 ? (
+                      "99+"
+                    ) : (
+                      unreadNotifications
+                    )
+                  ) : (
+                    <BellRing className="h-3 w-3 p-0" />
+                  )}
+                </span>
               )}
 
               {isAdmin &&
@@ -351,28 +368,24 @@ export default function AuthButtons() {
                 )}
             </DropdownMenuLabel>
 
-            {!isAdmin && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onSelect={() => {
-                    setIsMenuOpen(false);
-                    setIsNotificationsOpen(true);
-                  }}
-                  className="flex w-full items-center justify-between"
-                >
-                  <div className="flex items-center justify-start gap-2">
-                    Notification Center
-                    {unreadNotifications > 0 && (
-                      <span className="rounded-full bg-red-600 px-1.5 text-sm font-semibold text-white">
-                        {unreadNotifications > 99 ? "99+" : unreadNotifications}
-                      </span>
-                    )}
-                  </div>
-                  <BellRing className="text-secondary-foreground size-4" />
-                </DropdownMenuItem>
-              </>
-            )}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onSelect={() => {
+                setIsMenuOpen(false);
+                setIsNotificationsOpen(true);
+              }}
+              className="flex w-full items-center justify-between"
+            >
+              <div className="flex items-center justify-start gap-2">
+                Notification Center
+                {unreadNotifications > 0 && (
+                  <span className="rounded-full bg-red-600 px-1.5 text-sm font-semibold text-white">
+                    {unreadNotifications > 99 ? "99+" : unreadNotifications}
+                  </span>
+                )}
+              </div>
+              <BellRing className="text-secondary-foreground size-4" />
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
 
             <DropdownMenuItem asChild>
