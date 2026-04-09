@@ -60,9 +60,9 @@ export async function sendUserPushNotification({
       title,
       body,
       type: type || "system",
-      url: url || "BROKEN_URL",
-      click_action: clickAction || "DEFAULT_CLICK_ACTION",
-      status: status || "NA",
+      url: url || "/",
+      click_action: clickAction || "open",
+      status: status || "na",
     },
     tokens,
   };

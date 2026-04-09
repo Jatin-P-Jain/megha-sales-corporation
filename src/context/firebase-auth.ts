@@ -7,7 +7,8 @@ import {
   ConfirmationResult,
   User,
 } from "firebase/auth";
-import { auth } from "@/firebase/client";
+import { collection, getDocs, deleteDoc } from "firebase/firestore";
+import { auth, firestore } from "@/firebase/client";
 import { removeToken, setToken } from "./actions";
 
 export const loginWithGoogle = async (): Promise<User | undefined> => {
@@ -94,6 +95,17 @@ export const verifyOTP = async (
 };
 
 export const logoutUser = async () => {
+  const currentUser = auth.currentUser;
+  if (currentUser?.uid) {
+    try {
+      const tokenSnap = await getDocs(
+        collection(firestore, "users", currentUser.uid, "fcmTokens")
+      );
+      await Promise.all(tokenSnap.docs.map((d) => deleteDoc(d.ref)));
+    } catch {
+      // Best-effort — don't block logout if token cleanup fails
+    }
+  }
   await auth.signOut();
   await removeToken();
 };

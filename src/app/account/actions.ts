@@ -2,7 +2,7 @@
 import { auth, fireStore } from "@/firebase/server";
 import { notifyUser } from "@/lib/firebase/notifyUser";
 import imageUrlFormatter from "@/lib/image-urlFormatter";
-import { AccountStatus } from "@/types/userGate";
+import { AccountStatus, UserRole } from "@/types/userGate";
 import { cookies } from "next/headers";
 import { addAccountTimelineEvent } from "@/lib/firebase/addAccountTimelineEvent";
 
@@ -207,3 +207,100 @@ export const deleteUserData = async ({ userId }: { userId: string }) => {
     console.log("Error while deleting user data-- ", { error });
   }
 };
+
+export async function updateUserRole({
+  targetUserId,
+  userRole,
+}: {
+  targetUserId: string;
+  userRole: UserRole;
+}) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("firebaseAuthToken")?.value;
+  if (!token) throw new Error("Unauthorized");
+
+  const decodedToken = await auth.verifyIdToken(token);
+
+  // Only full admins (userRole === "admin" with no sub-role, i.e. env admins) can assign roles
+  const callerUserRole = decodedToken.userRole as string | undefined;
+  const isFullAdmin =
+    decodedToken.admin && (!callerUserRole || callerUserRole === "admin");
+  if (!isFullAdmin)
+    throw new Error("Unauthorized: Only admins can assign roles");
+
+  const isStaff = userRole !== "customer";
+
+  // Build Firestore update — userRole is the single source of truth
+  const updateData: Record<string, unknown> = {
+    userRole,
+    updatedAt: new Date(),
+  };
+
+  if (isStaff) {
+    // All staff get auto-approved so they can log into the dashboard
+    updateData.accountStatus = "approved";
+    updateData.profileComplete = true;
+  }
+
+  const batch = fireStore.batch();
+  batch.set(fireStore.collection("users").doc(targetUserId), updateData, {
+    merge: true,
+  });
+  batch.set(fireStore.collection("userGate").doc(targetUserId), updateData, {
+    merge: true,
+  });
+  await batch.commit();
+
+  // Sync Firebase Auth custom claims
+  const targetRecord = await auth.getUser(targetUserId);
+  const existingClaims = (targetRecord.customClaims ?? {}) as Record<
+    string,
+    unknown
+  >;
+
+  if (isStaff) {
+    await auth.setCustomUserClaims(targetUserId, {
+      ...existingClaims,
+      admin: true,
+      userRole,
+    });
+  } else {
+    // Reverting to customer — remove admin claim unless they're an env admin
+    const adminEmails = process.env.ADMIN_EMAILS?.split(",") ?? [];
+    const adminPhones = process.env.ADMIN_PHONES?.split(",") ?? [];
+    const isEnvAdmin =
+      (targetRecord.email && adminEmails.includes(targetRecord.email)) ||
+      (targetRecord.phoneNumber &&
+        adminPhones.includes(targetRecord.phoneNumber));
+
+    const { userRole: _r, ...restClaims } = existingClaims;
+    if (isEnvAdmin) {
+      await auth.setCustomUserClaims(targetUserId, {
+        ...restClaims,
+        admin: true,
+      });
+    } else {
+      const { admin: _a, ...noClaims } = restClaims;
+      await auth.setCustomUserClaims(targetUserId, noClaims);
+    }
+  }
+
+  await addAccountTimelineEvent({
+    uid: targetUserId,
+    type: "role_assigned",
+    label: "Role updated",
+    detail: userRole,
+  });
+
+  await notifyUser({
+    uid: targetUserId,
+    type: "account",
+    title: "🛡️ Role Updated",
+    body: `Your account role has been updated to ${userRole}.`,
+    url: "/account",
+    clickAction: "view_account",
+    source: "admin",
+  });
+
+  return { success: true };
+}

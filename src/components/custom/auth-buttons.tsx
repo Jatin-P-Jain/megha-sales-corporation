@@ -20,7 +20,6 @@ import {
   LogInIcon,
   LogOutIcon,
   MessageCircleQuestionIcon,
-  NotebookTextIcon,
   ShieldUserIcon,
   ShoppingCartIcon,
   TagsIcon,
@@ -32,6 +31,9 @@ import {
   UserX,
   Clock,
   AlertCircle,
+  Shield,
+  UserPen,
+  Truck,
 } from "lucide-react";
 import { usePwaPrompt } from "@/hooks/usePwaPrompt";
 import clsx from "clsx";
@@ -147,7 +149,7 @@ export default function AuthButtons() {
 
   const { currentUser, isAdmin, isLoggingOut } = useAuthState();
   const { logout } = useAuthActions();
-  const { profileComplete, accountStatus } = useUserGate();
+  const { profileComplete, accountStatus, userRole } = useUserGate();
   useRequireUserProfile(true);
   const { clientUser, clientUserLoading } = useUserProfileState();
   const { unreadCount: unreadNotifications } = useRealtimeNotifications({
@@ -239,11 +241,33 @@ export default function AuthButtons() {
                 <BellRing className="absolute -top-1 -right-1 inline-flex h-4 w-4 animate-pulse rounded-full bg-red-600 p-0.5" />
               )}
 
-              {isAdmin && (
-                <div className="bottom-0 rounded-sm bg-green-100 px-1 text-[8px] font-semibold text-green-700">
-                  Admin
-                </div>
-              )}
+              {isAdmin &&
+                (() => {
+                  const role = userRole ?? "admin";
+                  const Icon =
+                    role === "accountant"
+                      ? UserPen
+                      : role === "dispatcher"
+                        ? Truck
+                        : Shield;
+                  const bg =
+                    role === "accountant"
+                      ? "bg-violet-700"
+                      : role === "dispatcher"
+                        ? "bg-amber-600"
+                        : "bg-sky-900";
+                  return (
+                    <span
+                      className={clsx(
+                        "bottom-0 flex items-center gap-0.5 rounded-sm px-1 text-[8px] font-semibold text-white",
+                        bg,
+                      )}
+                    >
+                      <Icon className="size-2.5" />
+                      {toTitleCase(role)}
+                    </span>
+                  );
+                })()}
             </button>
           </DropdownMenuTrigger>
 
@@ -281,11 +305,33 @@ export default function AuthButtons() {
                 </span>
               )}
 
-              {isAdmin && (
-                <span className="w-fit rounded-full bg-green-50 px-2 py-0.5 text-xs font-semibold text-green-700">
-                  Admin Account
-                </span>
-              )}
+              {isAdmin &&
+                (() => {
+                  const role = userRole ?? "admin";
+                  const Icon =
+                    role === "accountant"
+                      ? UserPen
+                      : role === "dispatcher"
+                        ? Truck
+                        : Shield;
+                  const bg =
+                    role === "accountant"
+                      ? "bg-violet-700"
+                      : role === "dispatcher"
+                        ? "bg-amber-600"
+                        : "bg-sky-900";
+                  return (
+                    <Badge
+                      className={clsx(
+                        "w-fit gap-1 border border-white font-medium text-white shadow-sm",
+                        bg,
+                      )}
+                    >
+                      <Icon className="size-3" />
+                      {toTitleCase(role)}
+                    </Badge>
+                  );
+                })()}
 
               {profileComplete &&
                 !isAdmin &&
@@ -346,17 +392,8 @@ export default function AuthButtons() {
                     href="/admin-dashboard"
                     className="flex items-center justify-between"
                   >
-                    Admin Dashboard
+                    Dashboard
                     <ShieldUserIcon className="text-secondary-foreground" />
-                  </SafeLink>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <SafeLink
-                    href="/order-history"
-                    className="flex items-center justify-between"
-                  >
-                    Order Book
-                    <NotebookTextIcon className="text-secondary-foreground" />
                   </SafeLink>
                 </DropdownMenuItem>
 

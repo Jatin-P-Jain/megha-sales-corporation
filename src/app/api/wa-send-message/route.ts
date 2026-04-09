@@ -142,7 +142,7 @@ export async function POST(req: NextRequest) {
     const phoneNumberId = requireEnv("WHATSAPP_PHONE_NUMBER_ID");
     const token = requireEnv("WHATSAPP_TOKEN");
 
-    const roleRecipients = recipientsForTemplate(templateKey);
+    const roleRecipients = await recipientsForTemplate(templateKey);
 
     const extraRecipients = Array.isArray(toNumbers)
       ? toNumbers.filter(isString)

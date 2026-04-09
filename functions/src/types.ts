@@ -7,7 +7,7 @@ export type AccountStatus =
   | "rejected"
   | "suspended"
   | "deactivated";
-export type UserRole = "admin" | "customer";
+export type UserRole = "admin" | "customer" | "dispatcher" | "accountant";
 
 export interface UserData {
   uid: string;

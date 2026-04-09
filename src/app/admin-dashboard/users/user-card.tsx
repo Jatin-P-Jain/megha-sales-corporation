@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { auth as firebaseAuth } from "@/firebase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +15,7 @@ import {
   User,
   Building2,
   Shield,
+  ShieldCheck,
   CopyIcon,
   AlertTriangle,
   FileText,
@@ -25,6 +27,8 @@ import {
   TriangleAlert,
   UserCheck2,
   ContactRound,
+  UserPen,
+  Truck,
 } from "lucide-react";
 import { FullUser } from "@/types/user";
 import { toast } from "sonner";
@@ -41,6 +45,8 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import clsx from "clsx";
 import { updateUserAccountStatus } from "@/app/account/actions";
+import { updateUserRole } from "@/app/account/actions";
+import type { UserRole } from "@/types/userGate";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -64,13 +70,18 @@ import DefaultUserIcon from "@/assets/icons/user.png";
 
 interface UserCardProps {
   user: FullUser;
+  canAssignRoles?: boolean;
   onStatusUpdate?: () => void;
 }
 
-export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
+export default function UserCard({
+  user,
+  canAssignRoles = false,
+  onStatusUpdate,
+}: UserCardProps) {
   // Widen status to allow extra states like "revoked" / "deleted" without TS narrowing issues.
   const accountStatus = (user.accountStatus ?? "pending") as string;
-  const isAdmin = user.userRole === "admin";
+  const isAdmin = user.userRole !== "customer";
   const profileComplete = !!user.profileComplete;
 
   const [isApproving, setIsApproving] = useState(false);
@@ -85,6 +96,12 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+
+  const [showRoleDialog, setShowRoleDialog] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<UserRole>(
+    user.userRole ?? "customer",
+  );
+  const [isAssigningRole, setIsAssigningRole] = useState(false);
 
   const handleApprove = async () => {
     setIsApproving(true);
@@ -176,7 +193,6 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
     }
   };
 
-  // Soft delete: set status to "deactivated". Ensure your backend supports this status.
   const handleSoftDelete = async () => {
     setIsDeleting(true);
     try {
@@ -205,7 +221,35 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
     }
   };
 
-  const getStatusBadge = () => {
+  const handleAssignRole = async () => {
+    setIsAssigningRole(true);
+    try {
+      await updateUserRole({
+        targetUserId: user.uid,
+        userRole: selectedRole,
+      });
+      // If the admin updated their own role, force-refresh their JWT so the new
+      // claims are reflected immediately in server components and middleware.
+      if (firebaseAuth.currentUser?.uid === user.uid) {
+        await firebaseAuth.currentUser.getIdToken(true);
+      }
+      toast.success("Role updated", {
+        description: `${user.displayName || "User"}'s role has been updated to ${selectedRole}. They'll see server-side changes after re-login.`,
+      });
+      setShowRoleDialog(false);
+      onStatusUpdate?.();
+    } catch (error) {
+      console.error("Error assigning role:", error);
+      toast.error("Failed to update role", {
+        description:
+          error instanceof Error ? error.message : "Please try again.",
+      });
+    } finally {
+      setIsAssigningRole(false);
+    }
+  };
+
+  const getStatusBadge = (showPending: boolean) => {
     switch (accountStatus) {
       case "approved":
         return (
@@ -236,12 +280,12 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
           </Badge>
         );
       default:
-        return (
-          <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-200">
+        return showPending ? (
+          <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">
             <Clock className="h-3 w-3" />
             Pending
           </Badge>
-        );
+        ) : null;
     }
   };
 
@@ -259,7 +303,8 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
     toast.success(`${label} copied to clipboard!`);
   };
 
-  const canShowActions = !isAdmin && accountStatus !== "deactivated";
+  const canShowActions =
+    !isAdmin && accountStatus !== "deactivated" && profileComplete;
   const showPrimaryApprove =
     canShowActions &&
     (accountStatus === "pending" ||
@@ -274,7 +319,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
         <CardHeader className="bg-primary/10 gap-0 p-2">
           <div className="flex flex-col items-start justify-between gap-2 md:flex-row md:items-center">
             <div className="flex w-full items-center gap-2">
-              <Avatar className="h-12 w-12 border-2 border-white shadow-md">
+              <Avatar className="size-10 border-2 border-white shadow-md">
                 {user.photoUrl ? (
                   <AvatarFallback className="bg-transparent p-0">
                     <Image
@@ -301,19 +346,38 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
 
               <div className="flex w-full flex-1 items-center justify-between gap-1">
                 <div className="flex w-full flex-col gap-1">
-                  <CardTitle className="flex items-center gap-2 md:text-lg">
+                  <CardTitle className="flex items-center justify-between gap-2 md:text-lg">
                     {user.displayName || "Unnamed User"}
                     {isAdmin && (
-                      <Badge variant="default" className="bg-sky-900">
-                        <Shield className="h-3 w-3" />
-                        <span className="inline-flex text-[10px]">Admin</span>
+                      <Badge
+                        variant="default"
+                        className={clsx(
+                          "border border-white py-1.5 font-medium shadow-md",
+                          user.userRole === "accountant"
+                            ? "bg-olive-600"
+                            : user.userRole === "dispatcher"
+                              ? "bg-amber-700"
+                              : "bg-sky-900",
+                        )}
+                      >
+                        {user.userRole === "accountant" ? (
+                          <UserPen className="size-4" />
+                        ) : user.userRole === "dispatcher" ? (
+                          <Truck className="size-4" />
+                        ) : (
+                          <Shield className="size-4" />
+                        )}
+                        <span className="inline-flex text-[10px]">
+                          {user.userRole.charAt(0).toUpperCase() +
+                            user.userRole.slice(1)}
+                        </span>
                       </Badge>
                     )}
                   </CardTitle>
 
                   {!isAdmin && (
                     <div className="flex flex-wrap items-center gap-1">
-                      {getStatusBadge()}
+                      {getStatusBadge(false)}
                       {!profileComplete && (
                         <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
                           <TriangleAlert className="h-3 w-3" />
@@ -341,6 +405,22 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                   <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuLabel>Account actions</DropdownMenuLabel>
                     <DropdownMenuSeparator />
+
+                    {/* Role assignment — only for full admins */}
+                    {canAssignRoles && (
+                      <>
+                        <DropdownMenuItem
+                          onSelect={() => {
+                            setSelectedRole(user.userRole ?? "customer");
+                            setShowRoleDialog(true);
+                          }}
+                        >
+                          <ShieldCheck className="h-4 w-4" />
+                          Assign Role
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                      </>
+                    )}
 
                     {/* Reject (only relevant for pending) */}
                     {accountStatus === "pending" && (
@@ -480,12 +560,12 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                 <span>Profile Status:</span>
               </div>
               {profileComplete ? (
-                <div className="text-green-700 flex items-center gap-2 text-sm font-medium">
+                <div className="flex items-center gap-2 text-sm font-medium text-green-700">
                   <UserCheck2 className="size-4" />
                   Complete
                 </div>
               ) : (
-                <div className="text-yellow-800 flex items-center gap-2 text-sm font-medium">
+                <div className="flex items-center gap-2 text-sm font-medium text-yellow-800">
                   <TriangleAlert className="size-4" />
                   Incomplete
                 </div>
@@ -581,7 +661,7 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
                   <Clock className="h-4 w-4" />
                   <span>Account Status:</span>
                 </div>
-                {getStatusBadge()}
+                {getStatusBadge(true)}
               </div>
             )}
 
@@ -816,6 +896,96 @@ export default function UserCard({ user, onStatusUpdate }: UserCardProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Role Assignment Dialog */}
+      <Dialog open={showRoleDialog} onOpenChange={setShowRoleDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Assign Staff Role</DialogTitle>
+            <DialogDescription>
+              Set a staff role for{" "}
+              <strong>{user.displayName || "this user"}</strong>. Staff roles
+              grant access to the admin dashboard.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2 py-2">
+            {(
+              [
+                {
+                  value: "customer" as const,
+                  label: "No special role",
+                  desc: "Regular customer account. No dashboard access.",
+                },
+                {
+                  value: "admin" as const,
+                  label: "Admin",
+                  desc: "Full dashboard access — all sections.",
+                },
+                {
+                  value: "dispatcher" as const,
+                  label: "Dispatcher",
+                  desc: "Order Book access only.",
+                },
+                {
+                  value: "accountant" as const,
+                  label: "Accountant",
+                  desc: "Order Book + Brands Management.",
+                },
+              ] satisfies { value: UserRole; label: string; desc: string }[]
+            ).map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setSelectedRole(option.value)}
+                className={clsx(
+                  "flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-colors",
+                  selectedRole === option.value
+                    ? "border-primary bg-primary/5"
+                    : "hover:bg-gray-50",
+                )}
+              >
+                <div
+                  className={clsx(
+                    "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2",
+                    selectedRole === option.value
+                      ? "border-primary"
+                      : "border-gray-300",
+                  )}
+                >
+                  {selectedRole === option.value && (
+                    <div className="bg-primary h-2 w-2 rounded-full" />
+                  )}
+                </div>
+                <div>
+                  <p className="text-sm font-medium">{option.label}</p>
+                  <p className="text-muted-foreground text-xs">{option.desc}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowRoleDialog(false)}
+              disabled={isAssigningRole}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleAssignRole} disabled={isAssigningRole}>
+              {isAssigningRole ? (
+                <>
+                  <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  Updating...
+                </>
+              ) : (
+                "Update Role"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

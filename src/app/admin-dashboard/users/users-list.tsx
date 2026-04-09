@@ -21,7 +21,11 @@ import { useSafeRouter } from "@/hooks/useSafeRouter";
 
 type SearchField = "email" | "phone" | "userId" | "firmName";
 
-export default function UsersList() {
+export default function UsersList({
+  canAssignRoles = false,
+}: {
+  canAssignRoles?: boolean;
+}) {
   const PAGE_SIZE = process.env.NEXT_PUBLIC_PAGE_SIZE
     ? parseInt(process.env.NEXT_PUBLIC_PAGE_SIZE)
     : 10;
@@ -228,6 +232,7 @@ export default function UsersList() {
               <UserCard
                 key={index}
                 user={user}
+                canAssignRoles={canAssignRoles}
                 onStatusUpdate={() => loadPage(currentPage)}
               />
             ))}

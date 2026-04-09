@@ -23,6 +23,9 @@ import {
   PlusCircle,
   Eye,
   ChevronDown,
+  Shield,
+  UserPen,
+  Truck,
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -48,7 +51,8 @@ import DefaultUserIcon from "@/assets/icons/user.png";
 import type { BusinessProfile, UserData } from "@/types/user";
 
 import FirebaseAuthMethods from "./firebase-auth-methods";
-import { AccountStatus } from "@/types/userGate";
+import type { AccountStatus } from "@/types/userGate";
+import type { UserRole } from "@/types/userGate";
 import CropperModal from "@/components/custom/cropper-modal";
 import {
   EditNameDialog,
@@ -241,6 +245,7 @@ function AccountViewInner({
   clientUser,
   profileComplete,
   isAdmin,
+  userRole,
   accountStatus,
   rejectionReason,
   photo,
@@ -262,6 +267,7 @@ function AccountViewInner({
   clientUser: UserData;
   profileComplete: boolean | null;
   isAdmin: boolean;
+  userRole?: UserRole | null;
   accountStatus: AccountStatus | null;
   rejectionReason?: string | null;
   photo: string;
@@ -406,18 +412,47 @@ function AccountViewInner({
         </CardHeader>
 
         <CardContent className="flex flex-col gap-4 p-0">
-          {isAdmin ? (
-            <div className="rounded-md bg-green-100 p-2 px-4 text-center text-sm text-green-700">
-              You are an <span className="font-semibold">Admin</span> — manage
-              everything!
-            </div>
-          ) : // <div className="bg-muted text-muted-foreground flex flex-col items-center justify-center rounded-md p-2 text-sm">
-          //   You have user access under role:
-          //   <span className="text-primary text-lg font-semibold first-letter:uppercase">
-          //     {userRole || "GUEST"}
-          //   </span>
-          // </div>
-          null}
+          {isAdmin
+            ? (() => {
+                const role = userRole ?? "admin";
+                const Icon =
+                  role === "accountant"
+                    ? UserPen
+                    : role === "dispatcher"
+                      ? Truck
+                      : Shield;
+                const bg =
+                  role === "accountant"
+                    ? "bg-violet-700"
+                    : role === "dispatcher"
+                      ? "bg-amber-600"
+                      : "bg-sky-900";
+                const desc =
+                  role === "admin"
+                    ? "Full dashboard access — all sections."
+                    : role === "dispatcher"
+                      ? "Dashboard access: Order Book."
+                      : "Dashboard access: Brand Catalogue + Order Book.";
+                return (
+                  <div className="flex items-center justify-center gap-3 rounded-md border border-white/20 bg-slate-800 p-3 text-white shadow-sm">
+                    <div
+                      className={clsx(
+                        "flex items-center justify-center rounded-full p-2",
+                        bg,
+                      )}
+                    >
+                      <Icon className="size-5" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold capitalize">
+                        {role} Account
+                      </span>
+                      <span className="text-xs text-slate-300">{desc}</span>
+                    </div>
+                  </div>
+                );
+              })()
+            : null}
 
           {!profileComplete && !isAdmin && (
             <Alert className="flex items-center justify-center border-yellow-200 bg-yellow-50">

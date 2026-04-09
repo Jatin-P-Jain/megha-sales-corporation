@@ -13,6 +13,7 @@ import {
   UserRoundMinus,
   UserRoundPlus,
   Link,
+  ShieldEllipsis,
 } from "lucide-react";
 import type {
   AccountTimelineEventType,
@@ -79,6 +80,11 @@ const eventConfig: Record<
     icon: ShieldOff,
     color: "text-zinc-500",
     bg: "bg-zinc-100",
+  },
+  role_assigned: {
+    icon: ShieldEllipsis,
+    color: "text-sky-700",
+    bg: "bg-sky-50",
   },
 };
 

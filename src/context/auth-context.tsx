@@ -105,7 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const tokenResult = await user.getIdTokenResult(false);
         setIsAdmin(!!tokenResult.claims.admin);
-        setUserRole((tokenResult.claims.role as string) ?? "Customer");
+        setUserRole((tokenResult.claims.userRole as string) ?? "customer");
       } catch (e) {
         console.error("getIdTokenResult failed", e);
         setIsAdmin(false);

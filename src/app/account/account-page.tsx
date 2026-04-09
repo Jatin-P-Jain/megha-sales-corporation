@@ -35,7 +35,8 @@ export default function AccountPage() {
   const { currentUser, isAdmin } = useAuthState();
   const { refreshUser } = useUserProfileActions();
   const { clientUser, clientUserLoading } = useUserProfileState();
-  const { accountStatus, rejectionReason, profileComplete } = useUserGate();
+  const { accountStatus, rejectionReason, profileComplete, userRole } =
+    useUserGate();
 
   const [uploading, setUploading] = useState(false);
   const [uploadPercent, setUploadPercent] = useState<number>(0);
@@ -81,23 +82,20 @@ export default function AccountPage() {
     }
   }, []);
 
-  const onPhotoChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      if (!file) return;
-      // Reset input so the same file can be re-selected after cancel
-      event.target.value = "";
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target?.result) {
-          setCropSrc(e.target.result as string);
-          setCropOpen(true);
-        }
-      };
-      reader.readAsDataURL(file);
-    },
-    [],
-  );
+  const onPhotoChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    // Reset input so the same file can be re-selected after cancel
+    event.target.value = "";
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (e.target?.result) {
+        setCropSrc(e.target.result as string);
+        setCropOpen(true);
+      }
+    };
+    reader.readAsDataURL(file);
+  }, []);
 
   const onSaveName = useCallback(
     async (name: string) => {
@@ -194,6 +192,7 @@ export default function AccountPage() {
       clientUser={clientUser}
       profileComplete={profileComplete}
       isAdmin={!!isAdmin}
+      userRole={userRole}
       accountStatus={accountStatus}
       rejectionReason={rejectionReason}
       photo={photo}

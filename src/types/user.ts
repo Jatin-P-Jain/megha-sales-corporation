@@ -103,7 +103,8 @@ export type AccountTimelineEventType =
   | "account_approved"
   | "account_rejected"
   | "account_suspended"
-  | "account_deactivated";
+  | "account_deactivated"
+  | "role_assigned";
 
 export type AccountTimelineEvent = {
   id: string;
