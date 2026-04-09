@@ -1,7 +1,7 @@
 // whatsappRecipients.ts
 import { fireStore } from "@/firebase/server";
 
-export type AdminRole = "owner" | "accountant" | "support" | "dispatcher";
+export type AdminRole = "admin" | "accountant" | "dispatcher";
 
 export type AdminRecipient = {
   id: string;
@@ -16,7 +16,7 @@ export const ADMIN_RECIPIENTS: AdminRecipient[] = [
     id: "jatin",
     name: "Jatin",
     phoneE164: "+919636245681",
-    roles: ["owner", "support"],
+    roles: ["admin"],
   },
 ];
 
@@ -29,28 +29,38 @@ export const TEMPLATE_ROLES: Record<
   | "feedback_received_to_admin",
   AdminRole[]
 > = {
-  account_approval_request_to_admin: ["owner", "support"],
-  account_approval_reminder_to_admin: ["owner", "support"],
-  order_placed_to_admin_v2: ["owner", "support", "dispatcher"],
-  enquiry_received_to_admin_v2: ["owner", "support"],
-  feedback_received_to_admin: ["owner", "support"],
+  account_approval_request_to_admin: ["admin"],
+  account_approval_reminder_to_admin: ["admin"],
+  order_placed_to_admin_v2: ["admin", "dispatcher", "accountant"],
+  enquiry_received_to_admin_v2: ["admin"],
+  feedback_received_to_admin: ["admin"],
 };
 
 // Maps the AdminRole filter → which Firestore userRoles should receive it
 const ADMIN_ROLE_TO_USER_ROLE: Record<AdminRole, string[]> = {
-  owner: ["admin"],
-  support: ["admin"],
+  admin: ["admin"],
   dispatcher: ["dispatcher"],
   accountant: ["accountant"],
 };
 
 function formatPhoneE164(phone: string): string {
-  const digits = phone.replace(/[^\d]/g, "");
-  // If the number starts with 0, replace with country code (India default)
+  const cleaned = phone.trim();
+
+  // Already valid E.164 Indian number — pass through untouched
+  if (/^\+91\d{10}$/.test(cleaned)) return cleaned;
+
+  const digits = cleaned.replace(/[^\d]/g, "");
+
+  // International dialing prefix "00" (e.g. 00919876543210)
+  if (digits.startsWith("0091")) return `+91${digits.slice(4)}`;
+
+  // Local trunk prefix "0" (e.g. 09876543210)
   if (digits.startsWith("0")) return `+91${digits.slice(1)}`;
-  // If already has country code (10+ digits without leading +)
-  if (digits.length > 10) return `+${digits}`;
-  // Assume India mobile
+
+  // Already includes India country code (91 + 10 digits = 12)
+  if (digits.startsWith("91") && digits.length === 12) return `+${digits}`;
+
+  // Standard 10-digit Indian mobile
   return `+91${digits}`;
 }
 
@@ -100,7 +110,7 @@ export async function recipientsForTemplate(
             ? ["dispatcher"]
             : userRole === "accountant"
             ? ["accountant"]
-            : ["owner", "support"];
+            : ["admin"];
 
         return {
           id: d.id,

@@ -54,6 +54,19 @@ export default function Orders({
       });
     }
 
+    // Notify all relevant staff via WhatsApp (admin + dispatcher + accountant)
+    void fetch("/api/wa-send-message", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        templateKey: "order_placed_to_admin_v2",
+        orderId: order.id,
+        customerFirmName: order.user?.firmName ?? order.user?.displayName ?? "",
+        customerName: order.user?.displayName ?? "",
+        customerPhone: order.user?.phone ?? "",
+      }),
+    });
+
     await notifyUserAction({
       uid: order.user?.uid,
       type: "order",
