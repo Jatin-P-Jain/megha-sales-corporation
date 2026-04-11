@@ -379,7 +379,7 @@ export default function AuthButtons() {
               <div className="flex items-center justify-start gap-2">
                 Notification Center
                 {unreadNotifications > 0 && (
-                  <span className="rounded-full bg-red-600 px-1.5 text-sm font-semibold text-white">
+                  <span className="rounded-full bg-red-600 px-1.5 text-xs font-semibold text-white">
                     {unreadNotifications > 99 ? "99+" : unreadNotifications}
                   </span>
                 )}

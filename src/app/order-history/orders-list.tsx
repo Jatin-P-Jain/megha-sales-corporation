@@ -1,9 +1,7 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { OrderStatus } from "@/types/order";
 import Orders from "./orders";
-import { PAGE_SIZE } from "@/lib/utils";
 import {
   Pagination,
   PaginationContent,
@@ -18,21 +16,22 @@ import { useEffect, useMemo, useRef } from "react";
 import { usePaginatedFirestore } from "@/hooks/usePaginatedFireStore";
 import type { Order } from "@/types/order";
 import { useSafeRouter } from "@/hooks/useSafeRouter";
+import { PackageSearch } from "lucide-react";
 
 function OrdersSkeleton() {
   return (
-    <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col gap-4">
+    <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
       {[...Array(6)].map((_, i) => (
         <div
           key={i}
-          className="animate-pulse rounded-xl border bg-white p-4 shadow-sm"
+          className="animate-pulse rounded-2xl border bg-white p-4 shadow-sm"
         >
-          <div className="h-4 w-2/3 rounded bg-zinc-200" />
-          <div className="mt-3 h-3 w-1/2 rounded bg-zinc-200" />
-          <div className="mt-5 grid grid-cols-3 gap-3">
-            <div className="h-8 rounded bg-zinc-200" />
-            <div className="h-8 rounded bg-zinc-200" />
-            <div className="h-8 rounded bg-zinc-200" />
+          <div className="h-5 w-2/3 rounded bg-zinc-200" />
+          <div className="mt-3 h-3 w-1/3 rounded bg-zinc-200" />
+          <div className="mt-5 space-y-2">
+            <div className="h-4 w-full rounded bg-zinc-200" />
+            <div className="h-4 w-11/12 rounded bg-zinc-200" />
+            <div className="h-4 w-10/12 rounded bg-zinc-200" />
           </div>
         </div>
       ))}
@@ -43,17 +42,17 @@ function OrdersSkeleton() {
 export default function OrdersList({
   isAdmin,
   userId,
-  requestedOrderId,
 }: {
   isAdmin: boolean;
   userId?: string;
-  requestedOrderId?: string;
 }) {
+  const PAGE_SIZE = process.env.NEXT_PUBLIC_PAGE_SIZE
+    ? parseInt(process.env.NEXT_PUBLIC_PAGE_SIZE, 10)
+    : 10;
+
   const router = useSafeRouter();
   const searchParams = useSearchParams();
   const previousFiltersRef = useRef<string>("");
-
-  const showSingle = !!requestedOrderId;
 
   // Keep URL as the source of truth (same as ProductList)
   const pageRaw = parseInt(searchParams.get("page") || "1", 10);
@@ -94,11 +93,6 @@ export default function OrdersList({
       });
     }
 
-    // Optional single-order view (if you use this UX)
-    if (requestedOrderId) {
-      f.push({ field: "__name__", op: "==", value: requestedOrderId });
-    }
-
     // Status filter
     if (statuses.length > 0) {
       f.push({
@@ -109,7 +103,7 @@ export default function OrdersList({
     }
 
     return f;
-  }, [isAdmin, userId, requestedOrderId, statuses]);
+  }, [isAdmin, userId, statuses]);
 
   const {
     data,
@@ -158,17 +152,8 @@ export default function OrdersList({
   const handlePageChange = (nextPage: number) => {
     const sp = new URLSearchParams(searchParams.toString());
     sp.set("page", `${nextPage}`);
-    // when paging, don’t keep orderId pinned
-    sp.delete("orderId");
     router.replace(`/order-history?${sp.toString()}`);
   };
-
-  useEffect(() => {
-    if (!requestedOrderId && previousFiltersRef.current.includes("orderId")) {
-      previousFiltersRef.current = "";
-      loadPage(1); // Force reload ALL orders
-    }
-  }, [requestedOrderId, loadPage]);
 
   const start = (currentPage - 1) * PAGE_SIZE + 1;
   const end = Math.min(currentPage * PAGE_SIZE, totalItems);
@@ -180,122 +165,101 @@ export default function OrdersList({
 
   if (!loading && data.length === 0) {
     return (
-      <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 items-center justify-center">
-        <p className="text-muted-foreground">
-          {requestedOrderId
-            ? `No Order found with Order ID: ${requestedOrderId}`
-            : "You have no orders yet!"}
+      <div className="flex min-h-[calc(100vh-320px)] w-full flex-col items-center justify-center rounded-2xl px-4 text-center">
+        <div className="mb-3 rounded-full border p-3">
+          <PackageSearch className="text-muted-foreground h-6 w-6" />
+        </div>
+        <p className="text-foreground text-base font-semibold">No orders!</p>
+        <p className="text-muted-foreground text-sm">
+          Try changing status filters or check back after placing an order.
         </p>
       </div>
     );
   }
 
   return (
-    <div
-      className={clsx(
-        "relative mx-auto flex flex-col",
-        requestedOrderId && "-mt-10",
-      )}
-    >
-      {!requestedOrderId && (
-        <p className="text-muted-foreground w-full text-center text-xs md:text-sm">
-          Page {currentPage} • Showing {start}–{end} of {totalItems} results
-        </p>
-      )}
+    <div className="relative mx-auto flex w-full flex-col">
+      <p className="text-muted-foreground w-full text-center text-xs md:text-sm">
+        Page {currentPage} • Showing {start}-{end} of {totalItems} results
+      </p>
 
-      {data.length > 0 && (
-        <div
-          className={clsx(
-            "flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col gap-4 py-2",
-            requestedOrderId && "min-h-0!",
-          )}
-        >
-          <div className="flex w-full flex-1 grow flex-col gap-5 p-1">
-            <Orders orderData={data} isAdmin={isAdmin} />
-          </div>
+      <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col gap-4 py-2">
+        <div className="flex w-full flex-1 p-1">
+          <Orders orderData={data} isAdmin={isAdmin} />
+        </div>
 
-          {showSingle ? (
-            <Button
-              className="mx-auto w-fit"
-              onClick={() => router.push("/order-history")}
-            >
-              View all orders
-            </Button>
-          ) : totalPages > 1 ? (
-            <Pagination className="z-50">
-              <PaginationContent className="w-full items-center justify-center">
-                {currentPage > 1 && (
-                  <PaginationItem>
-                    <PaginationPrevious
-                      onClick={() => handlePageChange(currentPage - 1)}
-                    />
-                  </PaginationItem>
-                )}
+        {totalPages > 1 ? (
+          <Pagination className="z-50">
+            <PaginationContent className="w-full items-center justify-center">
+              {currentPage > 1 && (
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={() => handlePageChange(currentPage - 1)}
+                  />
+                </PaginationItem>
+              )}
 
-                {(() => {
-                  const pageLinks = [];
-                  const visiblePages = new Set<number>();
+              {(() => {
+                const pageLinks = [];
+                const visiblePages = new Set<number>();
 
-                  if (totalPages <= 7) {
-                    for (let i = 1; i <= totalPages; i++) visiblePages.add(i);
-                  } else {
-                    visiblePages.add(1);
-                    visiblePages.add(totalPages);
+                if (totalPages <= 7) {
+                  for (let i = 1; i <= totalPages; i++) visiblePages.add(i);
+                } else {
+                  visiblePages.add(1);
+                  visiblePages.add(totalPages);
 
-                    for (let i = currentPage - 2; i <= currentPage + 2; i++) {
-                      if (i > 1 && i < totalPages) visiblePages.add(i);
-                    }
+                  for (let i = currentPage - 2; i <= currentPage + 2; i++) {
+                    if (i > 1 && i < totalPages) visiblePages.add(i);
                   }
+                }
 
-                  let prev: number | null = null;
+                let prev: number | null = null;
 
-                  for (let i = 1; i <= totalPages; i++) {
-                    if (!visiblePages.has(i)) continue;
+                for (let i = 1; i <= totalPages; i++) {
+                  if (!visiblePages.has(i)) continue;
 
-                    if (prev !== null && i - prev > 1) {
-                      pageLinks.push(
-                        <PaginationItem key={`ellipsis-${i}`}>
-                          <span className="text-muted-foreground px-2">
-                            ...
-                          </span>
-                        </PaginationItem>,
-                      );
-                    }
-
-                    const isCurrent = i === currentPage;
+                  if (prev !== null && i - prev > 1) {
                     pageLinks.push(
-                      <PaginationItem key={i}>
-                        <PaginationLink
-                          onClick={() => handlePageChange(i)}
-                          isActive={isCurrent}
-                          className={clsx(
-                            isCurrent && "bg-primary font-bold text-white",
-                            "cursor-pointer",
-                          )}
-                        >
-                          {i}
-                        </PaginationLink>
+                      <PaginationItem key={`ellipsis-${i}`}>
+                        <span className="text-muted-foreground px-2">...</span>
                       </PaginationItem>,
                     );
-
-                    prev = i;
                   }
 
-                  return pageLinks;
-                })()}
+                  const isCurrent = i === currentPage;
+                  pageLinks.push(
+                    <PaginationItem key={i}>
+                      <PaginationLink
+                        onClick={() => handlePageChange(i)}
+                        isActive={isCurrent}
+                        className={clsx(
+                          isCurrent && "bg-primary font-bold text-white",
+                          "cursor-pointer",
+                        )}
+                      >
+                        {i}
+                      </PaginationLink>
+                    </PaginationItem>,
+                  );
 
-                {hasMore && currentPage < totalPages && (
-                  <PaginationItem>
-                    <PaginationNext
-                      onClick={() => handlePageChange(currentPage + 1)}
-                    />
-                  </PaginationItem>
-                )}
-              </PaginationContent>
-            </Pagination>
-          ) : null}
-        </div>
-      )}
+                  prev = i;
+                }
+
+                return pageLinks;
+              })()}
+
+              {hasMore && currentPage < totalPages && (
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() => handlePageChange(currentPage + 1)}
+                  />
+                </PaginationItem>
+              )}
+            </PaginationContent>
+          </Pagination>
+        ) : null}
+      </div>
     </div>
   );
 }

@@ -10,7 +10,7 @@ const AdminDashboard = async () => {
   const userRole = (verifiedToken?.userRole ?? "admin") as UserRole;
 
   return (
-    <div className="container mx-auto flex max-w-4xl flex-col gap-4 p-2">
+    <div className="container mx-auto flex max-w-4xl flex-col gap-3">
       <div>
         <h1 className="text-xl font-bold md:text-2xl">Dashboard</h1>
         <p className="text-muted-foreground text-sm">

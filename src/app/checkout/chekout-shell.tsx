@@ -1,5 +1,4 @@
 "use client";
-import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
 import CheckoutFooter from "./checkout-footer";
 import { CheckoutItems } from "./checkout-items";
 import { useState } from "react";
@@ -7,14 +6,10 @@ import OrderPlacingGif from "@/assets/icons/order-placing.gif";
 import Image from "next/image";
 import { Loader2 } from "lucide-react";
 
-type CheckoutShellProps = {
-  isAdmin?: boolean;
-};
-
-export default function CheckoutShell({ isAdmin = false }: CheckoutShellProps) {
+export default function CheckoutShell() {
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   return (
-    <>
+    <div className="h-dvh overflow-hidden">
       {isPlacingOrder && (
         <div
           className="border-primary bg-muted-foreground/40 pointer-events-auto fixed inset-0 top-17 z-50 flex h-[calc(100vh-28px)] flex-col items-center justify-start border border-dashed pt-25 md:top-21"
@@ -31,51 +26,33 @@ export default function CheckoutShell({ isAdmin = false }: CheckoutShellProps) {
         </div>
       )}
       <>
-        <div
-          className={`fixed inset-x-0 top-0 z-30 mx-auto flex h-45 w-full max-w-6xl flex-col items-end justify-end rounded-lg bg-white px-4 py-4 shadow-md md:h-50`}
-        >
-          <div className="mx-auto flex w-full max-w-6xl flex-col gap-1">
-            <EllipsisBreadCrumbs
-              items={[
-                {
-                  href: `${isAdmin ? "/admin-dashboard" : "/"}`,
-                  label: `${isAdmin ? "Admin Dashboard" : "Home"}`,
-                },
-                { href: "/products-list", label: "Product Listings" },
-                { href: "/cart", label: "Cart" },
-                { label: "Checkout" },
-              ]}
-            />
+        <div className="fixed inset-x-0 top-0 z-30 mx-auto flex h-40 w-full max-w-6xl flex-col items-end justify-end rounded-lg bg-white px-4 py-4 shadow-md md:h-50">
+          <div className="mx-auto flex w-full max-w-5xl flex-col gap-1">
             <h1 className="text-xl font-semibold tracking-wide text-cyan-950 md:text-2xl">
               Checkout
             </h1>
-            <p className="text-muted-foreground text-xs md:text-sm">
-              Review your items and total.{" "}
+            <p className="text-muted-foreground flex flex-col items-start justify-start gap-1 text-xs md:text-sm">
+              <span>Review your items and order total.</span>
               <span className="font-semibold text-black">
-                &apos;Confirm & Place Order&apos;
-              </span>{" "}
-              to complete.
+                <span>&apos;Place Order&apos;</span> to complete your purchase.
+              </span>
             </p>
           </div>
         </div>
 
-        <div
-          className={`flex flex-1 overflow-auto scroll-auto pt-30 md:pt-28`}
-        >
-          <div className="no-scrollbar mb-20 flex h-full max-h-[450px] w-full overflow-auto">
+        <div className="fixed inset-x-0 top-44 bottom-52 mx-auto w-full max-w-5xl px-4 md:top-50 md:bottom-24">
+          <div className="no-scrollbar h-full w-full overflow-y-auto">
             <CheckoutItems />
           </div>
         </div>
 
-        <div
-          className={`fixed inset-x-0 bottom-0 z-30 mx-auto flex h-fit w-full max-w-6xl flex-col items-end justify-end rounded-t-lg bg-white px-4 py-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]`}
-        >
+        <div className="fixed inset-x-0 bottom-0 z-30 mx-auto flex h-fit w-full max-w-5xl flex-col items-end justify-end rounded-t-lg bg-white px-4 py-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
           <CheckoutFooter
             setIsPlacingOrder={setIsPlacingOrder}
             isPlacingOrder={isPlacingOrder}
           />
         </div>
       </>
-    </>
+    </div>
   );
 }

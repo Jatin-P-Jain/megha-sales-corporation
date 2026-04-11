@@ -13,18 +13,16 @@ import {
   TableCell,
   TableFooter,
 } from "@/components/ui/table";
-import { Loader2Icon } from "lucide-react";
+import { ImageOffIcon, Loader2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { truncateMiddle } from "@/lib/utils";
 import clsx from "clsx";
-import useIsMobile from "@/hooks/useIsMobile";
 import { SafeLink } from "@/components/custom/utility/SafeLink";
+import Image from "next/image";
+import imageUrlFormatter from "@/lib/image-urlFormatter";
 
 export function CheckoutItems() {
-  const { loading, cartTotals, cartProducts } = useCartState();
-  const isMobile = useIsMobile();
-
-  const { totalNetAmount = 0, totalUnits = 0 } = cartTotals || {};
+  const { loading, cartTotals, cartProducts: products } = useCartState();
+  const { totalAmount: amount, totalUnits: units = 0 } = cartTotals || {};
 
   if (loading) {
     return (
@@ -34,7 +32,7 @@ export function CheckoutItems() {
     );
   }
 
-  if (cartProducts.length === 0) {
+  if (products.length === 0) {
     return (
       <div className="flex w-full flex-col items-center justify-center gap-4">
         Your cart is empty!
@@ -46,12 +44,17 @@ export function CheckoutItems() {
   }
 
   return (
-    <div className="flex h-full flex-col rounded-lg border shadow-sm">
-      <Table className="table-fixed">
-        <TableHeader>
-          <TableRow className="bg-muted">
-            <TableHead className="text-muted-foreground mr-4">
-              Part Details
+    <div className="flex h-full min-h-0 flex-col rounded-lg border shadow-sm">
+      <Table className="w-full table-fixed">
+        <colgroup>
+          <col className="w-[68%]" />
+          <col className="w-[14%]" />
+          <col className="w-[18%]" />
+        </colgroup>
+        <TableHeader className="">
+          <TableRow className="text-xs">
+            <TableHead className="text-muted-foreground">
+              Product Details
             </TableHead>
             <TableHead className="text-muted-foreground text-right">
               Units
@@ -63,47 +66,72 @@ export function CheckoutItems() {
         </TableHeader>
       </Table>
 
-      <ScrollArea className="max-h-[400px] min-h-[200px] overflow-auto">
-        <Table className="table-fixed">
-          <TableBody className="child:border-b-on-last-row">
-            {cartProducts.map((item) => {
+      <ScrollArea className="min-h-0 flex-1 overflow-auto">
+        <Table className="w-full table-fixed">
+          <colgroup>
+            <col className="w-[68%]" />
+            <col className="w-[14%]" />
+            <col className="w-[18%]" />
+          </colgroup>
+          <TableBody className="bg-card">
+            {products.map((item) => {
               const {
                 price = 0,
                 discount = 0,
                 gst = 0,
               } = item.productPricing ?? {};
               const qty = item.quantity;
-
               const unitDiscount = Math.round((discount / 100) * price);
               const unitPriceAfterDiscount = Math.round(price - unitDiscount);
               const unitGST = Math.round((gst / 100) * unitPriceAfterDiscount);
               const unitNetPrice = Math.round(unitPriceAfterDiscount + unitGST);
               const totalPrice = Math.round(unitNetPrice * qty);
+              const productImage =
+                item.productImage ?? item.product?.image ?? undefined;
 
               return (
                 <TableRow key={item.cartItemKey} className={clsx("")}>
                   <TableCell>
-                    <div className="flex flex-col items-start justify-start gap-1">
-                      <div className="flex w-full items-center justify-start gap-1">
-                        {isMobile
-                          ? truncateMiddle(item.product?.partName, 16, 3, 10)
-                          : item.product?.partName}
+                    <div className="flex min-w-0 items-center justify-start gap-3">
+                      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md border bg-white shadow-sm">
+                        {productImage ? (
+                          <Image
+                            src={imageUrlFormatter(productImage)}
+                            alt={item?.product?.partName ?? "Product image"}
+                            fill
+                            className="object-contain"
+                          />
+                        ) : (
+                          <div className="text-muted-foreground flex h-full w-full flex-col items-center justify-center text-[10px]">
+                            <ImageOffIcon className="h-4 w-4" />
+                            <small>No Image</small>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex min-w-0 flex-col items-start justify-start gap-0.5">
+                        <span className="truncate font-semibold">
+                          {item?.product?.partNumber}
+                        </span>
+
+                        <div className="flex w-full">
+                          <span className="text-muted-foreground truncate text-xs">
+                            <span className="font-medium">
+                              {item?.product?.brandName}
+                            </span>
+                            {" - "}
+                            {item?.product?.partName}
+                          </span>
+                        </div>
                         {item.selectedSize && (
                           <span className="text-muted-foreground text-xs">
                             ({item.selectedSize})
                           </span>
                         )}
                       </div>
-                      <div className="flex w-full">
-                        <span className="text-muted-foreground text-xs">
-                          {item.product?.brandName} {" - "}{" "}
-                          {item.product?.partNumber}
-                        </span>
-                      </div>
                     </div>
                   </TableCell>
 
-                  <TableCell className="text-right">{qty}</TableCell>
+                  <TableCell className="text-right">{item.quantity}</TableCell>
                   <TableCell className="text-right">
                     {currencyFormatter(totalPrice)}
                   </TableCell>
@@ -115,13 +143,18 @@ export function CheckoutItems() {
         <ScrollBar orientation="vertical" />
       </ScrollArea>
 
-      <Table className="table-fixed">
-        <TableFooter className="bg-muted">
+      <Table className="w-full table-fixed">
+        <colgroup>
+          <col className="w-[68%]" />
+          <col className="w-[14%]" />
+          <col className="w-[18%]" />
+        </colgroup>
+        <TableFooter className="font-medium">
           <TableRow>
             <TableHead>Total</TableHead>
-            <TableHead className="text-right">{totalUnits}</TableHead>
+            <TableHead className="text-right">{units}</TableHead>
             <TableHead className="text-right">
-              {currencyFormatter(totalNetAmount)}
+              {currencyFormatter(amount)}
             </TableHead>
           </TableRow>
         </TableFooter>

@@ -7,6 +7,7 @@ export type CartProduct = {
   selectedSize?: string; // added for cart
   cartItemKey: string; // added for cart
   productId?: string; // added for cart
+  productImage?: string; // added for cart
   productPricing: {
     price?: number;
     discount?: number;

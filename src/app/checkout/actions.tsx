@@ -2,11 +2,16 @@
 
 import { auth, fireStore } from "@/firebase/server";
 import { generateSequenceId } from "@/lib/firebase/generateSequenceId";
-import { Order, OrderData } from "@/types/order";
+import { Order, OrderEventTimelineEvent } from "@/types/order";
 import { UserData } from "@/types/user";
 
+type CreateOrderPayload = Omit<
+  Order,
+  "id" | "user" | "status" | "createdAt" | "updatedAt" | "orderEventTimeline"
+>;
+
 export const createOrder = async (
-  data: OrderData,
+  data: CreateOrderPayload,
   userData: UserData,
   authtoken: string,
 ) => {
@@ -27,12 +32,23 @@ export const createOrder = async (
     // 2. Use customOrderId as document ID
     const newRef = ordersCol.doc(customOrderId);
     const now = new Date();
+    const nowIso = now.toISOString();
+
+    const orderCreatedEvent: OrderEventTimelineEvent = {
+      id: `evt_${Date.now()}`,
+      type: "order_created",
+      label: "Order placed",
+      status: "pending",
+      createdAt: nowIso,
+    };
+
     const orderData: Omit<Order, "id"> = {
       ...data,
       user: userData,
       status: "pending",
-      createdAt: now.toISOString(),
-      updatedAt: now.toISOString(),
+      createdAt: nowIso,
+      updatedAt: nowIso,
+      orderEventTimeline: [orderCreatedEvent],
     };
 
     await newRef.set(orderData);

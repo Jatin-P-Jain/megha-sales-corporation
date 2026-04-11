@@ -170,7 +170,7 @@ export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
               </DialogTitle>
             </div>
 
-            <DialogDescription className="text-left text-xs">
+            <DialogDescription className="text-justify text-xs">
               Please complete your profile information before requesting account
               approval. This helps us verify your details and speeds up the
               approval process.

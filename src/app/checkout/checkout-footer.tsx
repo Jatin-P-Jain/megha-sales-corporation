@@ -2,13 +2,13 @@
 
 import React, { useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Loader2Icon, PackageCheck } from "lucide-react";
+import { Loader2Icon, PackageCheck, PencilLineIcon } from "lucide-react";
 import { useCartActions, useCartState } from "@/context/cartContext";
 import currencyFormatter from "@/lib/currency-formatter";
 import { createOrder } from "./actions";
 import { useAuthState } from "@/context/useAuth";
 import { toast } from "sonner";
-import { OrderData } from "@/types/order";
+import { Order } from "@/types/order";
 import { getBaseUrl } from "@/lib/utils";
 import {
   notifyUserAction,
@@ -19,18 +19,28 @@ import { useUserProfileState } from "@/context/UserProfileProvider";
 import { useSafeRouter } from "@/hooks/useSafeRouter";
 import Link from "next/link";
 
+type CreateOrderPayload = Omit<
+  Order,
+  "id" | "user" | "status" | "createdAt" | "updatedAt" | "orderEventTimeline"
+>;
+
 function buildOrderData(params: {
-  cartProducts: OrderData["products"];
+  cartProducts: Order["products"];
   totalAmount: number;
   totalUnits: number;
-}): OrderData {
-  const { cartProducts, totalAmount, totalUnits } = params;
+  totalGST: number;
+  totalDiscount: number;
+}): CreateOrderPayload {
+  const { cartProducts, totalAmount, totalUnits, totalGST, totalDiscount } =
+    params;
   return {
     products: cartProducts,
     totals: {
       amount: totalAmount,
       items: cartProducts.length,
       units: totalUnits,
+      gst: totalGST,
+      discount: totalDiscount,
     },
   };
 }
@@ -56,6 +66,9 @@ export default function CheckoutFooter({
 
   const totalAmount = cartTotals?.totalAmount ?? 0;
   const totalUnits = cartTotals?.totalUnits ?? 0;
+  const totalDiscount = cartTotals?.totalDiscount ?? 0;
+  const totalGST = cartTotals?.totalGST ?? 0;
+  const grossAmount = Math.max(0, totalAmount + totalDiscount - totalGST);
 
   const isDisabled =
     cartLoading ||
@@ -88,7 +101,13 @@ export default function CheckoutFooter({
       const token = await currentUser.getIdToken();
       if (!token) throw new Error("No token");
 
-      const data = buildOrderData({ cartProducts, totalAmount, totalUnits });
+      const data = buildOrderData({
+        cartProducts,
+        totalAmount,
+        totalUnits,
+        totalGST,
+        totalDiscount,
+      });
 
       const orderResponse = await createOrder(data, clientUser, token);
 
@@ -118,7 +137,7 @@ export default function CheckoutFooter({
         type: "order",
         title: "📦 Order Update",
         body: `Your order #${orderId} has been placed!`,
-        url: `${getBaseUrl()}/order-history?orderId=${orderId}`,
+        url: `${getBaseUrl()}/order-history/${orderId}`,
         clickAction: "view_order",
         status: "created",
       });
@@ -127,7 +146,7 @@ export default function CheckoutFooter({
         type: "order",
         title: "📦 New Order Received",
         body: `${clientUser.displayName ?? "A customer"} from ${clientUser.firmName ?? "a firm"} placed order #${orderId}`,
-        url: `${getBaseUrl()}/order-history?orderId=${orderId}`,
+        url: `${getBaseUrl()}/order-history/${orderId}`,
         clickAction: "view_order",
         status: "created",
       });
@@ -148,14 +167,48 @@ export default function CheckoutFooter({
     router,
     setIsPlacingOrder,
     totalAmount,
+    totalDiscount,
+    totalGST,
     totalUnits,
   ]);
 
   return (
     <>
-      <div className="flex w-full flex-col items-center justify-between gap-3 py-3 pb-8 md:hidden">
-        <p className="text-muted-foreground flex w-full items-center justify-between gap-1 text-xs">
-          Total Amount :
+      <div className="flex w-full flex-col items-center justify-between gap-2 py-3 pb-8 md:hidden">
+        <div className="flex w-full flex-col items-center justify-center gap-1 border-b px-1 pb-2">
+          <p className="text-muted-foreground flex w-full items-center justify-between gap-1 text-xs">
+            Gross Amount :
+            {cartLoading ? (
+              <Loader2Icon className="size-4 animate-spin" />
+            ) : (
+              <span className="text-sm font-medium">
+                {currencyFormatter(grossAmount)}/-
+              </span>
+            )}
+          </p>
+          <p className="text-muted-foreground flex w-full items-center justify-between gap-1 text-xs">
+            Total Discount :
+            {cartLoading ? (
+              <Loader2Icon className="size-4 animate-spin" />
+            ) : (
+              <span className="text-xs font-medium text-green-700">
+                - {currencyFormatter(totalDiscount)}/-
+              </span>
+            )}
+          </p>
+          <p className="text-muted-foreground flex w-full items-center justify-between gap-1 text-xs">
+            Total GST :
+            {cartLoading ? (
+              <Loader2Icon className="size-4 animate-spin" />
+            ) : (
+              <span className="text-xs font-medium">
+                + {currencyFormatter(totalGST)}/-
+              </span>
+            )}
+          </p>
+        </div>
+        <p className="text-muted-foreground flex w-full items-center justify-between gap-1 text-sm font-semibold">
+          Net Amount :
           {cartLoading ? (
             <Loader2Icon className="size-4 animate-spin" />
           ) : (
@@ -166,11 +219,11 @@ export default function CheckoutFooter({
         </p>
         <div className="flex w-full items-center justify-between gap-4">
           <Link
-            className="border-muted-foreground hover:bg-muted flex flex-1 items-center justify-center rounded-md border py-2 text-xs transition-colors"
+            className="border-muted-foreground hover:bg-muted flex flex-1 items-center justify-center gap-2 rounded-md border py-2 text-xs transition-colors"
             href="/cart"
           >
-            <ChevronLeft className="size-5" />
-            Go Back to Cart
+            <PencilLineIcon className="size-5" />
+            Edit Cart
           </Link>
 
           <Button
@@ -198,19 +251,51 @@ export default function CheckoutFooter({
           className="border-muted-foreground hover:bg-muted flex h-full items-center justify-center rounded-md border px-3 py-1 text-xs transition-colors"
           href="/cart"
         >
-          <ChevronLeft className="size-5" />
-          Go Back to Cart
+          <PencilLineIcon className="size-5" />
+          Edit Cart
         </Link>
-        <p className="text-muted-foreground flex items-center justify-center gap-1 text-xs">
-          Total Amount :
-          {cartLoading ? (
-            <Loader2Icon className="size-4 animate-spin" />
-          ) : (
-            <span className="text-primary text-xl font-semibold">
-              {currencyFormatter(totalAmount)}/-
-            </span>
-          )}
-        </p>
+        <div className="flex min-w-75 flex-col items-end justify-center gap-1 text-xs">
+          <p className="text-muted-foreground flex w-full items-center justify-between gap-2">
+            Gross Amount :
+            {cartLoading ? (
+              <Loader2Icon className="size-4 animate-spin" />
+            ) : (
+              <span className="font-medium">
+                {currencyFormatter(grossAmount)}/-
+              </span>
+            )}
+          </p>
+          <p className="text-muted-foreground flex w-full items-center justify-between gap-2">
+            Total Discount :
+            {cartLoading ? (
+              <Loader2Icon className="size-4 animate-spin" />
+            ) : (
+              <span className="font-medium text-green-700">
+                - {currencyFormatter(totalDiscount)}/-
+              </span>
+            )}
+          </p>
+          <p className="text-muted-foreground flex w-full items-center justify-between gap-2">
+            Total GST :
+            {cartLoading ? (
+              <Loader2Icon className="size-4 animate-spin" />
+            ) : (
+              <span className="font-medium">
+                + {currencyFormatter(totalGST)}/-
+              </span>
+            )}
+          </p>
+          <p className="text-muted-foreground flex w-full items-center justify-between gap-2 border-t pt-1 text-sm font-semibold">
+            Net Amount :
+            {cartLoading ? (
+              <Loader2Icon className="size-4 animate-spin" />
+            ) : (
+              <span className="text-primary text-xl font-semibold">
+                {currencyFormatter(totalAmount)}/-
+              </span>
+            )}
+          </p>
+        </div>
         <Button
           className="flex items-center justify-center gap-4"
           disabled={isDisabled}

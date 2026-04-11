@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { useCartActions, useCartState } from "@/context/cartContext";
 import { SafeLink } from "@/components/custom/utility/SafeLink";
 import { useUserGate } from "@/context/UserGateProvider";
+import { Card } from "@/components/ui/card";
 
 export function CartItems() {
   const { cartProducts, loading } = useCartState();
@@ -51,9 +52,9 @@ export function CartItems() {
         const totalPrice = Math.round(unitNetPrice * qty);
 
         return (
-          <li
+          <Card
             key={item.cartItemKey}
-            className="grid grid-cols-1 gap-2 rounded-lg border p-2 px-3 shadow-md md:p-4 md:px-6"
+            className="grid grid-cols-1 gap-2 rounded-lg border p-2 px-3 shadow-md md:p-4 md:px-6 "
           >
             <div className="flex flex-col items-start justify-start gap-1">
               <div className="flex w-full items-center justify-between gap-2">
@@ -178,7 +179,7 @@ export function CartItems() {
                 </div>
               </div>
             </div>
-          </li>
+          </Card>
         );
       })}
     </ul>
