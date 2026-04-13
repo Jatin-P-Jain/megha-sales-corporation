@@ -58,7 +58,7 @@ export function NavigationLockProvider({
   const value = useMemo<NavigationLockContextValue>(
     () => ({
       isNavigating,
-      lock: (reason) => {
+      lock: () => {
         setIsNavigating(true);
 
         // Failsafe: if a navigation is interrupted and URL never changes,
@@ -69,7 +69,7 @@ export function NavigationLockProvider({
           unlockTimeoutRef.current = null;
         }, 10000);
       },
-      unlock: (reason) => {
+      unlock: () => {
         if (unlockTimeoutRef.current) {
           clearTimeout(unlockTimeoutRef.current);
           unlockTimeoutRef.current = null;
@@ -77,7 +77,7 @@ export function NavigationLockProvider({
         setIsNavigating(false);
       },
     }),
-    [isNavigating, pathname, searchParams],
+    [isNavigating],
   );
 
   return (

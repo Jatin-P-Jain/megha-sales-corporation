@@ -316,7 +316,6 @@ export const usePaginatedFirestore = <
     };
     // resetPagination and stopRealtime are stable (empty useCallback deps).
     // loadPage/fetchCount are intentionally read via refs above.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [effectiveQueryKey, resetPagination, stopRealtime]);
 
   // optional periodic count refresh
