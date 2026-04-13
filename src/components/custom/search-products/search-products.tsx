@@ -195,7 +195,7 @@ export default function SearchProducts({
             </Button>
           </DialogTrigger>
 
-          <DialogContent className="flex-1 max-h-[90vh] w-[calc(100vw-2rem)] overflow-auto px-4 shadow-2xl sm:max-w-3xl md:max-w-2xl lg:max-w-4xl mt-8">
+          <DialogContent className="mt-8 max-h-[90vh] w-[calc(100vw-2rem)] flex-1 overflow-auto px-4 shadow-2xl sm:max-w-3xl md:max-w-2xl lg:max-w-4xl">
             <DialogHeader>
               <DialogTitle className="">Search product</DialogTitle>
               <DialogDescription className="text-xs md:text-sm">
