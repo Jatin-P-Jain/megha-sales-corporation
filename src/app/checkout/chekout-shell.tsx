@@ -9,7 +9,7 @@ import { Loader2 } from "lucide-react";
 export default function CheckoutShell() {
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   return (
-    <div className="h-dvh overflow-hidden">
+    <div className="relative h-full min-h-0 w-full overflow-hidden">
       {isPlacingOrder && (
         <div
           className="border-primary bg-muted-foreground/40 pointer-events-auto fixed inset-0 top-17 z-50 flex h-[calc(100vh-28px)] flex-col items-center justify-start border border-dashed pt-25 md:top-21"
@@ -40,8 +40,8 @@ export default function CheckoutShell() {
           </div>
         </div>
 
-        <div className="fixed inset-x-0 top-44 bottom-52 mx-auto w-full max-w-5xl px-4 md:top-50 md:bottom-24">
-          <div className="no-scrollbar h-full w-full overflow-y-auto">
+        <div className="fixed inset-x-0 top-44 bottom-52 mx-auto w-full max-w-5xl px-4 md:top-54 md:bottom-38">
+          <div className="h-full w-full overflow-hidden">
             <CheckoutItems />
           </div>
         </div>

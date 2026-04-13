@@ -46,7 +46,6 @@ export const sendOTP = async (
   verifier: RecaptchaVerifier
 ): Promise<ConfirmationResult> => {
   try {
-    // console.log("Sending OTP to", mobile);
     return await signInWithPhoneNumber(auth, `+91${mobile}`, verifier);
   } catch (e) {
     // Reset so user can retry (Firebase docs)
@@ -71,9 +70,6 @@ export const verifyOTP = async (
   try {
     const result = await confirmationResult.confirm(otp);
     if (result) {
-      if (process.env.NODE_ENV === "development") {
-        console.log("OTP verification successful");
-      }
       const user = result.user;
       const token = await user.getIdToken(true);
       const { claimsUpdated } = await setToken(token, user.refreshToken);

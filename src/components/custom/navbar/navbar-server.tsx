@@ -35,7 +35,7 @@ export default function NavBarServer() {
           </div>
 
           <div className="my-auto flex flex-col text-base md:text-lg md:tracking-[2px]">
-            <span className="font-semibold">Megha Sales</span>
+            <span className="font-semibold md:tracking-[3px]">Megha Sales</span>
             <span className="flex items-center justify-center text-sm tracking-[2px] md:text-base md:tracking-[4px]">
               Corporation
             </span>

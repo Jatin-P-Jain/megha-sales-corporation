@@ -71,7 +71,7 @@ export function OrderStatusDropdown({
         >
           <SelectTrigger
             className={clsx(
-              "!h-2 min-h-0 gap-1 px-2 py-3 font-semibold",
+              "min-h-0 gap-1 font-semibold",
               "shadow-none ring-0 outline-none focus:shadow-none focus:ring-0 focus:ring-offset-0 focus:outline-none focus-visible:shadow-none focus-visible:ring-0 focus-visible:ring-offset-0",
               style.border,
               style.text,
@@ -82,7 +82,7 @@ export function OrderStatusDropdown({
           >
             <SelectValue />
           </SelectTrigger>
-          <SelectContent align="end">
+          <SelectContent align="end" className="min-w-36">
             {statusOptions.map((opt) => (
               <SelectItem key={opt.value} value={opt.value}>
                 {opt.label}
@@ -93,7 +93,7 @@ export function OrderStatusDropdown({
       ) : (
         <span
           className={clsx(
-            "flex items-center justify-end gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold md:text-sm tracking-wide",
+            "flex items-center justify-end gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold tracking-wide md:text-sm",
             style.border,
             style.text,
             style.bg,

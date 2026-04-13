@@ -30,7 +30,7 @@ export default function DeleteAccountButton({ brandId }: { brandId: string }) {
         router.push("/admin-dashboard");
       }
     } catch (e: unknown) {
-      console.log(e);
+      console.error("Delete brand failed", e);
 
       toast.error("Error!", {
         description: "An error occurred.",

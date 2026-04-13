@@ -664,7 +664,7 @@ function AccountViewInner({
                   <Clock className="size-4" />
                   Account activity
                   {!timelineLoading && timelineEvents.length > 0 && (
-                    <Badge variant="secondary" className="px-1.5 py-0 text-xs">
+                    <Badge variant="outline" className="px-1.5 py-0 text-xs text-muted-foreground">
                       {timelineEvents.length} event
                       {timelineEvents.length > 1 ? "s" : ""}
                     </Badge>

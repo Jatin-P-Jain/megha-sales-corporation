@@ -186,7 +186,7 @@ export const updateUserPhoto = async ({
       label: "Profile picture updated",
     });
   } catch (error) {
-    console.log("Error while updating the user -- ", { error });
+    console.error("Error while updating the user", { error });
   }
 };
 export const deleteUserCart = async ({ userId }: { userId: string }) => {
@@ -195,7 +195,7 @@ export const deleteUserCart = async ({ userId }: { userId: string }) => {
     const cartRef = fireStore.collection("carts").doc(userId);
     fireStore.recursiveDelete(cartRef);
   } catch (error) {
-    console.log("Error while deleting cart for user -- ", { error });
+    console.error("Error while deleting cart for user", { error });
   }
 };
 export const deleteUserData = async ({ userId }: { userId: string }) => {
@@ -204,7 +204,7 @@ export const deleteUserData = async ({ userId }: { userId: string }) => {
     const userRef = fireStore.collection("users").doc(userId);
     await userRef.delete();
   } catch (error) {
-    console.log("Error while deleting user data-- ", { error });
+    console.error("Error while deleting user data", { error });
   }
 };
 

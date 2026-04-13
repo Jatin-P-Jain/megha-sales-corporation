@@ -1,5 +1,4 @@
-
-"use client"
+"use client";
 import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
@@ -36,7 +35,6 @@ export default function InstallPWAButton() {
       event.preventDefault();
       setDeferredPrompt(event);
       setShowCard(true);
-      // console.log("✅ beforeinstallprompt event captured");
     };
 
     window.addEventListener("beforeinstallprompt", handler);

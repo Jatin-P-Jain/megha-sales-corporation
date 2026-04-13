@@ -8,13 +8,9 @@ import { User } from "firebase/auth";
 const LAST_ACTIVITY_KEY = "lastActivity";
 const CHECK_INTERVAL_MS = 60 * 1000; // check every 1 minute
 
-const log = (...args: string[]) => {
-  console.log(`[${new Date().toISOString()}]`, ...args);
-};
-
 const useMonitorInactivity = (
   currentUser: User | null,
-  INACTIVITY_LIMIT: number | undefined,
+  INACTIVITY_LIMIT: number | undefined
 ) => {
   useEffect(() => {
     if (!currentUser || !INACTIVITY_LIMIT) return;
@@ -41,7 +37,6 @@ const useMonitorInactivity = (
       // });
 
       if (diff >= INACTIVITY_LIMIT) {
-        log("⛔ User is inactive. Logging out...");
         try {
           await logoutUser();
           await removeToken();
@@ -66,7 +61,7 @@ const useMonitorInactivity = (
       "touchstart",
     ];
     activityEvents.forEach((event) =>
-      window.addEventListener(event, updateLastActivity, { passive: true }),
+      window.addEventListener(event, updateLastActivity, { passive: true })
     );
 
     // Check periodically
@@ -83,11 +78,10 @@ const useMonitorInactivity = (
     // Cleanup
     return () => {
       activityEvents.forEach((event) =>
-        window.removeEventListener(event, updateLastActivity),
+        window.removeEventListener(event, updateLastActivity)
       );
       document.removeEventListener("visibilitychange", onVisibilityChange);
       clearInterval(interval);
-      log("🧹 Inactivity monitor cleaned up");
     };
   }, [currentUser, INACTIVITY_LIMIT]);
 };

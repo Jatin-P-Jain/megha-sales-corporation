@@ -48,7 +48,7 @@ export default function GoogleLoginButton({
       await loginWithGoogle();
       onSuccess?.();
     } catch (e) {
-      console.log({ e });
+      console.error("Google login failed", e);
     } finally {
       setSigningIn(false);
     }

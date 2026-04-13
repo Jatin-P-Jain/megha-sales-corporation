@@ -17,7 +17,7 @@ export default function OrderDetailHeader({ orderId }: OrderDetailHeaderProps) {
   };
 
   return (
-    <div className="flex w-full flex-col gap-1 md:flex-row md:items-end md:justify-between">
+    <div className="flex w-full flex-col gap-1">
       <div className="text-primary text-lg font-semibold">Order Details</div>
 
       <button

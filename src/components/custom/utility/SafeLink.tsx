@@ -8,8 +8,6 @@ type SafeLinkProps = React.ComponentProps<typeof Link> & {
   disableWhileNavigating?: boolean;
 };
 
-const NAV_DEBUG = process.env.NODE_ENV === "development";
-
 export function SafeLink({
   disableWhileNavigating = true,
   onClick,
@@ -25,19 +23,11 @@ export function SafeLink({
 
       // Allow normal browser behaviors (new tab, etc.)
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) {
-        if (NAV_DEBUG) {
-          console.info("[safe-link] skip:modified-click", { href: hrefValue });
-        }
         onClick?.(e);
         return;
       }
 
       if (disableWhileNavigating && isNavigating) {
-        if (NAV_DEBUG) {
-          console.info("[safe-link] block:already-navigating", {
-            href: hrefValue,
-          });
-        }
         e.preventDefault();
         e.stopPropagation();
         return;
@@ -47,22 +37,11 @@ export function SafeLink({
 
       // Respect user handlers that intentionally cancel navigation.
       if (e.defaultPrevented) {
-        if (NAV_DEBUG) {
-          console.info("[safe-link] skip:onClick-prevented", {
-            href: hrefValue,
-          });
-        }
         return;
       }
 
       // Opening in a new tab/window does not change current URL, so do not lock.
       if (target && target !== "_self") {
-        if (NAV_DEBUG) {
-          console.info("[safe-link] skip:target-new-context", {
-            href: hrefValue,
-            target,
-          });
-        }
         return;
       }
 
@@ -75,9 +54,6 @@ export function SafeLink({
           href.startsWith("tel:") ||
           href.startsWith("#")
         ) {
-          if (NAV_DEBUG) {
-            console.info("[safe-link] skip:non-app-link", { href: hrefValue });
-          }
           return;
         }
       }

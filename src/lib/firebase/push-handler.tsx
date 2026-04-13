@@ -52,28 +52,14 @@ export const PushHandler = () => {
 
   useEffect(() => {
     const setup = async () => {
-      if (process.env.NODE_ENV === "development") {
-        console.log("sw:", "serviceWorker" in navigator);
-        console.log("pushManager:", "PushManager" in window);
-        console.log("notifications:", "Notification" in window);
-        console.log("notification permission:", Notification.permission);
-        console.log("indexedDB:", "indexedDB" in window);
-      }
       const supported = await isSupported();
       if (!supported) {
-        if (process.env.NODE_ENV === "development") {
-          console.warn("🚫 Messaging not supported");
-        }
         return;
       }
 
       const messaging = getMessaging(app);
 
       const unsubscribe = onMessage(messaging, (payload) => {
-        if (process.env.NODE_ENV === "development") {
-          console.log("📥 Foreground message received:", payload);
-        }
-
         const title =
           payload.notification?.title ?? payload.data?.title ?? "No title";
         const body =

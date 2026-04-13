@@ -2,7 +2,11 @@
 
 import * as React from "react";
 import * as SelectPrimitive from "@radix-ui/react-select";
-import { ChevronDownIcon, ChevronUpIcon, CircleDot } from "lucide-react";
+import {
+  CheckSquare,
+  ChevronDownIcon,
+  ChevronUpIcon,
+} from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import clsx from "clsx";
@@ -117,7 +121,7 @@ function SelectItem({
     >
       <span className="absolute right-2 flex size-3.5 items-center justify-center">
         <SelectPrimitive.ItemIndicator>
-          <CircleDot className="text-primary size-4" />
+          <CheckSquare className="text-primary size-4" />
         </SelectPrimitive.ItemIndicator>
       </span>
       <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>

@@ -11,7 +11,7 @@ export const POST = async (req: NextRequest) => {
     const user = await auth.getUserByEmail(email);
     return NextResponse.json({ exists: !!user });
   } catch (error) {
-    console.log({ error });
+    console.error("check-email lookup failed", error);
 
     return NextResponse.json({ exists: false }, { status: 404 });
   }

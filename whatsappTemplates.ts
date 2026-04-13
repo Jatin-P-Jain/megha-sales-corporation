@@ -64,7 +64,7 @@ export const whatsappTemplates: Record<
   order_placed_to_admin_v2: {
     name: "order_placed_to_admin_v2",
     language: { code: "en" },
-    bodyParamsCount: 5,
+    bodyParamsCount: 6,
     hasButton: true,
     resolveParams: ({
       adminName,
@@ -72,6 +72,7 @@ export const whatsappTemplates: Record<
       customerFirmName,
       customerName,
       customerPhone,
+      items,
     }) => ({
       bodyParams: [
         adminName,
@@ -79,6 +80,31 @@ export const whatsappTemplates: Record<
         customerFirmName,
         customerName,
         customerPhone,
+        items,
+      ],
+      buttonParams: [orderId],
+    }),
+  },
+  order_recived_to_admin_v2: {
+    name: "order_recived_to_admin_v2",
+    language: { code: "en" },
+    bodyParamsCount: 6,
+    hasButton: true,
+    resolveParams: ({
+      adminName,
+      orderId,
+      customerFirmName,
+      customerName,
+      customerPhone,
+      items,
+    }) => ({
+      bodyParams: [
+        adminName,
+        orderId,
+        customerFirmName,
+        customerName,
+        customerPhone,
+        items,
       ],
       buttonParams: [orderId],
     }),

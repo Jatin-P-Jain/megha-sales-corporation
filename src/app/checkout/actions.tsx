@@ -56,7 +56,7 @@ export const createOrder = async (
     // 4) Return the generated ID + status
     return { orderId: newRef.id, status: orderData.status };
   } catch (e: unknown) {
-    console.log("e -- ", { e });
+    console.error("Order creation failed", { e });
 
     return {
       success: false,

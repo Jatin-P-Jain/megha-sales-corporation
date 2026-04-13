@@ -19,7 +19,6 @@ type NavigationLockContextValue = {
 const NavigationLockContext = createContext<NavigationLockContextValue | null>(
   null,
 );
-const NAV_DEBUG = process.env.NODE_ENV === "development";
 
 export function NavigationLockProvider({
   children,
@@ -32,11 +31,6 @@ export function NavigationLockProvider({
   const [isNavigating, setIsNavigating] = useState(false);
   const unlockTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const logNav = (event: string, details?: Record<string, unknown>) => {
-    if (!NAV_DEBUG) return;
-    console.info("[nav-lock]", event, details ?? {});
-  };
-
   // Avoid unlocking on the first mount (initial render)
   const didMount = useRef(false);
 
@@ -47,10 +41,6 @@ export function NavigationLockProvider({
     }
     // Any committed navigation changes URL -> unlock
     setIsNavigating(false);
-    logNav("unlock:route-committed", {
-      pathname,
-      search: searchParams?.toString() ?? "",
-    });
     if (unlockTimeoutRef.current) {
       clearTimeout(unlockTimeoutRef.current);
       unlockTimeoutRef.current = null;
@@ -70,22 +60,12 @@ export function NavigationLockProvider({
       isNavigating,
       lock: (reason) => {
         setIsNavigating(true);
-        logNav("lock", {
-          reason: reason ?? "unspecified",
-          pathname,
-          search: searchParams?.toString() ?? "",
-        });
 
         // Failsafe: if a navigation is interrupted and URL never changes,
         // unlock to keep links responsive.
         if (unlockTimeoutRef.current) clearTimeout(unlockTimeoutRef.current);
         unlockTimeoutRef.current = setTimeout(() => {
           setIsNavigating(false);
-          logNav("unlock:timeout", {
-            timeoutMs: 10000,
-            pathname,
-            search: searchParams?.toString() ?? "",
-          });
           unlockTimeoutRef.current = null;
         }, 10000);
       },
@@ -95,11 +75,6 @@ export function NavigationLockProvider({
           unlockTimeoutRef.current = null;
         }
         setIsNavigating(false);
-        logNav("unlock:manual", {
-          reason: reason ?? "unspecified",
-          pathname,
-          search: searchParams?.toString() ?? "",
-        });
       },
     }),
     [isNavigating, pathname, searchParams],

@@ -56,8 +56,6 @@ export function FilterSection({
   toggleSelection,
   baseSelections,
 }: FilterSectionProps) {
-  console.log({ filterOptions, selections });
-
   const [searchTerm, setSearchTerm] = useState("");
   useEffect(() => setSearchTerm(""), [filterType.key]);
 

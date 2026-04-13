@@ -3,7 +3,7 @@
 import React, { useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2Icon, PackageCheck, PencilLineIcon } from "lucide-react";
-import { useCartActions, useCartState } from "@/context/cartContext";
+import { useCartState } from "@/context/cartContext";
 import currencyFormatter from "@/lib/currency-formatter";
 import { createOrder } from "./actions";
 import { useAuthState } from "@/context/useAuth";
@@ -50,6 +50,17 @@ type CheckoutFooterProps = {
   isPlacingOrder: boolean;
 };
 
+function buildOrderItemsSummary(products: Order["products"]): string {
+  const partNumbers = products
+    .map((item) => item?.product?.partNumber?.trim())
+    .filter((partNumber): partNumber is string => Boolean(partNumber));
+
+  if (partNumbers.length === 0) return "-";
+  if (partNumbers.length <= 2) return partNumbers.join(", ");
+
+  return `${partNumbers[0]}, ${partNumbers[1]} and ${partNumbers.length - 2} more`;
+}
+
 export default function CheckoutFooter({
   setIsPlacingOrder,
   isPlacingOrder,
@@ -62,7 +73,6 @@ export default function CheckoutFooter({
   const { clientUser, clientUserLoading } = useUserProfileState();
 
   const { cartProducts, cartTotals, loading: cartLoading } = useCartState();
-  const { resetCartContext } = useCartActions();
 
   const totalAmount = cartTotals?.totalAmount ?? 0;
   const totalUnits = cartTotals?.totalUnits ?? 0;
@@ -115,10 +125,12 @@ export default function CheckoutFooter({
         toast.error("Error!", {
           description: orderResponse?.message || "Order failed",
         });
+        setIsPlacingOrder(false);
         return;
       }
 
       const orderId = orderResponse.orderId;
+      const items = buildOrderItemsSummary(cartProducts);
 
       await fetch("/api/wa-send-message", {
         method: "POST",
@@ -129,6 +141,7 @@ export default function CheckoutFooter({
           customerName: clientUser.displayName,
           orderId,
           customerPhone: clientUser.phone,
+          items,
         }),
       });
 
@@ -152,8 +165,6 @@ export default function CheckoutFooter({
       });
 
       router.push(`/order-placed/${orderId}`);
-      await resetCartContext();
-      setIsPlacingOrder(false);
     } catch (err) {
       console.error(err);
       toast.error("Error!", { description: "Could not place order" });
@@ -163,7 +174,6 @@ export default function CheckoutFooter({
     cartProducts,
     clientUser,
     currentUser,
-    resetCartContext,
     router,
     setIsPlacingOrder,
     totalAmount,
@@ -181,7 +191,7 @@ export default function CheckoutFooter({
             {cartLoading ? (
               <Loader2Icon className="size-4 animate-spin" />
             ) : (
-              <span className="text-sm font-medium">
+              <span className="text-foreground text-sm font-medium">
                 {currencyFormatter(grossAmount)}/-
               </span>
             )}
@@ -246,7 +256,7 @@ export default function CheckoutFooter({
           </Button>
         </div>
       </div>
-      <div className="hidden w-full items-center justify-between py-3 pb-8 md:flex">
+      <div className="hidden w-full items-center justify-between py-3 pb-4 md:flex">
         <Link
           className="border-muted-foreground hover:bg-muted flex h-full items-center justify-center rounded-md border px-3 py-1 text-xs transition-colors"
           href="/cart"
@@ -260,7 +270,7 @@ export default function CheckoutFooter({
             {cartLoading ? (
               <Loader2Icon className="size-4 animate-spin" />
             ) : (
-              <span className="font-medium">
+              <span className="text-foreground font-medium">
                 {currencyFormatter(grossAmount)}/-
               </span>
             )}

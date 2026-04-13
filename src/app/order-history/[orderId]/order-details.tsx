@@ -144,17 +144,17 @@ function OrderTimelineItem({
       </span>
 
       <div className="flex min-w-0 flex-1 flex-col pb-5">
-        <span className="text-secondary-foreground text-xs font-medium md:text-sm">
+        <span className="text-secondary-foreground text-xs font-medium">
           {displayLabel}
         </span>
 
         {displayDetail && (
-          <span className="text-secondary-foreground/70 text-[10px] font-medium md:text-sm">
+          <span className="text-secondary-foreground/70 text-[10px] font-medium">
             {displayDetail}
           </span>
         )}
 
-        <span className="text-secondary-foreground/60 text-[10px] md:text-xs">
+        <span className="text-secondary-foreground/60 text-[10px]">
           {timeStr} | {formatDateTime(event.createdAt)}
         </span>
       </div>
@@ -228,15 +228,16 @@ export default function OrderDetails({
           </TableHeader>
         </Table>
 
-        <ScrollArea className="min-h-0 flex-1 overflow-auto">
-          <Table className="w-full table-fixed">
-            <colgroup>
-              <col className="w-[68%]" />
-              <col className="w-[14%]" />
-              <col className="w-[18%]" />
-            </colgroup>
-            <TableBody className="bg-card">
-              {products.map((item) => {
+        <ScrollArea className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
+          <div className="px-1 md:px-2">
+            <Table className="w-full table-fixed border-separate [border-spacing:0_0.2rem]">
+              <colgroup>
+                <col className="w-[68%]" />
+                <col className="w-[14%]" />
+                <col className="w-[18%]" />
+              </colgroup>
+              <TableBody className="">
+                {products.map((item) => {
                 const {
                   price = 0,
                   discount = 0,
@@ -256,7 +257,12 @@ export default function OrderDetails({
                   item.productImage ?? item.product?.image ?? undefined;
 
                 return (
-                  <TableRow key={item.cartItemKey} className={clsx("")}>
+                  <TableRow
+                    key={item.cartItemKey}
+                    className={clsx(
+                      "bg-muted hover:bg-muted/90 [&>td]:border-y [&>td]:border-border/60 [&>td:first-child]:rounded-l-md [&>td:first-child]:border-l [&>td:last-child]:rounded-r-md [&>td:last-child]:border-r",
+                    )}
+                  >
                     <TableCell>
                       <div className="flex min-w-0 items-center justify-start gap-3">
                         <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md border bg-white shadow-sm">
@@ -305,9 +311,10 @@ export default function OrderDetails({
                     </TableCell>
                   </TableRow>
                 );
-              })}
-            </TableBody>
-          </Table>
+                })}
+              </TableBody>
+            </Table>
+          </div>
           <ScrollBar orientation="vertical" />
         </ScrollArea>
 
@@ -378,9 +385,9 @@ export default function OrderDetails({
             timelineOpen ? "opacity-100" : "opacity-0",
           )}
         >
-          <div className="bg-secondary mb-2 max-h-36 overflow-y-auto rounded-md px-2 py-2 text-xs md:max-h-80">
+          <div className="bg-secondary mb-2 max-h-24 overflow-y-auto rounded-md px-2 py-2 text-xs">
             {sortedTimelineEvents.length === 0 ? (
-              <p className="text-muted-foreground py-2 text-center text-xs md:py-3 md:text-sm">
+              <p className="text-muted-foreground py-2 text-center text-xs md:py-3">
                 No activity yet.
               </p>
             ) : (

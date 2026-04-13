@@ -52,8 +52,6 @@ export default function SearchEnquiry({
   };
 
   const handleSearch = () => {
-    console.log({ searchQuery });
-
     if (!searchQuery.trim()) return;
 
     const params = new URLSearchParams(searchParams.toString());
@@ -64,7 +62,6 @@ export default function SearchEnquiry({
 
     // Reset to page 1 when searching
     params.delete("page");
-    console.log(params.toString());
 
     // Navigate with search params
     router.replace(`/enquiries?${params.toString()}`);
@@ -97,7 +94,7 @@ export default function SearchEnquiry({
           variant={variant}
           className={clsx(
             buttonClassName,
-            "border-primary w-auto md:flex-1 border shadow-lg",
+            "border-primary w-auto border shadow-lg md:flex-1",
           )}
         >
           <SearchIcon /> {showText && <> Search Enquiries</>}

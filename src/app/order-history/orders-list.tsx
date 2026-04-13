@@ -70,18 +70,31 @@ export default function OrdersList({
     return searchParams.get("orderStatus") ?? "";
   }, [searchParams]);
 
+  const selectedFirmNames = useMemo(() => {
+    const all = searchParams
+      .getAll("firmName")
+      .map((v) => v.trim())
+      .filter(Boolean);
+    if (all.length > 0) return all;
+    const one = searchParams.get("firmName")?.trim();
+    return one ? [one] : [];
+  }, [searchParams]);
+
   const statuses = useMemo(() => {
     if (!statusKey.trim()) return [] as OrderStatus[];
     return statusKey.split(",").filter(Boolean) as OrderStatus[];
   }, [statusKey]);
 
-  const filterKey = useMemo(() => JSON.stringify({ statusKey }), [statusKey]);
+  const filterKey = useMemo(
+    () => JSON.stringify({ statusKey, selectedFirmNames }),
+    [statusKey, selectedFirmNames],
+  );
 
   const filters = useMemo(() => {
     const f: {
       field: string;
       op: "==" | "in";
-      value: OrderStatus[] | string;
+      value: OrderStatus[] | string[] | string;
     }[] = [];
 
     // If not admin, scope to user
@@ -102,8 +115,16 @@ export default function OrdersList({
       });
     }
 
+    if (isAdmin && selectedFirmNames.length > 0) {
+      f.push({
+        field: "user.firmName",
+        op: "in",
+        value: selectedFirmNames.slice(0, 10),
+      });
+    }
+
     return f;
-  }, [isAdmin, userId, statuses]);
+  }, [isAdmin, userId, statuses, selectedFirmNames]);
 
   const {
     data,

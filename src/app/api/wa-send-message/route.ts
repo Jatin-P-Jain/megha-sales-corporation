@@ -144,6 +144,7 @@ export async function POST(req: NextRequest) {
       toNumbers,
       enquiryId,
       rating,
+      items,
     } = raw;
 
     if (!isTemplateKey(templateKey)) {
@@ -212,6 +213,7 @@ export async function POST(req: NextRequest) {
               : "",
             enquiryId: isString(enquiryId) ? enquiryId : "",
             rating: isString(rating) ? rating : "",
+            items: isString(items) ? items : "",
           },
         });
 
