@@ -129,9 +129,9 @@ export default function SearchProducts({
 
   const Body = (
     <div className="grid gap-2">
-      <div className="flex items-center gap-2 p-1 px-4">
+      <div className="flex items-center gap-2 p-1">
         <Input
-          placeholder="Enter Part Number or Name to search..."
+          placeholder="Search by Part Number or Name..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           autoFocus
@@ -196,9 +196,9 @@ export default function SearchProducts({
             </Button>
           </DialogTrigger>
 
-          <DialogContent className="h-fit max-h-[90vh] w-[calc(100vw-2rem)] overflow-auto px-6 shadow-2xl sm:max-w-3xl md:max-w-2xl lg:max-w-4xl">
+          <DialogContent className="flex-1 max-h-[90vh] w-[calc(100vw-2rem)] overflow-auto px-4 shadow-2xl sm:max-w-3xl md:max-w-2xl lg:max-w-4xl mt-8">
             <DialogHeader>
-              <DialogTitle className="mt-2">Search product</DialogTitle>
+              <DialogTitle className="">Search product</DialogTitle>
               <DialogDescription className="text-xs md:text-sm">
                 Find products by <strong>part name</strong> or{" "}
                 <strong>part number</strong>.
@@ -206,8 +206,6 @@ export default function SearchProducts({
             </DialogHeader>
 
             {Body}
-
-            <DialogFooter />
           </DialogContent>
         </Dialog>
       </div>
@@ -245,7 +243,7 @@ export default function SearchProducts({
             {/* Input + X button pinned below the header */}
             <div className="flex shrink-0 items-center gap-2 p-1 px-4">
               <Input
-                placeholder="Enter Part Number or Name to search..."
+                placeholder="Search by Part Number or Name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 autoFocus

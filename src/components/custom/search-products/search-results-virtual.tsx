@@ -15,7 +15,7 @@ export default function SearchResultsVirtual({
   fillHeight?: boolean;
 }) {
   // Virtuoso must have a height (either here or via parent flex styles). [web:233]
-  const itemApproxHeight = 150;
+  const itemApproxHeight = 250;
   const maxHeight = 520;
   const height = fillHeight
     ? "100%"
@@ -28,7 +28,7 @@ export default function SearchResultsVirtual({
         data={items}
         computeItemKey={(_, item) => item.id}
         itemContent={(_, product) => (
-          <div className="px-4 py-1">
+          <div className="py-1 px-4 md:px-2">
             <ProductCard product={product} isAdmin={isAdmin} />
           </div>
         )}
