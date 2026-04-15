@@ -5,6 +5,7 @@ import imageUrlFormatter from "@/lib/image-urlFormatter";
 import { AccountStatus, UserRole } from "@/types/userGate";
 import { cookies } from "next/headers";
 import { addAccountTimelineEvent } from "@/lib/firebase/addAccountTimelineEvent";
+import { isFullAdminClaim } from "@/lib/auth/gaurds";
 
 const accountStatusNotificationMap: Record<
   AccountStatus,
@@ -57,7 +58,7 @@ export async function updateUserAccountStatus({
 
     const decodedToken = await auth.verifyIdToken(token);
 
-    if (!decodedToken.admin) {
+    if (!isFullAdminClaim(decodedToken)) {
       throw new Error("Unauthorized: Admin access required");
     }
 
@@ -221,11 +222,7 @@ export async function updateUserRole({
 
   const decodedToken = await auth.verifyIdToken(token);
 
-  // Only full admins (userRole === "admin" with no sub-role, i.e. env admins) can assign roles
-  const callerUserRole = decodedToken.userRole as string | undefined;
-  const isFullAdmin =
-    decodedToken.admin && (!callerUserRole || callerUserRole === "admin");
-  if (!isFullAdmin)
+  if (!isFullAdminClaim(decodedToken))
     throw new Error("Unauthorized: Only admins can assign roles");
 
   const isStaff = userRole !== "customer";

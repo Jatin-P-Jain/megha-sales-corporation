@@ -1,5 +1,7 @@
 // app/api/orders/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/firebase/server";
+import { hasAnyAllowedRole } from "@/lib/auth/claims";
 import { createWhatsAppPayloadFromInput } from "../../../../whatsappTemplates";
 import {
   recipientsForTemplate,
@@ -122,6 +124,28 @@ async function fetchWithTimeout(
 
 export async function POST(req: NextRequest) {
   try {
+    const authToken = req.cookies.get("firebaseAuthToken")?.value;
+    if (!authToken) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const decoded = await auth.verifyIdToken(authToken).catch(() => null);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const callerIsStaff = hasAnyAllowedRole(decoded, [
+      "admin",
+      "dispatcher",
+      "accountant",
+    ]);
+
     const raw = await req.json();
     if (!isRecord(raw)) {
       return NextResponse.json(
@@ -162,6 +186,16 @@ export async function POST(req: NextRequest) {
     const extraRecipients = Array.isArray(toNumbers)
       ? toNumbers.filter(isString)
       : [];
+
+    if (extraRecipients.length > 0 && !callerIsStaff) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Forbidden: custom recipients are staff-only",
+        },
+        { status: 403 }
+      );
+    }
 
     // If the triggering customer's phone is a test number, redirect ALL
     // WhatsApp messages to the dev number to avoid spamming real staff.

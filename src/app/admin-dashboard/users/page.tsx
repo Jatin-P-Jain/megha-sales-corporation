@@ -1,22 +1,15 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import { auth } from "@/firebase/server";
 import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
 import UserSearchAndFilters from "@/components/custom/user-search-filters";
 import UsersList from "./users-list";
+import { requireAllowedRolesOrRedirect } from "@/lib/auth/gaurds";
 
 export default async function Users() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("firebaseAuthToken")?.value;
-  const verifiedToken = token ? await auth.verifyIdToken(token) : null;
-  const isAdmin = verifiedToken?.admin;
-  const userRole = (verifiedToken?.userRole ?? "admin") as string;
-  const canAssignRoles = userRole === "admin";
-
-  // User Directory is admin-only
-  if (!isAdmin || userRole !== "admin") {
-    redirect("/admin-dashboard");
-  }
+  const verifiedToken = await requireAllowedRolesOrRedirect(
+    ["admin"],
+    "/admin-dashboard",
+  );
+  const isAdmin = Boolean(verifiedToken?.admin);
+  const canAssignRoles = true;
   const breadcrumbs = [
     {
       href: isAdmin ? "/admin-dashboard/" : "/",

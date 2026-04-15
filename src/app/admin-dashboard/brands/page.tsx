@@ -1,5 +1,3 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 import BrandLogo from "@/components/custom/brand-logo";
 import PublishBrandButton from "@/components/custom/publish-brand-button";
 import { SafeLink } from "@/components/custom/utility/SafeLink";
@@ -14,25 +12,17 @@ import {
 } from "@/components/ui/card";
 import { getBrands, VEHICLE_CATEGORIES } from "@/data/brands";
 import { InfoIcon, PencilIcon, PlusCircleIcon, WrenchIcon } from "lucide-react";
-import { auth } from "@/firebase/server";
+import { requireAllowedRolesOrRedirect } from "@/lib/auth/gaurds";
 
 const AdminBrands = async ({
   searchParams,
 }: {
   searchParams?: Promise<{ page: string }>;
 }) => {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("firebaseAuthToken")?.value;
-  const verifiedToken = token ? await auth.verifyIdToken(token) : null;
-  const userRole = verifiedToken?.userRole as string | undefined;
-
-  // Only admins and accountants may access Brand Catalogue
-  if (
-    !verifiedToken?.admin ||
-    (userRole && userRole !== "admin" && userRole !== "accountant")
-  ) {
-    redirect("/admin-dashboard");
-  }
+  await requireAllowedRolesOrRedirect(
+    ["admin", "accountant"],
+    "/admin-dashboard",
+  );
 
   const searchParamsValue = await searchParams;
   const page = searchParamsValue?.page ? parseInt(searchParamsValue.page) : 1;
@@ -96,7 +86,7 @@ const AdminBrands = async ({
                   </div>
                   <SafeLink
                     href={`/admin-dashboard/edit-brand/${brand.id}`}
-                    className="border-primary/70 text-primary flex items-center justify-center gap-1 rounded-lg border-1 p-1.5 py-1"
+                    className="border-primary/70 text-primary flex items-center justify-center gap-1 rounded-lg border p-1.5 py-1"
                   >
                     <PencilIcon className="h-3.5 w-3.5" />
                     <span className="text-xs md:text-sm">Edit</span>

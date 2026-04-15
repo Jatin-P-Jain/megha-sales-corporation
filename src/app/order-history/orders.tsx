@@ -4,7 +4,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { formatDateTime, getBaseUrl } from "@/lib/utils";
 import { Order, OrderStatus } from "@/types/order";
 import { updateOrderStatus } from "./actions";
-import { notifyUserAction } from "@/actions/notify-user";
+import {
+  notifyAdminsByRoleAction,
+  notifyUserAction,
+} from "@/actions/notify-user";
 import { toast } from "sonner";
 import clsx from "clsx";
 import { Button } from "@/components/ui/button";
@@ -33,6 +36,11 @@ const getStatusMessage = (orderId: string, status: string) => {
   );
 };
 
+function toLabelCase(status: string) {
+  if (!status) return "Updated";
+  return `${status.charAt(0).toUpperCase()}${status.slice(1)}`;
+}
+
 export const handleStatusChange = async (
   order: Order,
   newStatus: OrderStatus,
@@ -54,14 +62,38 @@ export const handleStatusChange = async (
     });
   }
 
-  await notifyUserAction({
+  const orderUrl = `${getBaseUrl()}/order-history/${order.id}`;
+
+  const customerPushPromise = notifyUserAction({
     uid: order.user?.uid,
     type: "order",
     title: "📦 Order Update",
     body: getStatusMessage(order.id, newStatus),
-    url: `${getBaseUrl()}/order-history/${order.id}`,
+    url: orderUrl,
     clickAction: "view_order",
     status: newStatus,
+    pushOnly: true,
+  });
+
+  const staffPushPromise = notifyAdminsByRoleAction({
+    type: "order",
+    title: "📦 Order Status Updated",
+    body: `Order #${order.id} moved to ${toLabelCase(newStatus)} by ${updaterContext?.displayName ?? "Admin"}.`,
+    url: orderUrl,
+    clickAction: "view_order",
+    status: newStatus,
+    pushOnly: true,
+  });
+
+  const notificationResults = await Promise.allSettled([
+    customerPushPromise,
+    staffPushPromise,
+  ]);
+
+  notificationResults.forEach((result) => {
+    if (result.status === "rejected") {
+      console.error("Order update notification dispatch failed", result.reason);
+    }
   });
 
   return { success: true };

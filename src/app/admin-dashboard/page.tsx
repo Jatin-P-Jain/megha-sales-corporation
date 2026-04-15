@@ -1,13 +1,13 @@
-import { cookies } from "next/headers";
-import { auth } from "@/firebase/server";
 import type { UserRole } from "@/types/userGate";
 import { AdminServiceCards } from "./admin-service-cards";
+import {
+  getUserRoleFromClaims,
+  requireAllowedRolesOrRedirect,
+} from "@/lib/auth/gaurds";
 
 const AdminDashboard = async () => {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("firebaseAuthToken")?.value;
-  const verifiedToken = token ? await auth.verifyIdToken(token) : null;
-  const userRole = (verifiedToken?.userRole ?? "admin") as UserRole;
+  const verifiedToken = await requireAllowedRolesOrRedirect(["admin"], "/");
+  const userRole = getUserRoleFromClaims(verifiedToken) as UserRole;
 
   return (
     <div className="container mx-auto flex max-w-4xl flex-col gap-3">

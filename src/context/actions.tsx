@@ -1,7 +1,21 @@
 "use server";
 
-import { auth } from "@/firebase/server";
+import { auth, fireStore } from "@/firebase/server";
 import { cookies } from "next/headers";
+import { UserRole } from "@/types/userGate";
+
+const VALID_ROLES: UserRole[] = [
+  "admin",
+  "customer",
+  "dispatcher",
+  "accountant",
+];
+
+function parseRole(value: unknown): UserRole | undefined {
+  return typeof value === "string" && VALID_ROLES.includes(value as UserRole)
+    ? (value as UserRole)
+    : undefined;
+}
 
 export const removeToken = async () => {
   const cookieStore = await cookies();
@@ -24,18 +38,38 @@ export const setToken = async (
 
     // Start with current claims (or empty object)
     const existingClaims = userRecord.customClaims ?? {};
-    const newClaims: Record<string, boolean> = { ...existingClaims };
+    const newClaims: Record<string, unknown> = { ...existingClaims };
+
+    const gateSnap = await fireStore
+      .collection("userGate")
+      .doc(userRecord.uid)
+      .get();
+    const gateRole = gateSnap.exists
+      ? parseRole(gateSnap.data()?.userRole)
+      : undefined;
+    const existingRole = parseRole(existingClaims.userRole);
 
     // Admin logic
+    let shouldBeAdmin = existingClaims.admin === true;
     if (userRecord.email && adminEmails.includes(userRecord.email)) {
-      newClaims.admin = true;
+      shouldBeAdmin = true;
     }
     if (
       userRecord.phoneNumber &&
       adminPhoneNumbers.includes(userRecord.phoneNumber)
     ) {
-      newClaims.admin = true;
+      shouldBeAdmin = true;
     }
+
+    const resolvedRole =
+      gateRole ?? existingRole ?? (shouldBeAdmin ? "admin" : "customer");
+
+    if (resolvedRole !== "customer") {
+      shouldBeAdmin = true;
+    }
+
+    newClaims.admin = shouldBeAdmin;
+    newClaims.userRole = resolvedRole;
 
     // Only update claims if they actually changed
     const claimsChanged =
