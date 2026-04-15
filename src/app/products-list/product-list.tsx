@@ -175,11 +175,32 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
     loadPage(pageFromUrl);
   }, [pageFromUrl, loadPage]);
 
+  useEffect(() => {
+    const scrollContainer = document.getElementById(
+      "products-list-scroll-container",
+    );
+    scrollContainer?.scrollTo({ top: 0, behavior: "auto" });
+  }, [pageFromUrl]);
+
   const handlePageChange = useCallback(
-    (page: number) => {
+    (page: number, event?: React.MouseEvent<HTMLElement>) => {
+      event?.preventDefault();
+      event?.currentTarget.blur();
+
+      const scrollContainer = document.getElementById(
+        "products-list-scroll-container",
+      );
+      scrollContainer?.scrollTo({ top: 0, behavior: "auto" });
+      window.scrollTo({ top: 0, behavior: "auto" });
+
       const sp = new URLSearchParams(searchParams.toString());
       sp.set("page", String(page));
-      router.replace(`/products-list?${sp.toString()}`, { scroll: false });
+      router.replace(`/products-list?${sp.toString()}`, { scroll: true });
+
+      requestAnimationFrame(() => {
+        scrollContainer?.scrollTo({ top: 0, behavior: "auto" });
+        window.scrollTo({ top: 0, behavior: "auto" });
+      });
     },
     [router, searchParams],
   );
@@ -188,6 +209,8 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
   const end =
     totalItems === 0 ? 0 : Math.min(currentPage * PAGE_SIZE, totalItems);
   const totalPages = Math.max(Math.ceil(totalItems / PAGE_SIZE), 1);
+  const hasSingleBrandFilter =
+    brandIdValue.split(",").filter(Boolean).length === 1;
 
   const pageLinks = useMemo(() => {
     const nodes: React.ReactNode[] = [];
@@ -219,7 +242,7 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
       nodes.push(
         <PaginationItem key={i}>
           <PaginationLink
-            onClick={() => handlePageChange(i)}
+            onClick={(e) => handlePageChange(i, e)}
             isActive={isCurrent}
             className={clsx(
               isCurrent && "bg-primary font-bold text-white",
@@ -260,7 +283,7 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
       <p className="text-muted-foreground sticky top-0 z-10 w-full px-4 py-1 text-center text-xs md:text-sm">
         Page {currentPage} • Showing {start}–{end} of{" "}
         {countLoading ? "…" : totalItems}{" "}
-        {brandIdValue.split(",").length === 1 ? (
+        {hasSingleBrandFilter ? (
           <>
             <span className="font-semibold text-primary">{unslugify(brandIdValue)}</span>{" "}
             products
@@ -287,7 +310,7 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
             {currentPage > 1 && (
               <PaginationItem>
                 <PaginationPrevious
-                  onClick={() => handlePageChange(currentPage - 1)}
+                  onClick={(e) => handlePageChange(currentPage - 1, e)}
                 />
               </PaginationItem>
             )}
@@ -297,7 +320,7 @@ export default function ProductList({ isAdmin }: { isAdmin: boolean }) {
             {hasMore && currentPage < totalPages && (
               <PaginationItem>
                 <PaginationNext
-                  onClick={() => handlePageChange(currentPage + 1)}
+                  onClick={(e) => handlePageChange(currentPage + 1, e)}
                 />
               </PaginationItem>
             )}

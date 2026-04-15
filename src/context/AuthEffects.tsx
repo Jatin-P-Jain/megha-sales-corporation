@@ -18,7 +18,7 @@ export default function AuthEffects() {
 
   const inactivityLimit = isAdmin
     ? parseInt(process.env.NEXT_PUBLIC_ADMIN_INACTIVITY_LIMIT || "0", 10)
-    : 0;
+    : parseInt(process.env.NEXT_PUBLIC_USER_INACTIVITY_LIMIT || "0", 10);
 
   useMonitorInactivity(currentUser, inactivityLimit);
 
