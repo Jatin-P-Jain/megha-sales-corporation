@@ -22,6 +22,7 @@ declare global {
       widgetId: number | null;
       renderPromise: Promise<number> | null;
       containerId: string;
+      containerEl: HTMLElement | null;
     };
     grecaptcha?: { reset: (id?: number) => void };
   }
@@ -32,6 +33,22 @@ export function useRecaptcha({
   containerId = "recaptcha-container",
 }: UseRecaptchaParams): UseRecaptchaReturn {
   const [verifier, setVerifier] = useState<RecaptchaVerifier | null>(null);
+
+  const clearSingleton = useCallback(() => {
+    const s = window.__firebaseRecaptchaSingleton;
+    if (!s) return;
+
+    try {
+      s.verifier?.clear();
+    } catch {
+      // ignore
+    }
+
+    s.verifier = null;
+    s.widgetId = null;
+    s.renderPromise = null;
+    s.containerEl = null;
+  }, []);
 
   const reset = useCallback(() => {
     const s = window.__firebaseRecaptchaSingleton;
@@ -57,6 +74,7 @@ export function useRecaptcha({
       widgetId: null,
       renderPromise: null,
       containerId,
+      containerEl: null,
     };
 
     const s = window.__firebaseRecaptchaSingleton;
@@ -66,18 +84,15 @@ export function useRecaptcha({
     if (!el) throw new Error(`reCAPTCHA container #${containerId} not found`);
 
     // If we already have a verifier:
-    // - If same container, REUSE it (do not re-render into same element) [web:595]
-    // - If different container, clear and recreate
+    // - Reuse only when it still targets the same live DOM element
+    // - Otherwise clear and recreate (common after route changes/logout)
     if (s.verifier) {
-      if (s.containerId !== containerId) {
-        try {
-          s.verifier.clear(); // destroy old widget instance
-        } catch {
-          // ignore
-        }
-        s.verifier = null;
-        s.widgetId = null;
-        s.renderPromise = null;
+      const sameContainerId = s.containerId === containerId;
+      const sameElement = s.containerEl === el;
+      const oldElementDetached = !!s.containerEl && !s.containerEl.isConnected;
+
+      if (!sameContainerId || !sameElement || oldElementDetached) {
+        clearSingleton();
       } else {
         // Same container: ensure render finished, reset, return existing
         if (s.renderPromise) await s.renderPromise;
@@ -100,24 +115,29 @@ export function useRecaptcha({
     });
 
     s.verifier = v;
+    s.containerEl = el;
 
     s.renderPromise = v.render().then((id) => {
       s.widgetId = id;
+      window.recaptchaWidgetId = id;
       return id;
     });
+
+    window.recaptchaVerifier = v;
 
     await s.renderPromise;
     reset();
 
     setVerifier(v);
     return v;
-  }, [enabled, containerId, reset]);
+  }, [enabled, containerId, clearSingleton, reset]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
     if (!enabled) {
-      reset();
+      clearSingleton();
+      setVerifier(null);
       return;
     }
 
@@ -125,7 +145,7 @@ export function useRecaptcha({
     ensureReady().catch((e) => {
       console.error("Recaptcha init failed:", e);
     });
-  }, [enabled, ensureReady, reset]);
+  }, [enabled, ensureReady, clearSingleton]);
 
   return { verifier, ensureReady, reset };
 }

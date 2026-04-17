@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
@@ -10,18 +9,18 @@ export default function AboutAutoPartsShop() {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="space-y-2 p-2 md:p-0">
-      <div className="space-y-2 text-center">
+    <div className="space-y-2 p-1 md:p-0">
+      <div className="space-y-1 text-center">
         <h1 className="text-primary text-2xl font-bold md:text-3xl">
           Megha Sales Corporation
         </h1>
-        <p className="text-muted-foreground text-sm md:text-base">
+        <p className="text-primary text-sm md:text-base">
           Your Trusted Wholesale Auto Parts Partner
         </p>
       </div>
 
-      <Card className="px-3">
-        <CardContent className="space-y-4 px-3">
+      <div className="p-2">
+        <div className="space-y-2">
           <p className="text-justify text-sm leading-relaxed md:text-base">
             At <strong>Megha Sales Corporation</strong>, established in{" "}
             <strong>2001</strong>, we specialize in wholesale distribution of
@@ -134,8 +133,8 @@ export default function AboutAutoPartsShop() {
               </div>
             </>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

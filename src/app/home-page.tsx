@@ -3,6 +3,7 @@
 import type { Brand } from "@/types/brand";
 import BrandsGrid from "./brands-grid";
 import HomeUserBar from "./home-user-bar";
+import AdminBar from "./admin-bar";
 // app/brands-grid-skeleton.tsx
 import { Skeleton } from "@/components/ui/skeleton";
 import { Suspense } from "react";
@@ -46,6 +47,7 @@ export default function HomePage({
   return (
     <>
       <HomeUserBar />
+      <AdminBar />
 
       <Suspense fallback={<BrandsGridSkeleton />}>
         <BrandsGrid brandsPromise={brandsPromise} />

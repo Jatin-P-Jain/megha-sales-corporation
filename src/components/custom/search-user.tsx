@@ -52,6 +52,7 @@ export default function SearchUser({
 }) {
   const router = useSafeRouter();
   const searchParams = useSearchParams();
+  const isSearchActive = Boolean(searchParams.get("searchQuery")?.trim());
 
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -87,7 +88,7 @@ export default function SearchUser({
 
   const resetState = () => {
     setSearchQuery("");
-    setSearchField("email");
+    setFirmComboOpen(false);
   };
 
   const handleSearch = () => {
@@ -126,7 +127,9 @@ export default function SearchUser({
           variant={variant}
           className={clsx(
             buttonClassName,
-            "border-primary w-full border shadow-lg",
+            "w-full border",
+            isSearchActive &&
+              "border-primary bg-primary/5 text-primary font-semibold",
           )}
         >
           <SearchIcon /> {showText && <> Search Users</>}

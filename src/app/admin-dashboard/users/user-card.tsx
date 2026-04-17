@@ -347,7 +347,26 @@ export default function UserCard({
               <div className="flex w-full flex-1 items-center justify-between gap-1">
                 <div className="flex w-full flex-col gap-1">
                   <CardTitle className="flex items-center justify-between gap-2 md:text-lg">
-                    {user.displayName || "Unnamed User"}
+                    <div className="flex items-start gap-2 flex-col md:flex-row">
+                      {user.displayName ? (
+                        <div className="flex items-center gap-1">
+                          {user.displayName}
+                        </div>
+                      ) : (
+                        <div className="text-sm">
+                          {user.phone
+                            ? `${user.phone}`
+                            : user.email
+                              ? `${user.email}`
+                              : ""}
+                        </div>
+                      )}
+                      {user.firmName && (
+                        <div className="text-primary text-xs md:text-sm tracking-wide uppercase ">
+                          ({user.firmName})
+                        </div>
+                      )}
+                    </div>
                     {isAdmin && (
                       <Badge
                         variant="default"

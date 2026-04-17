@@ -182,7 +182,7 @@ export default function UsersList({
             variant="secondary"
             className="flex items-center gap-2 px-3 py-1.5"
           >
-            Searching {getFieldLabel(searchField)}:{" "}
+            Search by {getFieldLabel(searchField)}:{" "}
             <strong>{searchQuery}</strong>
             <X className="h-3 w-3 cursor-pointer" onClick={handleClearSearch} />
           </Badge>

@@ -512,11 +512,19 @@ const UserSearchAndFilters: React.FC = () => {
       <div className="grid grid-cols-[1fr_auto] gap-4 md:items-center md:gap-8">
         <SearchUser variant="outline" showText={true} />
         <div className="flex flex-wrap items-center justify-end gap-1">
-          <span className="text-muted-foreground inline text-sm mr-2">Filters:</span>
+          <span className="text-muted-foreground mr-2 inline text-sm">
+            Filters:
+          </span>
           {/* Show Admins */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                className={clsx(
+                  "flex items-center gap-2",
+                  adminFilter !== "all" && "border-primary",
+                )}
+              >
                 {adminFilter === "adminsOnly" && (
                   <ShieldCheck className="h-4 w-4 text-blue-900" />
                 )}
@@ -576,7 +584,13 @@ const UserSearchAndFilters: React.FC = () => {
           {/* Profile Status */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                className={clsx(
+                  "flex items-center gap-2",
+                  profileFilter !== "all" && "border-primary",
+                )}
+              >
                 {profileFilter === "incompleteOnly" && (
                   <TriangleAlert className="h-4 w-4 text-yellow-600" />
                 )}

@@ -1,10 +1,14 @@
 import React from "react";
 
-import { BadgeCheckIcon } from "lucide-react";
+import { BadgeCheckIcon, ListStart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BankDetails from "@/components/custom/bank-details";
 import OrderPlacedClientEffects from "./order-placed-client-effects";
 import { SafeLink } from "@/components/custom/utility/SafeLink";
+import { OrderIdBlock } from "./orderId-block";
+import Image from "next/image";
+import MSC_Logo from "../../../../public/icon-512x512.png";
+import { FeedbackDialog } from "@/components/custom/feedback-dialog";
 
 export default async function OrderPlacedPage({
   params,
@@ -12,10 +16,6 @@ export default async function OrderPlacedPage({
   params: Promise<{ orderId: string }>;
 }) {
   const { orderId } = await params;
-
-  const newSearchParams = new URLSearchParams();
-  newSearchParams.set("orderId", orderId);
-
   return (
     <div className="mx-auto flex items-center justify-center">
       <OrderPlacedClientEffects />
@@ -33,41 +33,50 @@ export default async function OrderPlacedPage({
           it&apos;s on the way.
         </p>
 
-        <div className="flex w-full flex-col gap-4 rounded-lg border bg-zinc-50 px-2 py-3">
-          <div className="flex w-full flex-col items-center justify-center">
-            <div className="text-muted-foreground text-xs">Order ID</div>
-            <div className="mt-1 font-mono text-sm font-semibold break-all text-zinc-900">
-              {orderId}
-            </div>
-          </div>
-          <Button asChild className="w-full">
-            <SafeLink href={`/order-history?${newSearchParams.toString()}`}>
-              View order details
+        <OrderIdBlock orderId={orderId} />
+        <BankDetails />
+
+        <div className="flex w-full flex-col items-center justify-between gap-2 md:flex-row">
+          <Button
+            asChild
+            variant="outline"
+            className="border-primary text-primary w-full md:flex-1"
+          >
+            <SafeLink href="/products-list">
+              <ListStart className="size-4" />
+              Explore more products
             </SafeLink>
           </Button>
-          <BankDetails />
-        </div>
-
-        <div className="grid w-full gap-3">
-          <div className="flex items-center gap-3">
-            <div className="bg-muted h-px flex-1" />
-            <span className="text-muted-foreground text-xs">or</span>
-            <div className="bg-muted h-px flex-1" />
+          <div className="w-full md:flex-1">
+            <FeedbackDialog
+              trigger={
+                <Button
+                  variant="outline"
+                  className="border-primary text-primary w-full md:flex-1"
+                >
+                  ⭐️ Share feedback
+                </Button>
+              }
+            />
           </div>
-
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <Button asChild variant="outline" className="w-full">
-              <SafeLink href="/products-list">Explore products</SafeLink>
-            </Button>
-            <Button asChild variant="outline" className="w-full">
-              <SafeLink href="/">Go to home</SafeLink>
-            </Button>
-          </div>
+          <Button
+            asChild
+            variant="outline"
+            className="border-primary text-primary w-full md:flex-1"
+          >
+            <SafeLink href="/">
+              {" "}
+              <Image
+                src={MSC_Logo}
+                alt="MSC Logo"
+                width={24}
+                height={24}
+                className="size-6"
+              />
+              Home
+            </SafeLink>
+          </Button>
         </div>
-
-        <p className="mt-6 text-xs text-zinc-500">
-          Tip: You can track this order anytime from “Order History”.
-        </p>
       </div>
     </div>
   );
