@@ -11,6 +11,7 @@ import React, {
 import { auth, firestore } from "@/firebase/client";
 import { doc, onSnapshot, setDoc, serverTimestamp } from "firebase/firestore";
 import { AccountStatus, UserGate, UserRole } from "@/types/userGate";
+import { setToken } from "./actions";
 
 type UserGateState = {
   gateLoading: boolean;
@@ -24,6 +25,19 @@ type UserGateState = {
 
 const Ctx = createContext<UserGateState | null>(null);
 
+const VALID_ROLES: UserRole[] = [
+  "admin",
+  "customer",
+  "dispatcher",
+  "accountant",
+];
+
+function parseRole(value: unknown): UserRole {
+  return typeof value === "string" && VALID_ROLES.includes(value as UserRole)
+    ? (value as UserRole)
+    : "customer";
+}
+
 export function UserGateProvider({ children }: { children: React.ReactNode }) {
   const [gate, setGate] = useState<UserGate | null>(null);
   const [gateLoading, setGateLoading] = useState(true);
@@ -31,6 +45,10 @@ export function UserGateProvider({ children }: { children: React.ReactNode }) {
 
   // prevent repeated creates if snapshot fires multiple times while doc missing
   const ensuredUidRef = useRef<string | null>(null);
+  const claimRefreshInFlightRef = useRef(false);
+  const lastClaimRefreshAtRef = useRef(0);
+
+  const MIN_CLAIM_REFRESH_GAP_MS = 10_000;
 
   useEffect(() => {
     let unsubGate: undefined | (() => void);
@@ -68,15 +86,27 @@ export function UserGateProvider({ children }: { children: React.ReactNode }) {
             if (ensuredUidRef.current !== user.uid) {
               ensuredUidRef.current = user.uid;
               try {
+                // Check admin claim from the current token to set correct defaults
+                const tokenResult = await user.getIdTokenResult(false);
+                const isAdmin = tokenResult.claims.admin === true;
+
                 await setDoc(
                   ref,
-                  {
-                    profileComplete: false,
-                    accountStatus: "pending",
-                    rejectionReason: "",
-                    userRole: "customer",
-                    updatedAt: serverTimestamp(),
-                  },
+                  isAdmin
+                    ? {
+                        profileComplete: true,
+                        accountStatus: "approved",
+                        rejectionReason: "",
+                        userRole: "admin",
+                        updatedAt: serverTimestamp(),
+                      }
+                    : {
+                        profileComplete: false,
+                        accountStatus: "pending",
+                        rejectionReason: "",
+                        userRole: "customer",
+                        updatedAt: serverTimestamp(),
+                      },
                   { merge: true },
                 );
               } catch (e) {
@@ -88,12 +118,40 @@ export function UserGateProvider({ children }: { children: React.ReactNode }) {
           }
 
           const d = snap.data();
+          const nextGateRole = parseRole(d.userRole);
+
+          // If role in userGate differs from token claim, force-refresh token and
+          // sync session cookie so server-side guards pick the new role quickly.
+          try {
+            const now = Date.now();
+            if (
+              !claimRefreshInFlightRef.current &&
+              now - lastClaimRefreshAtRef.current >= MIN_CLAIM_REFRESH_GAP_MS
+            ) {
+              const tokenResult = await user.getIdTokenResult(false);
+              const claimRole = parseRole(tokenResult.claims.userRole);
+
+              if (claimRole !== nextGateRole) {
+                claimRefreshInFlightRef.current = true;
+                const refreshedToken = await user.getIdToken(true);
+                await setToken(refreshedToken, user.refreshToken);
+                lastClaimRefreshAtRef.current = Date.now();
+                claimRefreshInFlightRef.current = false;
+              }
+            }
+          } catch (err) {
+            claimRefreshInFlightRef.current = false;
+            console.error(
+              "Failed to refresh claim after userGate role change",
+              err,
+            );
+          }
 
           setGate({
             profileComplete: !!d.profileComplete,
             accountStatus: (d.accountStatus ?? "pending") as AccountStatus,
             rejectionReason: d.rejectionReason ?? "",
-            userRole: (d.userRole as UserRole) || "customer",
+            userRole: nextGateRole,
           });
 
           setGateLoading(false);

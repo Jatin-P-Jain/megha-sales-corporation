@@ -234,7 +234,7 @@ export default function EnquiriesList({
       </p>
       {data.length > 0 && (
         <div className="flex h-full w-full flex-1 flex-col justify-between gap-4 px-1 py-2">
-          <div className="flex w-full flex-1 grow flex-col gap-5">
+          <div className="flex w-full flex-1 grow flex-col gap-3 md:gap-5">
             {displayData.map((enquiry: Enquiry) => (
               <EnquiryCard
                 key={enquiry.id}
@@ -257,6 +257,7 @@ export default function EnquiriesList({
                     enquiryId: enquiry.id,
                     replyText,
                     user: fullUser,
+                    isAdminReply: isAdmin,
                   });
 
                   if (!result.success) {

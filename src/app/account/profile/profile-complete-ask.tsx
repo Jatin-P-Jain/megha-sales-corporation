@@ -28,7 +28,7 @@ export default function ProfileCompleteAsk({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="p-2 md:p-4">
+      <DialogContent className="p-3 md:p-4">
         <DialogHeader className="p-2">
           <div className="flex items-center gap-2">
             <AlertCircle className="h-6 w-6 text-yellow-600" />
@@ -37,7 +37,7 @@ export default function ProfileCompleteAsk({
             </DialogTitle>
           </div>
 
-          <DialogDescription className="text-xs md:text-base">
+          <DialogDescription className="text-xs md:text-base text-justify">
             Please complete your profile information before requesting account
             approval. This helps us verify your details and speeds up the
             approval process.

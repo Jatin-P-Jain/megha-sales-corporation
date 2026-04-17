@@ -50,8 +50,8 @@ export default function FirebaseAuthMethods({
     : undefined;
 
   return (
-    <div className="space-y-3 rounded-md border bg-white p-3">
-      <div className="flex items-center gap-2 text-sm font-semibold text-zinc-900">
+    <div className="space-y-3 rounded-md bg-white">
+      <div className="flex items-center gap-2 text-sm font-medium px-2">
         <Shield className="h-4 w-4" />
         Sign-in methods
       </div>

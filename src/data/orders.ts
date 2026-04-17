@@ -1,7 +1,7 @@
 import "server-only";
 import { fireStore, getTotalPages } from "@/firebase/server";
 import { CartProduct } from "@/types/cartProduct";
-import { Order, OrderStatus } from "@/types/order";
+import { Order, OrderEventTimelineEvent, OrderStatus } from "@/types/order";
 import { UserData } from "@/types/user";
 
 type GetOrdersOptions = {
@@ -60,12 +60,16 @@ export const getOrderById = async (orderId: string) => {
     totals: rawOrderData?.totals as {
       items: number;
       units: number;
+      gst?: number;
+      discount?: number;
       amount: number;
     },
     status: rawOrderData?.status as OrderStatus,
     address: rawOrderData?.address as string,
     createdAt: rawOrderData?.createdAt as string,
     updatedAt: rawOrderData?.updatedAt as string,
+    orderEventTimeline:
+      (rawOrderData?.orderEventTimeline as OrderEventTimelineEvent[]) ?? [],
   };
   return { data: [order], totalPages: 1, totalItems: 1 };
 };
@@ -106,12 +110,16 @@ export const getUserOrders = async (
       totals: rawOrderData?.totals as {
         items: number;
         units: number;
+        gst?: number;
+        discount?: number;
         amount: number;
       },
       status: rawOrderData?.status as OrderStatus,
       address: rawOrderData?.address as string,
       createdAt: rawOrderData?.createdAt as string,
       updatedAt: rawOrderData?.updatedAt as string,
+      orderEventTimeline:
+        (rawOrderData?.orderEventTimeline as OrderEventTimelineEvent[]) ?? [],
     };
     return order;
   });

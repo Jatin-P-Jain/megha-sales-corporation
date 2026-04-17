@@ -56,7 +56,7 @@ export default function DeleteProductButton({
         }
       }
     } catch (e: unknown) {
-      console.log(e);
+      console.error("Delete product failed", e);
 
       toast.error("Error!", {
         description: "An error occurred.",

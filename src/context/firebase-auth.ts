@@ -7,7 +7,8 @@ import {
   ConfirmationResult,
   User,
 } from "firebase/auth";
-import { auth } from "@/firebase/client";
+import { collection, getDocs, deleteDoc } from "firebase/firestore";
+import { auth, firestore } from "@/firebase/client";
 import { removeToken, setToken } from "./actions";
 
 export const loginWithGoogle = async (): Promise<User | undefined> => {
@@ -16,7 +17,12 @@ export const loginWithGoogle = async (): Promise<User | undefined> => {
   const result = await signInWithPopup(auth, provider);
   const user = result.user;
   const token = await user.getIdToken(true);
-  await setToken(token, user.refreshToken);
+  const { claimsUpdated } = await setToken(token, user.refreshToken);
+  if (claimsUpdated) {
+    // Claims were just set — force-refresh so the cookie gets the updated token
+    const freshToken = await user.getIdToken(true);
+    await setToken(freshToken, user.refreshToken);
+  }
   return user;
 };
 
@@ -27,7 +33,11 @@ export const loginWithEmailAndPass = async (
   const result = await signInWithEmailAndPassword(auth, email, password);
   const user = result.user;
   const token = await user.getIdToken(true);
-  await setToken(token, user.refreshToken);
+  const { claimsUpdated } = await setToken(token, user.refreshToken);
+  if (claimsUpdated) {
+    const freshToken = await user.getIdToken(true);
+    await setToken(freshToken, user.refreshToken);
+  }
   return user;
 };
 
@@ -36,7 +46,6 @@ export const sendOTP = async (
   verifier: RecaptchaVerifier
 ): Promise<ConfirmationResult> => {
   try {
-    // console.log("Sending OTP to", mobile);
     return await signInWithPhoneNumber(auth, `+91${mobile}`, verifier);
   } catch (e) {
     // Reset so user can retry (Firebase docs)
@@ -61,12 +70,13 @@ export const verifyOTP = async (
   try {
     const result = await confirmationResult.confirm(otp);
     if (result) {
-      if (process.env.NODE_ENV === "development") {
-        console.log("OTP verification successful");
-      }
       const user = result.user;
       const token = await user.getIdToken(true);
-      await setToken(token, user.refreshToken);
+      const { claimsUpdated } = await setToken(token, user.refreshToken);
+      if (claimsUpdated) {
+        const freshToken = await user.getIdToken(true);
+        await setToken(freshToken, user.refreshToken);
+      }
       return user;
     } else {
       console.error("OTP verification failed: No result returned");
@@ -81,6 +91,17 @@ export const verifyOTP = async (
 };
 
 export const logoutUser = async () => {
+  const currentUser = auth.currentUser;
+  if (currentUser?.uid) {
+    try {
+      const tokenSnap = await getDocs(
+        collection(firestore, "users", currentUser.uid, "fcmTokens")
+      );
+      await Promise.all(tokenSnap.docs.map((d) => deleteDoc(d.ref)));
+    } catch {
+      // Best-effort — don't block logout if token cleanup fails
+    }
+  }
   await auth.signOut();
   await removeToken();
 };

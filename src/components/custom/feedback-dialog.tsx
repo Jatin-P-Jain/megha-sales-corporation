@@ -133,21 +133,23 @@ export function FeedbackDialog({ trigger }: FeedbackDialogProps) {
     setIsSending(true);
 
     try {
-      // 1. Generate custom Enquiry ID
-      const customEnquiryId = await generateSequenceId("enquiries");
-      if (!customEnquiryId) {
-        throw new Error("Failed to generate enquiry ID");
+      // 1. Generate custom Feedback ID
+      const feedbackId = await generateSequenceId("feedbacks");
+      if (!feedbackId) {
+        throw new Error("Failed to generate feedback ID");
       }
       const response = await fetch("/api/wa-send-message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           templateKey: "feedback_received_to_admin",
+          customerFirmName: clientUser?.firmName ?? "Guest Account",
           customerName: name,
           customerPhone: phone,
           customerMessage: message,
           customerWANumber: phone,
-          enquiryId: customEnquiryId, // Use the generated custom enquiry ID
+          rating: String(rating),
+          feedbackId: feedbackId,
         }),
       });
       if (response.ok) {
@@ -213,7 +215,7 @@ export function FeedbackDialog({ trigger }: FeedbackDialogProps) {
         <div onClick={() => setIsOpen(true)}>{trigger}</div>
       </DialogTrigger>
       <DialogContent
-        className="p-4 md:p-8"
+        className="mt-8 flex max-h-[80dvh] flex-col overflow-hidden border-0 p-4 md:p-8"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader>
@@ -231,8 +233,8 @@ export function FeedbackDialog({ trigger }: FeedbackDialogProps) {
             </Button>
           </div>
         ) : (
-          <Card className="p-4 shadow-none">
-            <CardContent className="space-y-4 p-0">
+          <Card className="flex min-h-0 flex-1 flex-col p-4 shadow-none">
+            <CardContent className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-0">
               <p className="text-muted-foreground text-center text-xs md:text-sm">
                 We read every message and appreciate your thoughts.
               </p>

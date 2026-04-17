@@ -113,17 +113,6 @@ export async function middleware(request: NextRequest) {
     );
   }
 
-  // 6) Admin unlock guard
-  if (pathname.startsWith("/admin-dashboard/users")) {
-    const unlocked = request.cookies.get("users_admin_unlock")?.value;
-    if (unlocked !== "1") {
-      const url = request.nextUrl.clone();
-      url.pathname = "/admin-dashboard";
-      url.searchParams.set("unlock", "users");
-      return NextResponse.redirect(url);
-    }
-  }
-
   // 8) Admin vs user guards
   if (!admin && pathname.startsWith("/admin-dashboard")) {
     return NextResponse.redirect(new URL("/", origin));

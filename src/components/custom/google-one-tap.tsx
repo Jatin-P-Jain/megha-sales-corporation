@@ -59,7 +59,14 @@ export default function GoogleOneTap({
             const user = result.user;
 
             const tokenResult = await getIdTokenResult(user, true);
-            await setToken(tokenResult.token, user.refreshToken);
+            const { claimsUpdated } = await setToken(
+              tokenResult.token,
+              user.refreshToken,
+            );
+            if (claimsUpdated) {
+              const freshTokenResult = await getIdTokenResult(user, true);
+              await setToken(freshTokenResult.token, user.refreshToken);
+            }
 
             // ✅ Close prompt right away on success
             window.google.accounts.id.cancel();

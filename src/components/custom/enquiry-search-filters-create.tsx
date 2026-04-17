@@ -94,15 +94,17 @@ const EnquirySearchFiltersCreate: React.FC = () => {
 
   return (
     <div className="space-y-1">
-      <div className="flex gap-2 overflow-auto md:items-center md:gap-4">
+      <div className="flex gap-4 overflow-auto md:items-center md:gap-4">
         {userRole !== "admin" && (
-          <Button onClick={() => setHelpOpen(true)}>
+          <Button onClick={() => setHelpOpen(true)} className="flex-1">
             Raise a help request <MessageCirclePlus className="size-5" />
           </Button>
         )}
-        <SearchEnquiry variant="outline" showText={!isMobile || isAdmin} />
+        {isAdmin ?? (
+          <SearchEnquiry variant="outline" showText={!isMobile || isAdmin} />
+        )}
 
-        <div className="flex w-full flex-wrap items-center justify-center gap-2 md:justify-end">
+        <div className="flex w-auto flex-wrap items-center justify-between gap-2 md:justify-end">
           <span className="hidden text-xs font-medium text-gray-700 md:inline md:text-sm">
             Enquiry Status:
           </span>
@@ -111,7 +113,7 @@ const EnquirySearchFiltersCreate: React.FC = () => {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
-                className="flex w-full items-center gap-2 md:w-fit"
+                className="flex items-center gap-2 md:w-fit"
               >
                 {(!isMobile || isAdmin) && buttonLabel}
                 {isMobile || isAdmin ? (

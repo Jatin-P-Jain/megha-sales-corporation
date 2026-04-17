@@ -1,7 +1,23 @@
 // app/api/orders/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/firebase/server";
+import { hasAnyAllowedRole } from "@/lib/auth/claims";
 import { createWhatsAppPayloadFromInput } from "../../../../whatsappTemplates";
-import { recipientsForTemplate } from "./whatsappRecipients";
+import {
+  recipientsForTemplate,
+  TEST_PHONE_NUMBERS,
+} from "./whatsappRecipients";
+
+const WA_DEV_REDIRECT = "+919636245681";
+
+/** Returns true when the phone (any normalisation) matches a known test number. */
+function isTestPhone(phone: unknown): boolean {
+  if (!isString(phone)) return false;
+  const digits = phone.replace(/[^\d]/g, "");
+  // Match last 10 digits against the test set (handles +91XXXXXXXXXX, 91XXXXXXXXXX, XXXXXXXXXX)
+  const last10 = digits.slice(-10);
+  return TEST_PHONE_NUMBERS.has(last10);
+}
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,7 +41,8 @@ type TemplateKey =
   | "account_approval_request_to_admin"
   | "account_approval_reminder_to_admin"
   | "order_placed_to_admin_v2"
-  | "enquiry_received_to_admin_v2";
+  | "enquiry_received_to_admin_v2"
+  | "feedback_received_to_admin";
 
 const isRecord = (v: unknown): v is Record<string, unknown> =>
   typeof v === "object" && v !== null && !Array.isArray(v);
@@ -36,7 +53,8 @@ const isTemplateKey = (v: unknown): v is TemplateKey =>
   v === "account_approval_request_to_admin" ||
   v === "account_approval_reminder_to_admin" ||
   v === "order_placed_to_admin_v2" ||
-  v === "enquiry_received_to_admin_v2";
+  v === "enquiry_received_to_admin_v2" ||
+  v === "feedback_received_to_admin";
 
 function requireEnv(name: string): string {
   const value = process.env[name];
@@ -106,6 +124,28 @@ async function fetchWithTimeout(
 
 export async function POST(req: NextRequest) {
   try {
+    const authToken = req.cookies.get("firebaseAuthToken")?.value;
+    if (!authToken) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const decoded = await auth.verifyIdToken(authToken).catch(() => null);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const callerIsStaff = hasAnyAllowedRole(decoded, [
+      "admin",
+      "dispatcher",
+      "accountant",
+    ]);
+
     const raw = await req.json();
     if (!isRecord(raw)) {
       return NextResponse.json(
@@ -127,6 +167,8 @@ export async function POST(req: NextRequest) {
       customerBusinessProfile,
       toNumbers,
       enquiryId,
+      rating,
+      items,
     } = raw;
 
     if (!isTemplateKey(templateKey)) {
@@ -139,15 +181,34 @@ export async function POST(req: NextRequest) {
     const phoneNumberId = requireEnv("WHATSAPP_PHONE_NUMBER_ID");
     const token = requireEnv("WHATSAPP_TOKEN");
 
-    const roleRecipients = recipientsForTemplate(templateKey);
+    const roleRecipients = await recipientsForTemplate(templateKey);
 
     const extraRecipients = Array.isArray(toNumbers)
       ? toNumbers.filter(isString)
       : [];
 
-    const allRecipientPhones = Array.from(
-      new Set([...roleRecipients.map((r) => r.phoneE164), ...extraRecipients])
-    );
+    if (extraRecipients.length > 0 && !callerIsStaff) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Forbidden: custom recipients are staff-only",
+        },
+        { status: 403 }
+      );
+    }
+
+    // If the triggering customer's phone is a test number, redirect ALL
+    // WhatsApp messages to the dev number to avoid spamming real staff.
+    const customerPhoneIsTest = isTestPhone(customerPhone);
+
+    const allRecipientPhones: string[] = customerPhoneIsTest
+      ? [WA_DEV_REDIRECT]
+      : Array.from(
+          new Set([
+            ...roleRecipients.map((r) => r.phoneE164),
+            ...extraRecipients,
+          ])
+        );
 
     if (allRecipientPhones.length === 0) {
       return NextResponse.json(
@@ -185,6 +246,8 @@ export async function POST(req: NextRequest) {
               ? customerBusinessProfile
               : "",
             enquiryId: isString(enquiryId) ? enquiryId : "",
+            rating: isString(rating) ? rating : "",
+            items: isString(items) ? items : "",
           },
         });
 

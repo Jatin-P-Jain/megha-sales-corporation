@@ -57,7 +57,7 @@ export default function HomeUserBar() {
           <h1 className="flex w-full items-center gap-2 text-sm font-semibold md:text-lg">
             Hello,{" "}
             <span className="text-lg font-bold md:text-xl">
-              {userName || userPhone || "Guest"} 🙋🏻
+              {userName || userPhone || "Guest"}
             </span>
             {currentUser && gateSyncing && (
               <span className="text-muted-foreground ml-2 flex animate-pulse gap-2 text-xs font-medium">

@@ -87,7 +87,7 @@ export function GstDetails({ data, loading = false }: GstDetailsProps) {
 
       {/* Expandable Details */}
       {isExpanded && (
-        <CardContent className="space-y-2 border-t pb-3">
+        <CardContent className="max-h-[50dvh] space-y-2 overflow-y-auto border-t pb-3">
           <div className="grid grid-cols-2 gap-4 md:grid-cols-2">
             <div className="space-y-1">
               <span className="text-muted-foreground text-sm font-medium">

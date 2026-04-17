@@ -121,10 +121,13 @@
   body {
     min-height: 100dvh;
   }
+  html {
+    /* fills the overscroll/rubber-band area */
+    /* background-color: var(--background); */
+  }
   body {
     @apply bg-background text-foreground;
     position: relative;
-    isolation: isolate;
   }
   body::before {
     content: "";
@@ -134,6 +137,8 @@
     background-repeat: no-repeat;
     background-position: center center;
     background-size: cover;
+    /* promote to GPU compositor layer so it stays fixed during iOS rubber-band */
+    transform: translateZ(0);
     z-index: -1;
     pointer-events: none;
   }

@@ -14,7 +14,6 @@ import {
   ChevronsRight,
   PackageCheck,
   Send,
-  ShoppingCart,
   Tags,
 } from "lucide-react";
 import { useState } from "react";
@@ -92,7 +91,7 @@ export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
       <DialogTrigger asChild>{children}</DialogTrigger>
 
       {profileComplete ? (
-        <DialogContent className="p-4">
+        <DialogContent className="border-primary border p-3 shadow-2xl md:p-4">
           <DialogHeader className="p-2">
             <div className="flex items-center gap-2">
               <AlertCircle className="h-6 w-6 text-yellow-600" />
@@ -118,10 +117,10 @@ export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
                 <Tags className="size-4" /> Viewing product discounts and
                 special pricing
               </li>
-              <li className="flex gap-2 md:items-center">
+              {/* <li className="flex gap-2 md:items-center">
                 <ShoppingCart className="size-4" /> Adding items to the cart /
                 building a cart
-              </li>
+              </li> */}
               <li className="flex gap-2 md:items-center">
                 <PackageCheck className="size-4" /> Placing orders (checkout)
               </li>
@@ -162,24 +161,24 @@ export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
           </DialogFooter>
         </DialogContent>
       ) : (
-        <DialogContent className="p-2 md:p-4">
+        <DialogContent className="border-primary border p-3 shadow-2xl md:p-4">
           <DialogHeader className="p-2">
             <div className="flex items-center gap-2">
-              <AlertCircle className="h-6 w-6 text-yellow-600" />
+              <AlertCircle className="h-6 w-6 text-yellow-700" />
               <DialogTitle className="text-lg md:text-xl">
                 Profile Incomplete
               </DialogTitle>
             </div>
 
-            <DialogDescription className="text-xs">
+            <DialogDescription className="text-justify text-xs">
               Please complete your profile information before requesting account
               approval. This helps us verify your details and speeds up the
               approval process.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex flex-col gap-3 rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-sm">
-            <h4 className="text-sm font-semibold text-yellow-800">
+          <div className="flex flex-col gap-3 rounded-lg border border-yellow-300 bg-yellow-50 p-3 text-sm">
+            <h4 className="text-sm font-semibold text-yellow-700">
               What&apos;s temporarily unavailable?
             </h4>
 
@@ -188,10 +187,10 @@ export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
                 <Tags className="size-4" /> Viewing product discounts and
                 special pricing
               </li>
-              <li className="flex items-center gap-2">
+              {/* <li className="flex items-center gap-2">
                 <ShoppingCart className="size-4" /> Adding items to the cart /
                 building a cart
-              </li>
+              </li> */}
               <li className="flex items-center gap-2">
                 <PackageCheck className="size-4" /> Placing orders (checkout)
               </li>

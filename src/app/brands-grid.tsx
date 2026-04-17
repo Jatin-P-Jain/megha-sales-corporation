@@ -31,8 +31,8 @@ export default async function BrandsGrid({ brandsPromise }: Props) {
   }
 
   return (
-    <div className="flex w-full flex-col gap-2">
-      <div className="text-muted-foreground flex w-full items-center justify-between text-xs md:text-base">
+    <div className="flex w-full flex-col">
+      <div className="text-muted-foreground flex w-full items-center justify-between text-xs md:text-sm">
         <div>Browse products by brands</div>
         <Button variant="link" asChild className="p-0">
           <SafeLink href="/products-list">

@@ -10,9 +10,8 @@ import {
 import { useSearchParams } from "next/navigation";
 import {
   ChevronDown,
-  FunnelPlus,
-  FunnelPlusIcon,
   Loader2Icon,
+  SlidersHorizontal,
   MousePointerClick,
   X,
 } from "lucide-react";
@@ -50,6 +49,7 @@ import { PRODUCT_STATUS } from "@/data/product-status";
 import useIsMobile from "@/hooks/useIsMobile";
 import Image from "next/image";
 import imageUrlFormatter from "@/lib/image-urlFormatter";
+import { useDrawerBackButton } from "@/hooks/useDrawerBackButton";
 
 type FilterDef = FilterType;
 
@@ -87,6 +87,7 @@ export default function MoreFilters({
   const [isPending, startTransition] = useTransition();
   const [pendingKey, setPendingKey] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
+  const { markNavigated } = useDrawerBackButton(open, () => setOpen(false));
 
   const [selected, setSelected] = useState<FilterDef>(FILTERS[0]);
   const [selections, setSelections] = useState<Record<string, string[]>>({});
@@ -282,27 +283,36 @@ export default function MoreFilters({
 
     params.set("page", "1");
 
+    markNavigated();
     startTransition(() => {
       router.replace(`/products-list?${params.toString()}`);
     });
   }
 
-  function onClearAll() {
-    setPendingKey("close");
-    startTransition(() => {
-      router.replace("/products-list?page=1");
-    });
-  }
+  const totalActiveFilters = FILTERS.reduce(
+    (sum, f) => sum + selectedCountFromParams(f.applyKey),
+    0,
+  );
 
   const TriggerButton = (
     <Button
       variant="ghost"
       className={clsx(
-        "w-auto flex-1 font-normal",
+        "w-auto flex-1 font-normal justify-between",
         filterActive && "text-primary border-none font-medium shadow-none",
       )}
     >
-      <FunnelPlusIcon /> Filters
+      {isPending ? (
+        <Loader2Icon className="h-4 w-4 animate-spin" />
+      ) : (
+        <SlidersHorizontal className="h-4 w-4" />
+      )}
+      {isPending ? "Applying\u2026" : "Filters"}
+      {!isPending && totalActiveFilters > 0 ? (
+        <span className="bg-primary text-primary-foreground ml-1 flex size-4 items-center justify-center rounded-full text-[10px] font-semibold">
+          {totalActiveFilters}
+        </span>
+      ) : <span className=""></span>}
     </Button>
   );
 
@@ -400,9 +410,9 @@ export default function MoreFilters({
 
   const MobileBody = (
     <>
-      <DrawerHeader className="px-4">
-        <DrawerTitle className="text-lg">
-          <FunnelPlus className="mr-2 mb-1 inline-flex size-5" />
+      <DrawerHeader className="shrink-0 px-4">
+        <DrawerTitle className="flex items-center gap-2 text-lg">
+          <SlidersHorizontal className="size-5" />
           Filters
         </DrawerTitle>
         <DrawerDescription className="text-xs!">
@@ -412,7 +422,7 @@ export default function MoreFilters({
         </DrawerDescription>
       </DrawerHeader>
 
-      <div className="px-4 pb-3">
+      <div className="shrink-0 px-4 pb-3">
         <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
           {FILTERS.map((f) => {
             const c = selectedCountFor(f.key);
@@ -441,37 +451,28 @@ export default function MoreFilters({
         </div>
       </div>
 
-      <div className="px-4">
-        <div className="bg-muted max-h-[80vh] overflow-auto rounded-md">
-          <FilterSection
-            filterType={selected}
-            selections={selections}
-            setSelections={setSelections}
-            filterOptions={mergedFilterOptions}
-            toggleSelection={toggleSelection}
-            baseSelections={baseSelections}
-          />
-        </div>
+      <div className="bg-muted mx-4 flex min-h-0 flex-1 flex-col rounded-md">
+        <FilterSection
+          filterType={selected}
+          selections={selections}
+          setSelections={setSelections}
+          filterOptions={mergedFilterOptions}
+          toggleSelection={toggleSelection}
+          baseSelections={baseSelections}
+        />
       </div>
 
-      <DrawerFooter className="flex w-full flex-row">
+      <DrawerFooter className="flex w-full shrink-0 flex-row">
         <Button
           variant="outline"
-          className="border-primary text-primary"
-          onClick={onClearAll}
-          disabled={isPending && pendingKey === "close"}
+          className="border-primary text-primary hover:bg-primary/10"
+          onClick={() =>
+            setSelections((sel) => ({ ...sel, [selected.key]: [] }))
+          }
+          disabled={selectedCountFor(selected.key) === 0}
         >
-          {isPending && pendingKey === "close" ? (
-            <div className="flex justify-center gap-4">
-              <span>Clearing all filters</span>
-              <Loader2Icon className="size-4 animate-spin" />
-            </div>
-          ) : (
-            <div className="flex items-center justify-center gap-2">
-              <X className="size-4" />
-              <span>Clear</span>
-            </div>
-          )}
+          <X className="size-4" />
+          <span>Clear</span>
         </Button>
 
         <Button
@@ -500,7 +501,9 @@ export default function MoreFilters({
     return (
       <Drawer open={open} onOpenChange={setOpen}>
         <DrawerTrigger asChild>{TriggerButton}</DrawerTrigger>
-        <DrawerContent className="max-h-[90vh]">{MobileBody}</DrawerContent>
+        <DrawerContent className="max-h-[90vh] overflow-hidden">
+          {MobileBody}
+        </DrawerContent>
       </Drawer>
     );
   }

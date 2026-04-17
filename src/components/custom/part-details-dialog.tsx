@@ -64,7 +64,7 @@ export function PartDetailsDialog({
       <DialogTrigger asChild>
         <Button
           variant="link"
-          className="h-0 min-h-0 w-full p-0 py-1 pb-3 text-xs"
+          className="text-xs underline px-0!"
         >
           Part Details
         </Button>

@@ -56,8 +56,6 @@ export function FilterSection({
   toggleSelection,
   baseSelections,
 }: FilterSectionProps) {
-  console.log({ filterOptions, selections });
-
   const [searchTerm, setSearchTerm] = useState("");
   useEffect(() => setSearchTerm(""), [filterType.key]);
 
@@ -158,20 +156,22 @@ export function FilterSection({
   }
 
   return (
-    <div className="flex h-full w-full flex-col gap-2 p-4">
-      {filterType.key!=="brand"&&<div className="flex items-center gap-2">
-        <h3 className="text-muted-foreground text-[10px] flex items-center gap-1">
-          <Info className="size-3" />
-          Showing {filterType.label} options for the selected brands only.
-        </h3>
-      </div>}
+    <div className="flex h-full min-h-0 w-full flex-col gap-2 p-4">
+      {filterType.key !== "brand" && (
+        <div className="flex items-center gap-2">
+          <h3 className="text-muted-foreground flex items-center gap-1 text-[10px]">
+            <Info className="size-3" />
+            Showing {filterType.label} options for the selected brands only.
+          </h3>
+        </div>
+      )}
       <Input
         placeholder={`Search ${filterType.label}`}
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
 
-      <div className="flex max-h-[42vh] flex-col gap-2 overflow-auto">
+      <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto overscroll-contain">
         {nothingFound && (
           <div className="text-xs">
             No {filterType.label} with name &quot;

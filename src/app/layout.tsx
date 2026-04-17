@@ -98,7 +98,7 @@ export default async function RootLayout({
 
               <RouteProgress />
               <NavBar />
-              <div className="mx-auto max-w-screen-lg px-4 pt-20 pb-8 md:p-8 md:pt-28">
+              <div className="mx-auto max-w-5xl px-3 pt-20 pb-8 md:p-8 md:pt-28">
                 {children}
               </div>
 

@@ -11,7 +11,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { CheckCheck, Loader2, BellRing, X } from "lucide-react";
+import { CheckCheck, Loader2, BellRing, X, XCircle } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { markAllNotificationsRead, markNotificationRead } from "./actions";
 import { Card } from "@/components/ui/card";
@@ -99,9 +99,15 @@ export default function NotificationsCenterClient({
           {item.title}
         </p>
         {!item.read && (
-          <span className="flex animate-pulse items-center gap-2 rounded-md px-3 py-0.5 text-sm text-red-700">
-            <BellRing className="inline-flex size-4" />
-          </span>
+          <div
+            className="flex items-center text-sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              markNotificationRead(item.id);
+            }}
+          >
+            <XCircle className="size-4" />
+          </div>
         )}
       </div>
       <p className="text-muted-foreground line-clamp-2 text-xs leading-relaxed">
@@ -115,8 +121,8 @@ export default function NotificationsCenterClient({
   );
 
   const content = (
-    <div className="pb-2">
-      <div className="max-h-[60vh] overflow-y-auto pr-1">
+    <div className="flex min-h-0 flex-1 flex-col pb-2">
+      <div className="min-h-0 flex-1 overflow-y-auto pr-1">
         {sortedItems.length === 0 ? (
           <div className="text-muted-foreground flex h-40 items-center justify-center text-sm">
             No notifications yet.
@@ -164,7 +170,7 @@ export default function NotificationsCenterClient({
       dismissible={false}
       handleOnly
     >
-      <DrawerContent className="z-50! mx-auto max-h-[85vh] max-w-3xl gap-3 px-4 pt-20 pb-4 md:pt-25">
+      <DrawerContent className="z-50! mx-auto max-w-3xl gap-3 overflow-hidden px-4 pt-20 pb-4 md:pt-25">
         <DrawerHeader className="flex w-full flex-row items-center justify-between p-0">
           <DrawerTitle className="flex gap-2">
             <BellRing className="size-6" />
@@ -199,7 +205,7 @@ export default function NotificationsCenterClient({
             </label>
           </div>
         )}
-        <div className="w-full">
+        <div className="flex min-h-0 w-full flex-1 flex-col">
           {content}
           <Button
             type="button"

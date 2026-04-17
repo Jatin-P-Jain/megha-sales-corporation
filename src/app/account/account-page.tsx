@@ -14,7 +14,9 @@ import { useRecaptcha } from "@/hooks/useRecaptcha";
 import { useLinkAuthProviders } from "@/hooks/useLinkAuthProviders";
 import { setToken } from "@/context/actions";
 import { updateUserFirebaseMethods, updateUserPhoto } from "./actions";
+import { updateUserProfile } from "./profile/action";
 import AccountView from "./account-view";
+import type { BusinessProfile } from "@/types/user";
 import Loading from "./loading";
 import { useUserGate } from "@/context/UserGateProvider";
 import {
@@ -30,15 +32,17 @@ export default function AccountPage() {
 
   useRequireUserProfile(true);
 
-  const { currentUser, isAdmin, userRole } = useAuthState();
+  const { currentUser, isAdmin } = useAuthState();
   const { refreshUser } = useUserProfileActions();
   const { clientUser, clientUserLoading } = useUserProfileState();
-  const { accountStatus, rejectionReason, profileComplete } = useUserGate();
+  const { accountStatus, rejectionReason, profileComplete, userRole } =
+    useUserGate();
 
   const [uploading, setUploading] = useState(false);
   const [uploadPercent, setUploadPercent] = useState<number>(0);
   const [photo, setPhoto] = useState<string>("");
-  const [moreOpen, setMoreOpen] = useState(false);
+  const [cropOpen, setCropOpen] = useState(false);
+  const [cropSrc, setCropSrc] = useState<string>("");
 
   const recaptchaVerifier = useRecaptcha({ enabled: true });
   const { linkGoogle } = useLinkAuthProviders({
@@ -78,22 +82,63 @@ export default function AccountPage() {
     }
   }, []);
 
-  const onPhotoChange = useCallback(
-    async (event: ChangeEvent<HTMLInputElement>) => {
+  const onPhotoChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    // Reset input so the same file can be re-selected after cancel
+    event.target.value = "";
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (e.target?.result) {
+        setCropSrc(e.target.result as string);
+        setCropOpen(true);
+      }
+    };
+    reader.readAsDataURL(file);
+  }, []);
+
+  const onSaveName = useCallback(
+    async (name: string) => {
+      await updateUserProfile({ displayName: name });
+      await refreshUser();
+      toast.success("Name updated!");
+    },
+    [refreshUser],
+  );
+
+  const onSavePan = useCallback(
+    async (pan: string) => {
+      await updateUserProfile({ panNumber: pan, businessIdType: "pan" });
+      await refreshUser();
+      toast.success("PAN number saved!");
+    },
+    [refreshUser],
+  );
+
+  const onSaveGst = useCallback(
+    async (businessProfile: BusinessProfile) => {
+      await updateUserProfile({
+        gstNumber: businessProfile.gstin,
+        businessIdType: "gst",
+        firmName: businessProfile.tradeName,
+        businessProfile,
+      });
+      await refreshUser();
+      toast.success("GST details saved!");
+    },
+    [refreshUser],
+  );
+
+  const onCropDone = useCallback(
+    async ({ file }: { blobUrl: string; file: File }) => {
       if (!clientUser?.uid) return;
-
-      const file = event.target.files?.[0];
-      if (!file) return;
-
-      // Optimistic preview
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target?.result) setPhoto(e.target.result as string);
-      };
-      reader.readAsDataURL(file);
 
       const imagePath = `users/${clientUser.uid}/profile-picture/${Date.now()}-${file.name}`;
       const logoStorageRef = ref(storage, imagePath);
+
+      // Optimistic preview from blob
+      const previewUrl = URL.createObjectURL(file);
+      setPhoto(previewUrl);
 
       setUploading(true);
       setUploadPercent(0);
@@ -117,6 +162,7 @@ export default function AccountPage() {
 
         await updateUserPhoto({ userId: clientUser.uid, photoUrl: imagePath });
         const formatted = imageUrlFormatter(imagePath);
+        URL.revokeObjectURL(previewUrl);
         setPhoto(formatted);
 
         toast.success("Profile updated!", {
@@ -124,6 +170,7 @@ export default function AccountPage() {
         });
       } catch (error) {
         console.error("Upload/update failed", error);
+        setPhoto(clientUser.photoUrl ?? "");
         toast.error("Failed to update profile picture", {
           description:
             error instanceof Error ? error.message : "Please try again.",
@@ -144,16 +191,21 @@ export default function AccountPage() {
     <AccountView
       clientUser={clientUser}
       profileComplete={profileComplete}
-      userRole={userRole}
       isAdmin={!!isAdmin}
+      userRole={userRole}
       accountStatus={accountStatus}
       rejectionReason={rejectionReason}
-      moreOpen={moreOpen}
-      setMoreOpen={setMoreOpen}
       photo={photo}
       uploading={uploading}
       uploadPercent={uploadPercent}
       onPhotoChange={onPhotoChange}
+      cropOpen={cropOpen}
+      cropSrc={cropSrc}
+      onCropClose={() => setCropOpen(false)}
+      onCropDone={onCropDone}
+      onSaveName={onSaveName}
+      onSavePan={onSavePan}
+      onSaveGst={onSaveGst}
       onGoToProfile={onGoToProfile}
       onCopy={onCopy}
       onLinkGoogle={async () => {

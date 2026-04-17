@@ -4,20 +4,17 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   CheckCircle2,
   Clock,
   MessageCircle,
   Send,
   MoreVertical,
-  Hash,
   Eye,
   EyeClosed,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,10 +26,11 @@ import {
 import Image from "next/image";
 import clsx from "clsx";
 import DefaultUserIcon from "@/assets/icons/user.png";
-import { notifyUserAction } from "@/actions/notify-user";
+import { notifyUserAction, notifyAdminsAction } from "@/actions/notify-user";
 import { Enquiry } from "@/types/enquiry";
 import { formatDateTime, getBaseUrl } from "@/lib/utils";
 import { FullUser } from "@/types/user";
+import { Input } from "@/components/ui/input";
 
 interface EnquiryCardProps {
   enquiry: Enquiry;
@@ -124,13 +122,42 @@ export default function EnquiryCard({
               },
             },
           ],
-          // Auto-update status from pending to in-progress when replying
-          status: enquiry.status === "pending" ? "in-progress" : enquiry.status,
+          // Auto-update status from pending to in-progress only when admin replies
+          status:
+            isAdmin && enquiry.status === "pending"
+              ? "in-progress"
+              : enquiry.status,
         });
       }
 
       setReplyText("");
       toast.success("Reply sent successfully");
+
+      // In-app notification: admin replied → notify user; user replied → notify admins
+      if (isAdmin) {
+        if (notificationUid) {
+          void notifyUserAction({
+            uid: notificationUid,
+            type: "enquiry",
+            title: "💬 New Reply on Your Enquiry",
+            body: `Admin replied to your enquiry #${enquiry.id}.`,
+            url: `${getBaseUrl()}/enquiries?searchField=id&searchQuery=${enquiry.id}`,
+            clickAction: "view_enquiry",
+            status: "updated",
+            pushOnly: true,
+          });
+        }
+      } else {
+        void notifyAdminsAction({
+          type: "enquiry",
+          title: "💬 New Reply on Enquiry",
+          body: `${loggedInUser.displayName || "A user"} replied to enquiry #${enquiry.id}.`,
+          url: `${getBaseUrl()}/admin-dashboard/enquiries?searchField=id&searchQuery=${enquiry.id}`,
+          clickAction: "view_enquiry",
+          status: "updated",
+          pushOnly: true,
+        });
+      }
     } catch (error) {
       console.error(error);
       toast.error("Failed to send reply");
@@ -143,21 +170,21 @@ export default function EnquiryCard({
     switch (value) {
       case "in-progress":
         return (
-          <Badge className="h-full border border-sky-700 bg-sky-100 py-1 text-sm font-medium text-sky-700 hover:bg-sky-200">
+          <Badge className="h-full border border-sky-700 bg-sky-100 py-1 text-xs font-medium text-sky-700 hover:bg-sky-200 md:text-sm">
             <MessageCircle className="size-4!" />
             In Progress
           </Badge>
         );
       case "resolved":
         return (
-          <Badge className="h-full border border-green-700 bg-green-100 py-1 text-sm font-medium text-green-700 hover:bg-green-200">
+          <Badge className="h-full border border-green-700 bg-green-100 py-1 text-xs font-medium text-green-700 hover:bg-green-200 md:text-sm">
             <CheckCircle2 className="size-4!" />
             Resolved
           </Badge>
         );
       default:
         return (
-          <Badge className="h-full border border-yellow-700 bg-yellow-100 py-1 text-sm font-medium text-yellow-700 hover:bg-yellow-200">
+          <Badge className="h-full border border-yellow-700 bg-yellow-100 py-1 text-xs font-medium text-yellow-700 hover:bg-yellow-200 md:text-sm">
             <Clock className="size-4!" />
             Pending
           </Badge>
@@ -168,27 +195,40 @@ export default function EnquiryCard({
   return (
     <Card className="gap-0 overflow-hidden p-0">
       <CardHeader className="bg-primary/10 p-3">
-        <div className="flex h-full items-start justify-between gap-4">
-          <div className="flex w-auto flex-col items-start gap-2">
-            <div className="text-muted-foreground flex items-center gap-2 text-sm">
-              <Hash className="h-4 w-4" />
-              <span className="text-xs font-medium">Enquiry ID:</span>
-              <span className="text-foreground font-mono text-base font-semibold">
+        <div className="flex h-full flex-col items-start justify-between gap-2 md:flex-row md:items-center">
+          <div className="flex w-full flex-col items-start gap-1 md:gap-2">
+            <div className="text-muted-foreground flex w-full flex-1 flex-col items-start gap-1 text-sm md:flex-row md:items-center md:gap-2">
+              <span className="text-xs font-medium whitespace-nowrap">
+                # Enquiry ID:
+              </span>
+              <span className="text-foreground font-mono text-base font-semibold whitespace-nowrap">
                 {enquiry.id || "N/A"}
               </span>
             </div>
+            {!isAdmin && (
+              <span className="text-muted-foreground flex w-full items-center gap-1 text-xs font-medium whitespace-nowrap">
+                <span className="font-normal">Request raised on </span>
+                {formatDateTime(enquiry.createdAt)}
+              </span>
+            )}
             {isAdmin && (
-              <div className="bg-accent flex w-full items-end justify-between gap-6 rounded-md p-1 px-2 text-sm">
+              <div className="bg-accent flex w-full flex-col items-start justify-between gap-2 rounded-md p-1 px-2 text-sm md:flex-row md:items-end md:gap-8">
                 <div className="text-muted-foreground flex items-center gap-2">
                   <span className="text-xs whitespace-nowrap">
                     Created By :{" "}
                   </span>
-                  <Avatar className="h-8 w-8 border border-white shadow-md">
+                  <Avatar className="h-5 w-5 border border-white shadow-md md:h-8 md:w-8">
                     {createdBy.photoUrl ? (
-                      <AvatarImage
-                        src={createdBy.photoUrl}
-                        alt={createdBy.displayName || "User"}
-                      />
+                      <AvatarFallback className="bg-transparent p-0">
+                        <Image
+                          src={createdBy.photoUrl}
+                          alt={createdBy.displayName || "User"}
+                          width={32}
+                          height={32}
+                          className="h-full w-full rounded-full object-cover"
+                          unoptimized={createdBy.photoUrl.startsWith("blob:")}
+                        />
+                      </AvatarFallback>
                     ) : (
                       <AvatarFallback>
                         <Image
@@ -202,10 +242,10 @@ export default function EnquiryCard({
                     )}
                   </Avatar>
                   <div className="flex flex-col">
-                    <span className="text-foreground">
+                    <span className="text-foreground text-xs md:text-sm">
                       {createdBy.displayName || "Anonymous"}
                     </span>
-                    <p className="text-muted-foreground truncate text-xs">
+                    <p className="text-muted-foreground truncate text-xs md:text-sm">
                       {createdBy.email || createdBy.phone || "No contact"}
                     </p>
                   </div>
@@ -216,8 +256,8 @@ export default function EnquiryCard({
               </div>
             )}
           </div>
-          <div className="flex flex-col items-end justify-center gap-4">
-            <div className="flex items-center justify-end gap-4">
+          <div className="flex w-full flex-col items-end justify-center gap-3">
+            <div className="flex w-full items-center justify-between gap-0 md:justify-end md:gap-4">
               <div className="flex items-center gap-2">
                 {getStatusBadge(enquiry.status)}
               </div>
@@ -228,10 +268,10 @@ export default function EnquiryCard({
                       size="sm"
                       variant="outline"
                       disabled={isUpdatingStatus}
-                      className="w-auto"
+                      className="w-auto text-xs md:text-sm"
                     >
                       Mark as
-                      <MoreVertical className="h-4 w-4" />
+                      <MoreVertical className="h-3 w-3 md:h-4 md:w-4" />
                     </Button>
                   </DropdownMenuTrigger>
 
@@ -262,16 +302,16 @@ export default function EnquiryCard({
                 <div
                   onClick={() => setIsDetailsOpen((prev) => !prev)}
                   className={clsx(
-                    "flex cursor-pointer items-center justify-between gap-2 whitespace-nowrap",
+                    "whitespace-nowra flex cursor-pointer items-center justify-between gap-2",
                   )}
                 >
-                  <span className="text-muted-foreground text-sm font-medium">
+                  <span className="text-muted-foreground text-xs font-medium md:text-sm">
                     {isDetailsOpen ? "Hide" : "Show"} conversation
                   </span>
                   {isDetailsOpen ? (
-                    <EyeClosed className="text-muted-foreground size-5" />
+                    <EyeClosed className="text-muted-foreground size-4 md:size-5" />
                   ) : (
-                    <Eye className="text-muted-foreground size-5" />
+                    <Eye className="text-muted-foreground size-4 md:size-5" />
                   )}
                 </div>
               )}
@@ -298,8 +338,7 @@ export default function EnquiryCard({
       </CardHeader>
 
       {isDetailsOpen && (
-        <CardContent className="space-y-4 p-4">
-          <Separator />
+        <CardContent className="space-y-3 p-2 md:space-y-3 md:p-3">
           <div className="no-scrollbar max-h-80 space-y-1 overflow-y-auto pr-1">
             {(enquiry.conversation || []).map((conv, index) => {
               const messageUid = (conv.messageBy as { uid?: string })?.uid;
@@ -347,20 +386,19 @@ export default function EnquiryCard({
 
           {canReply && (
             <>
-              <Separator />
               <div className="flex items-center gap-2">
-                <Textarea
+                <Input
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
                   placeholder="Type your reply..."
-                  className="resize-none"
+                  className="resize-none text-sm"
                   disabled={isReplying}
-                  rows={1}
+                  // rows={1}
                 />
                 <Button
                   onClick={handleSendReply}
                   disabled={!replyText.trim() || isReplying}
-                  className="h-full! shrink-0 py-5"
+                  className="h-full! shrink-0"
                 >
                   <Send className="size-5" />
                 </Button>

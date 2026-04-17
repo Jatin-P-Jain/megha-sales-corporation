@@ -6,9 +6,15 @@ interface OTPInputProps {
   length?: number;
   value: string;
   onChange: (value: string) => void;
+  onComplete?: (value: string) => void;
 }
 
-const OTPInput: FC<OTPInputProps> = ({ length = 6, value, onChange }) => {
+const OTPInput: FC<OTPInputProps> = ({
+  length = 6,
+  value,
+  onChange,
+  onComplete,
+}) => {
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
 
   // 1) Sync each box's value whenever `value` changes
@@ -32,8 +38,12 @@ const OTPInput: FC<OTPInputProps> = ({ length = 6, value, onChange }) => {
     }
     const newVal = value.substring(0, idx) + raw + value.substring(idx + 1);
     onChange(newVal);
-    // move focus forward
-    inputsRef.current[idx + 1]?.focus();
+    if (newVal.length === length) {
+      onComplete?.(newVal);
+    } else {
+      // move focus forward
+      inputsRef.current[idx + 1]?.focus();
+    }
   };
 
   const handleKeyDown = (
@@ -45,6 +55,21 @@ const OTPInput: FC<OTPInputProps> = ({ length = 6, value, onChange }) => {
     }
   };
 
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const pasted = e.clipboardData.getData("text").replace(/\D/g, "");
+    if (!pasted) return;
+    e.preventDefault();
+    const digits = pasted.slice(0, length);
+    onChange(digits);
+    if (digits.length === length) {
+      onComplete?.(digits);
+    } else {
+      // focus the box after the last pasted digit (or last box)
+      const nextIdx = Math.min(digits.length, length - 1);
+      inputsRef.current[nextIdx]?.focus();
+    }
+  };
+
   return (
     <div className="mx-auto flex w-full items-center justify-center gap-2 md:gap-4">
       {Array.from({ length }).map((_, i) => (
@@ -53,12 +78,14 @@ const OTPInput: FC<OTPInputProps> = ({ length = 6, value, onChange }) => {
           type="tel"
           inputMode="numeric"
           maxLength={1}
-          className="min-w-0 flex-1 text-center text-lg md:text-xl shadow-md"
+          autoComplete="one-time-code"
+          className="min-w-0 flex-1 text-center text-lg shadow-md md:text-xl"
           ref={(el) => {
             inputsRef.current[i] = el ?? null;
           }}
           onChange={(e) => handleInput(e, i)}
           onKeyDown={(e) => handleKeyDown(e, i)}
+          onPaste={handlePaste}
         />
       ))}
     </div>

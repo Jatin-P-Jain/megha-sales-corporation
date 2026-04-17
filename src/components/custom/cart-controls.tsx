@@ -239,7 +239,7 @@ export default function CartControls({
       ) : (
         <div
           className={clsx(
-            "flex w-auto items-center gap-1",
+            "flex w-auto items-center gap-1 bg-card",
             isCartPage && "w-full! justify-between",
           )}
         >

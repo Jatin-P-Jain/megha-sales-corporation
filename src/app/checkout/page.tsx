@@ -2,11 +2,10 @@ import { requireProfileCompleteOrRedirect } from "@/lib/auth/gaurds";
 import CheckoutShell from "./chekout-shell";
 
 export default async function CheckoutPage() {
-  const decoded = await requireProfileCompleteOrRedirect("/checkout");
-  const isAdmin = Boolean(decoded.admin);
+  await requireProfileCompleteOrRedirect("/checkout");
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-4 relative">
-      <CheckoutShell isAdmin={isAdmin} />
+    <div className="relative mx-auto flex h-full min-h-0 w-full max-w-5xl">
+      <CheckoutShell />
     </div>
   );
 }

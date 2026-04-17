@@ -71,10 +71,7 @@ export function UserProfileProvider({
 
     const result = await createUserIfNotExists(safeUser);
     if (result?.newUser) {
-      if (process.env.NODE_ENV === "development") {
-        console.log("Created new user document for uid:", fbUid);
-      }
-    } else {
+      // no-op: new-user side effects are handled by createUserIfNotExists
     }
   }, []);
 

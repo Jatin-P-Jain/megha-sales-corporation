@@ -12,12 +12,18 @@ import {
 } from "@/components/ui/card";
 import { getBrands, VEHICLE_CATEGORIES } from "@/data/brands";
 import { InfoIcon, PencilIcon, PlusCircleIcon, WrenchIcon } from "lucide-react";
+import { requireAllowedRolesOrRedirect } from "@/lib/auth/gaurds";
 
 const AdminBrands = async ({
   searchParams,
 }: {
   searchParams?: Promise<{ page: string }>;
 }) => {
+  await requireAllowedRolesOrRedirect(
+    ["admin", "accountant"],
+    "/admin-dashboard",
+  );
+
   const searchParamsValue = await searchParams;
   const page = searchParamsValue?.page ? parseInt(searchParamsValue.page) : 1;
   const { data } = await getBrands({
@@ -80,7 +86,7 @@ const AdminBrands = async ({
                   </div>
                   <SafeLink
                     href={`/admin-dashboard/edit-brand/${brand.id}`}
-                    className="border-primary/70 text-primary flex items-center justify-center gap-1 rounded-lg border-1 p-1.5 py-1"
+                    className="border-primary/70 text-primary flex items-center justify-center gap-1 rounded-lg border p-1.5 py-1"
                   >
                     <PencilIcon className="h-3.5 w-3.5" />
                     <span className="text-xs md:text-sm">Edit</span>

@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuItem,
 } from "../ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Avatar, AvatarFallback } from "../ui/avatar";
 import DefaultUserIcon from "@/assets/icons/user.png";
 import { Badge } from "../ui/badge";
 import Image from "next/image";
@@ -20,7 +20,6 @@ import {
   LogInIcon,
   LogOutIcon,
   MessageCircleQuestionIcon,
-  NotebookTextIcon,
   ShieldUserIcon,
   ShoppingCartIcon,
   TagsIcon,
@@ -32,6 +31,9 @@ import {
   UserX,
   Clock,
   AlertCircle,
+  Shield,
+  UserPen,
+  Truck,
 } from "lucide-react";
 import { usePwaPrompt } from "@/hooks/usePwaPrompt";
 import clsx from "clsx";
@@ -145,9 +147,9 @@ export default function AuthButtons() {
   const { isNavigating } = useNavigationLock();
   const { deferredPrompt, promptToInstall, isPwa } = usePwaPrompt();
 
-  const { currentUser, isAdmin, isLoggingOut, userRole } = useAuthState();
+  const { currentUser, isAdmin, isLoggingOut } = useAuthState();
   const { logout } = useAuthActions();
-  const { profileComplete, accountStatus } = useUserGate();
+  const { profileComplete, accountStatus, userRole } = useUserGate();
   useRequireUserProfile(true);
   const { clientUser, clientUserLoading } = useUserProfileState();
   const { unreadCount: unreadNotifications } = useRealtimeNotifications({
@@ -212,11 +214,16 @@ export default function AuthButtons() {
                 )}
               >
                 {clientUser.photoUrl ? (
-                  <AvatarImage
-                    src={clientUser.photoUrl}
-                    alt="avatar"
-                    className="rounded-full object-cover"
-                  />
+                  <AvatarFallback className="bg-transparent p-0">
+                    <Image
+                      src={clientUser.photoUrl}
+                      alt="avatar"
+                      width={32}
+                      height={32}
+                      className="h-full w-full rounded-full object-cover"
+                      unoptimized={clientUser.photoUrl.startsWith("blob:")}
+                    />
+                  </AvatarFallback>
                 ) : (
                   <AvatarFallback className="bg-cyan-800">
                     <Image
@@ -231,14 +238,53 @@ export default function AuthButtons() {
               </Avatar>
 
               {unreadNotifications > 0 && (
-                <BellRing className="absolute -top-2 -right-2 inline-flex h-5 w-5 animate-pulse rounded-full bg-red-600 p-0.5" />
+                <span
+                  className={clsx(
+                    "absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-red-600 text-white",
+                    isAdmin
+                      ? "h-4 min-w-4 px-0.5 text-[9px] font-bold"
+                      : "h-4 w-4 animate-pulse",
+                  )}
+                >
+                  {isAdmin ? (
+                    unreadNotifications > 99 ? (
+                      "99+"
+                    ) : (
+                      unreadNotifications
+                    )
+                  ) : (
+                    <BellRing className="h-3 w-3 p-0" />
+                  )}
+                </span>
               )}
 
-              {isAdmin && (
-                <div className="bottom-0 rounded-sm bg-green-100 px-1 text-[8px] font-semibold text-green-700">
-                  Admin
-                </div>
-              )}
+              {isAdmin &&
+                (() => {
+                  const role = userRole ?? "admin";
+                  const Icon =
+                    role === "accountant"
+                      ? UserPen
+                      : role === "dispatcher"
+                        ? Truck
+                        : Shield;
+                  const bg =
+                    role === "accountant"
+                      ? "bg-violet-700"
+                      : role === "dispatcher"
+                        ? "bg-amber-600"
+                        : "bg-sky-900";
+                  return (
+                    <span
+                      className={clsx(
+                        "bottom-0 flex items-center gap-0.5 rounded-sm px-1 text-[8px] font-semibold text-white",
+                        bg,
+                      )}
+                    >
+                      <Icon className="size-2.5" />
+                      {toTitleCase(role)}
+                    </span>
+                  );
+                })()}
             </button>
           </DropdownMenuTrigger>
 
@@ -248,10 +294,27 @@ export default function AuthButtons() {
             className="w-80 rounded-md border p-1 shadow-lg"
           >
             <DropdownMenuLabel className="flex flex-col items-start space-y-1 px-4 py-2">
-              <span className="font-medium">{clientUser.displayName}</span>
-              <span className="text-muted-foreground text-xs">
-                {clientUser.email}
-              </span>
+              <div className="flex w-full items-center justify-between">
+                {clientUser.displayName && (
+                  <span className="font-medium">{clientUser.displayName}</span>
+                )}
+                <div className="flex flex-col justify-between gap-2 md:flex-row md:items-center">
+                  {!isAdmin ? (
+                    <>
+                      {!profileComplete ? (
+                        <AccountStatusBadge status={"incomplete"} />
+                      ) : (
+                        <AccountStatusBadge status={accountStatus} />
+                      )}
+                    </>
+                  ) : null}
+                </div>
+              </div>
+              {clientUser.email && (
+                <span className="text-muted-foreground text-xs">
+                  {clientUser.email}
+                </span>
+              )}
 
               {clientUser.phone && (
                 <span className="text-muted-foreground text-xs">
@@ -259,72 +322,70 @@ export default function AuthButtons() {
                 </span>
               )}
 
-              {isAdmin && (
-                <span className="w-fit rounded-full bg-green-50 px-2 py-0.5 text-xs font-semibold text-green-700">
-                  Admin Account
-                </span>
-              )}
-
-              <div className="flex w-full flex-col justify-between gap-2 md:flex-row md:items-center">
-                {!isAdmin ? (
-                  <>
-                    {userRole && (
-                      <span className="bg-muted w-fit rounded-full px-2 py-0.5 text-xs font-semibold">
-                        {toTitleCase(userRole)}
-                      </span>
-                    )}
-                    {!profileComplete ? (
-                      <AccountStatusBadge status={"incomplete"} />
-                    ) : (
-                      <AccountStatusBadge status={accountStatus} />
-                    )}
-                  </>
-                ) : null}
-              </div>
+              {isAdmin &&
+                (() => {
+                  const role = userRole ?? "admin";
+                  const Icon =
+                    role === "accountant"
+                      ? UserPen
+                      : role === "dispatcher"
+                        ? Truck
+                        : Shield;
+                  const bg =
+                    role === "accountant"
+                      ? "bg-violet-700"
+                      : role === "dispatcher"
+                        ? "bg-amber-600"
+                        : "bg-sky-900";
+                  return (
+                    <Badge
+                      className={clsx(
+                        "w-fit gap-1 border border-white font-medium text-white shadow-sm",
+                        bg,
+                      )}
+                    >
+                      <Icon className="size-3" />
+                      {toTitleCase(role)}
+                    </Badge>
+                  );
+                })()}
 
               {profileComplete &&
                 !isAdmin &&
                 accountStatus &&
-                accountStatus !== "approved" && (
+                accountStatus !== "approved" &&
+                accountStatus !== "pending" && (
                   <div className="mt-1 flex w-full items-center gap-1 text-xs text-zinc-600">
                     <TriangleAlert className="size-4" />
                     <span>
-                      {accountStatus === "pending"
-                        ? "Your account is under review."
-                        : accountStatus === "rejected"
-                          ? "Your account was rejected."
-                          : accountStatus === "suspended"
-                            ? "Your account is suspended."
-                            : "Your account is deactivated."}
+                      {accountStatus === "rejected"
+                        ? "Your account was rejected."
+                        : accountStatus === "suspended"
+                          ? "Your account is suspended."
+                          : "Your account is deactivated."}
                     </span>
                   </div>
                 )}
             </DropdownMenuLabel>
 
-            {!isAdmin && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onSelect={() => {
-                    setIsMenuOpen(false);
-                    setIsNotificationsOpen(true);
-                  }}
-                  className="flex w-full items-center justify-between"
-                >
-                  <div className="flex items-center justify-start gap-2">
-                    Notification Center
-                    {unreadNotifications > 0 && (
-                      <span className="text-xs font-semibold">
-                        (
-                        {unreadNotifications > 99 ? "99+" : unreadNotifications}
-                        )
-                      </span>
-                    )}
-                  </div>
-                  <BellRing className="text-secondary-foreground size-4" />
-                </DropdownMenuItem>
-              </>
-            )}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onSelect={() => {
+                setIsMenuOpen(false);
+                setIsNotificationsOpen(true);
+              }}
+              className="flex w-full items-center justify-between"
+            >
+              <div className="flex items-center justify-start gap-2">
+                Notification Center
+                {unreadNotifications > 0 && (
+                  <span className="rounded-full bg-red-600 px-1.5 text-xs font-semibold text-white">
+                    {unreadNotifications > 99 ? "99+" : unreadNotifications}
+                  </span>
+                )}
+              </div>
+              <BellRing className="text-secondary-foreground size-4" />
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
 
             <DropdownMenuItem asChild>
@@ -344,17 +405,8 @@ export default function AuthButtons() {
                     href="/admin-dashboard"
                     className="flex items-center justify-between"
                   >
-                    Admin Dashboard
+                    Dashboard
                     <ShieldUserIcon className="text-secondary-foreground" />
-                  </SafeLink>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <SafeLink
-                    href="/order-history"
-                    className="flex items-center justify-between"
-                  >
-                    Order Book
-                    <NotebookTextIcon className="text-secondary-foreground" />
                   </SafeLink>
                 </DropdownMenuItem>
 
@@ -375,20 +427,7 @@ export default function AuthButtons() {
               </>
             ) : (
               <div>
-                {!profileComplete && (
-                  <span className="text-muted-foreground px-2 text-xs">
-                    (Complete your profile)
-                  </span>
-                )}
-                {profileComplete && accountStatus !== "approved" && (
-                  <span className="text-muted-foreground px-2 text-xs">
-                    (Waiting for approval)
-                  </span>
-                )}
-                <DropdownMenuItem
-                  asChild
-                  disabled={!profileComplete || accountStatus !== "approved"}
-                >
+                <DropdownMenuItem asChild>
                   <SafeLink
                     href="/cart"
                     className="flex items-center justify-between"

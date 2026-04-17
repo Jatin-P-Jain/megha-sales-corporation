@@ -19,9 +19,13 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { useSafeRouter } from "@/hooks/useSafeRouter";
 
-type SearchField = "email" | "phone" | "userId" | "displayName";
+type SearchField = "email" | "phone" | "userId" | "firmName";
 
-export default function UsersList() {
+export default function UsersList({
+  canAssignRoles = false,
+}: {
+  canAssignRoles?: boolean;
+}) {
   const PAGE_SIZE = process.env.NEXT_PUBLIC_PAGE_SIZE
     ? parseInt(process.env.NEXT_PUBLIC_PAGE_SIZE)
     : 10;
@@ -32,11 +36,19 @@ export default function UsersList() {
   const accountStatusValue = searchParams.get("accountStatus") || "";
   const searchField = searchParams.get("searchField") as SearchField | null;
   const searchQuery = searchParams.get("searchQuery") || "";
+  const incompleteOnly = searchParams.get("incompleteOnly") === "true";
+  const hideIncomplete = searchParams.get("hideIncomplete") === "true";
+  const adminsOnly = searchParams.get("adminsOnly") === "true";
+  const hideAdmins = searchParams.get("hideAdmins") === "true";
 
   const filtersOnly = {
     accountStatus: accountStatusValue,
     searchField,
     searchQuery,
+    incompleteOnly,
+    hideIncomplete,
+    adminsOnly,
+    hideAdmins,
   };
   const filterKey = JSON.stringify(filtersOnly);
 
@@ -56,6 +68,32 @@ export default function UsersList() {
           },
         ]
       : []),
+    // Incomplete profile filter
+    ...(incompleteOnly
+      ? [
+          {
+            field: "profileComplete",
+            op: "==" as const,
+            value: false,
+          },
+        ]
+      : []),
+    // Hide incomplete filter (show only complete profiles)
+    ...(hideIncomplete && !incompleteOnly
+      ? [
+          {
+            field: "profileComplete",
+            op: "==" as const,
+            value: true,
+          },
+        ]
+      : []),
+    // Show admins filter
+    ...(adminsOnly
+      ? [{ field: "userRole", op: "!=" as const, value: "customer" }]
+      : hideAdmins
+        ? [{ field: "userRole", op: "==" as const, value: "customer" }]
+        : []),
     // Add search filter
     ...(searchField && searchQuery
       ? [
@@ -117,7 +155,7 @@ export default function UsersList() {
       email: "Email",
       phone: "Phone",
       userId: "User ID",
-      displayName: "Name",
+      firmName: "Firm Name",
     };
     return labels[field];
   };
@@ -128,7 +166,7 @@ export default function UsersList() {
 
   if (loading || !hasLoadedOnce) {
     return (
-      <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col gap-4 px-4 py-6">
+      <div className="flex h-full min-h-[calc(100vh-300px)] w-full flex-1 flex-col gap-2 py-2">
         {[...Array(4)].map((_, i) => (
           <UserCardSkeleton key={i} />
         ))}
@@ -144,7 +182,7 @@ export default function UsersList() {
             variant="secondary"
             className="flex items-center gap-2 px-3 py-1.5"
           >
-            Searching {getFieldLabel(searchField)}:{" "}
+            Search by {getFieldLabel(searchField)}:{" "}
             <strong>{searchQuery}</strong>
             <X className="h-3 w-3 cursor-pointer" onClick={handleClearSearch} />
           </Badge>
@@ -194,6 +232,7 @@ export default function UsersList() {
               <UserCard
                 key={index}
                 user={user}
+                canAssignRoles={canAssignRoles}
                 onStatusUpdate={() => loadPage(currentPage)}
               />
             ))}

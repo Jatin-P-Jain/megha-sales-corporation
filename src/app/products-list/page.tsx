@@ -74,6 +74,7 @@ export default async function ProductsList({
       </div>
 
       <div
+        id="products-list-scroll-container"
         className={`flex-1 overflow-auto ${
           !isAdmin ? "pt-35 md:pt-32" : "pt-20 md:pt-22"
         } ${!isUser && "pt-22!"} pb-4 md:pb-0`}

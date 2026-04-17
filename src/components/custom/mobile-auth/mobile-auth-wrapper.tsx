@@ -165,7 +165,11 @@ export function MobileAuthWrapper({ onSuccess }: { onSuccess?: () => void }) {
                     </div>
                     {/* Send OTP button (visible only before otpSent) */}
                     {!otpSent && (
-                      <Button type="submit" className="w-full">
+                      <Button
+                        type="submit"
+                        className="w-full"
+                        disabled={sendingOtp}
+                      >
                         {sendingOtp ? (
                           <>
                             <Loader2 className="animate-spin" />
@@ -204,7 +208,9 @@ export function MobileAuthWrapper({ onSuccess }: { onSuccess?: () => void }) {
                             value={value ?? ""}
                             onChange={onChange}
                             length={6}
-
+                            onComplete={(code) => {
+                              if (!isVerifying) void verifyOtp(code.trim());
+                            }}
                           />
                         )}
                       />

@@ -27,8 +27,8 @@ type UsePaginatedFirestoreOptions = {
   pageSize?: number;
   filters?: {
     field: string;
-    op: "==" | "in" | ">=" | "<=";
-    value: string | string[] | number;
+    op: "==" | "in" | ">=" | "<=" | "!=";
+    value: string | string[] | number | boolean;
   }[];
   orderByField?: string;
   orderDirection?: "asc" | "desc";
@@ -237,6 +237,15 @@ export const usePaginatedFirestore = <
                 setHasMore(snapshot.docs.length === pageSize);
                 setData(docs);
                 setCurrentPage(targetPage);
+
+                // Re-fetch total count when docs are added or removed so the
+                // "X of Y" display stays accurate on every page in real-time.
+                const hasStructuralChange = snapshot
+                  .docChanges()
+                  .some((c) => c.type === "added" || c.type === "removed");
+                if (hasStructuralChange) {
+                  void fetchCountRef.current();
+                }
               },
               (err) => {
                 console.error(
@@ -284,19 +293,30 @@ export const usePaginatedFirestore = <
     ]
   );
 
+  // Store callbacks in refs so the effect below doesn't re-run (and kill the
+  // realtime listener) every time loadPage/fetchCount change reference.
+  const loadPageRef = useRef(loadPage);
+  const fetchCountRef = useRef(fetchCount);
+  useEffect(() => {
+    loadPageRef.current = loadPage;
+    fetchCountRef.current = fetchCount;
+  });
+
   useEffect(() => {
     if (prevQueryKey.current !== effectiveQueryKey) {
       prevQueryKey.current = effectiveQueryKey;
 
       resetPagination();
-      loadPage(1);
-      fetchCount();
+      loadPageRef.current(1);
+      fetchCountRef.current();
     }
 
     return () => {
       stopRealtime();
     };
-  }, [effectiveQueryKey, fetchCount, loadPage, resetPagination, stopRealtime]);
+    // resetPagination and stopRealtime are stable (empty useCallback deps).
+    // loadPage/fetchCount are intentionally read via refs above.
+  }, [effectiveQueryKey, resetPagination, stopRealtime]);
 
   // optional periodic count refresh
   useEffect(() => {

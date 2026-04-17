@@ -89,3 +89,27 @@ export type FeedbackUser = {
   email: string | null;
   phone: string | null;
 };
+
+export type AccountTimelineEventType =
+  | "account_created"
+  | "name_updated"
+  | "photo_updated"
+  | "pan_added"
+  | "gst_added"
+  | "email_linked"
+  | "phone_linked"
+  | "google_linked"
+  | "profile_submitted"
+  | "account_approved"
+  | "account_rejected"
+  | "account_suspended"
+  | "account_deactivated"
+  | "role_assigned";
+
+export type AccountTimelineEvent = {
+  id: string;
+  type: AccountTimelineEventType;
+  label: string;
+  detail?: string;
+  createdAt: string; // ISO string
+};

@@ -22,6 +22,8 @@ import { generateSequenceId } from "@/lib/firebase/generateSequenceId";
 import { saveEnquiry } from "@/app/enquiries/actions";
 import { Enquiry } from "@/types/enquiry";
 import { useSafeRouter } from "@/hooks/useSafeRouter";
+import { notifyUserAction } from "@/actions/notify-user";
+import { getBaseUrl } from "@/lib/utils";
 
 export default function HelpDialog({
   open,
@@ -131,6 +133,15 @@ export default function HelpDialog({
         }
         toast.success("Thanks for Reaching Out!", {
           description: "We've received your enquiry. You'll hear from us soon!",
+        });
+        void notifyUserAction({
+          uid: user.uid,
+          type: "enquiry",
+          title: "📬 Enquiry Submitted",
+          body: `Your enquiry #${customEnquiryId} has been received. We'll get back to you soon!`,
+          url: `${getBaseUrl()}/enquiries?searchField=id&searchQuery=${customEnquiryId}`,
+          clickAction: "view_enquiry",
+          status: "created",
         });
         onOpenChange(false);
         // Keep prefill, only clear message for next time

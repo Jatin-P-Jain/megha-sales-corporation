@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, useCallback } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronsRight, EyeIcon, PencilIcon } from "lucide-react";
+import { EyeIcon, PencilIcon } from "lucide-react";
 import { formatINR } from "@/lib/utils";
 import { Product, ProductSize, ProductStatus } from "@/types/product";
 import ProductImage from "./product-image";
@@ -18,9 +18,7 @@ import {
   useCartItem,
   useCartState,
 } from "@/context/cartContext";
-import { useUserGate } from "@/context/UserGateProvider";
 import { SafeLink } from "./utility/SafeLink";
-import { useSafeRouter } from "@/hooks/useSafeRouter";
 import clsx from "clsx";
 
 const STATUS_META: Record<
@@ -52,19 +50,15 @@ type ProductCardProps = {
   product: Product;
   isAdmin?: boolean;
   isAccountApproved?: boolean;
-  onClose?: () => void;
 };
 
 export default function ProductCard({
   product,
   isAdmin = false,
   isAccountApproved = false,
-  onClose,
 }: ProductCardProps) {
   const { loading: cartLoading } = useCartState();
   const { currentUser } = useAuthState();
-  const { profileComplete } = useUserGate();
-  const router = useSafeRouter();
 
   const isUser = !!currentUser;
 
@@ -106,11 +100,6 @@ export default function ProductCard({
     const matched = product.sizes.find((s) => s.size === cartSel);
     if (matched) setSelectedSize(matched);
   }, [cartItem?.selectedSize, product.sizes, selectedSize]);
-
-  const goProfile = useCallback(() => {
-    onClose?.();
-    router.push("/account/profile");
-  }, [onClose, router]);
 
   const hasLongAdditionalDetails = useMemo(() => {
     if (!product.additionalDetails) return false;
@@ -192,7 +181,7 @@ export default function ProductCard({
 
           {isMobile && (
             <div className="flex gap-3">
-              <div className="flex h-22 w-1/2 items-center justify-center rounded-sm border shadow-sm">
+              <div className="relative h-32 w-1/2 rounded-sm border shadow-sm">
                 <ProductImage productImage={product.image} />
               </div>
               <div className="bg-primary/10 flex h-auto w-1/2 flex-col items-center justify-center gap-1 rounded-sm p-1.5 px-4 md:flex-row">
@@ -301,7 +290,7 @@ export default function ProductCard({
         </div>
 
         {!isMobile && (
-          <div className="flex w-full items-center justify-center rounded-sm border shadow-sm">
+          <div className="relative h-36 w-full rounded-sm border shadow-sm">
             <ProductImage productImage={product.image} />
           </div>
         )}
@@ -425,17 +414,9 @@ export default function ProductCard({
               </SafeLink>{" "}
               to add products to your cart.
             </div>
-          ) : !profileComplete ? (
-            <Button
-              onClick={goProfile}
-              className="flex w-full cursor-pointer items-center justify-center gap-1 rounded-md border border-yellow-600 bg-yellow-50 text-center text-xs text-yellow-600 md:w-fit"
-            >
-              {"Complete Your Profile Now"} <ChevronsRight className="size-4" />
-            </Button>
           ) : (
             <div className="flex w-full flex-col items-center justify-end">
               <CartControls
-                isDisabled={!isAccountApproved && isUser}
                 productId={product.id}
                 selectedSize={product.hasSizes ? selectedSize?.size : ""}
                 hasSizes={product.hasSizes}

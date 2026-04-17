@@ -144,7 +144,14 @@ export function useMobileOtp({
           try {
             await linkWithCredential(currentUser, credential);
             const token = await currentUser.getIdToken(true);
-            await setToken(token, currentUser.refreshToken);
+            const { claimsUpdated } = await setToken(
+              token,
+              currentUser.refreshToken
+            );
+            if (claimsUpdated) {
+              const freshToken = await currentUser.getIdToken(true);
+              await setToken(freshToken, currentUser.refreshToken);
+            }
           } catch (error: unknown) {
             handleFirebaseAuthError(error);
             return;

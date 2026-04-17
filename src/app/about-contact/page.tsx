@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -24,6 +24,24 @@ import BankDetails from "@/components/custom/bank-details";
 import { SafeLink } from "@/components/custom/utility/SafeLink";
 
 export default function AboutAndContact() {
+  useEffect(() => {
+    const scrollToHashSection = () => {
+      if (window.location.hash !== "#bank-details") return;
+
+      const target = document.getElementById("bank-details");
+      if (!target) return;
+
+      requestAnimationFrame(() => {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    };
+
+    scrollToHashSection();
+    window.addEventListener("hashchange", scrollToHashSection);
+
+    return () => window.removeEventListener("hashchange", scrollToHashSection);
+  }, []);
+
   return (
     <div className="container mx-auto flex max-w-4xl flex-col gap-4 overflow-auto">
       <div className="flex w-full items-center justify-between space-y-1">
@@ -38,7 +56,7 @@ export default function AboutAndContact() {
         </div>
       </div>
       <AboutAutoPartsShop />
-      <BankDetails />
+      <BankDetails isSharable={true} />
       <div className="text-muted-foreground flex w-full flex-col items-start justify-center gap-4 px-4">
         <div className="flex w-full flex-col items-start justify-start gap-2">
           <p className="flex items-center gap-2 text-sm font-normal">
@@ -127,9 +145,9 @@ export default function AboutAndContact() {
               trigger={
                 <Button
                   variant="outline"
-                  className="text-primary h-full w-full flex-wrap gap-0 md:gap-2"
+                  className="text-primary h-full w-full flex-wrap gap-1 md:gap-2"
                 >
-                  Happy to hear from you!{" "}
+                  Happy to hear from you!
                   <span className="flex items-center justify-center gap-2">
                     Drop a message.
                     <MessageCircleHeart className="size-5" />

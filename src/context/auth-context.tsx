@@ -6,6 +6,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -25,7 +26,7 @@ import {
   verifyOTP as verifyOTPFn,
 } from "./firebase-auth";
 
-import { removeToken } from "./actions";
+import { removeToken, setToken } from "./actions";
 
 export type AuthState = {
   authLoading: boolean;
@@ -61,6 +62,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [userRole, setUserRole] = useState<string | undefined>(undefined);
+  const refreshInFlightRef = useRef(false);
+  const lastRefreshAtRef = useRef(0);
+
+  const MIN_REFRESH_GAP_MS = 30_000;
+
+  const syncAuthStateFromToken = useCallback(async (user: User) => {
+    const tokenResult = await user.getIdTokenResult(false);
+    setIsAdmin(!!tokenResult.claims.admin);
+    setUserRole((tokenResult.claims.userRole as string) ?? "customer");
+  }, []);
+
+  const refreshClaimsAndSession = useCallback(
+    async (user: User, force = false) => {
+      const now = Date.now();
+      if (!force && now - lastRefreshAtRef.current < MIN_REFRESH_GAP_MS) {
+        return;
+      }
+
+      if (refreshInFlightRef.current) return;
+      refreshInFlightRef.current = true;
+
+      try {
+        const refreshedToken = await user.getIdToken(true);
+        await setToken(refreshedToken, user.refreshToken);
+        await syncAuthStateFromToken(user);
+        lastRefreshAtRef.current = Date.now();
+      } catch (e) {
+        console.error("Failed to refresh auth claims/session", e);
+      } finally {
+        refreshInFlightRef.current = false;
+      }
+    },
+    [syncAuthStateFromToken],
+  );
 
   const logout = useCallback(async () => {
     setIsLoggingOut(true);
@@ -103,9 +138,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setCurrentUser(user);
       try {
-        const tokenResult = await user.getIdTokenResult(false);
-        setIsAdmin(!!tokenResult.claims.admin);
-        setUserRole((tokenResult.claims.role as string) ?? "Customer");
+        await refreshClaimsAndSession(user, true);
       } catch (e) {
         console.error("getIdTokenResult failed", e);
         setIsAdmin(false);
@@ -115,7 +148,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => unsubscribeAuth();
-  }, []);
+  }, [refreshClaimsAndSession]);
+
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const refreshIfNeeded = () => {
+      void refreshClaimsAndSession(currentUser, false);
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        refreshIfNeeded();
+      }
+    };
+
+    window.addEventListener("focus", refreshIfNeeded);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    return () => {
+      window.removeEventListener("focus", refreshIfNeeded);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [currentUser, refreshClaimsAndSession]);
 
   const stateValue = useMemo<AuthState>(
     () => ({

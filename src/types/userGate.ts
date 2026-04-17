@@ -5,7 +5,7 @@ export type AccountStatus =
   | "suspended"
   | "deactivated";
 
-export type UserRole = "admin" | "customer";
+export type UserRole = "admin" | "customer" | "dispatcher" | "accountant";
 
 export type UserGate = {
   profileComplete: boolean;

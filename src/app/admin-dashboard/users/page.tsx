@@ -1,14 +1,15 @@
-import { cookies } from "next/headers";
-import { auth } from "@/firebase/server";
 import EllipsisBreadCrumbs from "@/components/custom/ellipsis-bread-crumbs";
 import UserSearchAndFilters from "@/components/custom/user-search-filters";
 import UsersList from "./users-list";
+import { requireAllowedRolesOrRedirect } from "@/lib/auth/gaurds";
 
 export default async function Users() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("firebaseAuthToken")?.value;
-  const verifiedToken = token ? await auth.verifyIdToken(token) : null;
-  const isAdmin = verifiedToken?.admin;
+  const verifiedToken = await requireAllowedRolesOrRedirect(
+    ["admin"],
+    "/admin-dashboard",
+  );
+  const isAdmin = Boolean(verifiedToken?.admin);
+  const canAssignRoles = true;
   const breadcrumbs = [
     {
       href: isAdmin ? "/admin-dashboard/" : "/",
@@ -35,7 +36,7 @@ export default async function Users() {
         </div>
       </div>
       <div className={`flex w-full flex-1 overflow-auto pt-30 md:pt-20`}>
-        <UsersList />
+        <UsersList canAssignRoles={canAssignRoles} />
       </div>
     </div>
   );
