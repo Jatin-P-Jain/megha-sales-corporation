@@ -132,8 +132,7 @@ export function CartItems() {
                   </div>
                   <div className="flex h-full min-w-0 flex-1 flex-col items-start justify-center">
                     <h3 className="w-full truncate text-sm font-medium md:text-base">
-                      {item.product.partName +
-                        "asjbdksjv ,kjsdfhvb lsdhfv ludfv" || "Product Name"}
+                      {item.product.partName || "Product Name"}
                     </h3>
 
                     <PartDetailsDialog

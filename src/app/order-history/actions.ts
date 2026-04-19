@@ -89,6 +89,7 @@ export const updateOrderStatus = async (
 
     await orderRef.update({
       status: newStatus,
+      updatedAt: nowIso,
       orderEventTimeline: [...existingTimeline, statusUpdateEvent],
     });
 

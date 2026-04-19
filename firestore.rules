@@ -1,0 +1,201 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if user owns the resource
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // ================================
+    // USER DIRECTORY RULES
+    // ================================
+    match /usersDirectory/{userId} {
+      allow read: if isAdmin();
+      allow create, update, delete: if false;
+    }
+
+    // ================================
+    // USER GATE RULES
+    // ================================
+    match /userGate/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+
+      // Owner can create their own customer gate in pending state.
+      // Admin can create any gate document.
+      allow create: if
+        (
+          isOwner(userId)
+          && request.resource.data.keys().hasOnly([
+            "profileComplete", "accountStatus", "userRole", "rejectionReason", "updatedAt"
+          ])
+          && request.resource.data.userRole == "customer"
+          && request.resource.data.accountStatus == "pending"
+          && (
+            !("rejectionReason" in request.resource.data)
+            || request.resource.data.rejectionReason == ""
+          )
+        )
+        || isAdmin();
+
+      // Owner can only update profileComplete (+ updatedAt).
+      // Admin can modify any field in userGate.
+      allow update: if
+        (
+          isOwner(userId)
+          && request.resource.data.diff(resource.data).changedKeys().hasOnly([
+            "profileComplete", "updatedAt"
+          ])
+        )
+        || isAdmin();
+
+      allow delete: if false;
+    }
+
+    // ================================
+    // USER RULES
+    // ================================
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) || isAdmin();
+
+      // Owner cannot update moderation fields.
+      // photoUrl is allowed for owner updates.
+      allow update: if isOwner(userId)
+        && !(request.resource.data.diff(resource.data).changedKeys().hasAny([
+          "accountStatus", "rejectionReason", "userType"
+        ]));
+
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+
+      match /fcmTokens/{tokenId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+
+      // ================================
+      // NOTIFICATIONS
+      // ================================
+      match /notifications/{notificationId} {
+        allow read: if isOwner(userId) || isAdmin();
+
+        // Owner can only mark own notifications as read; admin can fully update.
+        allow update: if
+          (
+            isOwner(userId)
+            && request.resource.data.diff(resource.data).changedKeys().hasOnly([
+              "read", "readAt"
+            ])
+          )
+          || isAdmin();
+
+        // Notifications are created by trusted backend/admin context.
+        allow create: if isAdmin();
+        allow delete: if isAdmin();
+      }
+      // ================================
+      // TIMELINE
+      // ================================
+      match /timeline/{eventId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create, update, delete: if isAdmin();
+      }
+    }
+
+    // ================================
+    // PRODUCT RULES
+    // ================================
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ================================
+    // BRAND RULES
+    // ================================
+    match /brands/{brandId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ================================
+    // CART RULES
+    // ================================
+    match /carts/{userId}/items/{itemId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    match /carts/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // ================================
+    // ORDER RULES
+    // ================================
+    match /orders/{orderId} {
+      allow read: if isAuthenticated()
+        && (resource.data.user.uid == request.auth.uid || isAdmin());
+
+      allow create: if isAuthenticated()
+        && request.resource.data.user.uid == request.auth.uid;
+
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ================================
+    // APPROVAL REQUESTS
+    // ================================
+    match /approval_requests/{requestId} {
+      allow create: if isAuthenticated()
+        && request.resource.data.userId == request.auth.uid;
+
+      allow read: if isAuthenticated()
+        && (resource.data.userId == request.auth.uid || isAdmin());
+
+      allow update, delete: if isAdmin();
+    }
+
+    // ================================
+    // ENQUIRIES
+    // ================================
+    match /enquiries/{enquiryId} {
+      allow read: if isAdmin()
+        || (request.auth != null && resource.data.userId == request.auth.uid);
+
+      allow create: if request.auth != null
+        && request.resource.data.userId == request.auth.uid;
+
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ================================
+    // ANALYTICS/LOGS (Admin only)
+    // ================================
+    match /analytics/{document=**} {
+      allow read, write: if isAdmin();
+    }
+
+    match /logs/{document=**} {
+      allow read, write: if isAdmin();
+    }
+
+    // ================================
+    // LOCK DOWN EVERYTHING ELSE
+    // ================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

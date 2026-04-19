@@ -34,10 +34,12 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSafeRouter } from "@/hooks/useSafeRouter";
 import { useUserProfileState } from "@/context/UserProfileProvider";
 import { useUserGate } from "@/context/UserGateProvider";
+import { doc, onSnapshot } from "firebase/firestore";
+import { firestore } from "@/firebase/client";
 
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -172,15 +174,31 @@ export default function OrderDetails({
   const router = useSafeRouter();
   const { clientUser } = useUserProfileState();
   const { userRole } = useUserGate();
+  const [liveOrder, setLiveOrder] = useState<Order>(order);
   const roleForAudit = userRole ?? (isAdmin ? "admin" : "customer");
   const [timelineOpen, setTimelineOpen] = useState(true);
-  const products = order.products as CartProduct[];
-  const units = order.totals?.units ?? 0;
-  const gst = order.totals?.gst ?? 0;
-  const discount = order.totals?.discount ?? 0;
-  const amount = order.totals?.amount ?? 0;
-  const createdByDetail = `${order.user?.firmName ? `${order.user.firmName}` : ""} (${order.user?.displayName ?? "Customer"})`;
-  const timelineEvents = order.orderEventTimeline ?? [];
+
+  useEffect(() => {
+    setLiveOrder(order);
+  }, [order]);
+
+  useEffect(() => {
+    const ref = doc(firestore, "orders", order.id);
+    const unsub = onSnapshot(ref, (snap) => {
+      if (!snap.exists()) return;
+      setLiveOrder({ id: snap.id, ...(snap.data() as Omit<Order, "id">) });
+    });
+
+    return () => unsub();
+  }, [order.id]);
+
+  const products = liveOrder.products as CartProduct[];
+  const units = liveOrder.totals?.units ?? 0;
+  const gst = liveOrder.totals?.gst ?? 0;
+  const discount = liveOrder.totals?.discount ?? 0;
+  const amount = liveOrder.totals?.amount ?? 0;
+  const createdByDetail = `${liveOrder.user?.firmName ? `${liveOrder.user.firmName}` : ""} (${liveOrder.user?.displayName ?? "Customer"})`;
+  const timelineEvents = liveOrder.orderEventTimeline ?? [];
   const sortedTimelineEvents = [...timelineEvents].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
@@ -194,12 +212,17 @@ export default function OrderDetails({
         </span>
         <OrderStatusDropdown
           isAdmin={isAdmin}
-          status={order.status}
+          status={liveOrder.status}
           onChange={async (newStatus) => {
-            const res = await handleStatusChange(order, newStatus, isAdmin, {
-              ...clientUser,
-              userRole: roleForAudit,
-            });
+            const res = await handleStatusChange(
+              liveOrder,
+              newStatus,
+              isAdmin,
+              {
+                ...clientUser,
+                userRole: roleForAudit,
+              },
+            );
             if (res?.success) {
               router.refresh();
             }
@@ -228,7 +251,7 @@ export default function OrderDetails({
           </TableHeader>
         </Table>
 
-        <ScrollArea className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
+        <ScrollArea className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
           <div className="px-1 md:px-2">
             <Table className="w-full table-fixed border-separate [border-spacing:0_0.2rem]">
               <colgroup>
@@ -238,79 +261,81 @@ export default function OrderDetails({
               </colgroup>
               <TableBody className="">
                 {products.map((item) => {
-                const {
-                  price = 0,
-                  discount = 0,
-                  gst = 0,
-                } = item.productPricing ?? {};
-                const qty = item.quantity;
-                const unitDiscount = Math.round((discount / 100) * price);
-                const unitPriceAfterDiscount = Math.round(price - unitDiscount);
-                const unitGST = Math.round(
-                  (gst / 100) * unitPriceAfterDiscount,
-                );
-                const unitNetPrice = Math.round(
-                  unitPriceAfterDiscount + unitGST,
-                );
-                const totalPrice = Math.round(unitNetPrice * qty);
-                const productImage =
-                  item.productImage ?? item.product?.image ?? undefined;
+                  const {
+                    price = 0,
+                    discount = 0,
+                    gst = 0,
+                  } = item.productPricing ?? {};
+                  const qty = item.quantity;
+                  const unitDiscount = Math.round((discount / 100) * price);
+                  const unitPriceAfterDiscount = Math.round(
+                    price - unitDiscount,
+                  );
+                  const unitGST = Math.round(
+                    (gst / 100) * unitPriceAfterDiscount,
+                  );
+                  const unitNetPrice = Math.round(
+                    unitPriceAfterDiscount + unitGST,
+                  );
+                  const totalPrice = Math.round(unitNetPrice * qty);
+                  const productImage =
+                    item.productImage ?? item.product?.image ?? undefined;
 
-                return (
-                  <TableRow
-                    key={item.cartItemKey}
-                    className={clsx(
-                      "bg-muted hover:bg-muted/90 [&>td]:border-y [&>td]:border-border/60 [&>td:first-child]:rounded-l-md [&>td:first-child]:border-l [&>td:last-child]:rounded-r-md [&>td:last-child]:border-r",
-                    )}
-                  >
-                    <TableCell>
-                      <div className="flex min-w-0 items-center justify-start gap-3">
-                        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md border bg-white shadow-sm">
-                          {productImage ? (
-                            <Image
-                              src={imageUrlFormatter(productImage)}
-                              alt={item?.product?.partName ?? "Product image"}
-                              fill
-                              className="object-contain"
-                            />
-                          ) : (
-                            <div className="text-muted-foreground flex h-full w-full flex-col items-center justify-center text-[10px]">
-                              <ImageOffIcon className="h-4 w-4" />
-                              <small>No Image</small>
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex min-w-0 flex-col items-start justify-start gap-0.5">
-                          <span className="truncate font-semibold">
-                            {item?.product?.partNumber}
-                          </span>
-
-                          <div className="flex w-full">
-                            <span className="text-muted-foreground truncate text-xs">
-                              <span className="font-medium">
-                                {item?.product?.brandName}
-                              </span>
-                              {" - "}
-                              {item?.product?.partName}
-                            </span>
+                  return (
+                    <TableRow
+                      key={item.cartItemKey}
+                      className={clsx(
+                        "bg-muted hover:bg-muted/90 [&>td]:border-border/60 [&>td]:border-y [&>td:first-child]:rounded-l-md [&>td:first-child]:border-l [&>td:last-child]:rounded-r-md [&>td:last-child]:border-r",
+                      )}
+                    >
+                      <TableCell>
+                        <div className="flex min-w-0 items-center justify-start gap-3">
+                          <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md border bg-white shadow-sm">
+                            {productImage ? (
+                              <Image
+                                src={imageUrlFormatter(productImage)}
+                                alt={item?.product?.partName ?? "Product image"}
+                                fill
+                                className="object-contain"
+                              />
+                            ) : (
+                              <div className="text-muted-foreground flex h-full w-full flex-col items-center justify-center text-[10px]">
+                                <ImageOffIcon className="h-4 w-4" />
+                                <small>No Image</small>
+                              </div>
+                            )}
                           </div>
-                          {item.selectedSize && (
-                            <span className="text-muted-foreground text-xs">
-                              ({item.selectedSize})
+                          <div className="flex min-w-0 flex-col items-start justify-start gap-0.5">
+                            <span className="truncate font-semibold">
+                              {item?.product?.partNumber}
                             </span>
-                          )}
-                        </div>
-                      </div>
-                    </TableCell>
 
-                    <TableCell className="text-right font-normal">
-                      {item.quantity}
-                    </TableCell>
-                    <TableCell className="text-right font-normal">
-                      {currencyFormatter(totalPrice)}
-                    </TableCell>
-                  </TableRow>
-                );
+                            <div className="flex w-full">
+                              <span className="text-muted-foreground truncate text-xs">
+                                <span className="font-medium">
+                                  {item?.product?.brandName}
+                                </span>
+                                {" - "}
+                                {item?.product?.partName}
+                              </span>
+                            </div>
+                            {item.selectedSize && (
+                              <span className="text-muted-foreground text-xs">
+                                ({item.selectedSize})
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </TableCell>
+
+                      <TableCell className="text-right font-normal">
+                        {item.quantity}
+                      </TableCell>
+                      <TableCell className="text-right font-normal">
+                        {currencyFormatter(totalPrice)}
+                      </TableCell>
+                    </TableRow>
+                  );
                 })}
               </TableBody>
             </Table>

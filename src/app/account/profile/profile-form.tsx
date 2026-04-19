@@ -55,6 +55,7 @@ import { useLinkAuthProviders } from "@/hooks/useLinkAuthProviders";
 
 import { setToken } from "@/context/actions";
 import { useAuthState } from "@/context/useAuth";
+import { notifyAdminRecipientsAction } from "@/actions/notify-user";
 
 import { updateUserProfile } from "./action";
 import { updateUserFirebaseMethods } from "../actions";
@@ -348,7 +349,7 @@ export default function ProfileForm() {
 
         const freshClientUser = await refreshUser();
 
-        if (freshClientUser) {
+        if (!isAdmin && freshClientUser) {
           await fetch("/api/wa-send-message", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -361,6 +362,21 @@ export default function ProfileForm() {
               customerBusinessProfile: formatBusinessProfile(freshClientUser),
             }),
           });
+
+          await notifyAdminRecipientsAction({
+            recipientsMode: "role-admin-only",
+            type: "account",
+            title: "🆕 New Account Approval Request",
+            body: `${freshClientUser.displayName || "User"} submitted profile for approval.`,
+            url: "/admin-dashboard/users",
+            clickAction: "manage_users",
+            status: "pending",
+            source: "system",
+            metadata: {
+              customerUid: freshClientUser.uid,
+              customerUserId: freshClientUser.userId || "",
+            },
+          });
         }
 
         toast.success("Success!", {
@@ -368,7 +384,7 @@ export default function ProfileForm() {
         });
 
         const redirect = getSafeRedirectPath(searchParams.get("redirect"));
-        router.push(redirect);
+        router.replace(redirect);
       } catch (err: unknown) {
         console.error("Profile Submit error:", err);
         toast.error(

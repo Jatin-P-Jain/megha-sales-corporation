@@ -169,7 +169,7 @@ export function AccountTimeline({ events, loading }: Props) {
           key={event.id}
           event={event}
           itemPosition={
-            i === 0 ? "first" : i === events.length - 1 ? "last" : "middle"
+            i === events.length - 1 ? "last" : i === 0 ? "first" : "middle"
           }
         />
       ))}

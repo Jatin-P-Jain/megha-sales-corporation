@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -13,9 +13,8 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { CartProduct } from "@/types/cartProduct";
-import { Card, CardContent, CardFooter } from "../ui/card";
-import ProductImage from "./product-image";
-import { formatINR } from "@/lib/utils";
+import ProductCard from "./product-card";
+import { Product } from "@/types/product";
 
 interface PartDetailsDialogProps {
   part: CartProduct;
@@ -32,18 +31,7 @@ export function PartDetailsDialog({
   productPricing,
   selectedSize,
 }: PartDetailsDialogProps) {
-  const {
-    partNumber,
-    image,
-    companyName,
-    vehicleNames,
-    brandName,
-    partName,
-    partCategory,
-    discount,
-    price,
-    gst,
-  } = part?.product || {};
+  const { partNumber, companyName, discount, price, gst } = part?.product || {};
   const {
     price: productPrice = 0,
     discount: productDiscount = 0,
@@ -52,26 +40,40 @@ export function PartDetailsDialog({
   const partPrice = price || productPrice;
   const partDiscount = discount || productDiscount;
   const partGst = gst || productGst;
-  const names = Array.isArray(vehicleNames)
-    ? part?.product.vehicleNames.join(", ")
-    : "";
-  const vehicleNameProcessed = names
-    ? `${companyName} - ${names}`
-    : companyName;
+  const productForDialog = useMemo<Product>(
+    () => ({
+      ...part.product,
+      id: part.product?.id || part.id,
+      companyName: part.product?.companyName || "",
+      vehicleCompany: part.product?.vehicleCompany || companyName || "",
+      vehicleNames: Array.isArray(part.product?.vehicleNames)
+        ? part.product.vehicleNames
+        : [],
+      partCategory: part.product?.partCategory || "",
+      partNumber: part.product?.partNumber || "",
+      partName: part.product?.partName || "",
+      brandName: part.product?.brandName || "",
+      brandId: part.product?.brandId || "",
+      status: part.product?.status || "for-sale",
+      image: part.product?.image,
+      price: partPrice,
+      discount: partDiscount,
+      gst: partGst,
+    }),
+    [companyName, part.id, part.product, partDiscount, partGst, partPrice],
+  );
+
   return (
     <Dialog>
       {/* 1) The trigger is your link-style button */}
       <DialogTrigger asChild>
-        <Button
-          variant="link"
-          className="text-xs underline px-0!"
-        >
+        <Button variant="link" className="px-0! text-xs underline">
           Part Details
         </Button>
       </DialogTrigger>
 
       {/* 2) The modal content */}
-      <DialogContent className="flex w-[90%] max-w-md flex-col items-center justify-center gap-2 p-2 px-4">
+      <DialogContent className="max-h-[85dvh] w-[95%] max-w-4xl overflow-y-auto p-3 md:p-4">
         <DialogHeader>
           <DialogTitle className="flex w-full items-center justify-center text-sm md:text-base">
             Part Details
@@ -82,63 +84,14 @@ export function PartDetailsDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <Card
-          key={part?.id}
-          className="relative w-full gap-2 overflow-hidden p-4 px-0 shadow-md"
-        >
-          <div className="mx-auto flex h-20 min-h-20 w-20 items-center justify-center">
-            <ProductImage productImage={image} />
+        {selectedSize && (
+          <div className="text-primary bg-muted mb-2 flex w-full items-center justify-between rounded-lg px-3 py-1 text-xs font-semibold md:text-sm">
+            <span>Selected Size</span>
+            <span>{selectedSize}</span>
           </div>
-          <CardContent className="flex flex-col gap-2 text-sm md:text-base">
-            <div className="text-primary flex w-full items-center justify-between font-semibold">
-              <span className="text-sm font-normal">Brand :</span>
-              {brandName}
-            </div>
-            <div className="text-primary flex w-full items-center justify-between font-semibold">
-              <span className="text-sm font-normal">Part Name :</span>
-              <span className="line-clamp-1">{partName}</span>
-            </div>
-            <div className="text-primary flex w-full items-center justify-between font-semibold">
-              <span className="text-sm font-normal">Part Number :</span>
-              {partNumber}
-            </div>
-            {selectedSize && (
-              <div className="text-primary bg-muted flex w-full items-center justify-between font-semibold px-2 rounded-lg">
-                <span className="text-sm font-normal">Size :</span>
-                {selectedSize}
-              </div>
-            )}
+        )}
 
-            <div className="text-primary flex w-full items-start justify-between font-semibold">
-              <span className="w-full text-sm font-normal">Vehicle Name :</span>
-              <div className="flex w-full items-end justify-end">
-                <span className="text-right">{vehicleNameProcessed}</span>
-              </div>
-            </div>
-            <div className="text-primary flex w-full items-center justify-between font-semibold">
-              <span className="text-sm font-normal">Category :</span>{" "}
-              {partCategory}
-            </div>
-          </CardContent>
-          <CardFooter className="flex items-center justify-between">
-            <div className="text-primary flex items-center gap-1 text-lg font-semibold">
-              <span className="text-foreground text-sm font-normal md:text-base">
-                Price :
-              </span>
-              {formatINR(partPrice)}
-            </div>
-            <div className="text-primary flex items-center gap-1 text-sm font-semibold md:text-base">
-              <span className="text-foreground text-sm font-normal">
-                Discount :
-              </span>
-              {partDiscount}%
-            </div>
-            <div className="text-primary flex items-center gap-1 text-sm font-semibold md:text-base">
-              <span className="text-foreground font-normal">GST :</span>
-              {partGst}%
-            </div>
-          </CardFooter>
-        </Card>
+        <ProductCard product={productForDialog} />
 
         <DialogFooter className="flex w-full items-center justify-center gap-2 py-2">
           {/* 3) The close button */}
