@@ -11,8 +11,8 @@ import { toast } from "sonner";
 import { Order } from "@/types/order";
 import { getBaseUrl } from "@/lib/utils";
 import {
+  notifyAdminRecipientsAction,
   notifyUserAction,
-  notifyAdminsByRoleAction,
 } from "@/actions/notify-user";
 import { useRequireUserProfile } from "@/hooks/useUserProfile";
 import { useUserProfileState } from "@/context/UserProfileProvider";
@@ -155,7 +155,8 @@ export default function CheckoutFooter({
         status: "created",
       });
 
-      await notifyAdminsByRoleAction({
+      await notifyAdminRecipientsAction({
+        recipientsMode: "role-staff",
         type: "order",
         title: "📦 New Order Received",
         body: `${clientUser.displayName ?? "A customer"} from ${clientUser.firmName ?? "a firm"} placed order #${orderId}`,

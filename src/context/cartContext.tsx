@@ -98,10 +98,14 @@ export function useCartItem(cartItemKey: string) {
 }
 
 // helper to compute key same as your addToCart logic
+function normalizeSizeForCartKey(selectedSize?: string) {
+  if (!selectedSize) return "";
+  return selectedSize.trim().replace(/\s+/g, "").replace(/\//g, "-");
+}
+
 export function getCartItemKey(productId: string, selectedSize?: string) {
-  return selectedSize
-    ? `${productId}_${selectedSize.replaceAll(" ", "")}`
-    : productId;
+  const normalizedSize = normalizeSizeForCartKey(selectedSize);
+  return normalizedSize ? `${productId}_${normalizedSize}` : productId;
 }
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
@@ -251,9 +255,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     ) => {
       if (!currentUser) throw new Error("Not authenticated");
 
-      const key = selectedSize
-        ? `${productId}_${selectedSize.replaceAll(" ", "")}`
-        : productId;
+      const key = getCartItemKey(productId, selectedSize);
 
       const ref = doc(firestore, "carts", currentUser.uid, "items", key);
 
@@ -261,9 +263,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         ref,
         {
           productId,
-          cartItemKey:
-            productId +
-            (selectedSize ? "_" + selectedSize.replaceAll(" ", "") : ""),
+          cartItemKey: key,
           quantity: qty,
           productPricing,
           selectedSize,

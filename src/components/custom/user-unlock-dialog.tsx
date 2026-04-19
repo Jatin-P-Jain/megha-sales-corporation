@@ -19,7 +19,10 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import { getBaseUrl } from "@/lib/utils";
-import { notifyUserAction } from "@/actions/notify-user";
+import {
+  notifyAdminRecipientsAction,
+  notifyUserAction,
+} from "@/actions/notify-user";
 import { formatBusinessProfile } from "@/lib/business-profile-formatter";
 import { useUserGate } from "@/context/UserGateProvider";
 import { useRequireUserProfile } from "@/hooks/useUserProfile";
@@ -64,6 +67,21 @@ export default function UserUnlockDialog({ children }: UserUnlockDialogProps) {
       if (!clientUser?.uid) {
         throw new Error("Missing user id for notification");
       }
+
+      await notifyAdminRecipientsAction({
+        recipientsMode: "role-admin-only",
+        type: "account",
+        title: "🔔 Approval Reminder Received",
+        body: `${clientUser.displayName || "User"} sent an approval reminder.`,
+        url: "/admin-dashboard/users",
+        clickAction: "manage_users",
+        status: "pending",
+        source: "system",
+        metadata: {
+          customerUid: clientUser.uid,
+          customerUserId: clientUser.userId || "",
+        },
+      });
 
       await notifyUserAction({
         uid: clientUser.uid,

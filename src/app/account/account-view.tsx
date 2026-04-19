@@ -664,10 +664,10 @@ function AccountViewInner({
                   <Clock className="size-4" />
                   Account activity
                   {!timelineLoading && timelineEvents.length > 0 && (
-                    <Badge variant="outline" className="px-1.5 py-0 text-xs text-muted-foreground">
+                    <div className="text-muted-foreground text-xs font-normal">
                       {timelineEvents.length} event
                       {timelineEvents.length > 1 ? "s" : ""}
-                    </Badge>
+                    </div>
                   )}
                 </span>
                 <ChevronDown

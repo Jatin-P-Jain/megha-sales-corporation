@@ -5,7 +5,7 @@ import { formatDateTime, getBaseUrl } from "@/lib/utils";
 import { Order, OrderStatus } from "@/types/order";
 import { updateOrderStatus } from "./actions";
 import {
-  notifyAdminsByRoleAction,
+  notifyAdminRecipientsAction,
   notifyUserAction,
 } from "@/actions/notify-user";
 import { toast } from "sonner";
@@ -72,10 +72,10 @@ export const handleStatusChange = async (
     url: orderUrl,
     clickAction: "view_order",
     status: newStatus,
-    pushOnly: true,
   });
 
-  const staffPushPromise = notifyAdminsByRoleAction({
+  const staffPushPromise = notifyAdminRecipientsAction({
+    recipientsMode: "role-staff",
     type: "order",
     title: "📦 Order Status Updated",
     body: `Order #${order.id} moved to ${toLabelCase(newStatus)} by ${updaterContext?.displayName ?? "Admin"}.`,

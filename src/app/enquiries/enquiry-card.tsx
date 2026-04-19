@@ -26,7 +26,10 @@ import {
 import Image from "next/image";
 import clsx from "clsx";
 import DefaultUserIcon from "@/assets/icons/user.png";
-import { notifyUserAction, notifyAdminsAction } from "@/actions/notify-user";
+import {
+  notifyAdminRecipientsAction,
+  notifyUserAction,
+} from "@/actions/notify-user";
 import { Enquiry } from "@/types/enquiry";
 import { formatDateTime, getBaseUrl } from "@/lib/utils";
 import { FullUser } from "@/types/user";
@@ -148,7 +151,8 @@ export default function EnquiryCard({
           });
         }
       } else {
-        void notifyAdminsAction({
+        void notifyAdminRecipientsAction({
+          recipientsMode: "role-admin-only",
           type: "enquiry",
           title: "💬 New Reply on Enquiry",
           body: `${loggedInUser.displayName || "A user"} replied to enquiry #${enquiry.id}.`,

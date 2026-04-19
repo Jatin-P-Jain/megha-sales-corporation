@@ -39,73 +39,81 @@ export async function notifyUserAction(input: NotifyUserActionInput) {
 
 type NotifyAdminsActionInput = Omit<NotifyUserActionInput, "uid">;
 
-export async function notifyAdminsAction(input: NotifyAdminsActionInput) {
-  const adminEmails = (process.env.ADMIN_EMAILS ?? "")
-    .split(",")
-    .map((e) => e.trim())
-    .filter(Boolean);
-  const adminPhones = (process.env.ADMIN_PHONES ?? "")
-    .split(",")
-    .map((p) => p.trim())
-    .filter(Boolean);
+type NotifyRecipientsMode = "role-staff" | "role-admin-only";
 
-  if (adminEmails.length === 0 && adminPhones.length === 0) return;
+type NotifyAdminRecipientsActionInput = NotifyAdminsActionInput & {
+  recipientsMode: NotifyRecipientsMode;
+};
 
-  const adminUids = new Set<string>();
-
-  if (adminEmails.length > 0) {
-    const emailSnap = await fireStore
-      .collection("users")
-      .where("email", "in", adminEmails)
-      .get();
-    emailSnap.docs.forEach((d) => adminUids.add(d.id));
-  }
-
-  if (adminPhones.length > 0) {
-    const phoneSnap = await fireStore
-      .collection("users")
-      .where("phone", "in", adminPhones)
-      .get();
-    phoneSnap.docs.forEach((d) => adminUids.add(d.id));
-  }
+async function deliverToUids(
+  uids: string[],
+  input: NotifyAdminsActionInput,
+  logTag: string
+) {
+  if (uids.length === 0) return;
 
   const { pushOnly, ...rest } = input;
 
-  await Promise.allSettled(
-    Array.from(adminUids).map((uid) =>
-      pushOnly
-        ? sendUserPushNotification({ uid, ...rest })
-        : notifyUser({ uid, ...rest })
-    )
-  );
-}
-
-/**
- * Notifies all staff users (admin, dispatcher, accountant) by querying
- * the userGate collection for their role, then sending in-app + push
- * notifications to each one.
- */
-export async function notifyAdminsByRoleAction(input: NotifyAdminsActionInput) {
   try {
-    const staffRoles = ["admin", "dispatcher", "accountant"];
-
-    const snapshot = await fireStore
-      .collection("userGate")
-      .where("userRole", "in", staffRoles)
-      .get();
-
-    if (snapshot.empty) return;
-
-    const { pushOnly, ...rest } = input;
-
     await Promise.allSettled(
-      snapshot.docs.map((doc) =>
+      uids.map((uid) =>
         pushOnly
-          ? sendUserPushNotification({ uid: doc.id, ...rest })
-          : notifyUser({ uid: doc.id, ...rest })
+          ? sendUserPushNotification({ uid, ...rest })
+          : notifyUser({ uid, ...rest })
       )
     );
   } catch (err) {
-    console.error("[notifyAdminsByRoleAction] Failed:", err);
+    console.error(`[${logTag}] Failed:`, err);
   }
+}
+
+async function resolveUidsFromRoles(roles: string[]) {
+  if (roles.length === 0) return [];
+
+  const snapshot =
+    roles.length === 1
+      ? await fireStore
+          .collection("userGate")
+          .where("userRole", "==", roles[0])
+          .get()
+      : await fireStore
+          .collection("userGate")
+          .where("userRole", "in", roles)
+          .get();
+
+  if (snapshot.empty) return [];
+
+  return snapshot.docs.map((doc) => doc.id);
+}
+
+/**
+ * Unified admin/staff notification entrypoint.
+ * - role-staff: userGate.userRole in [admin, dispatcher, accountant]
+ * - role-admin-only: userGate.userRole == admin
+ */
+export async function notifyAdminRecipientsAction(
+  input: NotifyAdminRecipientsActionInput
+) {
+  const { recipientsMode, ...payload } = input;
+
+  if (recipientsMode === "role-staff") {
+    const uids = await resolveUidsFromRoles([
+      "admin",
+      "dispatcher",
+      "accountant",
+    ]);
+    await deliverToUids(
+      uids,
+      payload,
+      "notifyAdminRecipientsAction:role-staff"
+    );
+    return;
+  }
+
+  const uids = await resolveUidsFromRoles(["admin"]);
+  await deliverToUids(
+    uids,
+    payload,
+    "notifyAdminRecipientsAction:role-admin-only"
+  );
 }
