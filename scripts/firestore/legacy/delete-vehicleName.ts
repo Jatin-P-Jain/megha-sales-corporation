@@ -20,7 +20,7 @@ export async function deleteVehicleNameField(
     const sourceApp = admin.initializeApp(
       {
         credential: admin.credential.cert(
-          require("./serviceAccount.prod.json"),
+          require("../../../serviceAccount.prod.json"),
         ),
       },
       "deleteVehicleNameApp",

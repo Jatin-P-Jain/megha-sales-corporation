@@ -7,7 +7,12 @@
     "dev": "APP_ENV=development tsx scripts/generate-sw.ts && next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint src scripts/generate-sw.ts next.config.ts eslint.config.mjs --max-warnings=0"
+    "lint": "eslint src scripts/generate-sw.ts next.config.ts eslint.config.mjs --max-warnings=0",
+    "audit:products": "tsx scripts/firestore/audit-firestore-products.ts",
+    "audit:algolia-searchability": "tsx scripts/firestore/audit-algolia-searchability.ts",
+    "audit:product-brand-integrity": "tsx scripts/firestore/audit-product-brand-integrity.ts",
+    "fix:brand-aepl:dry": "tsx scripts/firestore/fix-product-brand-aepl.ts",
+    "fix:brand-aepl": "tsx scripts/firestore/fix-product-brand-aepl.ts --apply"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",

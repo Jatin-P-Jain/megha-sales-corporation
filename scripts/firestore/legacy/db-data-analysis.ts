@@ -7,16 +7,18 @@ function unslugify(slug: string): string {
   return slug
     .split("-")
     .map((word) =>
-      word.length > 0 ? word.charAt(0).toUpperCase() + word.slice(1) : "",
+      word.length > 0 ? word.charAt(0).toUpperCase() + word.slice(1) : ""
     )
     .join(" ");
 }
 
 const sourceApp = admin.initializeApp(
   {
-    credential: admin.credential.cert(require("./serviceAccount.prod.json")),
+    credential: admin.credential.cert(
+      require("../../../serviceAccount.prod.json")
+    ),
   },
-  "prodApp",
+  "prodApp"
 );
 
 const database = sourceApp.firestore();
@@ -24,7 +26,7 @@ const bucket = sourceApp
   .storage()
   .bucket("megha-sales-corporation.firebasestorage.app");
 
-const OUTPUT_FILE = "products-report.xlsx";
+const OUTPUT_FILE = "scripts/firestore/reports/products-report.xlsx";
 
 console.log("✅ App initialized!");
 
@@ -135,7 +137,7 @@ function printInlineProgress(prefix: string, current: number, total: number) {
 
 async function processBrand(
   brandId: string,
-  allData: ProductExcelRow[],
+  allData: ProductExcelRow[]
 ): Promise<BrandVerification> {
   const productsCol = database.collection("products");
   const snapshot = await productsCol.where("brandId", "==", brandId).get();
@@ -224,9 +226,9 @@ async function processBrand(
           ...common,
           rowType: "SIZE",
           size: s.size || "",
-          price: useBase ? basePrice : (s.price ?? basePrice),
-          discount: useBase ? baseDiscount : (s.discount ?? baseDiscount),
-          gst: useBase ? baseGst : (s.gst ?? baseGst),
+          price: useBase ? basePrice : s.price ?? basePrice,
+          discount: useBase ? baseDiscount : s.discount ?? baseDiscount,
+          gst: useBase ? baseGst : s.gst ?? baseGst,
         });
       }
     } else {
@@ -249,18 +251,18 @@ async function processBrand(
   const actualFolders = await getBrandFolders(brandId);
 
   const noImageCount = allData.filter(
-    (d) => d.brandId === brandId && d.status === "NO_IMAGE",
+    (d) => d.brandId === brandId && d.status === "NO_IMAGE"
   ).length;
 
   const okImageCount = allData.filter(
-    (d) => d.brandId === brandId && d.status === "OK",
+    (d) => d.brandId === brandId && d.status === "OK"
   ).length;
 
   // Expected folders is still based on number of products in DB (same as your original intent)
   const expectedFoldersCount = snapshot.docs.length;
 
   const extraFolders = Array.from(actualFolders).filter(
-    (folderName) => !dbFolderIds.has(folderName),
+    (folderName) => !dbFolderIds.has(folderName)
   );
 
   const verification: BrandVerification = {
@@ -288,7 +290,7 @@ async function processBrand(
 
 async function generateExcelReport(
   data: ProductExcelRow[],
-  verifications: BrandVerification[],
+  verifications: BrandVerification[]
 ) {
   const workbook = new ExcelJS.Workbook();
 
