@@ -24,6 +24,7 @@ import {
 
 import type { Product } from "@/types/product";
 import { useAuthState } from "@/context/useAuth";
+import { useUserGate } from "@/context/UserGateProvider";
 import { searchProducts } from "@/lib/algolia/search";
 
 import useDebouncedValue from "@/hooks/useDebouncedValue";
@@ -54,6 +55,7 @@ export default function SearchProducts({
   const [loading, setLoading] = useState(false);
 
   const { isAdmin } = useAuthState();
+  const { accountStatus } = useUserGate();
 
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -164,7 +166,11 @@ export default function SearchProducts({
             search: <strong>{searchedPhrase}</strong>
           </div>
 
-          <SearchResultsVirtual items={result} isAdmin={isAdmin} />
+          <SearchResultsVirtual
+            items={result}
+            isAdmin={isAdmin}
+            isAccountApproved={accountStatus === "approved"}
+          />
         </>
       )}
 
@@ -283,6 +289,7 @@ export default function SearchProducts({
                     <SearchResultsVirtual
                       items={result}
                       isAdmin={isAdmin}
+                      isAccountApproved={accountStatus === "approved"}
                       fillHeight
                     />
                   </div>

@@ -15,6 +15,7 @@ import {
 import { CartProduct } from "@/types/cartProduct";
 import ProductCard from "./product-card";
 import { Product } from "@/types/product";
+import { useUserGate } from "@/context/UserGateProvider";
 
 interface PartDetailsDialogProps {
   part: CartProduct;
@@ -31,6 +32,7 @@ export function PartDetailsDialog({
   productPricing,
   selectedSize,
 }: PartDetailsDialogProps) {
+  const { accountStatus } = useUserGate();
   const { partNumber, companyName, discount, price, gst } = part?.product || {};
   const {
     price: productPrice = 0,
@@ -91,7 +93,10 @@ export function PartDetailsDialog({
           </div>
         )}
 
-        <ProductCard product={productForDialog} />
+        <ProductCard
+          product={productForDialog}
+          isAccountApproved={accountStatus === "approved"}
+        />
 
         <DialogFooter className="flex w-full items-center justify-center gap-2 py-2">
           {/* 3) The close button */}

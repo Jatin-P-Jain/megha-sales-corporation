@@ -7,6 +7,8 @@ import { Separator } from "@/components/ui/separator";
 import {
   EyeIcon,
   ImageOffIcon,
+  PackagePlus,
+  ShoppingCart,
   TriangleAlert,
   XCircleIcon,
 } from "lucide-react";
@@ -50,9 +52,24 @@ export function CartItems() {
   if (isEmpty) {
     return (
       <div className="flex w-full flex-col items-center justify-center gap-4">
-        Your cart is empty!
+        <div className="flex w-full flex-col justify-center gap-2">
+          <h2 className="flex items-center justify-center gap-2 text-center text-sm font-medium md:text-base">
+            <ShoppingCart
+              fill="#000"
+              fillOpacity={0.2}
+              className="inline-flex size-5 self-center"
+            />
+            Cart Empty!
+          </h2>
+          <p className="text-muted-foreground text-center text-xs md:text-sm">
+            Your cart does not have any products right now.<br></br> Start adding
+            products to place an order.
+          </p>
+        </div>
         <Button asChild>
-          <SafeLink href="/products-list">Build your cart</SafeLink>
+          <SafeLink href="/products-list">
+            <PackagePlus className="size-4" /> Add products
+          </SafeLink>
         </Button>
       </div>
     );

@@ -8,10 +8,12 @@ import ProductCard from "../product-card";
 export default function SearchResultsVirtual({
   items,
   isAdmin,
+  isAccountApproved,
   fillHeight = false,
 }: {
   items: Product[];
   isAdmin: boolean;
+  isAccountApproved: boolean;
   fillHeight?: boolean;
 }) {
   // Virtuoso must have a height (either here or via parent flex styles). [web:233]
@@ -28,8 +30,12 @@ export default function SearchResultsVirtual({
         data={items}
         computeItemKey={(_, item) => item.id}
         itemContent={(_, product) => (
-          <div className="py-1 px-4 md:px-2">
-            <ProductCard product={product} isAdmin={isAdmin} />
+          <div className="px-4 py-1 md:px-2">
+            <ProductCard
+              product={product}
+              isAdmin={isAdmin}
+              isAccountApproved={isAccountApproved}
+            />
           </div>
         )}
       />
