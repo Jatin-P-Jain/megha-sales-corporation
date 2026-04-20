@@ -57,14 +57,14 @@ export default function CartOverview() {
           disabled
           type="button"
         >
-          <span>Go to Cart</span>
+          <span>Cart</span>
           <ShoppingCartIcon className="size-5" />
         </Button>
       ) : (
         <Button asChild className="flex w-auto items-center justify-center">
           <SafeLink href="/cart" className="flex items-center gap-2">
-            <span>Go to Cart</span>
-            <ShoppingCartIcon className="size-5" />
+            <span>Cart</span>
+            <ShoppingCartIcon className="size-5" fill="#fff" fillOpacity={0.5}/>
           </SafeLink>
         </Button>
       )}

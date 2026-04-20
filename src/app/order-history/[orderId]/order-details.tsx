@@ -4,6 +4,7 @@ import {
   CheckCircle2,
   ChevronDown,
   Clock,
+  ClockFading,
   ImageOffIcon,
   Package,
   Truck,
@@ -387,7 +388,7 @@ export default function OrderDetails({
             className="text-muted-foreground flex w-full items-center justify-between rounded-md py-2 text-sm font-medium"
           >
             <span className="flex items-center gap-2">
-              <Clock className="size-4" />
+              <ClockFading className="size-4" />
               Order Activity
               {/* {sortedTimelineEvents.length > 0 && (
                 <Badge variant="secondary" className="px-1.5 py-0 text-xs">

@@ -2,7 +2,14 @@
 
 import React, { useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2Icon, PackageCheck, PencilLineIcon } from "lucide-react";
+import {
+  ChevronDownIcon,
+  Loader2Icon,
+  PackageCheck,
+  PencilLineIcon,
+  PlusCircleIcon,
+  ShoppingCartIcon,
+} from "lucide-react";
 import { useCartState } from "@/context/cartContext";
 import currencyFormatter from "@/lib/currency-formatter";
 import { createOrder } from "./actions";
@@ -18,6 +25,12 @@ import { useRequireUserProfile } from "@/hooks/useUserProfile";
 import { useUserProfileState } from "@/context/UserProfileProvider";
 import { useSafeRouter } from "@/hooks/useSafeRouter";
 import Link from "next/link";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type CreateOrderPayload = Omit<
   Order,
@@ -229,13 +242,39 @@ export default function CheckoutFooter({
           )}
         </p>
         <div className="flex w-full items-center justify-between gap-4">
-          <Link
-            className="border-muted-foreground hover:bg-muted flex flex-1 items-center justify-center gap-2 rounded-md border py-2 text-xs transition-colors"
-            href="/cart"
-          >
-            <PencilLineIcon className="size-5" />
-            Edit Cart
-          </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="secondary"
+                className="text-primary flex h-full flex-1 items-center justify-between gap-2 py-2 text-xs"
+                type="button"
+              >
+                <ShoppingCartIcon />
+                Cart Actions
+                <ChevronDownIcon className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-52">
+              <DropdownMenuItem asChild>
+                <Link
+                  href="/cart"
+                  className="text-primary flex items-center gap-2 font-medium"
+                >
+                  <PencilLineIcon className="text-primary size-4" />
+                  Edit Cart
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link
+                  href="/products-list"
+                  className="text-primary flex items-center gap-2 font-medium"
+                >
+                  <PlusCircleIcon className="text-primary size-4" />
+                  Add More Products
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <Button
             className="flex flex-1 items-center justify-center gap-2"
@@ -258,13 +297,39 @@ export default function CheckoutFooter({
         </div>
       </div>
       <div className="hidden w-full items-center justify-between py-3 pb-4 md:flex">
-        <Link
-          className="border-muted-foreground hover:bg-muted flex h-full items-center justify-center rounded-md border px-3 py-1 text-xs transition-colors"
-          href="/cart"
-        >
-          <PencilLineIcon className="size-5" />
-          Edit Cart
-        </Link>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="secondary"
+              className="text-primary flex h-full items-center justify-center gap-2 px-3 py-1 text-xs md:text-sm"
+              type="button"
+            >
+              <ShoppingCartIcon />
+              Cart Actions
+              <ChevronDownIcon className="text-primary size-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-52">
+            <DropdownMenuItem asChild>
+              <Link
+                href="/cart"
+                className="text-primary flex items-center gap-2"
+              >
+                <PencilLineIcon className="text-primary size-4" />
+                Edit Cart
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link
+                href="/products-list"
+                className="text-primary flex items-center gap-2"
+              >
+                <PlusCircleIcon className="text-primary size-4" />
+                Add More Products
+              </Link>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <div className="flex min-w-75 flex-col items-end justify-center gap-1 text-xs">
           <p className="text-muted-foreground flex w-full items-center justify-between gap-2">
             Gross Amount :

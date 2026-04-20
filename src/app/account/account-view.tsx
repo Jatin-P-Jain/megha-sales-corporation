@@ -26,6 +26,7 @@ import {
   Shield,
   UserPen,
   Truck,
+  ClockFading,
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -661,7 +662,7 @@ function AccountViewInner({
                 className="flex w-full items-center justify-between rounded-md py-2 text-sm font-medium"
               >
                 <span className="flex items-center gap-2">
-                  <Clock className="size-4" />
+                  <ClockFading className="size-4" />
                   Account activity
                   {!timelineLoading && timelineEvents.length > 0 && (
                     <div className="text-muted-foreground text-xs font-normal">
