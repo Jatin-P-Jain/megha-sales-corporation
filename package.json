@@ -17,7 +17,9 @@
     "algolia:swap:tmp-to-prod": "tsx scripts/algolia/swap-index.ts --from products_tmp --to products",
     "audit:product-brand-integrity": "tsx scripts/firestore/audit-product-brand-integrity.ts",
     "fix:brand-aepl:dry": "tsx scripts/firestore/fix-product-brand-aepl.ts",
-    "fix:brand-aepl": "tsx scripts/firestore/fix-product-brand-aepl.ts --apply"
+    "fix:brand-aepl": "tsx scripts/firestore/fix-product-brand-aepl.ts --apply",
+    "count:backfill": "tsx scripts/firestore/backfill-count-collection.ts",
+    "count:deploy": "cd functions && npm run deploy:prod"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",

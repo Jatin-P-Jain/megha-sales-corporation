@@ -82,3 +82,14 @@ async function syncToDirectory(
 
   return `Synced usersDirectory/${uid}`; // Success log
 }
+
+// ============================================================================
+// EXPORT COUNT AGGREGATORS
+// ============================================================================
+export {
+  updateProductsCount,
+  updateUsersCount,
+  updateOrdersCount,
+  updateEnquiriesCount,
+  updateBrandsCount,
+} from "./count-aggregator";

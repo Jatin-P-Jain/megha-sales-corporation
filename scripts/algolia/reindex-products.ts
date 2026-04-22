@@ -178,7 +178,9 @@ async function main(): Promise<void> {
     const partNumberCompact = toLowerSafe(removeSpaces(partNumberRaw));
     const partNumberAlnum = toLowerSafe(removeNonAlphaNumeric(partNumberRaw));
     const partNumberAlnumSpaced = addAlphaNumSpaces(partNumberAlnum);
-    const partNameRaw = normalizeSpaces(String((data as Record<string, unknown>).partName || ""));
+    const partNameRaw = normalizeSpaces(
+      String((data as Record<string, unknown>).partName || "")
+    );
     const partNameNormalized = toLowerSafe(removeNonAlphaNumeric(partNameRaw));
 
     return {
