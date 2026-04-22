@@ -10,6 +10,11 @@
     "lint": "eslint src scripts/generate-sw.ts next.config.ts eslint.config.mjs --max-warnings=0",
     "audit:products": "tsx scripts/firestore/audit-firestore-products.ts",
     "audit:algolia-searchability": "tsx scripts/firestore/audit-algolia-searchability.ts",
+    "algolia:reindex:tmp": "tsx scripts/algolia/reindex-products.ts --index products_tmp",
+    "algolia:reindex:prod": "tsx scripts/algolia/reindex-products.ts --index products",
+    "algolia:configure:tmp": "tsx scripts/algolia/configure-products-index.ts --index products_tmp",
+    "algolia:configure:prod": "tsx scripts/algolia/configure-products-index.ts --index products",
+    "algolia:swap:tmp-to-prod": "tsx scripts/algolia/swap-index.ts --from products_tmp --to products",
     "audit:product-brand-integrity": "tsx scripts/firestore/audit-product-brand-integrity.ts",
     "fix:brand-aepl:dry": "tsx scripts/firestore/fix-product-brand-aepl.ts",
     "fix:brand-aepl": "tsx scripts/firestore/fix-product-brand-aepl.ts --apply"

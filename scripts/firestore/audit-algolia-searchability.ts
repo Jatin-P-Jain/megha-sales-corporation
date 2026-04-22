@@ -342,7 +342,7 @@ async function main(): Promise<void> {
   const algolia = algoliasearch(appId, searchKey);
   const indexName = "products";
 
-  const fetchQueryIds = async (query: string): Promise<Set<string>> => {
+  const fetchQueryIds = async (query: string): Promise<QueryExecution> => {
     const result = (await algolia.searchSingleIndex({
       indexName,
       searchParams: {
