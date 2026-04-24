@@ -2428,7 +2428,7 @@ const superCirclePriceList = {
 
 const sourceApp = admin.initializeApp(
   {
-    credential: admin.credential.cert(require("./serviceAccount.prod.json")),
+    credential: admin.credential.cert(require("../../../serviceAccount.prod.json")),
   },
   "prodApp",
 );

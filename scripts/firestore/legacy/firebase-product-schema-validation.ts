@@ -191,7 +191,7 @@ export async function generateProductReport(): Promise<{
     const sourceApp = admin.initializeApp(
       {
         credential: admin.credential.cert(
-          require("./serviceAccount.prod.json"),
+          require("../../../serviceAccount.prod.json"),
         ),
       },
       "prodReportApp",

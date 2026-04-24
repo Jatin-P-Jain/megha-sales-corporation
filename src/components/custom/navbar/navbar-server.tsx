@@ -5,8 +5,13 @@ import JinendraLogo from "../../../../public/jai-jinendra.png";
 import ContactUsLink from "../contact-us-link";
 import NavBarClientRight from "./navbar-client-right";
 import { SafeLink } from "../utility/SafeLink";
+import { getBrandsForDropDown } from "@/data/brands";
 
-export default function NavBarServer() {
+export default async function NavBarServer() {
+  const { data: rawBrands } = await getBrandsForDropDown({
+    filters: { status: ["live"] },
+  });
+  const brands = rawBrands.map((b) => ({ id: b.id, name: b.brandName }));
   return (
     <nav className="fixed top-0 right-0 left-0 z-60 flex flex-wrap items-center justify-between bg-cyan-950 p-3 px-4 text-white shadow-md lg:px-8">
       <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4">
@@ -46,7 +51,7 @@ export default function NavBarServer() {
         <ContactUsLink />
       </div>
 
-      <NavBarClientRight />
+      <NavBarClientRight brands={brands} />
     </nav>
   );
 }
