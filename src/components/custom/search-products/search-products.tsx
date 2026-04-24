@@ -1,7 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { SearchIcon, XIcon, Loader, Loader2 } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  SearchIcon,
+  XIcon,
+  Loader,
+  Loader2,
+  PackageCheckIcon,
+  Search,
+  TextSearch,
+  ChevronDownIcon,
+  CheckIcon,
+  PlusIcon,
+} from "lucide-react";
 import clsx from "clsx";
 
 import { Button } from "@/components/ui/button";
@@ -21,25 +32,38 @@ import {
   DrawerTitle,
   DrawerDescription,
 } from "@/components/ui/drawer";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
 
 import type { Product } from "@/types/product";
 import { useAuthState } from "@/context/useAuth";
 import { useUserGate } from "@/context/UserGateProvider";
-import { searchProducts } from "@/lib/algolia/search";
+import { searchProductsByBrands } from "@/lib/algolia/search";
 
 import useDebouncedValue from "@/hooks/useDebouncedValue";
 import { Input } from "@/components/ui/input";
 import { useDrawerBackButton } from "@/hooks/useDrawerBackButton";
 import SearchResultsVirtual from "./search-results-virtual";
+import { usePathname, useSearchParams } from "next/navigation";
+import { unslugify } from "@/lib/utils";
+import { useSafeRouter } from "@/hooks/useSafeRouter";
+
+type BrandOption = { id: string; name: string };
 
 export default function SearchProducts({
   variant = "outline",
   buttonClassName,
+  brands = [],
 }: {
   variant?: "outline" | "default";
   buttonClassName?: string;
   showText?: boolean;
+  brands?: BrandOption[];
 }) {
+  const [brandPickerOpen, setBrandPickerOpen] = useState(false);
   // Separate open states to avoid both Dialog and Drawer being open simultaneously
   // (portals can render even if trigger wrappers are hidden via CSS). [web:43][web:32]
   const [openDesktop, setOpenDesktop] = useState(false);
@@ -53,6 +77,107 @@ export default function SearchProducts({
   const [result, setResult] = useState<Product[] | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [loading, setLoading] = useState(false);
+  const router = useSafeRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const selectedBrandIds = useMemo(() => {
+    const raw = searchParams.get("brandId") || "";
+    return raw
+      .split(",")
+      .map((id) => id.trim())
+      .filter(Boolean);
+  }, [searchParams]);
+
+  const selectedBrandLabels = useMemo(
+    () => selectedBrandIds.map((id) => unslugify(id)),
+    [selectedBrandIds],
+  );
+
+  const brandScopeText = useMemo(() => {
+    if (selectedBrandLabels.length === 0)
+      return `Limit search to specific brands`;
+    return `Search limited to filtered brands: `;
+  }, [selectedBrandLabels]);
+
+  const updateBrandScope = (nextBrandIds: string[]) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (nextBrandIds.length > 0) {
+      params.set("brandId", nextBrandIds.join(","));
+    } else {
+      params.delete("brandId");
+    }
+
+    params.set("page", "1");
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, {
+      allowDuringNav: true,
+    });
+  };
+
+  const removeScopedBrand = (brandId: string) => {
+    const next = selectedBrandIds.filter((id) => id !== brandId);
+    updateBrandScope(next);
+  };
+
+  const clearBrandScope = () => {
+    updateBrandScope([]);
+  };
+
+  const toggleBrandInScope = (brandId: string) => {
+    const next = selectedBrandIds.includes(brandId)
+      ? selectedBrandIds.filter((id) => id !== brandId)
+      : [...selectedBrandIds, brandId];
+    updateBrandScope(next);
+  };
+
+  const AddBrandPicker = brands.length > 0 && (
+    <Popover open={brandPickerOpen} onOpenChange={setBrandPickerOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="border-primary text-primary hover:bg-primary/5 inline-flex items-center gap-1 rounded-full border border-dashed px-2 py-1 text-xs transition-colors"
+        >
+          <PlusIcon className="h-3 w-3" />
+          Add brand
+          <ChevronDownIcon className="h-3 w-3" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-52 p-1"
+        align="start"
+        onInteractOutside={() => setBrandPickerOpen(false)}
+      >
+        <ul className="flex flex-col">
+          {brands.map((brand) => {
+            const isSelected = selectedBrandIds.includes(brand.id);
+            return (
+              <li key={brand.id}>
+                <button
+                  type="button"
+                  onClick={() => toggleBrandInScope(brand.id)}
+                  className="hover:bg-accent flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs"
+                >
+                  <div
+                    className={clsx(
+                      "flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border",
+                      isSelected
+                        ? "bg-primary border-primary text-primary-foreground"
+                        : "border-muted-foreground/40",
+                    )}
+                  >
+                    {isSelected && <CheckIcon className="h-3 w-3 text-white" />}
+                  </div>
+                  <span className="truncate">{brand.name}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </PopoverContent>
+    </Popover>
+  );
 
   const { isAdmin } = useAuthState();
   const { accountStatus } = useUserGate();
@@ -110,7 +235,7 @@ export default function SearchProducts({
 
     (async () => {
       try {
-        const results = await searchProducts(q);
+        const results = await searchProductsByBrands(q, selectedBrandIds);
 
         // ignore stale responses
         if (requestId !== requestIdRef.current) return;
@@ -126,7 +251,7 @@ export default function SearchProducts({
         setLoading(false);
       }
     })();
-  }, [debouncedQuery, isOpen]);
+  }, [debouncedQuery, isOpen, selectedBrandIds]);
 
   const Body = (
     <div className="grid gap-2">
@@ -152,6 +277,45 @@ export default function SearchProducts({
         )}
       </div>
 
+      {brands.length > 0 && (
+        <div className="bg-primary/5 rounded-md px-2 py-2">
+          {brandScopeText && (
+            <div className="flex items-center justify-between">
+              <p className="text-primary/90 flex items-center gap-1 text-xs font-medium">
+                <TextSearch className="size-4" />
+                {brandScopeText}
+              </p>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-xs text-red-700"
+                onClick={clearBrandScope}
+                disabled={selectedBrandIds.length === 0}
+              >
+                Clear All
+              </Button>
+            </div>
+          )}
+          <div className="flex flex-wrap items-center gap-1.5">
+            {AddBrandPicker}
+            {selectedBrandIds.map((brandId, index) => (
+              <button
+                key={brandId}
+                type="button"
+                onClick={() => removeScopedBrand(brandId)}
+                className="border-primary/30 bg-background inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs"
+                aria-label={`Remove brand ${selectedBrandLabels[index]} from search scope`}
+                title="Remove from search scope"
+              >
+                <span>{selectedBrandLabels[index]}</span>
+                <XIcon className="text-muted-foreground h-3 w-3" />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {loading && (
         <div className="flex flex-col items-center justify-center gap-2">
           <Loader className="text-primary mx-auto h-4 w-4 animate-spin" />
@@ -161,9 +325,15 @@ export default function SearchProducts({
 
       {result && (
         <>
-          <div className="text-center text-xs text-green-700 md:text-sm">
-            ✅ Found <strong>{result.length} product(s)</strong> for your
-            search: <strong>{searchedPhrase}</strong>
+          <div className="px-4 text-left text-xs text-green-700 md:text-sm">
+            <PackageCheckIcon className="mr-1 inline-block h-4 w-4" />
+            Found
+            <span className="font-medium">
+              {" "}
+              {result.length} product{result.length !== 1 ? "s" : ""}
+            </span>{" "}
+            for <span className="font-semibold">{searchedPhrase}</span>
+            {selectedBrandLabels.length > 0 && <> within selected scope</>}
           </div>
 
           <SearchResultsVirtual
@@ -176,7 +346,9 @@ export default function SearchProducts({
 
       {notFound && (
         <p className="px-4 text-sm text-red-500">
-          ❌ No product found for your search: <strong>{searchedPhrase}</strong>
+          ❌ No product found for{" "}
+          <span className="font-semibold">{searchedPhrase}</span>
+          {selectedBrandLabels.length > 0 && <> inside selected brand scope</>}
         </p>
       )}
     </div>
@@ -203,7 +375,10 @@ export default function SearchProducts({
 
           <DialogContent className="mt-8 max-h-[90vh] w-[calc(100vw-2rem)] flex-1 overflow-auto px-4 shadow-2xl sm:max-w-3xl md:max-w-2xl lg:max-w-4xl">
             <DialogHeader>
-              <DialogTitle className="">Search product</DialogTitle>
+              <DialogTitle className="flex items-center gap-2 text-sm md:text-base">
+                <Search />
+                Search Products
+              </DialogTitle>
               <DialogDescription className="text-xs md:text-sm">
                 Find products by <strong>part name</strong> or{" "}
                 <strong>part number</strong>.
@@ -236,10 +411,13 @@ export default function SearchProducts({
             </Button>
           </DrawerTrigger>
 
-          <DrawerContent className="mx-auto flex h-[calc(100dvh-5rem)] min-h-[calc(100dvh-5rem)] w-full max-w-lg flex-col overflow-hidden">
-            <DrawerHeader className="shrink-0 px-0">
-              <DrawerTitle>Search product</DrawerTitle>
-              <DrawerDescription className="text-xs">
+          <DrawerContent className="mx-auto flex h-[calc(100dvh-5rem)] min-h-[calc(100dvh-5rem)] w-full max-w-lg flex-col gap-0! overflow-hidden">
+            <DrawerHeader className="shrink-0 gap-1 p-4 py-2">
+              <DrawerTitle className="flex items-center justify-center gap-2 text-sm md:text-base">
+                <Search />
+                Search Products
+              </DrawerTitle>
+              <DrawerDescription className="p-0 text-xs">
                 Find products by <strong>part name</strong> or{" "}
                 <strong>part number</strong>.
               </DrawerDescription>
@@ -268,6 +446,45 @@ export default function SearchProducts({
               )}
             </div>
 
+            {brands.length > 0 && (
+              <div className="bg-primary/5 mx-4 mt-2 shrink-0 rounded-md px-2 py-2">
+                {brandScopeText && (
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-primary/90 flex items-center gap-1 text-xs font-medium">
+                      <TextSearch className="size-4" />
+                      {brandScopeText}
+                    </p>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 text-xs text-red-700"
+                      onClick={clearBrandScope}
+                      disabled={selectedBrandIds.length === 0}
+                    >
+                      Clear All
+                    </Button>
+                  </div>
+                )}
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {AddBrandPicker}
+                  {selectedBrandIds.map((brandId, index) => (
+                    <button
+                      key={brandId}
+                      type="button"
+                      onClick={() => removeScopedBrand(brandId)}
+                      className="border-primary/30 bg-background inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[11px]"
+                      aria-label={`Remove brand ${selectedBrandLabels[index]} from search scope`}
+                      title="Remove from search scope"
+                    >
+                      <span>{selectedBrandLabels[index]}</span>
+                      <XIcon className="text-muted-foreground h-3 w-3" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Results area fills all remaining space */}
             <div className="flex min-h-0 flex-1 flex-col">
               {loading && (
@@ -283,7 +500,10 @@ export default function SearchProducts({
                     <strong>
                       {result.length} product{result.length > 1 ? "s" : ""}
                     </strong>{" "}
-                    for your search: <strong>{searchedPhrase}</strong>
+                    for <strong>{searchedPhrase}</strong>
+                    {selectedBrandLabels.length > 0 && (
+                      <> within selected scope</>
+                    )}
                   </div>
                   <div className="min-h-0 flex-1">
                     <SearchResultsVirtual
@@ -297,8 +517,10 @@ export default function SearchProducts({
               )}
               {notFound && (
                 <p className="px-4 py-2 text-sm text-red-500">
-                  ❌ No product found for your search:{" "}
-                  <strong>{searchedPhrase}</strong>
+                  ❌ No product found for <strong>{searchedPhrase}</strong>
+                  {selectedBrandLabels.length > 0 && (
+                    <> inside selected brand scope</>
+                  )}
                 </p>
               )}
             </div>
