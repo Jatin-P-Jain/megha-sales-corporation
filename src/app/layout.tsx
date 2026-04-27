@@ -14,6 +14,7 @@ import { Footer } from "@/components/custom/footer";
 import { NavBar } from "@/components/custom/navbar/nav-bar";
 import RouteProgress from "@/components/custom/route-progress";
 import { NavigationLockProvider } from "@/context/navigation-lock-provider";
+import SuspendedAccountGate from "@/components/custom/suspended-account-gate";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -99,7 +100,7 @@ export default async function RootLayout({
               <RouteProgress />
               <NavBar />
               <div className="mx-auto max-w-5xl px-3 pt-20 pb-8 md:p-8 md:pt-28">
-                {children}
+                <SuspendedAccountGate>{children}</SuspendedAccountGate>
               </div>
 
               <Footer />

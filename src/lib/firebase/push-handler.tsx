@@ -25,11 +25,7 @@ export const PushHandler = () => {
     const toastConfig = { description: body, duration: 5000 };
 
     if (type === "account") {
-      if (
-        status === "rejected" ||
-        status === "suspended" ||
-        status === "deactivated"
-      ) {
+      if (status === "rejected" || status === "suspended") {
         toast.error(title, toastConfig);
         return;
       }

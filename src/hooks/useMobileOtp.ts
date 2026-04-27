@@ -95,10 +95,7 @@ export function useMobileOtp({
         if (!isResent) toast.success("OTP sent successfully");
       } catch (e) {
         console.error(e);
-        toast.error("Failed to send OTP", {
-          description:
-            e instanceof Error ? e.message : "An unknown error occurred",
-        });
+        handleFirebaseAuthError(e);
       } finally {
         setSendingOtp(false);
         try {

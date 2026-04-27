@@ -3,6 +3,7 @@ import { auth, fireStore } from "@/firebase/server";
 import { notifyUser } from "@/lib/firebase/notifyUser";
 import imageUrlFormatter from "@/lib/image-urlFormatter";
 import { AccountStatus, UserRole } from "@/types/userGate";
+import type { AccountTimelineEventType } from "@/types/user";
 import { cookies } from "next/headers";
 import { addAccountTimelineEvent } from "@/lib/firebase/addAccountTimelineEvent";
 import { isFullAdminClaim } from "@/lib/auth/gaurds";
@@ -32,20 +33,22 @@ const accountStatusNotificationMap: Record<
     body: () =>
       "Your account access has been suspended. Please contact support.",
   },
-  deactivated: {
-    title: "🚫 Account Deactivated",
-    body: () => "Your account has been deactivated. Please contact support.",
-  },
 };
 
 export async function updateUserAccountStatus({
   userId,
   accountStatus,
   rejectionReason,
+  notificationOverride,
+  timelineOverride,
+  resetRoleToCustomer,
 }: {
   userId: string;
   accountStatus: AccountStatus;
   rejectionReason?: string;
+  notificationOverride?: { title: string; body: string };
+  timelineOverride?: { type: AccountTimelineEventType; label: string };
+  resetRoleToCustomer?: boolean;
 }) {
   try {
     // Verify admin authentication
@@ -66,11 +69,17 @@ export async function updateUserAccountStatus({
     const updateData: {
       accountStatus: AccountStatus;
       rejectionReason?: string;
+      userRole?: UserRole;
       updatedAt: Date;
     } = {
       accountStatus,
       updatedAt: new Date(),
     };
+
+    if (resetRoleToCustomer) {
+      // Revoked users should return to a clean pending-customer state.
+      updateData.userRole = "customer";
+    }
 
     // Add or remove rejection reason based on status
     if (accountStatus === "rejected" && rejectionReason) {
@@ -87,12 +96,43 @@ export async function updateUserAccountStatus({
     batch.set(userGateRef, updateData, { merge: true });
     await batch.commit();
 
-    const notificationConfig = accountStatusNotificationMap[accountStatus];
+    if (resetRoleToCustomer) {
+      const targetRecord = await auth.getUser(userId);
+      const existingClaims = (targetRecord.customClaims ?? {}) as Record<
+        string,
+        unknown
+      >;
+      const adminEmails = process.env.ADMIN_EMAILS?.split(",") ?? [];
+      const adminPhones = process.env.ADMIN_PHONES?.split(",") ?? [];
+      const isEnvAdmin =
+        (targetRecord.email && adminEmails.includes(targetRecord.email)) ||
+        (targetRecord.phoneNumber &&
+          adminPhones.includes(targetRecord.phoneNumber));
+
+      const { userRole: _r, ...restClaims } = existingClaims;
+      if (isEnvAdmin) {
+        await auth.setCustomUserClaims(userId, {
+          ...restClaims,
+          admin: true,
+        });
+      } else {
+        const { admin: _a, ...noClaims } = restClaims;
+        await auth.setCustomUserClaims(userId, noClaims);
+      }
+    }
+
+    const notificationConfig = notificationOverride ?? {
+      title: accountStatusNotificationMap[accountStatus].title,
+      body: accountStatusNotificationMap[accountStatus].body(rejectionReason),
+    };
     await notifyUser({
       uid: userId,
       type: "account",
       title: notificationConfig.title,
-      body: notificationConfig.body(rejectionReason),
+      body:
+        typeof notificationConfig.body === "string"
+          ? notificationConfig.body
+          : notificationConfig.body,
       url: "/account",
       clickAction: "view_account",
       status: accountStatus,
@@ -102,7 +142,7 @@ export async function updateUserAccountStatus({
     const statusEventMap: Record<
       AccountStatus,
       {
-        type: Parameters<typeof addAccountTimelineEvent>[0]["type"];
+        type: AccountTimelineEventType;
         label: string;
       }
     > = {
@@ -113,12 +153,8 @@ export async function updateUserAccountStatus({
       approved: { type: "account_approved", label: "Account approved" },
       rejected: { type: "account_rejected", label: "Account rejected" },
       suspended: { type: "account_suspended", label: "Account suspended" },
-      deactivated: {
-        type: "account_deactivated",
-        label: "Account deactivated",
-      },
     };
-    const ev = statusEventMap[accountStatus];
+    const ev = timelineOverride ?? statusEventMap[accountStatus];
     await addAccountTimelineEvent({
       uid: userId,
       type: ev.type,
@@ -227,17 +263,28 @@ export async function updateUserRole({
 
   const isStaff = userRole !== "customer";
 
+  if (isStaff) {
+    // Role assignment should not silently approve accounts.
+    // Staff roles are allowed only after explicit account approval.
+    const gateSnap = await fireStore
+      .collection("userGate")
+      .doc(targetUserId)
+      .get();
+    const currentStatus = gateSnap.data()?.accountStatus as
+      | AccountStatus
+      | undefined;
+    if (currentStatus !== "approved") {
+      throw new Error(
+        "Cannot assign a staff role unless the account is approved. Approve the account first."
+      );
+    }
+  }
+
   // Build Firestore update — userRole is the single source of truth
   const updateData: Record<string, unknown> = {
     userRole,
     updatedAt: new Date(),
   };
-
-  if (isStaff) {
-    // All staff get auto-approved so they can log into the dashboard
-    updateData.accountStatus = "approved";
-    updateData.profileComplete = true;
-  }
 
   const batch = fireStore.batch();
   batch.set(fireStore.collection("users").doc(targetUserId), updateData, {

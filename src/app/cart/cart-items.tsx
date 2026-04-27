@@ -62,8 +62,8 @@ export function CartItems() {
             Cart Empty!
           </h2>
           <p className="text-muted-foreground text-center text-xs md:text-sm">
-            Your cart does not have any products right now.<br></br> Start adding
-            products to place an order.
+            Your cart does not have any products right now.<br></br> Start
+            adding products to place an order.
           </p>
         </div>
         <Button asChild>
@@ -131,7 +131,7 @@ export function CartItems() {
               </div>
 
               <div className="flex flex-col items-start justify-start gap-1">
-                <div className="flex w-full items-center justify-start gap-2">
+                <div className="flex w-full items-start justify-start gap-2">
                   <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md border bg-white shadow-sm">
                     {productImage ? (
                       <Image
@@ -147,8 +147,8 @@ export function CartItems() {
                       </div>
                     )}
                   </div>
-                  <div className="flex h-full min-w-0 flex-1 flex-col items-start justify-center">
-                    <h3 className="w-full truncate text-sm font-medium md:text-base">
+                  <div className="flex min-w-0 flex-1 flex-col items-start justify-center overflow-hidden">
+                    <h3 className="line-clamp-2 w-full overflow-hidden text-sm font-medium md:text-base">
                       {item.product.partName || "Product Name"}
                     </h3>
 
@@ -158,7 +158,7 @@ export function CartItems() {
                       productPricing={item.productPricing}
                     />
                   </div>
-                  <div className="ml-auto flex h-full w-auto shrink-0 items-end justify-end md:w-1/4">
+                  <div className="flex h-full flex-1 items-start justify-end">
                     <CartControls
                       isCartPage
                       productId={item.cartItemKey}

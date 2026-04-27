@@ -22,11 +22,23 @@ export function handleFirebaseAuthError(error: unknown) {
         break;
       case "auth/account-exists-with-different-credential":
         toast.error(
-          "This number is linked to an account with a different method.",
+          "This number is linked to an account with a different method."
         );
         break;
       case "auth/too-many-requests":
         toast.error("Too many attempts. Try again later.");
+        break;
+      case "auth/captcha-check-failed":
+        toast.error("reCAPTCHA verification failed. Please try again.");
+        break;
+      case "auth/invalid-phone-number":
+      case "auth/missing-phone-number":
+        toast.error(
+          "Invalid phone number. Please enter a valid 10-digit number."
+        );
+        break;
+      case "auth/quota-exceeded":
+        toast.error("SMS quota exceeded. Please try again later.");
         break;
       case "auth/invalid-app-credential":
       case "auth/missing-app-credential":

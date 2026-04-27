@@ -22,7 +22,10 @@ import { generateSequenceId } from "@/lib/firebase/generateSequenceId";
 import { saveEnquiry } from "@/app/enquiries/actions";
 import { Enquiry } from "@/types/enquiry";
 import { useSafeRouter } from "@/hooks/useSafeRouter";
-import { notifyUserAction } from "@/actions/notify-user";
+import {
+  notifyAdminRecipientsAction,
+  notifyUserAction,
+} from "@/actions/notify-user";
 import { getBaseUrl } from "@/lib/utils";
 
 export default function HelpDialog({
@@ -140,6 +143,15 @@ export default function HelpDialog({
           title: "📬 Enquiry Submitted",
           body: `Your enquiry #${customEnquiryId} has been received. We'll get back to you soon!`,
           url: `${getBaseUrl()}/enquiries?searchField=id&searchQuery=${customEnquiryId}`,
+          clickAction: "view_enquiry",
+          status: "created",
+        });
+        void notifyAdminRecipientsAction({
+          recipientsMode: "role-admin-only",
+          type: "enquiry",
+          title: "📬 New Enquiry Received",
+          body: `${user.displayName || "A user"} submitted a new enquiry #${customEnquiryId}.`,
+          url: `${getBaseUrl()}/admin-dashboard/enquiries?searchField=id&searchQuery=${customEnquiryId}`,
           clickAction: "view_enquiry",
           status: "created",
         });

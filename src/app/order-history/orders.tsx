@@ -82,7 +82,6 @@ export const handleStatusChange = async (
     url: orderUrl,
     clickAction: "view_order",
     status: newStatus,
-    pushOnly: true,
   });
 
   const notificationResults = await Promise.allSettled([

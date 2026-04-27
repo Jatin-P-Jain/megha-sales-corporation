@@ -2,7 +2,6 @@
 
 import {
   CheckCircle2,
-  ShieldOff,
   Image,
   FileText,
   User,
@@ -75,11 +74,6 @@ const eventConfig: Record<
     icon: UserRoundMinus,
     color: "text-amber-600",
     bg: "bg-amber-50",
-  },
-  account_deactivated: {
-    icon: ShieldOff,
-    color: "text-zinc-500",
-    bg: "bg-zinc-100",
   },
   role_assigned: {
     icon: ShieldEllipsis,

@@ -9,7 +9,6 @@ import {
   XCircle,
   Clock,
   ShieldOff,
-  UserX,
   Mail,
   Phone,
   User,
@@ -23,6 +22,7 @@ import {
   PlusCircle,
   Eye,
   ChevronDown,
+  BriefcaseBusiness,
   Shield,
   UserPen,
   Truck,
@@ -131,17 +131,6 @@ function getAccountStatusInfo(
         description: r
           ? `Suspension reason: ${r}`
           : "Your access is temporarily restricted.",
-      };
-    case "deactivated":
-      return {
-        icon: UserX,
-        color: "text-zinc-700",
-        bgColor: "bg-zinc-50",
-        borderColor: "border-zinc-200",
-        title: "Account deactivated.",
-        description: r
-          ? `Deactivation note: ${r}`
-          : "Your account is currently inactive.",
       };
     case "pending":
       return {
@@ -419,21 +408,27 @@ function AccountViewInner({
                 const Icon =
                   role === "accountant"
                     ? UserPen
-                    : role === "dispatcher"
-                      ? Truck
-                      : Shield;
+                    : role === "sales"
+                      ? BriefcaseBusiness
+                      : role === "dispatcher"
+                        ? Truck
+                        : Shield;
                 const bg =
                   role === "accountant"
                     ? "bg-violet-700"
-                    : role === "dispatcher"
-                      ? "bg-amber-600"
-                      : "bg-sky-900";
+                    : role === "sales"
+                      ? "bg-emerald-700"
+                      : role === "dispatcher"
+                        ? "bg-amber-600"
+                        : "bg-sky-900";
                 const desc =
                   role === "admin"
                     ? "Full dashboard access — all sections."
-                    : role === "dispatcher"
-                      ? "Dashboard access: Order Book."
-                      : "Dashboard access: Brand Catalogue + Order Book.";
+                    : role === "sales"
+                      ? "Dashboard access: Enquiry Register + Order Book."
+                      : role === "dispatcher"
+                        ? "Dashboard access: Order Book."
+                        : "Dashboard access: Brand Catalogue + Order Book.";
                 return (
                   <div className="flex items-center justify-center gap-3 rounded-md border border-white/20 bg-slate-800 p-3 text-white shadow-sm">
                     <div

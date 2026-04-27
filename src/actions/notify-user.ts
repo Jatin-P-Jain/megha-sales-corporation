@@ -88,7 +88,7 @@ async function resolveUidsFromRoles(roles: string[]) {
 
 /**
  * Unified admin/staff notification entrypoint.
- * - role-staff: userGate.userRole in [admin, dispatcher, accountant]
+ * - role-staff: userGate.userRole in [admin, dispatcher, accountant, sales]
  * - role-admin-only: userGate.userRole == admin
  */
 export async function notifyAdminRecipientsAction(
@@ -101,6 +101,7 @@ export async function notifyAdminRecipientsAction(
       "admin",
       "dispatcher",
       "accountant",
+      "sales",
     ]);
     await deliverToUids(
       uids,

@@ -102,8 +102,9 @@ export type AccountTimelineEventType =
   | "profile_submitted"
   | "account_approved"
   | "account_rejected"
+  | "account_revoked"
   | "account_suspended"
-  | "account_deactivated"
+  | "account_unsuspended"
   | "role_assigned";
 
 export type AccountTimelineEvent = {

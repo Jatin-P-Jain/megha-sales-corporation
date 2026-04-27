@@ -20,7 +20,6 @@ import EnquiryCard from "./enquiry-card";
 import { Enquiry, EnquiryStatus } from "@/types/enquiry";
 import { replyToEnquiry, updateEnquiryStatus } from "./actions";
 import { useUserGate } from "@/context/UserGateProvider";
-import { useRequireUserProfile } from "@/hooks/useUserProfile";
 import { useUserProfileState } from "@/context/UserProfileProvider";
 import { FullUser } from "@/types/user";
 
@@ -48,7 +47,6 @@ export default function EnquiriesList({
   const searchQuery = searchParams.get("searchQuery") || "";
 
   const { gate } = useUserGate();
-  useRequireUserProfile(true);
   const { clientUser } = useUserProfileState();
 
   const fullUser = useMemo(() => {

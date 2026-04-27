@@ -32,7 +32,7 @@ export function AdminServiceCards({ userRole }: { userRole: UserRole }) {
   const isFullAdmin = userRole === "admin";
   const showBrands = isFullAdmin || userRole === "accountant";
   const showUsers = isFullAdmin;
-  const showEnquiries = isFullAdmin;
+  const showEnquiries = isFullAdmin || userRole === "sales";
 
   function Badge({ count }: { count: number }) {
     if (count <= 0) return null;

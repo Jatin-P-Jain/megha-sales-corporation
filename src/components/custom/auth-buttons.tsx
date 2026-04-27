@@ -31,6 +31,7 @@ import {
   UserX,
   Clock,
   AlertCircle,
+  BriefcaseBusiness,
   Shield,
   UserPen,
   Truck,
@@ -53,7 +54,6 @@ type AccountStatusUI =
   | "approved"
   | "rejected"
   | "suspended"
-  | "deactivated"
   | "incomplete";
 
 function toTitleCase(s: string) {
@@ -87,14 +87,6 @@ function getStatusMeta(status?: string) {
         Icon: ShieldOff,
         className: "bg-orange-100 text-orange-800 hover:bg-orange-100",
         subtle: "text-orange-700",
-      };
-    case "deactivated":
-      return {
-        key: "deactivated" as const,
-        label: "Deactivated",
-        Icon: UserX,
-        className: "bg-zinc-100 text-zinc-800 hover:bg-zinc-100",
-        subtle: "text-zinc-700",
       };
     case "pending":
       return {
@@ -208,9 +200,6 @@ export default function AuthButtons() {
                   !isAdmin &&
                     accountStatus === "suspended" &&
                     "ring-orange-500",
-                  !isAdmin &&
-                    accountStatus === "deactivated" &&
-                    "ring-zinc-500",
                 )}
               >
                 {clientUser.photoUrl ? (
@@ -264,15 +253,19 @@ export default function AuthButtons() {
                   const Icon =
                     role === "accountant"
                       ? UserPen
-                      : role === "dispatcher"
-                        ? Truck
-                        : Shield;
+                      : role === "sales"
+                        ? BriefcaseBusiness
+                        : role === "dispatcher"
+                          ? Truck
+                          : Shield;
                   const bg =
                     role === "accountant"
                       ? "bg-violet-700"
-                      : role === "dispatcher"
-                        ? "bg-amber-600"
-                        : "bg-sky-900";
+                      : role === "sales"
+                        ? "bg-emerald-700"
+                        : role === "dispatcher"
+                          ? "bg-amber-600"
+                          : "bg-sky-900";
                   return (
                     <span
                       className={clsx(
@@ -328,15 +321,19 @@ export default function AuthButtons() {
                   const Icon =
                     role === "accountant"
                       ? UserPen
-                      : role === "dispatcher"
-                        ? Truck
-                        : Shield;
+                      : role === "sales"
+                        ? BriefcaseBusiness
+                        : role === "dispatcher"
+                          ? Truck
+                          : Shield;
                   const bg =
                     role === "accountant"
                       ? "bg-violet-700"
-                      : role === "dispatcher"
-                        ? "bg-amber-600"
-                        : "bg-sky-900";
+                      : role === "sales"
+                        ? "bg-emerald-700"
+                        : role === "dispatcher"
+                          ? "bg-amber-600"
+                          : "bg-sky-900";
                   return (
                     <Badge
                       className={clsx(
@@ -360,9 +357,7 @@ export default function AuthButtons() {
                     <span>
                       {accountStatus === "rejected"
                         ? "Your account was rejected."
-                        : accountStatus === "suspended"
-                          ? "Your account is suspended."
-                          : "Your account is deactivated."}
+                        : "Your account is suspended."}
                     </span>
                   </div>
                 )}

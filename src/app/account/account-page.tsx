@@ -10,7 +10,6 @@ import imageUrlFormatter from "@/lib/image-urlFormatter";
 import { getSafeRedirectPath } from "@/lib/safe-redirect";
 import { useAuthState } from "@/context/useAuth";
 
-import { useRecaptcha } from "@/hooks/useRecaptcha";
 import { useLinkAuthProviders } from "@/hooks/useLinkAuthProviders";
 import { setToken } from "@/context/actions";
 import { updateUserFirebaseMethods, updateUserPhoto } from "./actions";
@@ -44,10 +43,9 @@ export default function AccountPage() {
   const [cropOpen, setCropOpen] = useState(false);
   const [cropSrc, setCropSrc] = useState<string>("");
 
-  const recaptchaVerifier = useRecaptcha({ enabled: true });
   const { linkGoogle } = useLinkAuthProviders({
     user: currentUser,
-    recaptchaVerifier: recaptchaVerifier.verifier,
+    recaptchaVerifier: null, // Google link uses popup — no reCAPTCHA needed
     onToken: async (idToken, refreshToken) => {
       await setToken(idToken, refreshToken);
     },
