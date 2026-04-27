@@ -20,8 +20,10 @@ export default function NetworkBanner() {
       const nav = window.navigator as NavigatorWithConnection;
       const connection = nav.connection;
       if (connection && connection.effectiveType) {
+        console.log("Network effective type:", connection.effectiveType);
+
         setIsSlowConnection(
-          ["slow-2g", "2g"].includes(connection.effectiveType),
+          ["slow-2g", "2g", "3g"].includes(connection.effectiveType),
         );
       } else {
         setIsSlowConnection(false);

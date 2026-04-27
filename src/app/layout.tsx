@@ -15,6 +15,7 @@ import { NavBar } from "@/components/custom/navbar/nav-bar";
 import RouteProgress from "@/components/custom/route-progress";
 import { NavigationLockProvider } from "@/context/navigation-lock-provider";
 import SuspendedAccountGate from "@/components/custom/suspended-account-gate";
+import ScreenWidthWarning from "@/components/custom/screen-width-warning";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -105,6 +106,7 @@ export default async function RootLayout({
 
               <Footer />
               <NetworkBanner />
+              <ScreenWidthWarning />
             </NavigationLockProvider>
           </Suspense>
         </Providers>

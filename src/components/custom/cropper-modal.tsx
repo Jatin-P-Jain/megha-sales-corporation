@@ -41,13 +41,18 @@ export default function CropperModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="">
+      <DialogContent className="flex max-h-[80dvh] my-16 flex-col overflow-hidden">
         <DialogTitle className="text-lg font-semibold">Crop Image</DialogTitle>
 
-        <div className="relative h-100 w-full">
+        <div className="min-h-0 flex-1 overflow-hidden">
           <Cropper
             src={imageSrc}
-            style={{ height: 400, width: "100%" }}
+            style={{
+              height: "100%",
+              width: "100%",
+              minHeight: "200px",
+              maxHeight: "60dvh",
+            }}
             initialAspectRatio={aspectRatio}
             aspectRatio={aspectRatio}
             viewMode={1}
@@ -59,7 +64,7 @@ export default function CropperModal({
           />
         </div>
 
-        <div className="mt-4 flex justify-between">
+        <div className="mt-4 flex flex-shrink-0 justify-between">
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
