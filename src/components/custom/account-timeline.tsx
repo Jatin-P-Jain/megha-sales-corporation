@@ -13,6 +13,8 @@ import {
   UserRoundPlus,
   Link,
   ShieldEllipsis,
+  ShieldOff,
+  Undo2,
 } from "lucide-react";
 import type {
   AccountTimelineEventType,
@@ -74,6 +76,16 @@ const eventConfig: Record<
     icon: UserRoundMinus,
     color: "text-amber-600",
     bg: "bg-amber-50",
+  },
+  account_revoked: {
+    icon: Undo2,
+    color: "text-yellow-600",
+    bg: "bg-yellow-50",
+  },
+  account_unsuspended: {
+    icon: ShieldOff,
+    color: "text-blue-600",
+    bg: "bg-blue-50",
   },
   role_assigned: {
     icon: ShieldEllipsis,
