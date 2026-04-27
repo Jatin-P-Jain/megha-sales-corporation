@@ -1,11 +1,11 @@
-export type AccountStatus =
-  | "pending"
-  | "approved"
-  | "rejected"
-  | "suspended"
-  | "deactivated";
+export type AccountStatus = "pending" | "approved" | "rejected" | "suspended";
 
-export type UserRole = "admin" | "customer" | "dispatcher" | "accountant";
+export type UserRole =
+  | "admin"
+  | "customer"
+  | "dispatcher"
+  | "accountant"
+  | "sales";
 
 export type UserGate = {
   profileComplete: boolean;
@@ -17,11 +17,6 @@ export type UserGate = {
 export type UserGateDoc = {
   profileComplete: boolean;
   userRole: UserRole;
-  accountStatus?:
-    | "pending"
-    | "approved"
-    | "rejected"
-    | "suspended"
-    | "deactivated";
+  accountStatus?: "pending" | "approved" | "rejected" | "suspended";
   rejectionReason?: string;
 };

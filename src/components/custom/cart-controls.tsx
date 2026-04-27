@@ -232,15 +232,15 @@ export default function CartControls({
           size="sm"
           onClick={handleOpenCustomQty}
           disabled={isBusy}
-          className="text-primary w-fit p-0! text-xs"
+          className="text-primary p-0! text-xs"
         >
           <TextCursorInput className="h-4 w-4" /> Custom Quantity
         </Button>
       ) : (
         <div
           className={clsx(
-            "flex w-auto items-center gap-1 bg-card",
-            isCartPage && "w-full! justify-between",
+            "flex items-center gap-0.5",
+            isCartPage && "justify-between md:w-full",
           )}
         >
           <Button
@@ -258,7 +258,7 @@ export default function CartControls({
             min={1}
             value={customQty}
             onChange={(e) => setCustomQty(e.target.value)}
-            className="border-input bg-background min-w-16 flex-1 rounded-md border px-2 text-center text-sm"
+            className="border-input bg-background rounded-md border px-2 text-center text-sm"
             disabled={isBusy}
           />
 

@@ -23,7 +23,6 @@ import {
 import { useSafeRouter } from "@/hooks/useSafeRouter";
 import HelpDialog from "./help-dialog";
 import { useUserGate } from "@/context/UserGateProvider";
-import { useRequireUserProfile } from "@/hooks/useUserProfile";
 import { useUserProfileState } from "@/context/UserProfileProvider";
 import { FullUser } from "@/types/user";
 import SearchEnquiry from "./search-enquiry";
@@ -45,7 +44,6 @@ const EnquirySearchFiltersCreate: React.FC = () => {
   const searchParams = useSearchParams();
   const { isAdmin } = useAuthState();
   const { gate, userRole } = useUserGate();
-  useRequireUserProfile(true);
   const { clientUser } = useUserProfileState();
 
   const fullUser = useMemo(() => {

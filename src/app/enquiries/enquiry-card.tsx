@@ -13,6 +13,9 @@ import {
   MoreVertical,
   Eye,
   EyeClosed,
+  ShieldOff,
+  UserX,
+  TriangleAlert,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -42,6 +45,41 @@ interface EnquiryCardProps {
   onStatusChange: (status: Enquiry["status"]) => Promise<void>;
   onReply: (replyText: string) => Promise<void>;
   onUpdate?: (updatedEnquiry: Enquiry) => void;
+}
+
+function getAccountStatusBadge(status?: string) {
+  switch (status) {
+    case "approved":
+      return (
+        <Badge className="border border-green-700 bg-green-100 px-1.5 py-0 text-[10px] text-green-800">
+          <CheckCircle2 className="size-2.5" /> Approved
+        </Badge>
+      );
+    case "rejected":
+      return (
+        <Badge className="border border-red-700 bg-red-100 px-1.5 py-0 text-[10px] text-red-800">
+          <UserX className="size-2.5" /> Rejected
+        </Badge>
+      );
+    case "suspended":
+      return (
+        <Badge className="border border-orange-700 bg-orange-100 px-1.5 py-0 text-[10px] text-orange-800">
+          <ShieldOff className="size-2.5" /> Suspended
+        </Badge>
+      );
+    case "pending":
+      return (
+        <Badge className="border border-yellow-700 bg-yellow-100 px-1.5 py-0 text-[10px] text-yellow-800">
+          <Clock className="size-2.5" /> Pending
+        </Badge>
+      );
+    default:
+      return (
+        <Badge className="border border-yellow-700 bg-yellow-100 px-1.5 py-0 text-[10px] text-yellow-800">
+          <TriangleAlert className="size-2.5" /> Incomplete
+        </Badge>
+      );
+  }
 }
 
 export default function EnquiryCard({
@@ -147,7 +185,6 @@ export default function EnquiryCard({
             url: `${getBaseUrl()}/enquiries?searchField=id&searchQuery=${enquiry.id}`,
             clickAction: "view_enquiry",
             status: "updated",
-            pushOnly: true,
           });
         }
       } else {
@@ -159,7 +196,6 @@ export default function EnquiryCard({
           url: `${getBaseUrl()}/admin-dashboard/enquiries?searchField=id&searchQuery=${enquiry.id}`,
           clickAction: "view_enquiry",
           status: "updated",
-          pushOnly: true,
         });
       }
     } catch (error) {
@@ -216,11 +252,9 @@ export default function EnquiryCard({
               </span>
             )}
             {isAdmin && (
-              <div className="bg-accent flex w-full flex-col items-start justify-between gap-2 rounded-md p-1 px-2 text-sm md:flex-row md:items-end md:gap-8">
-                <div className="text-muted-foreground flex items-center gap-2">
-                  <span className="text-xs whitespace-nowrap">
-                    Created By :{" "}
-                  </span>
+              <div className="bg-accent flex w-full flex-col items-end justify-between gap-2 rounded-md p-1 px-2 text-sm md:flex-row md:gap-8">
+                <div className="text-muted-foreground flex w-full items-center gap-2">
+                  <span className="text-xs whitespace-nowrap">By : </span>
                   <Avatar className="h-5 w-5 border border-white shadow-md md:h-8 md:w-8">
                     {createdBy.photoUrl ? (
                       <AvatarFallback className="bg-transparent p-0">
@@ -245,9 +279,12 @@ export default function EnquiryCard({
                       </AvatarFallback>
                     )}
                   </Avatar>
-                  <div className="flex flex-col">
-                    <span className="text-foreground text-xs md:text-sm">
+                  <div className="flex w-full flex-col gap-0.5">
+                    <span className="text-foreground flex items-center justify-between gap-1 text-xs font-medium md:text-sm">
                       {createdBy.displayName || "Anonymous"}
+                      {getAccountStatusBadge(
+                        (createdBy as { accountStatus?: string }).accountStatus,
+                      )}
                     </span>
                     <p className="text-muted-foreground truncate text-xs md:text-sm">
                       {createdBy.email || createdBy.phone || "No contact"}

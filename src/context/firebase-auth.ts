@@ -48,15 +48,13 @@ export const sendOTP = async (
   try {
     return await signInWithPhoneNumber(auth, `+91${mobile}`, verifier);
   } catch (e) {
-    // Reset so user can retry (Firebase docs)
-    if (typeof window !== "undefined") {
-      if (window.grecaptcha && window.recaptchaWidgetId !== undefined) {
+    // Reset the widget so the user can retry; full verifier management is
+    // handled by useRecaptcha / useMobileOtp (they call resetRecaptcha in finally).
+    if (typeof window !== "undefined" && window.grecaptcha) {
+      try {
         window.grecaptcha.reset(window.recaptchaWidgetId);
-      } else if (window.recaptchaVerifier) {
-        // If widgetId not stored, get it then reset
-        window.recaptchaVerifier
-          .render()
-          .then((id) => window.grecaptcha?.reset(id));
+      } catch {
+        // ignore — hook-level reset will cover this
       }
     }
     throw e;

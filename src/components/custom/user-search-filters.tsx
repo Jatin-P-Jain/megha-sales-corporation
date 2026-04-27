@@ -8,7 +8,6 @@ import {
   Clock,
   XCircle,
   ShieldAlert,
-  UserX,
   ChevronDown,
   TriangleAlert,
   SlidersHorizontal,
@@ -53,7 +52,6 @@ const STATUS_CONFIG = {
     label: "Suspended",
     color: "text-orange-600",
   },
-  deactivated: { icon: UserX, label: "Deactivated", color: "text-gray-600" },
 } as const;
 
 const ALL_STATUSES = Object.keys(STATUS_CONFIG) as AccountStatus[];

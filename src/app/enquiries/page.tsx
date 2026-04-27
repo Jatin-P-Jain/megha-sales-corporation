@@ -1,16 +1,15 @@
 import EnquiriesList from "./enquiries-list";
 import {
   getUserRoleFromClaims,
-  requireProfileCompleteOrRedirect,
+  getVerifiedTokenOrRedirect,
 } from "@/lib/auth/gaurds";
 import EnquirySearchFiltersCreate from "@/components/custom/enquiry-search-filters-create";
 import { redirect } from "next/navigation";
 
 export default async function Enquiries() {
-  const verifiedToken =
-    await requireProfileCompleteOrRedirect("/order-history");
+  const verifiedToken = await getVerifiedTokenOrRedirect();
   const role = getUserRoleFromClaims(verifiedToken);
-  const isAdmin = role === "admin";
+  const isAdmin = role === "admin" || role === "sales";
 
   // Staff roles (dispatcher/accountant) are not allowed in enquiries.
   if (verifiedToken?.admin && !isAdmin) {

@@ -1,13 +1,13 @@
 export type BusinessType = "retailer" | "wholesaler" | "distributor" | "other";
 export type BusinessProfile = Record<string, unknown>;
 export type FirebaseAuthData = Record<string, unknown>;
-export type AccountStatus =
-  | "pending"
-  | "approved"
-  | "rejected"
-  | "suspended"
-  | "deactivated";
-export type UserRole = "admin" | "customer" | "dispatcher" | "accountant";
+export type AccountStatus = "pending" | "approved" | "rejected" | "suspended";
+export type UserRole =
+  | "admin"
+  | "customer"
+  | "dispatcher"
+  | "accountant"
+  | "sales";
 
 export interface UserData {
   uid: string;

@@ -30,6 +30,7 @@ const VALID_ROLES: UserRole[] = [
   "customer",
   "dispatcher",
   "accountant",
+  "sales",
 ];
 
 function parseRole(value: unknown): UserRole {

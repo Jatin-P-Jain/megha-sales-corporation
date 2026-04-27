@@ -23,12 +23,13 @@ import {
   ChevronUp,
   MoreVertical,
   ShieldOff,
-  Trash2,
   TriangleAlert,
+  BriefcaseBusiness,
   UserCheck2,
   ContactRound,
   UserPen,
   Truck,
+  Undo2,
 } from "lucide-react";
 import { FullUser } from "@/types/user";
 import { toast } from "sonner";
@@ -86,14 +87,14 @@ export default function UserCard({
 
   const [isApproving, setIsApproving] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
+  const [isRevoking, setIsRevoking] = useState(false);
   const [isSuspending, setIsSuspending] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isUnsuspending, setIsUnsuspending] = useState(false);
 
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
 
   const [showSuspendDialog, setShowSuspendDialog] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
@@ -105,6 +106,9 @@ export default function UserCard({
 
   const handleApprove = async () => {
     setIsApproving(true);
+    const toastId = toast.loading("Approving account…", {
+      description: `Processing approval for ${user.displayName || "this user"}.`,
+    });
     try {
       await updateUserAccountStatus({
         userId: user.uid,
@@ -113,6 +117,7 @@ export default function UserCard({
       });
 
       toast.success("User Approved!", {
+        id: toastId,
         description: `${user.displayName}'s account has been approved successfully.`,
       });
 
@@ -120,6 +125,7 @@ export default function UserCard({
     } catch (error) {
       console.error("Error approving user:", error);
       toast.error("Failed to approve user", {
+        id: toastId,
         description:
           error instanceof Error
             ? error.message
@@ -164,6 +170,87 @@ export default function UserCard({
     }
   };
 
+  const handleRevoke = async () => {
+    setIsRevoking(true);
+    const toastId = toast.loading("Revoking approval…", {
+      description: `Resetting ${user.displayName || "this user"}'s account to pending.`,
+    });
+    try {
+      await updateUserAccountStatus({
+        userId: user.uid,
+        accountStatus: "pending",
+        rejectionReason: "",
+        resetRoleToCustomer: true,
+        notificationOverride: {
+          title: "⏳ Approval Revoked",
+          body: "Your account approval has been revoked and your role has been reset. Your account is under review again.",
+        },
+        timelineOverride: {
+          type: "account_revoked",
+          label: "Approval revoked",
+        },
+      });
+
+      toast.success("Approval revoked", {
+        id: toastId,
+        description: `${user.displayName}'s approval has been revoked. Role reset to customer and account moved to pending.`,
+      });
+
+      onStatusUpdate?.();
+    } catch (error) {
+      console.error("Error revoking approval:", error);
+      toast.error("Failed to revoke approval", {
+        id: toastId,
+        description:
+          error instanceof Error
+            ? error.message
+            : "Please try again or contact support.",
+      });
+    } finally {
+      setIsRevoking(false);
+    }
+  };
+
+  const handleUnsuspend = async () => {
+    setIsUnsuspending(true);
+    const toastId = toast.loading("Reinstating account…", {
+      description: `Lifting suspension for ${user.displayName || "this user"}.`,
+    });
+    try {
+      await updateUserAccountStatus({
+        userId: user.uid,
+        accountStatus: "approved",
+        rejectionReason: "",
+        notificationOverride: {
+          title: "✅ Account Reinstated",
+          body: "Your account suspension has been lifted. You can now access all features.",
+        },
+        timelineOverride: {
+          type: "account_unsuspended",
+          label: "Account unsuspended",
+        },
+      });
+
+      toast.success("Account reinstated", {
+        id: toastId,
+        description: `${user.displayName}'s suspension has been lifted.`,
+      });
+
+      onStatusUpdate?.();
+    } catch (error) {
+      console.error("Error unsuspending account:", error);
+      toast.error("Failed to reinstate account", {
+        id: toastId,
+        description:
+          error instanceof Error
+            ? error.message
+            : "Please try again or contact support.",
+      });
+    } finally {
+      setIsUnsuspending(false);
+    }
+  };
+
   // Suspend Access. Ensure your backend supports this status.
   const handleSuspend = async () => {
     setIsSuspending(true);
@@ -193,35 +280,14 @@ export default function UserCard({
     }
   };
 
-  const handleSoftDelete = async () => {
-    setIsDeleting(true);
-    try {
-      await updateUserAccountStatus({
-        userId: user.uid,
-        accountStatus: "deactivated",
-        rejectionReason: "",
-      });
-
-      toast.success("Account deactivated", {
-        description: `${user.displayName}'s account status has been set to deactivated.`,
-      });
-
-      setShowDeleteDialog(false);
-      onStatusUpdate?.();
-    } catch (error) {
-      console.error("Error deactivating (soft) user:", error);
-      toast.error("Failed to deactivate account", {
-        description:
-          error instanceof Error
-            ? error.message
-            : "Please try again or contact support.",
-      });
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
   const handleAssignRole = async () => {
+    if (selectedRole !== "customer" && accountStatus !== "approved") {
+      toast.error("Cannot assign staff role", {
+        description: "Approve this account first, then assign a staff role.",
+      });
+      return;
+    }
+
     setIsAssigningRole(true);
     try {
       await updateUserRole({
@@ -272,13 +338,6 @@ export default function UserCard({
             Suspended
           </Badge>
         );
-      case "deactivated":
-        return (
-          <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-200">
-            <Trash2 className="h-3 w-3" />
-            Deactivated
-          </Badge>
-        );
       default:
         return showPending ? (
           <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">
@@ -303,21 +362,13 @@ export default function UserCard({
     toast.success(`${label} copied to clipboard!`);
   };
 
-  const canShowActions =
-    !isAdmin && accountStatus !== "deactivated" && profileComplete;
-  const showPrimaryApprove =
-    canShowActions &&
-    (accountStatus === "pending" ||
-      accountStatus === "rejected" ||
-      accountStatus === "suspended");
-
-  const revokeEnabled = accountStatus === "approved";
+  const canShowActions = !isAdmin && profileComplete;
 
   return (
     <>
       <Card className="gap-0! overflow-hidden p-0">
         <CardHeader className="bg-primary/10 gap-0 p-2">
-          <div className="flex flex-col items-start justify-between gap-2 md:flex-row md:items-center">
+          <div className="flex flex-col items-start justify-between gap-2 md:flex-row md:items-start">
             <div className="flex w-full items-center gap-2">
               <Avatar className="size-10 border-2 border-white shadow-md">
                 {user.photoUrl ? (
@@ -344,12 +395,12 @@ export default function UserCard({
                 )}
               </Avatar>
 
-              <div className="flex w-full flex-1 items-center justify-between gap-1">
+              <div className="flex w-full flex-1 items-start justify-between gap-1">
                 <div className="flex w-full flex-col gap-1">
-                  <CardTitle className="flex items-center justify-between gap-2 md:text-lg">
-                    <div className="flex items-start gap-2 flex-col md:flex-row">
+                  <CardTitle className="flex w-full items-center justify-between gap-2 md:text-lg">
+                    <div className="flex w-full flex-col items-start gap-1">
                       {user.displayName ? (
-                        <div className="flex items-center gap-1">
+                        <div className="flex w-full items-center gap-1">
                           {user.displayName}
                         </div>
                       ) : (
@@ -362,7 +413,7 @@ export default function UserCard({
                         </div>
                       )}
                       {user.firmName && (
-                        <div className="text-primary text-xs md:text-sm tracking-wide uppercase ">
+                        <div className="text-primary w-full text-xs tracking-wide uppercase md:text-sm">
                           ({user.firmName})
                         </div>
                       )}
@@ -374,13 +425,17 @@ export default function UserCard({
                           "border border-white py-1.5 font-medium shadow-md",
                           user.userRole === "accountant"
                             ? "bg-olive-600"
-                            : user.userRole === "dispatcher"
-                              ? "bg-amber-700"
-                              : "bg-sky-900",
+                            : user.userRole === "sales"
+                              ? "bg-emerald-700"
+                              : user.userRole === "dispatcher"
+                                ? "bg-amber-700"
+                                : "bg-sky-900",
                         )}
                       >
                         {user.userRole === "accountant" ? (
                           <UserPen className="size-4" />
+                        ) : user.userRole === "sales" ? (
+                          <BriefcaseBusiness className="size-4" />
                         ) : user.userRole === "dispatcher" ? (
                           <Truck className="size-4" />
                         ) : (
@@ -406,6 +461,93 @@ export default function UserCard({
                     </div>
                   )}
                 </div>
+                <div className="hidden md:flex">
+                  {canShowActions && (
+                    <div className="flex w-full flex-wrap gap-2 md:w-fit">
+                      {/* Approve toggle: pending/rejected → Approve; approved → Revoke */}
+                      {(accountStatus === "pending" ||
+                        accountStatus === "rejected") && (
+                        <Button
+                          onClick={handleApprove}
+                          disabled={
+                            isApproving ||
+                            isRevoking ||
+                            isSuspending ||
+                            isUnsuspending
+                          }
+                          size="sm"
+                          className="flex-1 bg-green-600 hover:bg-green-700 md:flex-none"
+                        >
+                          {isApproving ? (
+                            <>
+                              <span className="mr-2 h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                              Approving...
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle2 className="mr-1 h-3 w-3" />
+                              Approve
+                            </>
+                          )}
+                        </Button>
+                      )}
+
+                      {accountStatus === "approved" && (
+                        <Button
+                          onClick={handleRevoke}
+                          disabled={
+                            isRevoking ||
+                            isApproving ||
+                            isSuspending ||
+                            isUnsuspending
+                          }
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 border-amber-500 text-amber-700 hover:bg-amber-50 md:flex-none"
+                        >
+                          {isRevoking ? (
+                            <>
+                              <span className="mr-2 h-3 w-3 animate-spin rounded-full border-2 border-amber-600 border-t-transparent" />
+                              Revoking...
+                            </>
+                          ) : (
+                            <>
+                              <ShieldOff className="mr-1 h-3 w-3" />
+                              Revoke Approval
+                            </>
+                          )}
+                        </Button>
+                      )}
+
+                      {/* Unsuspend toggle */}
+                      {accountStatus === "suspended" && (
+                        <Button
+                          onClick={handleUnsuspend}
+                          disabled={
+                            isUnsuspending ||
+                            isApproving ||
+                            isRevoking ||
+                            isSuspending
+                          }
+                          size="sm"
+                          className="flex-1 bg-blue-600 hover:bg-blue-700 md:flex-none"
+                        >
+                          {isUnsuspending ? (
+                            <>
+                              <span className="mr-2 h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                              Reinstating...
+                            </>
+                          ) : (
+                            <>
+                              <ShieldCheck className="mr-1 h-3 w-3" />
+                              Unsuspend
+                            </>
+                          )}
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -413,7 +555,11 @@ export default function UserCard({
                       variant="outline"
                       className="w-auto justify-between"
                       disabled={
-                        isApproving || isRejecting || isSuspending || isDeleting
+                        isApproving ||
+                        isRejecting ||
+                        isRevoking ||
+                        isSuspending ||
+                        isUnsuspending
                       }
                     >
                       <span className="md:inlex-flex hidden">Actions</span>
@@ -421,91 +567,118 @@ export default function UserCard({
                     </Button>
                   </DropdownMenuTrigger>
 
-                  <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuContent
+                    align="end"
+                    className="flex w-56 flex-col gap-0.5"
+                  >
                     <DropdownMenuLabel>Account actions</DropdownMenuLabel>
                     <DropdownMenuSeparator />
 
                     {/* Role assignment — only for full admins */}
-                    {canAssignRoles && (
-                      <>
-                        <DropdownMenuItem
-                          onSelect={() => {
-                            setSelectedRole(user.userRole ?? "customer");
-                            setShowRoleDialog(true);
-                          }}
-                        >
-                          <ShieldCheck className="h-4 w-4" />
-                          Assign Role
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                      </>
+                    {canAssignRoles && accountStatus === "approved" && (
+                      <DropdownMenuItem
+                        onSelect={() => {
+                          setSelectedRole(user.userRole ?? "customer");
+                          setShowRoleDialog(true);
+                        }}
+                        className="bg-cyan-50 font-medium text-cyan-800"
+                      >
+                        <ShieldCheck className="h-4 w-4 text-cyan-800" />
+                        Assign Role
+                      </DropdownMenuItem>
                     )}
 
                     {/* Reject (only relevant for pending) */}
-                    {accountStatus === "pending" && (
+                    {accountStatus === "pending" && profileComplete && (
                       <DropdownMenuItem
                         onSelect={() => {
                           setShowRejectDialog(true);
                         }}
+                        className="bg-rose-50 font-medium text-rose-900"
                       >
-                        <XCircle className="h-4 w-4" />
+                        <XCircle className="h-4 w-4 text-rose-900" />
                         Reject
                       </DropdownMenuItem>
                     )}
 
-                    {/* Revoke access (only meaningful for approved) */}
-                    <DropdownMenuItem
-                      disabled={!revokeEnabled}
-                      onSelect={() => {
-                        setShowSuspendDialog(true);
-                      }}
-                    >
-                      <ShieldOff className="h-4 w-4" />
-                      Suspend Account
-                    </DropdownMenuItem>
+                    {accountStatus === "pending" && !profileComplete && (
+                      <span className="text-muted-foreground flex flex-1 justify-center text-xs italic">
+                        No actions available
+                      </span>
+                    )}
 
-                    <DropdownMenuSeparator />
+                    {accountStatus === "approved" && (
+                      <DropdownMenuItem
+                        onSelect={() => {
+                          handleRevoke();
+                        }}
+                        className="bg-yellow-50 font-medium text-yellow-700 md:hidden"
+                      >
+                        <Undo2 className="h-4 w-4 text-yellow-700" />
+                        Revoke Approval
+                      </DropdownMenuItem>
+                    )}
 
-                    {/* Soft delete */}
-                    <DropdownMenuItem
-                      className="text-destructive focus:text-destructive"
-                      onSelect={() => {
-                        setShowDeleteDialog(true);
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      Delete account
-                    </DropdownMenuItem>
+                    {/* Suspend (only for approved) */}
+                    {accountStatus === "approved" && (
+                      <DropdownMenuItem
+                        onSelect={() => {
+                          setShowSuspendDialog(true);
+                        }}
+                        className="bg-red-50 font-medium text-red-800"
+                      >
+                        <ShieldOff className="h-4 w-4 text-red-800" />
+                        Suspend Account
+                      </DropdownMenuItem>
+                    )}
+                    {accountStatus === "suspended" && (
+                      <DropdownMenuItem
+                        onSelect={() => {
+                          handleUnsuspend();
+                        }}
+                        className="bg-emerald-50 font-medium text-emerald-900"
+                      >
+                        <ShieldOff className="h-4 w-4 text-emerald-900" />
+                        Unsuspend Account
+                      </DropdownMenuItem>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
             </div>
-
-            {/* Actions: primary + dropdown */}
-            {canShowActions && (
-              <div className="w-full md:w-fit md:items-center">
-                {showPrimaryApprove && (
-                  <Button
-                    onClick={handleApprove}
-                    disabled={isApproving}
-                    size="sm"
-                    className="w-full bg-green-600 hover:bg-green-700 md:w-fit"
-                  >
-                    {isApproving ? (
-                      <>
-                        <span className="mr-2 h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                        Approving...
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle2 className="mr-1 h-3 w-3" />
-                        Approve
-                      </>
-                    )}
-                  </Button>
-                )}
-              </div>
-            )}
+            <div className="flex w-full md:hidden">
+              {canShowActions && (
+                <div className="flex w-full flex-wrap gap-2 md:w-fit">
+                  {/* Approve toggle: pending/rejected → Approve; approved → Revoke */}
+                  {(accountStatus === "pending" ||
+                    accountStatus === "rejected") && (
+                    <Button
+                      onClick={handleApprove}
+                      disabled={
+                        isApproving ||
+                        isRevoking ||
+                        isSuspending ||
+                        isUnsuspending
+                      }
+                      size="sm"
+                      className="flex-1 bg-green-600 hover:bg-green-700 md:flex-none"
+                    >
+                      {isApproving ? (
+                        <>
+                          <span className="mr-2 h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                          Approving...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="mr-1 h-3 w-3" />
+                          Approve
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </CardHeader>
 
@@ -884,38 +1057,6 @@ export default function UserCard({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Soft delete confirmation */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete account (soft)?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will mark {user.displayName || "this user"} as deleted. The
-              user won&apos;t be removed permanently, only the status changes.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction asChild>
-              <Button
-                variant="destructive"
-                onClick={handleSoftDelete}
-                disabled={isDeleting}
-              >
-                {isDeleting ? (
-                  <>
-                    <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                    Deleting...
-                  </>
-                ) : (
-                  "Delete (soft)"
-                )}
-              </Button>
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
       {/* Role Assignment Dialog */}
       <Dialog open={showRoleDialog} onOpenChange={setShowRoleDialog}>
         <DialogContent>
@@ -950,6 +1091,11 @@ export default function UserCard({
                   value: "accountant" as const,
                   label: "Accountant",
                   desc: "Order Book + Brands Management.",
+                },
+                {
+                  value: "sales" as const,
+                  label: "Sales",
+                  desc: "Order Book + Enquiry Register.",
                 },
               ] satisfies { value: UserRole; label: string; desc: string }[]
             ).map((option) => (

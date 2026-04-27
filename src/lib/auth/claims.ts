@@ -1,7 +1,13 @@
 import { DecodedIdToken } from "firebase-admin/auth";
 import { UserRole } from "@/types/userGate";
 
-const ALL_ROLES: UserRole[] = ["admin", "customer", "dispatcher", "accountant"];
+const ALL_ROLES: UserRole[] = [
+  "admin",
+  "customer",
+  "dispatcher",
+  "accountant",
+  "sales",
+];
 
 export function getUserRoleFromClaims(
   decoded: Partial<DecodedIdToken>

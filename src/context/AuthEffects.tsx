@@ -11,14 +11,16 @@ import { getDeviceMetadata } from "@/lib/utils";
 import { saveFcmToken } from "@/firebase/saveFcmToken";
 
 export default function AuthEffects() {
-  const { currentUser, isAdmin } = useAuthState();
+  const { currentUser, userRole } = useAuthState();
 
   // Gate is always-on: use this for access/status logic
   useUserGate();
 
-  const inactivityLimit = isAdmin
-    ? parseInt(process.env.NEXT_PUBLIC_ADMIN_INACTIVITY_LIMIT || "0", 10)
-    : parseInt(process.env.NEXT_PUBLIC_USER_INACTIVITY_LIMIT || "0", 10);
+  // Only pure admins auto-logout on inactivity; all other roles (dispatcher, accountant, customer) do not.
+  const inactivityLimit =
+    userRole === "admin"
+      ? parseInt(process.env.NEXT_PUBLIC_ADMIN_INACTIVITY_LIMIT || "0", 10)
+      : 0;
 
   useMonitorInactivity(currentUser, inactivityLimit);
 

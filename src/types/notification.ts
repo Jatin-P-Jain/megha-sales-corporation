@@ -8,7 +8,6 @@ export type UserNotificationStatus =
   | "approved"
   | "rejected"
   | "suspended"
-  | "deactivated"
   | "pending"
   | "resolved"
   | "na";

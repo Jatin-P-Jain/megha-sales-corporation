@@ -17,6 +17,7 @@ import type { UserRole } from "@/types/userGate";
 import clsx from "clsx";
 import {
   BookOpen,
+  BriefcaseBusiness,
   LayoutDashboard,
   MessageSquareMore,
   Package,
@@ -56,7 +57,7 @@ export default function AdminBar() {
       label: "Dashboard",
       href: "/admin-dashboard",
       icon: LayoutDashboard,
-      visible: isFullAdmin,
+      visible: isFullAdmin || role === "sales",
       badgeCount: 0,
     },
     {
@@ -88,7 +89,7 @@ export default function AdminBar() {
       label: "Enquiries",
       href: "/enquiries",
       icon: MessageSquareMore,
-      visible: isFullAdmin,
+      visible: isFullAdmin || role === "sales",
       badgeCount: unreadByType["enquiry"] ?? 0,
     },
   ].filter((item) => item.visible);
@@ -106,13 +107,17 @@ export default function AdminBar() {
               "border border-white py-1.5 font-medium shadow-md",
               role === "accountant"
                 ? "bg-olive-600"
-                : role === "dispatcher"
-                  ? "bg-amber-700"
-                  : "bg-sky-900",
+                : role === "sales"
+                  ? "bg-emerald-700"
+                  : role === "dispatcher"
+                    ? "bg-amber-700"
+                    : "bg-sky-900",
             )}
           >
             {role === "accountant" ? (
               <UserPen className="size-4" />
+            ) : role === "sales" ? (
+              <BriefcaseBusiness className="size-4" />
             ) : role === "dispatcher" ? (
               <Truck className="size-4" />
             ) : (

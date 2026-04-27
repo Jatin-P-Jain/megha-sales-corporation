@@ -6,7 +6,10 @@ import {
 } from "@/lib/auth/gaurds";
 
 const AdminDashboard = async () => {
-  const verifiedToken = await requireAllowedRolesOrRedirect(["admin"], "/");
+  const verifiedToken = await requireAllowedRolesOrRedirect(
+    ["admin", "sales"],
+    "/",
+  );
   const userRole = getUserRoleFromClaims(verifiedToken) as UserRole;
 
   return (

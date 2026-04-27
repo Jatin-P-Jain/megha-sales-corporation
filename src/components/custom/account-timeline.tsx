@@ -2,7 +2,6 @@
 
 import {
   CheckCircle2,
-  ShieldOff,
   Image,
   FileText,
   User,
@@ -14,6 +13,8 @@ import {
   UserRoundPlus,
   Link,
   ShieldEllipsis,
+  ShieldOff,
+  Undo2,
 } from "lucide-react";
 import type {
   AccountTimelineEventType,
@@ -76,10 +77,15 @@ const eventConfig: Record<
     color: "text-amber-600",
     bg: "bg-amber-50",
   },
-  account_deactivated: {
+  account_revoked: {
+    icon: Undo2,
+    color: "text-yellow-600",
+    bg: "bg-yellow-50",
+  },
+  account_unsuspended: {
     icon: ShieldOff,
-    color: "text-zinc-500",
-    bg: "bg-zinc-100",
+    color: "text-blue-600",
+    bg: "bg-blue-50",
   },
   role_assigned: {
     icon: ShieldEllipsis,
