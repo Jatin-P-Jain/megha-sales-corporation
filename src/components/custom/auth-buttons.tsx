@@ -28,7 +28,6 @@ import {
   CheckCircle2,
   XCircle,
   ShieldOff,
-  UserX,
   Clock,
   AlertCircle,
   BriefcaseBusiness,
