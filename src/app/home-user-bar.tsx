@@ -33,7 +33,13 @@ export default function HomeUserBar() {
   // Greeting: best-effort (don’t block UI)
   const userName = clientUser?.displayName;
   const userPhone = clientUser?.phone;
-
+  const greeting = (() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "🌤️ Good morning,";
+    if (hour < 17) return "☀️ Good afternoon,";
+    if (hour < 24) return "🌙 Good evening,";
+    return "🌌Good night,";
+  })();
   const accountStatus = gate?.accountStatus;
   const rejectionReason = gate?.rejectionReason;
   const profileComplete = !!gate?.profileComplete;
@@ -54,8 +60,8 @@ export default function HomeUserBar() {
         </div>
       ) : (
         <div className="flex w-full items-center justify-between gap-4">
-          <h1 className="flex w-full items-center gap-2 text-sm font-semibold md:text-lg">
-            Hello,{" "}
+          <h1 className="flex w-full items-center gap-1 text-sm font-semibold md:text-lg">
+            {greeting}{" "}
             <span className="text-lg font-bold md:text-xl">
               {userName || userPhone || "Guest"}
             </span>
