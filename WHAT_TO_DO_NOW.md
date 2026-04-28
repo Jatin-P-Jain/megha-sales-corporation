@@ -1,6 +1,6 @@
 # 🚀 WHAT TO DO NOW
 
-Your automated count collection system is **100% ready**. Here's what to do next:
+Your automated counters collection system is **100% ready**. Here's what to do next:
 
 ---
 
@@ -9,7 +9,7 @@ Your automated count collection system is **100% ready**. Here's what to do next
 - ✅ 5 Cloud Functions created (`functions/src/count-aggregator.ts`)
 - ✅ All functions exported from `functions/src/index.ts`
 - ✅ Backfill script created and executed
-- ✅ Count collection populated with current data:
+- ✅ Counters collection populated with current data:
   - 2,240 products
   - 3 users
   - 2 orders
@@ -36,11 +36,11 @@ This command:
 **Time:** ~2-3 minutes
 
 **After deployment:**
-- Any write to `products/*` → auto-updates `count/products`
-- Any write to `users/*` → auto-updates `count/users`
-- Any write to `orders/*` → auto-updates `count/orders`
-- Any write to `enquiries/*` → auto-updates `count/enquiries`
-- Any write to `brands/*` → auto-updates `count/brands`
+- Any write to `products/*` → auto-updates `counters/products`
+- Any write to `users/*` → auto-updates `counters/users`
+- Any write to `orders/*` → auto-updates `counters/orders`
+- Any write to `enquiries/*` → auto-updates `counters/enquiries`
+- Any write to `brands/*` → auto-updates `counters/brands`
 
 ---
 
@@ -101,7 +101,7 @@ import { getFirestore } from "firebase-admin/firestore";
 
 export async function getProductStats() {
   const db = getFirestore();
-  const snap = await db.collection("count").doc("products").get();
+  const snap = await db.collection("counters").doc("products").get();
   return snap.data();
 }
 
@@ -244,7 +244,7 @@ Everything is set up. Just run:
 npm run count:deploy
 ```
 
-Then start querying `count/*` documents in your app.
+Then start querying `counters/*` documents in your app.
 
 Happy tracking! 🚀
 

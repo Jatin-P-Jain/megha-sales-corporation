@@ -1,7 +1,7 @@
 /**
- * 🔄 BACKFILL COUNT COLLECTION
+ * 🔄 BACKFILL COUNTERS COLLECTION
  *
- * This script backfills the `count` collection with aggregated metrics
+ * This script backfills the `counters` collection with aggregated metrics
  * from all existing collections (products, users, orders, enquiries, brands).
  *
  * Run with: npx tsx scripts/firestore/backfill-count-collection.ts
@@ -46,7 +46,7 @@ async function main(): Promise<void> {
   }
 
   const db = admin.firestore();
-  console.log("🔄 Starting backfill of count collection...\n");
+  console.log("🔄 Starting backfill of counters collection...\n");
 
   // ========================================================================
   // PRODUCTS
@@ -83,7 +83,7 @@ async function main(): Promise<void> {
     updatedAt: new Date().toISOString(),
   };
 
-  await db.collection("count").doc("products").set(productsCount);
+  await db.collection("counters").doc("products").set(productsCount);
   console.log(
     `✅ Products: ${productsSnapshot.size} total, ${noImageCount} without image\n`
   );
@@ -140,7 +140,7 @@ async function main(): Promise<void> {
     updatedAt: new Date().toISOString(),
   };
 
-  await db.collection("count").doc("users").set(usersCount);
+  await db.collection("counters").doc("users").set(usersCount);
   console.log(
     `✅ Users: ${usersSnapshot.size} total, ${approvedCount} approved, ${activeCount} active\n`
   );
@@ -175,7 +175,7 @@ async function main(): Promise<void> {
     updatedAt: new Date().toISOString(),
   };
 
-  await db.collection("count").doc("orders").set(ordersCount);
+  await db.collection("counters").doc("orders").set(ordersCount);
   console.log(`✅ Orders: ${ordersSnapshot.size} total\n`);
 
   // ========================================================================
@@ -216,7 +216,7 @@ async function main(): Promise<void> {
     updatedAt: new Date().toISOString(),
   };
 
-  await db.collection("count").doc("enquiries").set(enquiriesCount);
+  await db.collection("counters").doc("enquiries").set(enquiriesCount);
   console.log(`✅ Enquiries: ${enquiriesSnapshot.size} total\n`);
 
   // ========================================================================
@@ -231,10 +231,10 @@ async function main(): Promise<void> {
     updatedAt: new Date().toISOString(),
   };
 
-  await db.collection("count").doc("brands").set(brandsCount);
+  await db.collection("counters").doc("brands").set(brandsCount);
   console.log(`✅ Brands: ${brandsSnapshot.size} total\n`);
 
-  console.log("🎉 Backfill complete! Count collection is now populated.\n");
+  console.log("🎉 Backfill complete! Counters collection is now populated.\n");
   console.log("📊 Summary:");
   console.log(
     `   Products: ${productsCount.total} | Users: ${usersCount.total} | Orders: ${ordersCount.total} | Enquiries: ${enquiriesCount.total} | Brands: ${brandsCount.total}`

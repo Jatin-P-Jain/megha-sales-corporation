@@ -1,4 +1,4 @@
-# ✅ Count Collection Setup Checklist
+# ✅ Counters Collection Setup Checklist
 
 ## Completed Tasks
 
@@ -90,7 +90,7 @@ const { total, noImage, byBrand } = snap.data();
 import { getFirestore } from "firebase-admin/firestore";
 
 const db = getFirestore();
-const snap = await db.collection("count").doc("users").get();
+const snap = await db.collection("counters").doc("users").get();
 const { total, approved, active } = snap.data();
 ```
 
@@ -108,7 +108,7 @@ onSnapshot(doc(collection(firestore, "count"), "products"), (snap) => {
 
 ## Data Structure
 
-### Products (`count/products`)
+### Products (`counters/products`)
 ```json
 {
   "total": 2240,
@@ -127,7 +127,7 @@ onSnapshot(doc(collection(firestore, "count"), "products"), (snap) => {
 }
 ```
 
-### Users (`count/users`)
+### Users (`counters/users`)
 ```json
 {
   "total": 3,
@@ -139,7 +139,7 @@ onSnapshot(doc(collection(firestore, "count"), "products"), (snap) => {
 }
 ```
 
-### Orders (`count/orders`)
+### Orders (`counters/orders`)
 ```json
 {
   "total": 2,
@@ -149,7 +149,7 @@ onSnapshot(doc(collection(firestore, "count"), "products"), (snap) => {
 }
 ```
 
-### Enquiries (`count/enquiries`)
+### Enquiries (`counters/enquiries`)
 ```json
 {
   "total": 0,
@@ -160,7 +160,7 @@ onSnapshot(doc(collection(firestore, "count"), "products"), (snap) => {
 }
 ```
 
-### Brands (`count/brands`)
+### Brands (`counters/brands`)
 ```json
 {
   "total": 11,
@@ -225,7 +225,7 @@ npm run count:deploy
 | Counts not updating after writes | Wait 1-2 seconds, check Cloud Functions logs |
 | Counts seem stale | Run `npm run count:backfill` to recalculate |
 | Firestore quota exceeded | Reduce tracking frequency or add sampling logic |
-| Need to modify aggregations | Edit `count-aggregator.ts`, test locally, then deploy |
+| Need to modify aggregations | Edit `counters-aggregator.ts`, test locally, then deploy |
 
 ---
 
@@ -234,12 +234,12 @@ npm run count:deploy
 ✅ **All Green?**
 
 - [ ] Cloud Functions deployed without errors
-- [ ] `count/products` exists with correct total (2240)
-- [ ] `count/users` exists with correct total (3)
-- [ ] `count/orders` exists with correct total (2)
-- [ ] `count/brands` exists with correct total (11)
-- [ ] Creating a new product updates `count/products` within 2 seconds
-- [ ] Dashboard can query `count/*` documents and display metrics
+- [ ] `counters/products` exists with correct total (2240)
+- [ ] `counters/users` exists with correct total (3)
+- [ ] `counters/orders` exists with correct total (2)
+- [ ] `counters/brands` exists with correct total (11)
+- [ ] Creating a new product updates `counters/products` within 2 seconds
+- [ ] Dashboard can query `counters/*` documents and display metrics
 
 ---
 
@@ -288,7 +288,7 @@ If you encounter issues:
 npm run count:deploy
 ```
 
-Your automated count collection system will be live!
+Your automated counters collection system will be live!
 
 ---
 

@@ -55,7 +55,7 @@ export const updateProductsCount = onDocumentWritten(
       updatedAt: new Date().toISOString(),
     };
 
-    await db.collection("count").doc("products").set(countData);
+    await db.collection("counters").doc("products").set(countData);
     console.log(
       `✅ Products count updated: ${totalCount} total, ${noImageCount} without image`
     );
@@ -128,7 +128,7 @@ export const updateUsersCount = onDocumentWritten(
       updatedAt: new Date().toISOString(),
     };
 
-    await db.collection("count").doc("users").set(countData);
+    await db.collection("counters").doc("users").set(countData);
     console.log(
       `✅ Users count updated: ${totalCount} total, ${approvedCount} approved, ${activeCount} active`
     );
@@ -175,7 +175,7 @@ export const updateOrdersCount = onDocumentWritten(
       updatedAt: new Date().toISOString(),
     };
 
-    await db.collection("count").doc("orders").set(countData);
+    await db.collection("counters").doc("orders").set(countData);
     console.log(`✅ Orders count updated: ${totalCount} total`);
   }
 );
@@ -226,7 +226,7 @@ export const updateEnquiriesCount = onDocumentWritten(
       updatedAt: new Date().toISOString(),
     };
 
-    await db.collection("count").doc("enquiries").set(countData);
+    await db.collection("counters").doc("enquiries").set(countData);
     console.log(`✅ Enquiries count updated: ${totalCount} total`);
   }
 );
@@ -257,7 +257,7 @@ export const updateBrandsCount = onDocumentWritten(
       updatedAt: new Date().toISOString(),
     };
 
-    await db.collection("count").doc("brands").set(countData);
+    await db.collection("counters").doc("brands").set(countData);
     console.log(`✅ Brands count updated: ${totalCount} total`);
   }
 );

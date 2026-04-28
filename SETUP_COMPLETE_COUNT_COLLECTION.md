@@ -1,8 +1,8 @@
-# 🎯 Count Collection Aggregator — Setup Complete ✅
+# 🎯 Counters Collection Aggregator — Setup Complete ✅
 
 ## What Was Built
 
-You now have an **automated, real-time count aggregation system** that keeps your Firestore `count` collection in sync with changes across 5 key collections:
+You now have an **automated, real-time count aggregation system** that keeps your Firestore `counters` collection in sync with changes across 5 key collections:
 
 - **Products** (2,240 docs) — Tracks total, by-brand, by-status, and no-image count
 - **Users** (3 docs) — Tracks total, approved, active, by-business-type, by-status
@@ -21,7 +21,7 @@ You now have an **automated, real-time count aggregation system** that keeps you
 
 ### Backfill Script
 - **`scripts/firestore/backfill-count-collection.ts`** (240 lines)
-  - One-time script to populate count collection with existing data
+  - One-time script to populate counters collection with existing data
   - Run via: `npm run count:backfill`
 
 ### Documentation
@@ -47,7 +47,7 @@ You now have an **automated, real-time count aggregation system** that keeps you
         ↓
   [Aggregate: total, byBrand, byStatus, noImage]
         ↓
-  [Write to count/products document]
+  [Write to counters/products document]
         ↓
   ✅ Real-time metrics available
 ```
@@ -78,8 +78,8 @@ npm run count:deploy
 ```
 
 This deploys the 5 new triggers to Firebase Cloud Functions. After deployment:
-- Any write to `products/*` will auto-update `count/products`
-- Any write to `users/*` will auto-update `count/users`
+- Any write to `products/*` will auto-update `counters/products`
+- Any write to `users/*` will auto-update `counters/users`
 - And so on...
 
 ### Step 2: Query Counts in Your App
@@ -102,14 +102,14 @@ console.log(`By brand:`, byBrand);
 import { getFirestore } from "firebase-admin/firestore";
 
 const db = getFirestore();
-const countRef = db.collection("count").doc("users");
+const countRef = db.collection("counters").doc("users");
 const snap = await countRef.get();
 const { total, approved, active } = snap.data();
 ```
 
 ### Step 3: Use in Your Dashboard
 
-Create real-time widgets that query `count/*` documents:
+Create real-time widgets that query `counters/*` documents:
 - Product inventory dashboard
 - User analytics
 - Order pipeline metrics
@@ -158,7 +158,7 @@ for (const doc of snapshot.docs) {
 
 Per write to any of the 5 collections:
 - **1 read** — Read entire collection (counts all docs)
-- **1 write** — Write aggregated result to `count/*`
+- **1 write** — Write aggregated result to `counters/*`
 
 **Example**: 100 product writes per day = ~200 operations/day
 
@@ -171,7 +171,7 @@ If this becomes too much, consider:
 
 ## 🎉 You're All Set!
 
-Your count collection is now:
+Your counters collection is now:
 - ✅ Backfilled with current data
 - ✅ Ready for Cloud Function deployment
 - ✅ Documented and monitored
