@@ -1,12 +1,12 @@
-# 📊 Automated Count Collection Aggregator
+# 📊 Automated Counters Collection Aggregator
 
-This system automatically maintains aggregated metrics in a `count` collection in Firestore. Each time a document is written to **products**, **users**, **orders**, **enquiries**, or **brands**, the corresponding count document is updated with real-time aggregated statistics.
+This system automatically maintains aggregated metrics in a `counters` collection in Firestore. Each time a document is written to **products**, **users**, **orders**, **enquiries**, or **brands**, the corresponding count document is updated with real-time aggregated statistics.
 
 ## 📋 Overview
 
 ### Collections Tracked
 
-#### **Products** (`count/products`)
+#### **Products** (`counters/products`)
 ```json
 {
   "total": 2240,
@@ -25,7 +25,7 @@ This system automatically maintains aggregated metrics in a `count` collection i
 }
 ```
 
-#### **Users** (`count/users`)
+#### **Users** (`counters/users`)
 ```json
 {
   "total": 320,
@@ -46,7 +46,7 @@ This system automatically maintains aggregated metrics in a `count` collection i
 }
 ```
 
-#### **Orders** (`count/orders`)
+#### **Orders** (`counters/orders`)
 ```json
 {
   "total": 1050,
@@ -66,7 +66,7 @@ This system automatically maintains aggregated metrics in a `count` collection i
 }
 ```
 
-#### **Enquiries** (`count/enquiries`)
+#### **Enquiries** (`counters/enquiries`)
 ```json
 {
   "total": 245,
@@ -89,7 +89,7 @@ This system automatically maintains aggregated metrics in a `count` collection i
 }
 ```
 
-#### **Brands** (`count/brands`)
+#### **Brands** (`counters/brands`)
 ```json
 {
   "total": 12,
@@ -118,7 +118,7 @@ npm run deploy
 
 ### Step 2: Backfill Existing Data
 
-Run the backfill script to populate the count collection with current data:
+Run the backfill script to populate the counters collection with current data:
 
 ```bash
 npm run count:backfill
@@ -150,7 +150,7 @@ Each collection has a corresponding Firestore trigger that listens for any write
 When triggered, each function:
 1. Reads the entire collection
 2. Aggregates metrics (counts, groupings by status/brand/user)
-3. Writes the result to the corresponding `count/{collection}` document
+3. Writes the result to the corresponding `counters/{collection}` document
 
 ### Performance Considerations
 
@@ -174,7 +174,7 @@ If you experience performance issues, consider:
 
 ---
 
-## 📊 Querying the Count Collection
+## 📊 Querying the Counters Collection
 
 ### From the Frontend (Firestore Client SDK)
 
@@ -200,7 +200,7 @@ import { getFirestore } from "firebase-admin/firestore";
 const db = getFirestore();
 
 // Get user counts
-const countRef = db.collection("count").doc("users");
+const countRef = db.collection("counters").doc("users");
 const countSnap = await countRef.get();
 const counts = countSnap.data();
 
